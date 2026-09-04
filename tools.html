@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🧰 旅行工具組</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+
+<script>
+// 初始化 Firebase（與 index.html 相同配置）
+firebase.initializeApp({
+  apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
+  authDomain: "tohoku-winter-trip.firebaseapp.com",
+  projectId: "tohoku-winter-trip",
+  storageBucket: "tohoku-winter-trip.firebasestorage.app",
+  messagingSenderId: "991555590088",
+  appId: "1:991555590088:web:51518698f7b63be821d2fd",
+  measurementId: "G-9EN9JG5F3F"
+});
+
+// 初始化 Firestore
+const db = firebase.firestore();
+window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
+</script>
+
+<style>
+@import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap);
+body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.scrollbar-none::-webkit-scrollbar{display:none}
+.scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
+</style>
+</head>
+<body class="bg-slate-50 p-4 space-y-4">
+
+    <!-- 1. 出發倒數 + 搶票倒數 -->
+    <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 p-4 rounded-2xl shadow-sm">
+        <div class="flex items-center space-x-2 text-indigo-900 font-bold mb-3">
+            <span class="text-lg">🎟️</span>
+            <h3 class="text-xs md:text-sm font-black">黃金搶票與出發倒數</h3>
+        </div>
+        
+        <!-- 出發倒數 -->
+        <div class="mb-3">
+            <div class="text-[10px] text-slate-500">距離出發還有</div>
+            <div id="departure-countdown" class="font-bold text-amber-500 text-lg tracking-wide animate-pulse">計算倒數中...</div>
+        </div>
+
+        <!-- 銀山溫泉 -->
+        <div class="bg-white/80 backdrop-blur-sm p-2.5 rounded-xl border border-purple-200 shadow-sm mb-2">
+            <span class="font-bold text-purple-900 block mb-0.5">🚌 銀山溫泉「Fast Pass」開搶</span>
+            <div class="text-[10px] text-slate-500">開賣時間：2027/01/08 23:00 (HKT)</div>
+            <div id="ginzan-countdown" class="text-purple-700 font-black mt-0.5 text-xs animate-pulse">計算倒數中...</div>
+        </div>
+
+        <!-- 藏王纜車 -->
+        <div class="bg-white/80 backdrop-blur-sm p-2.5 rounded-xl border border-sky-200 shadow-sm">
+            <span class="font-bold text-sky-900 block mb-0.5">🎟️ 藏王纜車「優先票」開搶</span>
+            <div class="text-[10px] text-slate-500">開賣時間：2027/01/15 23:00 (HKT)</div>
+            <div id="zao-countdown" class="text-sky-700 font-black mt-0.5 text-xs animate-pulse">計算倒數中...</div>
+        </div>
+    </div>
+
+    <!-- 2. 裝備清單 -->
+    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 p-4 rounded-2xl shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+                <span class="text-lg">🎒</span>
+                <h3 class="text-xs md:text-sm font-black text-emerald-900">1月雪國防寒與裝備 Check-list</h3>
+            </div>
+        </div>
+        <div class="space-y-2 text-xs text-slate-700 pr-1" id="checklist-container">
+            <div class="font-bold text-emerald-800 border-b border-emerald-200/50 pb-1 mb-1 mt-2">🚗 冬季自駕與證件</div>
+            <label class="flex items-center gap-2 p-1.5 hover:bg-emerald-50 rounded-lg cursor-pointer transition">
+                <input type="checkbox" id="check-idp" onchange="toggleCheckItem(this.id)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                <span>實體國際駕照 (IDP) + 護照 + 駕照正本/譯本</span>
+            </label>
+            <label class="flex items-center gap-2 p-1.5 hover:bg-emerald-50 rounded-lg cursor-pointer transition">
+                <input type="checkbox" id="check-snow-tire" onchange="toggleCheckItem(this.id)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                <span>租車確認搭載「4WD + スタッドレス (雪胎)」與 ETC</span>
+            </label>
+            <label class="flex items-center gap-2 p-1.5 hover:bg-emerald-50 rounded-lg cursor-pointer transition">
+                <input type="checkbox" id="check-kid-belt" onchange="toggleCheckItem(this.id)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                <span>2 套便攜式兒童安全帶 (Smart Kid Belt) 或 汽座</span>
+            </label>
+            <div class="font-bold text-emerald-800 border-b border-emerald-200/50 pb-1 mb-1 mt-3">🧥 保暖與雪地配備</div>
+            <label class="flex items-center gap-2 p-1.5 hover:bg-emerald-50 rounded-lg cursor-pointer transition">
+                <input type="checkbox" id="check-clothes" onchange="toggleCheckItem(this.id)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                <span>防風防水羽絨外套、極暖發熱衣、防滑雪靴/冰爪</span>
+            </label>
+            <label class="flex items-center gap-2 p-1.5 hover:bg-emerald-50 rounded-lg cursor-pointer transition">
+                <input type="checkbox" id="check-warmers" onchange="toggleCheckItem(this.id)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                <span>貼式暖暖包、手套、毛帽、遮雪太陽眼鏡/護目鏡</span>
+            </label>
+            <div class="font-bold text-emerald-800 border-b border-emerald-200/50 pb-1 mb-1 mt-3">🧸 寶寶與溫泉護理</div>
+            <label class="flex items-center gap-2 p-1.5 hover:bg-emerald-50 rounded-lg cursor-pointer transition">
+                <input type="checkbox" id="check-swimwear" onchange="toggleCheckItem(this.id)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                <span>隨身泳衣泳帽小包 (D1 瑞鳳溫水泳池直奔用)</span>
+            </label>
+            <label class="flex items-center gap-2 p-1.5 hover:bg-emerald-50 rounded-lg cursor-pointer transition">
+                <input type="checkbox" id="check-baby-winter" onchange="toggleCheckItem(this.id)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                <span>寶寶連體連帽雪衣、保濕乳霜、備用乾爽衣物</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- 3. 雪地自駕攻略 -->
+    <div class="bg-gradient-to-br from-rose-50 to-red-50 border border-rose-200 p-4 rounded-2xl shadow-sm">
+        <div class="flex items-center gap-2 mb-2">
+            <span class="text-lg animate-pulse">⚠️</span>
+            <h3 class="text-xs md:text-sm font-black text-rose-900">雪地自駕保命攻略 (必讀)</h3>
+        </div>
+        <div class="space-y-4 text-xs text-slate-700 pr-1">
+            <div>
+                <h4 class="font-bold text-rose-800 bg-rose-100/60 px-2.5 py-1.5 rounded-lg border border-rose-200 mb-2 flex items-center gap-1.5">
+                    <span class="text-sm drop-shadow-sm">🛠️</span> 第一階段：開車前準備
+                </h4>
+                <p class="text-[10px] text-rose-600/80 mb-1.5 font-bold pl-1">出發前請預留 15-20 分鐘處理車輛</p>
+                <ul class="list-disc pl-5 space-y-1.5 text-[11px] leading-relaxed">
+                    <li><strong class="text-slate-800">清雪與暖車：</strong>上車首要發動引擎開暖風(含前擋除霧/後視鏡加熱)。用雪刷「由上往下」推掉車頂積雪，避免行駛時滑落遮擋視線。清理車頭自動煞車感應器。</li>
+                    <li><strong class="text-slate-800">刮冰訣竅：</strong>玻璃若結硬冰，用塑膠刮雪板<strong class="text-rose-600">「單向」</strong>刮除，切勿來回死刮。建議買瓶「解凍噴霧」備用。</li>
+                    <li><strong class="text-slate-800">駕駛準備：</strong>上車前「用力踏腳」拍落鞋底雪，防踩踏板打滑。車內暖和後脫下厚重外套保持手臂轉向靈活。</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-sky-800 bg-sky-100/60 px-2.5 py-1.5 rounded-lg border border-sky-200 mb-2 flex items-center gap-1.5">
+                    <span class="text-sm drop-shadow-sm">🚗</span> 第二階段：駕駛黃金心法
+                </h4>
+                <p class="text-[10px] text-sky-700/80 mb-1.5 font-bold pl-1">雪地唯一真理：「慢」與「溫和」</p>
+                <ul class="list-disc pl-5 space-y-1.5 text-[11px] leading-relaxed">
+                    <li><strong class="text-slate-800">油門與煞車：</strong>起步輕含油門防原地空轉。拉大<strong class="text-sky-700"> 3-5 倍安全車距</strong>。減速時提早、分段、輕踩(點煞)，<strong class="text-red-600">嚴禁急煞！</strong></li>
+                    <li><strong class="text-slate-800">山路技巧 (藏王/狐狸村)：</strong>入彎前必須完成減速。下坡<strong class="text-rose-600">絕對要善用低速檔</strong> (L檔/2檔/手排模式1-2檔) 利用引擎煞車，踩死煞車下山會導致煞車失靈！</li>
+                    <li><strong class="text-slate-800">視線與黑冰：</strong>全天開大燈。特別提防<strong class="text-slate-900">「黑冰 Black Ice」</strong>(橋樑/隧道口/樹蔭下看起來黑黑濕濕的薄冰)。遇到時抓穩方向盤維持定速，<strong class="text-rose-600">千萬不要補油門或踩煞車</strong>。</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-amber-800 bg-amber-100/60 px-2.5 py-1.5 rounded-lg border border-amber-200 mb-2 flex items-center gap-1.5">
+                    <span class="text-sm drop-shadow-sm">🅿️</span> 第三階段：停車防凍防卡
+                </h4>
+                <p class="text-[10px] text-amber-700/80 mb-1.5 font-bold pl-1">做錯一步隔天車子動彈不得</p>
+                <ul class="list-disc pl-5 space-y-1.5 text-[11px] leading-relaxed">
+                    <li class="bg-rose-50/50 p-1 -ml-1 rounded"><strong class="text-red-600">絕對不要拉手煞車：</strong>氣溫極低會讓煞車盤直接卡死結凍！停平地打入 P 檔即可；若停斜坡，請在輪胎後方墊石頭或硬雪塊當輪檔。</li>
+                    <li><strong class="text-slate-800">雨刷必須立起：</strong>熄火後手動立起前後雨刷。否則積雪融化結冰，橡膠會死黏在玻璃上，隔天硬刷會扯斷橡膠或燒毀馬達。</li>
+                    <li><strong class="text-slate-800">巡視清理：</strong>下車後用腳踹掉輪拱內(輪胎後方)捲起的積雪冰塊，以免變硬卡死隔天無法轉向。大雪預報時建議關閉後視鏡自動折疊功能。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // ==================== 出發倒數 ====================
+    const departureTarget = new Date("2027-01-21T10:00:00+08:00").getTime();
+    const zaoTarget = new Date("2027-01-15T23:00:00+08:00").getTime();
+    const ginzanTarget = new Date("2027-01-08T23:00:00+08:00").getTime();
+
+    function updateCountdowns() {
+        const now = new Date().getTime();
+        
+        const departureDiff = departureTarget - now;
+        const departureEl = document.getElementById("departure-countdown");
+        if (departureEl) {
+            if (departureDiff < 0) {
+                departureEl.innerText = "❄️ 2027 東北冬日雪景之旅進行中！";
+                departureEl.classList.remove("animate-pulse");
+            } else {
+                const days = Math.floor(departureDiff / 86400000);
+                const hours = Math.floor(departureDiff % 86400000 / 3600000);
+                const minutes = Math.floor(departureDiff % 3600000 / 60000);
+                const seconds = Math.floor(departureDiff % 60000 / 1000);
+                departureEl.innerText = `${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+            }
+        }
+
+        const ginzanDiff = ginzanTarget - now;
+        const ginzanEl = document.getElementById("ginzan-countdown");
+        if (ginzanEl) {
+            if (ginzanDiff < 0) {
+                ginzanEl.innerText = "🎟️ 搶票時段已開始或結束！";
+                ginzanEl.classList.remove("animate-pulse", "text-purple-700");
+                ginzanEl.classList.add("text-rose-600");
+            } else {
+                const days = Math.floor(ginzanDiff / 86400000);
+                const hours = Math.floor(ginzanDiff % 86400000 / 3600000);
+                const minutes = Math.floor(ginzanDiff % 3600000 / 60000);
+                const seconds = Math.floor(ginzanDiff % 60000 / 1000);
+                ginzanEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+            }
+        }
+
+        const zaoDiff = zaoTarget - now;
+        const zaoEl = document.getElementById("zao-countdown");
+        if (zaoEl) {
+            if (zaoDiff < 0) {
+                zaoEl.innerText = "🎟️ 搶票時段已開始或結束！";
+                zaoEl.classList.remove("animate-pulse", "text-sky-700");
+                zaoEl.classList.add("text-rose-600");
+            } else {
+                const days = Math.floor(zaoDiff / 86400000);
+                const hours = Math.floor(zaoDiff % 86400000 / 3600000);
+                const minutes = Math.floor(zaoDiff % 3600000 / 60000);
+                const seconds = Math.floor(zaoDiff % 60000 / 1000);
+                zaoEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+            }
+        }
+    }
+
+    // ==================== 裝備清單（接入 Firebase 同步） ====================
+    function toggleCheckItem(id) {
+        const checkbox = document.getElementById(id);
+        if (checkbox) {
+            let checkedItems = JSON.parse(localStorage.getItem("tohoku_checklist_2027") || "{}");
+            checkedItems[id] = checkbox.checked;
+            localStorage.setItem("tohoku_checklist_2027", JSON.stringify(checkedItems));
+
+            // 推送到 Firebase 雲端（讓所有設備同步）
+            if (typeof firebase !== 'undefined') {
+                window.dbRef.set({
+                    checkedItems: checkedItems,
+                    updatedAt: Date.now()
+                }, { merge: true }).catch(err => console.warn("同步失敗:", err));
+            }
+        }
+    }
+
+    function restoreChecklistUI() {
+        const saved = JSON.parse(localStorage.getItem("tohoku_checklist_2027") || "{}");
+        Object.keys(saved).forEach(id => {
+            const checkbox = document.getElementById(id);
+            if (checkbox) checkbox.checked = saved[id];
+        });
+    }
+
+    // 監聽 Firebase 雲端變化（如果其他設備改了，這裡也會更新）
+    if (typeof firebase !== 'undefined') {
+        window.dbRef.onSnapshot(docSnap => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.checkedItems) {
+                    localStorage.setItem("tohoku_checklist_2027", JSON.stringify(data.checkedItems));
+                    restoreChecklistUI();
+                }
+            }
+        });
+    }
+
+    // ==================== 初始化 ====================
+    updateCountdowns();
+    setInterval(updateCountdowns, 1000);
+    restoreChecklistUI();
+</script>
+</body>
+</html>
