@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>💰 團隊記帳本</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Firebase SDK (Compat 版本) -->
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+
+<style>
+@import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap);
+body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.scrollbar-none::-webkit-scrollbar{display:none}
+.scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
+.snowflake{position:absolute;top:-10px;border-radius:50%;pointer-events:none;z-index:9999}
+@keyframes snowfall{0%{transform:translateY(-10px) translateX(0) rotate(0deg);opacity:0}10%{opacity:1}50%{transform:translateY(50vh) translateX(20px) rotate(180deg)}90%{opacity:1}100%{transform:translateY(110vh) translateX(-20px) rotate(360deg);opacity:0}}
+@keyframes snowfall-small{0%{transform:translateY(-10px) translateX(0) rotate(0deg);opacity:0}10%{opacity:.8}100%{transform:translateY(110vh) translateX(30px) rotate(360deg);opacity:0}}
+@keyframes snowfall-medium{0%{transform:translateY(-10px) translateX(0) rotate(0deg);opacity:0}10%{opacity:1}100%{transform:translateY(110vh) translateX(-40px) rotate(-360deg);opacity:0}}
+@keyframes snowfall-large{0%{transform:translateY(-10px) translateX(0) rotate(0deg);opacity:0}10%{opacity:.9}100%{transform:translateY(110vh) translateX(50px) rotate(720deg);opacity:0}}
+@keyframes shine{0%,100%{opacity:.6}50%{opacity:1}}
+.snowflake-shine{animation:shine 2s ease-in-out infinite}
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-16 relative">
+    <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
+
+<!-- 返回主頁面按鈕 -->
+<div class="max-w-4xl mx-auto px-4 pt-6">
+    <button onclick="if (window.parent !== window) { window.parent.switchMainTab('itinerary'); } else { window.location.href='/index.html'; }" class="inline-flex items-center gap-2 bg-white hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl shadow-sm border border-slate-200 transition">
+        <span>⬅️</span> 返回行程
+    </button>
+</div>
+
+<!-- 記帳本內容 -->
+<div class="max-w-4xl mx-auto px-4 mt-4 pb-20 space-y-6">
+    <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="flex flex-col gap-1">
+            <h4 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                <span id="cloud-sync-badge" class="text-[10px] bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-sky-200 mr-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span> 雲端連線
+                </span>
+                團隊記帳本同步中
+            </h4>
+            <p class="text-[10px] text-slate-500">所有人打開同一網址，新增修改會即時同步！</p>
+        </div>
+        <button onclick="copyCurrentUrl()" class="w-full sm:w-auto py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+            <span>📋</span> 複製分享網址
+        </button>
+    </div>
+
+    <div class="grid grid-cols-3 gap-3">
+        <div class="bg-gradient-to-br from-sky-950 to-sky-900 text-white p-4 rounded-2xl shadow-sm text-center">
+            <span class="text-[10px] text-sky-200 block uppercase font-bold tracking-widest mb-1">總開支 (折合)</span>
+            <strong id="stat-total" class="text-base md:text-xl font-black">0.00 HKD</strong>
+        </div>
+        <div class="bg-gradient-to-br from-blue-900 to-indigo-800 text-white p-4 rounded-2xl shadow-sm text-center">
+            <span class="text-[10px] text-sky-200 block uppercase font-bold tracking-widest mb-1">人均花費</span>
+            <strong id="stat-average" class="text-base md:text-xl font-black">0.00 HKD</strong>
+        </div>
+        <div class="bg-gradient-to-br from-slate-800 to-slate-700 text-white p-4 rounded-2xl shadow-sm text-center">
+            <span class="text-[10px] text-slate-300 block uppercase font-bold tracking-widest mb-1">記帳筆數</span>
+            <strong id="stat-count" class="text-base md:text-xl font-black">0 筆</strong>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden min-h-[500px]">
+        <div class="border-b border-slate-200 bg-slate-50 p-2 flex gap-2 overflow-x-auto scrollbar-none">
+            <button id="tab-records-btn" onclick='switchLedgerSubTab("records")' class="whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black bg-white text-sky-900 shadow-sm transition">🧾 帳目明細</button>
+            <button id="tab-balances-btn" onclick='switchLedgerSubTab("balances")' class="whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition">📊 差額結算</button>
+            <button id="tab-suggested-btn" onclick='switchLedgerSubTab("suggested")' class="whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition flex items-center justify-center gap-1">🚀 最佳清債 <span id="debt-count-badge" class="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full hidden">0</span></button>
+        </div>
+
+        <div id="subview-records" class="p-4 space-y-3">
+            <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold text-slate-800">所有團隊開支</h4>
+                <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 shadow-inner">
+                        <span class="text-[10px] text-slate-500 font-bold">👀 視角</span>
+                        <select id="ledger-view-as" onchange="changeViewAs(this.value)" class="text-xs font-black bg-transparent text-sky-700 outline-none cursor-pointer">
+                            <option value="余生">余生</option>
+                            <option value="bowie">bowie</option>
+                            <option value="shandy">shandy</option>
+                            <option value="Connie">Connie</option>
+                        </select>
+                    </div>
+                    <button onclick="exportLedgerText()" class="text-[10px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded transition">📋 輸出</button>
+                    <button onclick="openConfirmModal()" class="text-[10px] font-bold text-red-500 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 px-2 py-1 rounded transition">清空</button>
+                </div>
+            </div>
+            <div class="space-y-2" id="records-list-container">
+                <div class="text-slate-400 text-xs italic text-center py-12">暫無支出紀錄</div>
+            </div>
+        </div>
+
+        <div id="subview-balances" class="p-4 hidden space-y-4">
+            <h4 class="text-sm font-bold text-slate-800">各成員收支明細</h4>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-400">
+                            <th class="py-2.5">成員</th>
+                            <th class="py-2.5 text-right">實付 (HKD)</th>
+                            <th class="py-2.5 text-right">應付 (HKD)</th>
+                            <th class="py-2.5 text-right">差額 (HKD)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="balances-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="subview-suggested" class="p-4 hidden space-y-3">
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-900 leading-relaxed">
+                💡 系統已自動計算最優結算路線，幫助您以最少轉帳次數完成清帳。
+            </div>
+            <div class="space-y-2" id="suggested-settle-container"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 記帳 Modal -->
+<div id="expense-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeExpenseModal()"></div>
+<div id="expense-modal" class="fixed bottom-0 left-0 right-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-full md:max-w-lg bg-white rounded-t-3xl md:rounded-3xl shadow-2xl z-[70] transform translate-y-full md:translate-y-8 md:scale-95 opacity-0 hidden transition-all duration-300 flex flex-col max-h-[92vh] md:max-h-[85vh]">
+    <div class="shrink-0 flex justify-center pt-3 pb-1 md:hidden" onclick="closeExpenseModal()">
+        <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
+    </div>
+    <div class="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+            <span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✍️</span>
+            新增團隊花費
+        </h3>
+        <button onclick="closeExpenseModal()" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-6 pb-24 space-y-4 scrollbar-none bg-slate-50/50">
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">📅 行程天數</label>
+                <select id="ledger-day" class="block w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+                    <option value="1">Day 1 (1/21)</option>
+                    <option value="2">Day 2 (1/22)</option>
+                    <option value="3">Day 3 (1/23)</option>
+                    <option value="4">Day 4 (1/24)</option>
+                    <option value="5">Day 5 (1/25)</option>
+                    <option value="6">Day 6 (1/26)</option>
+                    <option value="7">Day 7 (1/27)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">🏷️ 支出分類</label>
+                <select id="ledger-category" class="block w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+                    <option value="🍽️ 飲食">🍽️ 飲食</option>
+                    <option value="🚗 交通">🚗 交通/雪胎</option>
+                    <option value="🏨 溫泉住宿">🏨 溫泉住宿</option>
+                    <option value="🛍️ 購物">🛍️ 購物</option>
+                    <option value="🎫 纜車/門票">🎫 纜車/門票</option>
+                    <option value="📝 其他">📝 其他</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">📝 支出項目 / 名稱</label>
+            <input id="ledger-desc" placeholder="例如：藏王樹冰纜車票、ETC過路費" class="block w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <label class="block text-[11px] font-bold text-slate-600 mb-2">💰 金額與幣值</label>
+            <div class="flex gap-2">
+                <input id="ledger-amount" inputmode="decimal" oninput="updateEstimatedHKD()" placeholder="0.00" class="flex-1 border border-slate-300 rounded-xl py-2.5 px-3 text-lg font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+                <select id="ledger-currency" onchange="updateEstimatedHKD()" class="border border-slate-300 rounded-xl py-2.5 px-3 text-sm font-bold bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+                    <option value="JPY">JPY (¥)</option>
+                    <option value="HKD">HKD ($)</option>
+                    <option value="TWD">TWD</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+            <div class="text-right mt-1.5">
+                <span id="estimated-hkd-text" class="text-[11px] text-sky-600 font-bold bg-sky-50 px-2 py-0.5 rounded border border-sky-100">估算折合：0.00 HKD</span>
+            </div>
+        </div>
+        <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1.5">👤 誰先付款（代付人）</label>
+            <div class="grid grid-cols-4 gap-1.5" id="payer-grid"></div>
+        </div>
+        <div>
+            <div class="flex justify-between items-center mb-1.5">
+                <label class="block text-[11px] font-bold text-slate-600">👥 參與分攤成員</label>
+                <div class="flex gap-1">
+                    <button type="button" onclick='setSplitPreset("all")' class="text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 px-2 py-1 rounded">全團</button>
+                    <button type="button" onclick='setSplitPreset("adults")' class="text-[10px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 px-2 py-1 rounded">僅大人</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 p-2 bg-white border border-slate-200 rounded-xl" id="splitters-grid"></div>
+        </div>
+    </div>
+    <div class="shrink-0 p-4 border-t border-slate-100 bg-white">
+        <button id="btn-save-expense" onclick="saveExpense()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-2xl shadow-md shadow-sky-200 transition active:scale-95 flex items-center justify-center gap-1.5 text-base">
+            <span>寫入帳本</span>
+            <span class="text-xl">✍️</span>
+        </button>
+    </div>
+</div>
+
+<!-- 確認清空 Modal -->
+<div id="confirm-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] hidden opacity-0 transition-opacity duration-300" onclick="closeConfirmModal()"></div>
+<div id="confirm-modal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl z-[90] w-11/12 max-w-sm p-6 hidden opacity-0 transition-all duration-300 scale-95">
+    <h3 class="text-lg font-black text-slate-900 mb-2 flex items-center gap-2">
+        <span class="text-xl">⚠️</span> 確定要清空嗎？
+    </h3>
+    <p class="text-sm text-slate-600 mb-6">此操作將刪除所有團隊記帳資料，且 <strong>無法復原</strong>！</p>
+    <div class="flex gap-3">
+        <button onclick="closeConfirmModal()" class="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">取消</button>
+        <button onclick="executeClearExpenses()" class="flex-1 py-3 rounded-xl font-bold bg-red-500 text-white hover:bg-red-600 transition shadow-sm">確認清空</button>
+    </div>
+</div>
+
+<!-- 「記一筆」FAB -->
+<button id="fab-add-expense" onclick="openExpenseModal()" class="fixed bottom-20 right-4 md:right-6 z-50 bg-sky-600 hover:bg-sky-700 text-white rounded-full h-14 px-5 shadow-[0_8px_25px_rgb(0,0,0,0.25)] border border-sky-500 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group">
+    <span class="text-xl font-black group-hover:scale-110 transition-transform duration-300">＋</span>
+    <span class="font-bold text-sm tracking-wide">記一筆</span>
+</button>
+
+<!-- 匯率試算 FAB -->
+<div class="fixed bottom-40 right-4 md:right-6 z-40 flex flex-col items-end pointer-events-none">
+    <div id="currency-widget-panel" class="absolute bottom-full right-0 mb-4 bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] border border-slate-200 w-[calc(100vw-2rem)] sm:w-80 overflow-hidden transition-all duration-300 origin-bottom-right pointer-events-none opacity-0 scale-90 translate-y-4 invisible">
+        <div class="bg-gradient-to-r from-sky-900 to-indigo-900 p-4 flex justify-between items-center text-white">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">🪙</span>
+                <h3 class="text-sm font-black tracking-wide">即時匯率試算</h3>
+            </div>
+            <button onclick="toggleCurrencyWidget()" class="bg-white/20 hover:bg-white/40 text-white rounded-full p-1.5 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-4 space-y-3 pointer-events-auto">
+            <div class="flex justify-between items-center">
+                <p id="rate-hint-text" class="text-[10px] text-slate-500 font-semibold">目前匯率：1 JPY ≈ 0.052 HKD</p>
+                <button onclick='convertCurrency("clear")' class="text-[10px] text-slate-400 hover:text-red-500 transition font-bold flex items-center gap-1 bg-slate-100 px-2 py-1 rounded"><span>🧹</span> 清除</button>
+            </div>
+            <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none snap-x">
+                <button onclick='quickConvert("jpy",1e3)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-[11px] font-bold shadow-xs hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 transition">¥1千 JPY</button>
+                <button onclick='quickConvert("jpy",1e4)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-[11px] font-bold shadow-xs hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 transition">¥1萬 JPY</button>
+                <button onclick='quickConvert("hkd",100)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-[11px] font-bold shadow-xs hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition">$100 HKD</button>
+            </div>
+            <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 shadow-inner">
+                <div>
+                    <label class="block text-[11px] font-bold text-rose-800 mb-1.5">🇯🇵 日圓 (JPY)</label>
+                    <div class="relative rounded-xl shadow-xs">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-rose-600 text-base font-black">¥</span></div>
+                        <input type="number" id="calc-jpy" oninput='convertCurrency("jpy")' value="10000" class="block w-full pl-8 pr-12 text-lg font-black text-rose-900 border border-rose-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 transition">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span class="text-rose-400 text-[10px] font-bold">JPY</span></div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-sky-800 mb-1.5">🇭🇰 港幣 (HKD)</label>
+                    <div class="relative rounded-xl shadow-xs">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-sky-600 text-base font-black">$</span></div>
+                        <input type="number" id="calc-hkd" oninput='convertCurrency("hkd")' class="block w-full pl-8 pr-12 text-lg font-black text-sky-900 border border-sky-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button onclick="toggleCurrencyWidget()" id="currency-fab" class="pointer-events-auto relative bg-slate-800 hover:bg-slate-700 text-white rounded-full h-14 w-14 md:h-auto md:w-auto md:px-5 md:py-3.5 shadow-[0_8px_25px_rgb(0,0,0,0.2)] border border-slate-600 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group">
+        <span class="text-2xl group-hover:rotate-12 transition-transform drop-shadow-sm">🪙</span>
+        <span class="font-bold text-sm hidden md:inline tracking-wide drop-shadow-sm">匯率換算</span>
+    </button>
+</div>
+
+<!-- Toast 通知 -->
+<div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none">
+    <span id="toast-icon">✅</span>
+    <span id="toast-message">複製成功！</span>
+</div>
+
+<script>
+// ==================== Firebase 專屬設定與初始化 ====================
+const firebaseConfig = {
+  apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
+  authDomain: "tohoku-winter-trip.firebaseapp.com",
+  projectId: "tohoku-winter-trip",
+  storageBucket: "tohoku-winter-trip.firebasestorage.app",
+  messagingSenderId: "991555590088",
+  appId: "1:991555590088:web:afb089890d7d546821d2fd",
+  measurementId: "G-XLDZRXC8RT"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+window.db = db;
+window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
+
+const initAuth = async () => {
+    try {
+        await auth.signInAnonymously();
+        // 登入成功時在畫面右下角顯示小綠勾（不用 alert 以免每次都彈出很煩）
+        showToast("雲端連線成功！", "✅");
+    } catch(err) {
+        // 如果登入失敗，強制彈出視窗讓你在手機上看到
+        alert("登入失敗，請檢查 Firebase Auth 設定: " + err.message);
+    }
+};
+
+initAuth();
+
+auth.onAuthStateChanged(user => {
+    if (!user) return; 
+    
+    window.dbRef.onSnapshot(docSnap => {
+        if (docSnap.exists) {
+            const cloudData = docSnap.data();
+            if (cloudData && cloudData.expenses) {
+                state.expenses = sanitizeExpenses(cloudData.expenses);
+                saveLocalExpenses(); 
+                updateLedgerUI();    
+            }
+        }
+    }, err => {
+        // 如果資料庫讀寫權限被阻擋，強制彈出視窗
+        alert("資料庫同步失敗，請檢查 Firestore Rules: " + err.message);
+    });
+});
+
+async function syncDataToCloud() {
+    try {
+        if (!auth.currentUser) {
+            alert("尚未連線到雲端，無法儲存");
+            return; 
+        }
+        await window.dbRef.set({
+            expenses: state.expenses,
+            checkedItems: state.checkedItems,
+            updatedAt: Date.now()
+        }, { merge: true }); 
+    } catch(e) {
+        // 寫入失敗時彈出視窗
+        alert("寫入雲端失敗: " + e.message);
+    }
+}
+
+
+// ==================== 全域變數與狀態 ====================
+const members = ["余生", "bowie", "shandy", "Connie"];
+const adults = ["余生", "bowie", "shandy", "Connie"];
+const memberStyle = {
+    "余生": { badge: "bg-blue-100 text-blue-800 border-blue-200", solid: "bg-blue-600 text-white border-blue-700", soft: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100", text: "text-blue-700", avatar: "bg-blue-500" },
+    "bowie": { badge: "bg-pink-100 text-pink-800 border-pink-200", solid: "bg-pink-500 text-white border-pink-600", soft: "bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100", text: "text-pink-600", avatar: "bg-pink-400" },
+    "shandy": { badge: "bg-emerald-100 text-emerald-800 border-emerald-200", solid: "bg-emerald-500 text-white border-emerald-600", soft: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100", text: "text-emerald-600", avatar: "bg-emerald-500" },
+    "Connie": { badge: "bg-purple-100 text-purple-800 border-purple-200", solid: "bg-purple-500 text-white border-purple-600", soft: "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100", text: "text-purple-600", avatar: "bg-purple-400" }
+};
+
+let state = {
+    currentMainTab: "ledger",
+    viewingAs: members[0],
+    activePayer: members[0],
+    activeSplitWith: [...members],
+    expenses: [],
+    checkedItems: {}
+};
+
+let editingExpenseId = null;
+const exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
+
+// ==================== 分頁切換 ====================
+function switchLedgerSubTab(tabName) {
+    document.getElementById("subview-records").classList.add("hidden");
+    document.getElementById("subview-balances").classList.add("hidden");
+    document.getElementById("subview-suggested").classList.add("hidden");
+    
+    const inactiveClass = "whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition";
+    document.getElementById("tab-records-btn").className = inactiveClass;
+    document.getElementById("tab-balances-btn").className = inactiveClass;
+    document.getElementById("tab-suggested-btn").className = inactiveClass + " flex items-center justify-center gap-1";
+
+    document.getElementById(`subview-${tabName}`).classList.remove("hidden");
+    const activeClass = "whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black bg-white text-sky-900 shadow-sm transition";
+    
+    if (tabName === "records") {
+        document.getElementById("tab-records-btn").className = activeClass;
+    } else if (tabName === "balances") {
+        document.getElementById("tab-balances-btn").className = activeClass;
+    } else if (tabName === "suggested") {
+        document.getElementById("tab-suggested-btn").className = activeClass + " flex items-center justify-center gap-1";
+    }
+}
+
+// ==================== 資料處理 ====================
+function sanitizeExpenses(e) {
+    return Array.isArray(e) ? e.filter(item => item !== null && typeof item === "object").map(item => ({
+        ...item,
+        id: item.id || "exp-" + Math.random().toString(36).substr(2, 9),
+        day: parseInt(item.day) || 1,
+        desc: item.desc || "未命名項目",
+        category: item.category || "📝 其他",
+        amount: Number(item.amount) || 0,
+        currency: item.currency || "JPY",
+        amountInHKD: Number(item.amountInHKD) || 0,
+        payer: item.payer || members[0],
+        splitWith: Array.isArray(item.splitWith) && item.splitWith.length > 0 ? item.splitWith : [members[0]],
+        createdAt: item.createdAt || Date.now()
+    })) : [];
+}
+
+function saveLocalExpenses() {
+    localStorage.setItem("tohoku_expenses_2027", JSON.stringify(state.expenses));
+}
+
+function loadLocalExpenses() {
+    const saved = localStorage.getItem("tohoku_expenses_2027");
+    if (saved) {
+        try { state.expenses = sanitizeExpenses(JSON.parse(saved)); } catch(e) { state.expenses = []; }
+    }
+}
+
+// ==================== Toast 通知 ====================
+function showToast(message, icon = "✅") {
+    const toast = document.getElementById("toast");
+    const toastMessage = document.getElementById("toast-message");
+    const toastIcon = document.getElementById("toast-icon");
+    if (toast && toastMessage && toastIcon) {
+        toastMessage.innerText = message;
+        toastIcon.innerText = icon;
+        toast.classList.remove("-translate-y-24", "opacity-0");
+        toast.classList.add("translate-y-0", "opacity-100");
+        if (window.toastTimeout) clearTimeout(window.toastTimeout);
+        window.toastTimeout = setTimeout(() => {
+            toast.classList.remove("translate-y-0", "opacity-100");
+            toast.classList.add("-translate-y-24", "opacity-0");
+        }, 3000);
+    }
+}
+
+function copyText(text) {
+    try {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        showToast("📋 複製成功！");
+    } catch(e) {
+        navigator.clipboard.writeText(text).then(() => showToast("📋 複製成功！"));
+    }
+}
+
+function copyCurrentUrl() {
+    copyText(window.location.href);
+    showToast("🔗 已複製固定連結！其他人點開即是最新資料");
+}
+
+// ==================== 記帳功能 ====================
+function openExpenseModal() {
+    const backdrop = document.getElementById("expense-modal-backdrop");
+    const modal = document.getElementById("expense-modal");
+    backdrop.classList.remove("hidden");
+    modal.classList.remove("hidden");
+    modal.offsetWidth;
+    backdrop.classList.remove("opacity-0");
+    backdrop.classList.add("opacity-100");
+    modal.classList.remove("translate-y-full", "md:translate-y-8", "md:scale-95", "opacity-0");
+    modal.classList.add("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
+    renderLedgerSelectors();
+    updateEstimatedHKD();
+}
+
+function closeExpenseModal() {
+    const backdrop = document.getElementById("expense-modal-backdrop");
+    const modal = document.getElementById("expense-modal");
+    backdrop.classList.remove("opacity-100");
+    backdrop.classList.add("opacity-0");
+    modal.classList.remove("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
+    modal.classList.add("translate-y-full", "md:translate-y-8", "md:scale-95", "opacity-0");
+    setTimeout(() => {
+        backdrop.classList.add("hidden");
+        modal.classList.add("hidden");
+        cancelEdit();
+    }, 300);
+}
+
+function cancelEdit() {
+    document.getElementById("ledger-desc").value = "";
+    document.getElementById("ledger-amount").value = "";
+    updateEstimatedHKD();
+    editingExpenseId = null;
+    
+    setTimeout(() => {
+        document.querySelector("#expense-modal h3").innerHTML = '<span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✍️</span> 新增團隊花費';
+        document.getElementById("btn-save-expense").innerHTML = '<span>寫入帳本</span><span class="text-xl">✍️</span>';
+    }, 300);
+}
+
+function openEditExpenseModal(expenseId) {
+    const expense = state.expenses.find(e => e.id === expenseId);
+    if (!expense) return;
+    
+    editingExpenseId = expenseId;
+    
+    document.getElementById("ledger-day").value = expense.day;
+    document.getElementById("ledger-category").value = expense.category;
+    document.getElementById("ledger-desc").value = expense.desc;
+    document.getElementById("ledger-amount").value = expense.amount;
+    document.getElementById("ledger-currency").value = expense.currency;
+    
+    state.activePayer = expense.payer;
+    state.activeSplitWith = [...expense.splitWith];
+    
+    renderLedgerSelectors();
+    updateEstimatedHKD();
+    
+    const backdrop = document.getElementById("expense-modal-backdrop");
+    const modal = document.getElementById("expense-modal");
+    backdrop.classList.remove("hidden");
+    modal.classList.remove("hidden");
+    modal.offsetWidth;
+    backdrop.classList.remove("opacity-0");
+    backdrop.classList.add("opacity-100");
+    modal.classList.remove("translate-y-full", "md:translate-y-8", "md:scale-95", "opacity-0");
+    modal.classList.add("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
+    
+    document.querySelector("#expense-modal h3").innerHTML = '<span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✏️</span> 編輯團隊花費';
+    document.getElementById("btn-save-expense").innerHTML = '<span>更新帳本</span><span class="text-xl">💾</span>';
+}
+
+function renderLedgerSelectors() {
+    const payerGrid = document.getElementById("payer-grid");
+    if (payerGrid) {
+        payerGrid.innerHTML = "";
+        members.forEach(member => {
+            const style = memberStyle[member] || memberStyle["余生"];
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.onclick = () => { state.activePayer = member; renderLedgerSelectors(); };
+            btn.className = `py-1.5 px-1 text-xs rounded-xl font-bold transition border text-center min-h-[48px] flex flex-col items-center justify-center gap-0.5 ${state.activePayer === member ? style.solid + " shadow-sm scale-105" : style.soft}`;
+            btn.innerHTML = `<div class="w-5 h-5 rounded-full ${state.activePayer === member ? "bg-white/20 text-white" : style.avatar + " text-white"} flex items-center justify-center text-[10px] font-black shadow-sm">${member[0].toUpperCase()}</div><span class="${state.activePayer === member ? "text-white" : style.text} text-[10px]">${member}</span>`;
+            payerGrid.appendChild(btn);
+        });
+    }
+    
+    const splittersGrid = document.getElementById("splitters-grid");
+    if (splittersGrid) {
+        splittersGrid.innerHTML = "";
+        members.forEach(member => {
+            const style = memberStyle[member] || memberStyle["余生"];
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.onclick = () => toggleSplitter(member);
+            const isActive = state.activeSplitWith.includes(member);
+            btn.className = `py-1.5 px-1 text-[11px] rounded-lg font-bold transition border text-center min-h-[40px] flex items-center justify-center gap-1.5 ${isActive ? style.solid + " shadow-sm" : style.soft}`;
+            btn.innerHTML = `<div class="w-3.5 h-3.5 rounded-full border border-white/60 ${isActive ? "bg-white" : "bg-white/50"} flex items-center justify-center shrink-0 shadow-inner"><div class="w-2 h-2 rounded-full ${isActive ? style.avatar : "bg-transparent"}"></div></div><span>${member}</span>`;
+            splittersGrid.appendChild(btn);
+        });
+    }
+}
+
+function toggleSplitter(member) {
+    const index = state.activeSplitWith.indexOf(member);
+    if (index > -1) {
+        if (state.activeSplitWith.length > 1) state.activeSplitWith.splice(index, 1);
+    } else {
+        state.activeSplitWith.push(member);
+    }
+    renderLedgerSelectors();
+}
+
+function setSplitPreset(preset) {
+    state.activeSplitWith = preset === "all" ? [...members] : [...adults];
+    renderLedgerSelectors();
+}
+
+function updateEstimatedHKD() {
+    const amountInput = document.getElementById("ledger-amount");
+    const currencySelect = document.getElementById("ledger-currency");
+    const estText = document.getElementById("estimated-hkd-text");
+    if (!amountInput || !currencySelect || !estText) return;
+    const amount = parseFloat(amountInput.value.replace(/,/g, "")) || 0;
+    const rate = exchangeRates[currencySelect.value] || 0.052;
+    estText.innerText = `估算折合：${(amount * rate).toFixed(2)} HKD`;
+}
+
+function saveExpense() {
+    const day = document.getElementById("ledger-day");
+    const category = document.getElementById("ledger-category");
+    const desc = document.getElementById("ledger-desc");
+    const amount = document.getElementById("ledger-amount");
+    const currency = document.getElementById("ledger-currency");
+    const descValue = desc.value.trim();
+    const amountValue = parseFloat(amount.value.replace(/,/g, ""));
+
+    if (!descValue || isNaN(amountValue) || amountValue <= 0) {
+        showToast("⚠️ 請輸入有效的名稱與金額！", "⚠️");
+        return;
+    }
+
+    const rate = exchangeRates[currency.value] || 0.052;
+    const expenseData = {
+        day: parseInt(day.value),
+        category: category.value,
+        desc: descValue,
+        amount: amountValue,
+        currency: currency.value,
+        amountInHKD: parseFloat((amountValue * rate).toFixed(2)),
+        payer: state.activePayer,
+        splitWith: [...state.activeSplitWith],
+        updatedAt: Date.now()
+    };
+
+    if (editingExpenseId) {
+        const index = state.expenses.findIndex(e => e.id === editingExpenseId);
+        if (index > -1) {
+            state.expenses[index] = { ...state.expenses[index], ...expenseData };
+            showToast("✅ 已更新記帳！");
+        }
+        editingExpenseId = null;
+    } else {
+        const expense = {
+            id: "exp-" + Date.now(),
+            ...expenseData,
+            createdAt: Date.now()
+        };
+        state.expenses.push(expense);
+        showToast("🎉 記帳成功並已同步！");
+    }
+
+    saveLocalExpenses();
+    syncDataToCloud();
+    updateLedgerUI();
+    closeExpenseModal();
+    
+    setTimeout(() => {
+        document.querySelector("#expense-modal h3").innerHTML = '<span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✍️</span> 新增團隊花費';
+        document.getElementById("btn-save-expense").innerHTML = '<span>寫入帳本</span><span class="text-xl">✍️</span>';
+    }, 300);
+}
+
+function deleteExpense(expenseId) {
+    state.expenses = state.expenses.filter(e => e.id !== expenseId);
+    saveLocalExpenses();
+    syncDataToCloud();
+    updateLedgerUI();
+    showToast("🗑️ 已移除該筆花費");
+}
+
+// ==================== 記帳本 UI 更新 ====================
+function updateLedgerUI() {
+    const badge = document.getElementById("ledger-badge");
+    if (badge) badge.innerText = state.expenses.length;
+
+    let total = 0;
+    state.expenses.forEach(e => total += e.amountInHKD);
+    
+    const statTotal = document.getElementById("stat-total");
+    const statAverage = document.getElementById("stat-average");
+    const statCount = document.getElementById("stat-count");
+    
+    if (statTotal) statTotal.innerText = `${total.toFixed(2)} HKD`;
+    if (statAverage) statAverage.innerText = `${(total / members.length).toFixed(2)} HKD`;
+    if (statCount) statCount.innerText = `${state.expenses.length} 筆`;
+
+    renderExpensesList();
+    renderBalancesTable();
+    renderSuggestedSettlements();
+}
+
+function renderExpensesList() {
+    const container = document.getElementById("records-list-container");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (state.expenses.length === 0) {
+        container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-12">暫無支出紀錄</div>';
+        return;
+    }
+
+    const viewSelect = document.getElementById("ledger-view-as");
+    if (viewSelect && viewSelect.value !== state.viewingAs) {
+        viewSelect.value = state.viewingAs;
+    }
+
+    [...state.expenses].sort((a, b) => b.createdAt - a.createdAt).forEach(expense => {
+        const totalHKD = expense.amountInHKD;
+        let paidByMe = expense.payer === state.viewingAs ? totalHKD : 0;
+        let myShare = 0;
+        if (expense.splitWith.includes(state.viewingAs)) {
+            myShare = totalHKD / expense.splitWith.length;
+        }
+        const balance = paidByMe - myShare;
+
+        let balanceHtml = "";
+        let cardBorder = "border-slate-200";
+        let cardBg = "bg-slate-50 hover:bg-slate-100";
+
+        if (Math.abs(balance) > 0.01) {
+            if (balance > 0) {
+                balanceHtml = `<span class="text-emerald-600 font-black text-sm">+$${balance.toFixed(2)}</span>`;
+                cardBorder = "border-emerald-200";
+                cardBg = "bg-emerald-50/40 hover:bg-emerald-50/80";
+            } else {
+                balanceHtml = `<span class="text-rose-500 font-black text-sm">-$${Math.abs(balance).toFixed(2)}</span>`;
+                cardBorder = "border-rose-100";
+                cardBg = "bg-rose-50/40 hover:bg-rose-50/80";
+            }
+        } else {
+            balanceHtml = '<span class="text-slate-400 font-medium text-[11px]">無涉 / 結平</span>';
+        }
+
+        const payerStyle = memberStyle[expense.payer] || memberStyle["余生"];
+        const card = document.createElement("div");
+        card.className = `${cardBg} p-3 rounded-2xl border ${cardBorder} flex justify-between items-center text-xs group transition shadow-sm hover:shadow`;
+        card.innerHTML = `
+            <div class="flex items-center gap-2.5 flex-1 min-w-0 pr-2">
+                <div class="w-8 h-8 rounded-full ${payerStyle.avatar} text-white font-black flex items-center justify-center shrink-0 border-2 border-white shadow-sm text-sm">${expense.payer[0].toUpperCase()}</div>
+                <div class="space-y-1.5 flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="bg-sky-100 text-sky-800 font-bold px-1.5 py-0.5 rounded text-[9px] shrink-0 border border-sky-200">D${expense.day}</span>
+                        <strong class="text-slate-900 text-[13px] truncate">${expense.desc}</strong>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-[10px] text-slate-500 flex-wrap mt-0.5">
+                        <span class="bg-white/80 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-medium">${expense.category}</span>
+                        <span class="flex items-center gap-1">代付: <span class="${payerStyle.badge} px-1.5 py-0.5 rounded font-bold border">${expense.payer}</span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="text-right flex items-center gap-2 shrink-0 pl-2">
+                <div class="flex flex-col items-end justify-center h-full">
+                    ${balanceHtml}
+                    <span class="text-[9px] text-slate-400 font-medium mt-0.5" title="總額 ${expense.amount} ${expense.currency}">總額: $${expense.amountInHKD.toFixed(1)}</span>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <button onclick="openEditExpenseModal('${expense.id}')" class="text-slate-300 hover:text-sky-500 p-1.5 transition bg-white/50 hover:bg-white rounded-lg border border-slate-100 shadow-sm" title="編輯">✏️</button>
+                    <button onclick="deleteExpense('${expense.id}')" class="text-slate-300 hover:text-red-500 p-1.5 transition bg-white/50 hover:bg-white rounded-lg border border-slate-100 shadow-sm" title="刪除">🗑️</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function calculateBalances() {
+    let paidMap = {};
+    let owedMap = {};
+    members.forEach(m => { paidMap[m] = 0; owedMap[m] = 0; });
+
+    state.expenses.forEach(expense => {
+        const totalHKD = expense.amountInHKD;
+        if (paidMap[expense.payer] !== undefined) paidMap[expense.payer] += totalHKD;
+        
+        const splitCount = expense.splitWith.length;
+        if (splitCount > 0) {
+            const sharePerPerson = totalHKD / splitCount;
+            expense.splitWith.forEach(member => {
+                if (owedMap[member] !== undefined) owedMap[member] += sharePerPerson;
+            });
+        }
+    });
+
+    let balances = {};
+    members.forEach(m => {
+        balances[m] = paidMap[m] - owedMap[m];
+    });
+
+    return { paidMap, owedMap, balances };
+}
+
+function renderBalancesTable() {
+    const tbody = document.getElementById("balances-table-body");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const { paidMap, owedMap, balances } = calculateBalances();
+
+    members.forEach(member => {
+        const paid = paidMap[member].toFixed(2);
+        const owed = owedMap[member].toFixed(2);
+        const balance = balances[member];
+        const balanceText = balance > 0 ? `+${balance.toFixed(2)}` : balance.toFixed(2);
+        const balanceClass = balance > 0 ? "text-emerald-600 font-bold" : balance < 0 ? "text-red-500 font-bold" : "text-slate-400";
+        const style = memberStyle[member] || memberStyle["余生"];
+
+        tbody.innerHTML += `
+            <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                <td class="py-3 font-bold text-slate-800 flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full ${style.avatar} text-white font-black flex items-center justify-center text-[10px] border border-white shadow-sm">${member[0].toUpperCase()}</div>
+                    ${member}
+                </td>
+                <td class="py-3 text-right text-slate-600 font-medium">$${paid}</td>
+                <td class="py-3 text-right text-slate-600 font-medium">$${owed}</td>
+                <td class="py-3 text-right ${balanceClass}">$${balanceText}</td>
+            </tr>
+        `;
+    });
+}
+
+function renderSuggestedSettlements() {
+    const container = document.getElementById("suggested-settle-container");
+    const badge = document.getElementById("debt-count-badge");
+    if (!container) return;
+    container.innerHTML = "";
+
+    const { balances } = calculateBalances();
+    let debtors = [];
+    let creditors = [];
+
+    Object.keys(balances).forEach(name => {
+        let amount = Math.round(100 * balances[name]) / 100;
+        if (amount < -0.01) {
+            debtors.push({ name, amount: -amount });
+        } else if (amount > 0.01) {
+            creditors.push({ name, amount });
+        }
+    });
+
+    debtors.sort((a, b) => b.amount - a.amount);
+    creditors.sort((a, b) => b.amount - a.amount);
+
+    let settlements = [];
+    let d = 0, c = 0;
+
+    while (d < debtors.length && c < creditors.length) {
+        let debtor = debtors[d];
+        let creditor = creditors[c];
+        let transfer = Math.min(debtor.amount, creditor.amount);
+        
+        settlements.push({ from: debtor.name, to: creditor.name, amount: transfer.toFixed(2) });
+        
+        debtor.amount -= transfer;
+        creditor.amount -= transfer;
+        
+        if (debtor.amount < 0.01) d++;
+        if (creditor.amount < 0.01) c++;
+    }
+
+    if (badge) {
+        if (settlements.length > 0) {
+            badge.innerText = settlements.length;
+            badge.classList.remove("hidden");
+        } else {
+            badge.classList.add("hidden");
+        }
+    }
+
+    if (settlements.length === 0) {
+        container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-8">🎉 目前帳目完全收支平衡，無需相互結算！</div>';
+        return;
+    }
+
+    settlements.forEach(s => {
+        const fromStyle = memberStyle[s.from] || memberStyle["余生"];
+        const toStyle = memberStyle[s.to] || memberStyle["余生"];
+        container.innerHTML += `
+            <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm hover:shadow-md transition">
+                <div class="flex items-center gap-1.5 md:gap-2">
+                    <div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                        <div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${s.from[0].toUpperCase()}</div>
+                        <span class="font-bold text-slate-700 hidden sm:inline">${s.from}</span>
+                    </div>
+                    <span class="text-slate-400 text-[10px] font-bold flex flex-col items-center px-1">
+                        <span>付款給</span>
+                        <span class="text-[8px] mt-0.5 text-slate-300">➔</span>
+                    </span>
+                    <div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                        <div class="w-5 h-5 rounded-full ${toStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${s.to[0].toUpperCase()}</div>
+                        <span class="font-bold text-slate-700 hidden sm:inline">${s.to}</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="block text-[9px] text-slate-400 mb-0.5 font-medium">應轉帳</span>
+                    <strong class="text-sm md:text-base font-black text-rose-600">$${s.amount}</strong>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function changeViewAs(member) {
+    state.viewingAs = member;
+    renderExpensesList();
+}
+
+function exportLedgerText() {
+    if (state.expenses.length === 0) {
+        showToast("📋 暫無帳目可輸出", "⚠️");
+        return;
+    }
+    
+    let text = "📊 東北之旅團隊記帳明細\n";
+    text += "=".repeat(30) + "\n\n";
+    
+    const { paidMap, owedMap, balances } = calculateBalances();
+    
+    text += "【總覽】\n";
+    let totalHKD = 0;
+    state.expenses.forEach(e => totalHKD += e.amountInHKD);
+    text += `總開支：$${totalHKD.toFixed(2)} HKD\n`;
+    text += `人均花費：$${(totalHKD / members.length).toFixed(2)} HKD\n\n`;
+    
+    text += "【各成員結算】\n";
+    members.forEach(m => {
+        const sign = balances[m] > 0 ? "多付(應收回)" : balances[m] < 0 ? "少付(應補繳)" : "已結平";
+        text += `${m}：實付 $${paidMap[m].toFixed(2)} / 應付 $${owedMap[m].toFixed(2)} / ${sign} $${Math.abs(balances[m]).toFixed(2)}\n`;
+    });
+    
+    text += "\n【明細列表】\n";
+    [...state.expenses].sort((a, b) => a.day - b.day || b.createdAt - a.createdAt).forEach(e => {
+        text += `D${e.day} | ${e.category} | ${e.desc} | ${e.amount} ${e.currency} (≈$${e.amountInHKD.toFixed(2)} HKD) | 代付:${e.payer} | 分攤:${e.splitWith.join("/")}\n`;
+    });
+    
+    copyText(text);
+    showToast("📋 帳目文字已複製！可貼到群組分享");
+}
+
+// ==================== 確認清空 Modal ====================
+function openConfirmModal() {
+    const backdrop = document.getElementById("confirm-modal-backdrop");
+    const modal = document.getElementById("confirm-modal");
+    backdrop.classList.remove("hidden");
+    modal.classList.remove("hidden");
+    modal.offsetWidth;
+    backdrop.classList.remove("opacity-0");
+    modal.classList.remove("opacity-0", "scale-95");
+    modal.classList.add("opacity-100", "scale-100");
+}
+
+function closeConfirmModal() {
+    const backdrop = document.getElementById("confirm-modal-backdrop");
+    const modal = document.getElementById("confirm-modal");
+    backdrop.classList.add("opacity-0");
+    modal.classList.remove("opacity-100", "scale-100");
+    modal.classList.add("opacity-0", "scale-95");
+    setTimeout(() => {
+        backdrop.classList.add("hidden");
+        modal.classList.add("hidden");
+    }, 300);
+}
+
+function executeClearExpenses() {
+    state.expenses = [];
+    saveLocalExpenses();
+    syncDataToCloud();
+    updateLedgerUI();
+    showToast("🧹 已清空所有記帳本紀錄");
+    closeConfirmModal();
+}
+
+// ==================== 匯率試算 ====================
+function toggleCurrencyWidget() {
+    const panel = document.getElementById("currency-widget-panel");
+    if (panel) {
+        if (panel.classList.contains("opacity-0")) {
+            panel.classList.remove("invisible");
+            setTimeout(() => {
+                panel.classList.remove("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
+                panel.classList.add("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
+            }, 10);
+        } else {
+            panel.classList.add("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
+            panel.classList.remove("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
+            setTimeout(() => {
+                if (panel.classList.contains("opacity-0")) panel.classList.add("invisible");
+            }, 300);
+        }
+    }
+}
+
+function convertCurrency(type) {
+    const hkdInput = document.getElementById("calc-hkd");
+    const jpyInput = document.getElementById("calc-jpy");
+    if (!hkdInput || !jpyInput) return;
+    
+    if (type === "clear") {
+        hkdInput.value = "";
+        jpyInput.value = "";
+        return;
+    }
+    
+    const rate = exchangeRates.JPY || 0.052;
+    
+    if (type === "jpy") {
+        const jpy = parseFloat(jpyInput.value);
+        hkdInput.value = (isNaN(jpy) || jpy === 0) ? "" : (jpy * rate).toFixed(2);
+    } else if (type === "hkd") {
+        const hkd = parseFloat(hkdInput.value);
+        jpyInput.value = (isNaN(hkd) || hkd === 0) ? "" : Math.round(hkd / rate);
+    }
+}
+
+function quickConvert(currency, amount) {
+    const input = document.getElementById("calc-" + currency);
+    if (input) {
+        input.value = amount;
+        convertCurrency(currency);
+    }
+}
+
+// ==================== 初始化 ====================
+function initSnowEffect() {
+    const snowContainer = document.getElementById("snow-fall");
+    if (!snowContainer) return;
+    
+    snowContainer.innerHTML = "";
+    
+    const snowflakeCount = window.innerWidth < 768 ? 25 : 50;
+    const animations = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"];
+    const colors = ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#ffffff"];
+    
+    for (let i = 0; i < snowflakeCount; i++) {
+        const snowflake = document.createElement("div");
+        snowflake.className = "snowflake";
+        const size = Math.random() * 7 + 3;
+        
+        snowflake.style.cssText = `
+            left: ${Math.random() * 100}%;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            opacity: ${Math.random() * 0.8 + 0.2};
+            animation: ${animations[Math.floor(Math.random() * animations.length)]} ${Math.random() * 12 + 8}s linear infinite;
+            animation-delay: ${Math.random() * -12}s;
+            border-radius: 50%;
+        `;
+        
+        if (size > 8) {
+            snowflake.style.boxShadow = "0 0 10px 2px rgba(255,255,255,0.4)";
+        }
+        
+        if (Math.random() > 0.7) {
+            snowflake.classList.add("snowflake-shine");
+        }
+        
+        snowContainer.appendChild(snowflake);
+    }
+    
+    const specialSnowflakes = 3;
+    for (let i = 0; i < specialSnowflakes; i++) {
+        const flake = document.createElement("div");
+        flake.className = "snowflake";
+        flake.style.cssText = `
+            left: ${Math.random() * 100}%;
+            width: 12px;
+            height: 12px;
+            animation: snowfall-medium ${Math.random() * 15 + 10}s linear infinite;
+            animation-delay: ${Math.random() * -10}s;
+        `;
+        flake.innerHTML = '❄';
+        flake.style.fontSize = `${Math.random() * 10 + 8}px`;
+        flake.style.color = "rgba(255,255,255,0.8)";
+        flake.style.textShadow = "0 0 5px rgba(255,255,255,0.5)";
+        snowContainer.appendChild(flake);
+    }
+}
+
+window.addEventListener("resize", () => {
+    clearTimeout(window.snowResizeTimeout);
+    window.snowResizeTimeout = setTimeout(() => {
+        const snowContainer = document.getElementById("snow-fall");
+        if (snowContainer && snowContainer.children.length > 0) {
+            initSnowEffect();
+        }
+    }, 300);
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+    loadLocalExpenses();
+    updateLedgerUI();
+    initSnowEffect();
+});
+</script>
+</body>
+</html>
