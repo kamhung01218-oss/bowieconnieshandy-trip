@@ -23,7 +23,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
 <!-- 記帳本內容 -->
 <div class="max-w-4xl mx-auto px-4 pt-6 pb-20 space-y-6">
 
-    <!-- 頂部標題區 (「記一筆」按鈕在這裡) -->
+    <!-- 頂部標題區 -->
     <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div class="flex flex-col gap-1">
             <h4 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
@@ -68,9 +68,18 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         </div>
 
         <div id="subview-records" class="p-4 space-y-3">
-            <div class="flex justify-between items-center mb-3">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3">
                 <h4 class="text-sm font-bold text-slate-800">所有團隊開支</h4>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- 搜尋框 -->
+                    <input id="search-input" oninput="renderExpensesList()" placeholder="🔍 搜尋名稱/分類" class="text-xs border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500/50 w-40">
+                    <!-- 排序 -->
+                    <select id="sort-select" onchange="renderExpensesList()" class="text-xs border border-slate-300 rounded-lg px-2 py-1.5 bg-white focus:outline-none">
+                        <option value="newest">最新優先</option>
+                        <option value="oldest">最舊優先</option>
+                        <option value="amountHigh">金額高→低</option>
+                        <option value="amountLow">金額低→高</option>
+                    </select>
                     <div class="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 shadow-inner">
                         <span class="text-[10px] text-slate-500 font-bold">👀 視角</span>
                         <select id="ledger-view-as" onchange="changeViewAs(this.value)" class="text-xs font-black bg-transparent text-sky-700 outline-none cursor-pointer">
@@ -106,9 +115,29 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             </div>
         </div>
 
-        <div id="subview-suggested" class="p-4 hidden space-y-3">
+        <div id="subview-suggested" class="p-4 hidden space-y-4">
+            <!-- 清債摘要卡 -->
+            <div class="grid grid-cols-3 gap-2">
+                <div class="bg-red-50 border border-red-200 p-2 rounded-xl text-center">
+                    <span class="text-[10px] text-red-600 block">應付總額</span>
+                    <strong id="debt-total" class="text-sm text-red-600">$0.00</strong>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-xl text-center">
+                    <span class="text-[10px] text-emerald-600 block">應收總額</span>
+                    <strong id="credit-total" class="text-sm text-emerald-600">$0.00</strong>
+                </div>
+                <div class="bg-sky-50 border border-sky-200 p-2 rounded-xl text-center">
+                    <span class="text-[10px] text-sky-600 block">已清償</span>
+                    <strong id="settled-total" class="text-sm text-sky-600">0%</strong>
+                </div>
+            </div>
+            <!-- 複製方案按鈕 -->
+            <div class="flex gap-2">
+                <button onclick="copySettlementPlan()" class="flex-1 py-2 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl text-xs font-bold border border-sky-200 transition">📋 複製清債方案</button>
+                <button onclick="resetSettlementStatus()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 transition">🔄 重置狀態</button>
+            </div>
             <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-900 leading-relaxed">
-                💡 系統已自動計算最優結算路線，幫助您以最少轉帳次數完成清帳。
+                💡 系統已自動計算最優結算路線，點擊「標記完成」可追蹤進度。
             </div>
             <div class="space-y-2" id="suggested-settle-container"></div>
         </div>
@@ -185,6 +214,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
                 <div class="flex gap-1">
                     <button type="button" onclick='setSplitPreset("all")' class="text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 px-2 py-1 rounded">全團</button>
                     <button type="button" onclick='setSplitPreset("adults")' class="text-[10px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 px-2 py-1 rounded">僅大人</button>
+                    <button type="button" onclick="useLastExpense()" class="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded">↩️ 沿用上一筆</button>
                 </div>
             </div>
             <div class="grid grid-cols-4 gap-1.5 p-2 bg-white border border-slate-200 rounded-xl" id="splitters-grid"></div>
@@ -293,6 +323,8 @@ let state = {
 };
 
 let editingExpenseId = null;
+let lastExpense = null; // 用於「沿用上一筆」
+let settlementStatus = JSON.parse(localStorage.getItem("settlement_status")) || {}; // 清債狀態
 const exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
 
 function switchLedgerSubTab(tabName) {
@@ -499,6 +531,24 @@ function setSplitPreset(preset) {
     renderLedgerSelectors();
 }
 
+// 沿用上一筆功能
+function useLastExpense() {
+    if (!lastExpense) {
+        showToast("⚠️ 目前沒有上一筆資料", "⚠️");
+        return;
+    }
+    document.getElementById("ledger-day").value = lastExpense.day;
+    document.getElementById("ledger-category").value = lastExpense.category;
+    document.getElementById("ledger-desc").value = lastExpense.desc;
+    document.getElementById("ledger-amount").value = lastExpense.amount;
+    document.getElementById("ledger-currency").value = lastExpense.currency;
+    state.activePayer = lastExpense.payer;
+    state.activeSplitWith = [...lastExpense.splitWith];
+    renderLedgerSelectors();
+    updateEstimatedHKD();
+    showToast("↩️ 已帶入上一筆資料");
+}
+
 function updateEstimatedHKD() {
     const amountInput = document.getElementById("ledger-amount");
     const currencySelect = document.getElementById("ledger-currency");
@@ -550,6 +600,7 @@ function saveExpense() {
             createdAt: Date.now()
         };
         state.expenses.push(expense);
+        lastExpense = expense; // 儲存為上一筆
         showToast("🎉 記帳成功並已同步！");
     }
 
@@ -564,7 +615,9 @@ function saveExpense() {
     }, 300);
 }
 
+// 刪除確認（使用原生 confirm，簡單可靠）
 function deleteExpense(expenseId) {
+    if (!confirm("確定要刪除這筆帳目嗎？")) return;
     state.expenses = state.expenses.filter(e => e.id !== expenseId);
     saveLocalExpenses();
     syncDataToCloud();
@@ -583,8 +636,8 @@ function updateLedgerUI() {
     const statAverage = document.getElementById("stat-average");
     const statCount = document.getElementById("stat-count");
     
-    if (statTotal) statTotal.innerText = `${total.toFixed(2)} HKD`;
-    if (statAverage) statAverage.innerText = `${(total / members.length).toFixed(2)} HKD`;
+    if (statTotal) statTotal.innerText = `${total.toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
+    if (statAverage) statAverage.innerText = `${(total / members.length).toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
     if (statCount) statCount.innerText = `${state.expenses.length} 筆`;
 
     renderExpensesList();
@@ -602,12 +655,30 @@ function renderExpensesList() {
         return;
     }
 
+    // 搜尋與排序
+    const search = document.getElementById("search-input").value.trim().toLowerCase();
+    const sort = document.getElementById("sort-select").value;
+    let filtered = [...state.expenses].filter(e => 
+        e.desc.toLowerCase().includes(search) || 
+        e.category.toLowerCase().includes(search) ||
+        e.payer.toLowerCase().includes(search)
+    );
+
+    filtered.sort((a, b) => {
+        switch (sort) {
+            case "oldest": return a.createdAt - b.createdAt;
+            case "amountHigh": return b.amountInHKD - a.amountInHKD;
+            case "amountLow": return a.amountInHKD - b.amountInHKD;
+            default: return b.createdAt - a.createdAt;
+        }
+    });
+
     const viewSelect = document.getElementById("ledger-view-as");
     if (viewSelect && viewSelect.value !== state.viewingAs) {
         viewSelect.value = state.viewingAs;
     }
 
-    [...state.expenses].sort((a, b) => b.createdAt - a.createdAt).forEach(expense => {
+    filtered.forEach(expense => {
         const totalHKD = expense.amountInHKD;
         let paidByMe = expense.payer === state.viewingAs ? totalHKD : 0;
         let myShare = 0;
@@ -686,7 +757,7 @@ function calculateBalances() {
 
     let balances = {};
     members.forEach(m => {
-        balances[m] = paidMap[m] - owedMap[m];
+        balances[m] = Math.round((paidMap[m] - owedMap[m]) * 100) / 100; // 四捨五入至分
     });
 
     return { paidMap, owedMap, balances };
@@ -721,6 +792,7 @@ function renderBalancesTable() {
     });
 }
 
+// 清債相關功能
 function renderSuggestedSettlements() {
     const container = document.getElementById("suggested-settle-container");
     const badge = document.getElementById("debt-count-badge");
@@ -760,6 +832,16 @@ function renderSuggestedSettlements() {
         if (creditor.amount < 0.01) c++;
     }
 
+    // 更新摘要數字
+    const totalDebt = debtors.reduce((sum, d) => sum + d.amount, 0).toFixed(2);
+    const totalCredit = creditors.reduce((sum, c) => sum + c.amount, 0).toFixed(2);
+    const settledCount = settlements.filter(s => settlementStatus[`${s.from}_${s.to}_${s.amount}`]).length;
+    const settledPercent = settlements.length > 0 ? Math.round((settledCount / settlements.length) * 100) : 0;
+
+    document.getElementById("debt-total").innerText = `$${totalDebt}`;
+    document.getElementById("credit-total").innerText = `$${totalCredit}`;
+    document.getElementById("settled-total").innerText = `${settledPercent}%`;
+
     if (badge) {
         if (settlements.length > 0) {
             badge.innerText = settlements.length;
@@ -777,8 +859,11 @@ function renderSuggestedSettlements() {
     settlements.forEach(s => {
         const fromStyle = memberStyle[s.from] || memberStyle["余生"];
         const toStyle = memberStyle[s.to] || memberStyle["余生"];
+        const key = `${s.from}_${s.to}_${s.amount}`;
+        const isDone = settlementStatus[key] || false;
+
         container.innerHTML += `
-            <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm hover:shadow-md transition">
+            <div class="bg-slate-50 border ${isDone ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200'} p-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm hover:shadow-md transition">
                 <div class="flex items-center gap-1.5 md:gap-2">
                     <div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                         <div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${s.from[0].toUpperCase()}</div>
@@ -793,13 +878,50 @@ function renderSuggestedSettlements() {
                         <span class="font-bold text-slate-700 hidden sm:inline">${s.to}</span>
                     </div>
                 </div>
-                <div class="text-right">
-                    <span class="block text-[9px] text-slate-400 mb-0.5 font-medium">應轉帳</span>
-                    <strong class="text-sm md:text-base font-black text-rose-600">$${s.amount}</strong>
+                <div class="flex items-center gap-2">
+                    <div class="text-right">
+                        <span class="block text-[9px] text-slate-400 mb-0.5 font-medium">應轉帳</span>
+                        <strong class="text-sm md:text-base font-black ${isDone ? 'text-emerald-600 line-through' : 'text-rose-600'}">$${s.amount}</strong>
+                    </div>
+                    <button onclick="toggleSettlementDone('${s.from}','${s.to}','${s.amount}')" class="px-2 py-1 rounded-lg font-bold text-[10px] ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600 hover:bg-emerald-100 hover:text-emerald-700'} transition">${isDone ? '✓ 已完成' : '標記完成'}</button>
                 </div>
             </div>
         `;
     });
+}
+
+function toggleSettlementDone(from, to, amount) {
+    const key = `${from}_${to}_${amount}`;
+    settlementStatus[key] = !settlementStatus[key];
+    localStorage.setItem("settlement_status", JSON.stringify(settlementStatus));
+    renderSuggestedSettlements();
+    showToast(settlementStatus[key] ? "✅ 已標記為完成" : "↩️ 已取消完成標記");
+}
+
+function resetSettlementStatus() {
+    if (!confirm("確定要重置所有清債狀態嗎？")) return;
+    settlementStatus = {};
+    localStorage.removeItem("settlement_status");
+    renderSuggestedSettlements();
+    showToast("🔄 已重置清債狀態");
+}
+
+function copySettlementPlan() {
+    const container = document.getElementById("suggested-settle-container");
+    const texts = container.innerText.split('\n').filter(t => t.trim() !== '' && !t.includes('付款給') && !t.includes('應轉帳') && !t.includes('目前帳目'));
+    if (texts.length === 0) {
+        showToast("⚠️ 目前沒有可複製的清債方案", "⚠️");
+        return;
+    }
+    let plan = "🧾 清債方案 (HKD)\n";
+    texts.forEach(t => {
+        const parts = t.split(' ');
+        if (parts.length >= 5) {
+            plan += `${parts[0]} → ${parts[1]} : $${parts[2]}\n`;
+        }
+    });
+    copyText(plan);
+    showToast("📋 清債方案已複製！");
 }
 
 function changeViewAs(member) {
@@ -864,6 +986,9 @@ function closeConfirmModal() {
 
 function executeClearExpenses() {
     state.expenses = [];
+    lastExpense = null;
+    settlementStatus = {};
+    localStorage.removeItem("settlement_status");
     saveLocalExpenses();
     syncDataToCloud();
     updateLedgerUI();
