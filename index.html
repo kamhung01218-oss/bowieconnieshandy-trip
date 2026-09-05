@@ -472,8 +472,8 @@ async function syncDataToCloud() {
     </div>
   </nav>
 
-  <!-- 快捷功能 + 信息橫條 -->
-  <div class="max-w-6xl mx-auto px-4 mt-6 space-y-4">
+  <!-- 快捷功能 + 信息橫條（已加 id，切換時可隱藏） -->
+  <div id="itinerary-quick-section" class="max-w-6xl mx-auto px-4 mt-6 space-y-4">
     
     <!-- ① 三個快捷按鈕 -->
     <div class="grid grid-cols-3 gap-3">
@@ -674,7 +674,7 @@ async function syncDataToCloud() {
       <h2 class="text-xl font-black mb-4">📌 行前預訂清單</h2>
       <div class="space-y-4">
         <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4">
-          <h3 class="text-sm font-bold text-amber-900 mb-2">🚗 租車預訂</h3>
+          <h3 class="text-sm font-bold text-amber-900 mb-2">?? 租車預訂</h3>
           <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
             <li>Nippon Rent-A-Car 7-8人座雪地車 (含4WD+雪胎)</li>
             <li>便攜式兒童安全帶 x2</li>
@@ -904,17 +904,20 @@ async function syncDataToCloud() {
       state.currentMainTab = tab;
       const itineraryView = document.getElementById("main-itinerary-view");
       const ledgerFrameContainer = document.getElementById("ledger-frame-container");
+      const quickSection = document.getElementById("itinerary-quick-section"); // 新增
       const navItineraryBtn = document.getElementById("nav-itinerary-btn");
       const navLedgerBtn = document.getElementById("nav-ledger-btn");
 
       if (tab === "itinerary") {
         itineraryView.classList.remove("hidden");
         ledgerFrameContainer.classList.add("hidden");
+        if (quickSection) quickSection.classList.remove("hidden"); // 顯示快捷區
         navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
         navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
       } else {
         itineraryView.classList.add("hidden");
         ledgerFrameContainer.classList.remove("hidden");
+        if (quickSection) quickSection.classList.add("hidden"); // 隱藏快捷區
         navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
         navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
       }
