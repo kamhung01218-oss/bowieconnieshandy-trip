@@ -16,6 +16,12 @@
 body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .scrollbar-none::-webkit-scrollbar{display:none}
 .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+.shake { animation: shake 0.3s ease; }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen pb-16 relative">
@@ -75,9 +81,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3">
                 <h4 class="text-sm font-bold text-slate-800">所有團隊開支</h4>
                 <div class="flex flex-wrap items-center gap-2">
-                    <!-- 搜尋框 -->
                     <input id="search-input" oninput="renderExpensesList()" placeholder="🔍 搜尋名稱/分類" class="text-xs border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500/50 w-40">
-                    <!-- 排序 -->
                     <select id="sort-select" onchange="renderExpensesList()" class="text-xs border border-slate-300 rounded-lg px-2 py-1.5 bg-white focus:outline-none">
                         <option value="newest">最新優先</option>
                         <option value="oldest">最舊優先</option>
@@ -87,10 +91,10 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
                     <div class="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 shadow-inner">
                         <span class="text-[10px] text-slate-500 font-bold">👀 視角</span>
                         <select id="ledger-view-as" onchange="changeViewAs(this.value)" class="text-xs font-black bg-transparent text-sky-700 outline-none cursor-pointer">
-                            <option value="余生">余生 🔵</option>
-                            <option value="bowie">bowie 🩷</option>
-                            <option value="shandy">shandy 🟢</option>
-                            <option value="Connie">Connie 🟣</option>
+                            <option value="余生">余生 🌊</option>
+                            <option value="bowie">bowie 🌸</option>
+                            <option value="shandy">shandy 🌲</option>
+                            <option value="Connie">Connie 🌺</option>
                         </select>
                     </div>
                     <button onclick="exportLedgerText()" class="text-[10px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded transition">📋 輸出</button>
@@ -120,7 +124,6 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         </div>
 
         <div id="subview-suggested" class="p-4 hidden space-y-4">
-            <!-- 清債摘要卡 -->
             <div class="grid grid-cols-3 gap-2">
                 <div class="bg-red-50 border border-red-200 p-2 rounded-xl text-center">
                     <span class="text-[10px] text-red-600 block">應付總額</span>
@@ -135,7 +138,6 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
                     <strong id="settled-total" class="text-sm text-sky-600">0%</strong>
                 </div>
             </div>
-            <!-- 複製方案按鈕 -->
             <div class="flex gap-2">
                 <button onclick="copySettlementPlan()" class="flex-1 py-2 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl text-xs font-bold border border-sky-200 transition">📋 複製清債方案</button>
                 <button onclick="resetSettlementStatus()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 transition">🔄 重置狀態</button>
@@ -146,7 +148,6 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             <div class="space-y-2" id="suggested-settle-container"></div>
         </div>
 
-        <!-- 歷史紀錄分頁 -->
         <div id="subview-history" class="p-4 hidden space-y-4">
             <h4 class="text-sm font-bold text-slate-800">🕐 修改與刪除紀錄</h4>
             <div class="space-y-2" id="history-list-container">
@@ -163,7 +164,6 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
     </div>
     
-    <!-- Modal 頂部：標題 + 保存按鈕 + 關閉按鈕 -->
     <div class="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100">
         <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
             <span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✍️</span>
@@ -182,14 +182,18 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
 
     <div class="flex-1 overflow-y-auto p-6 pb-24 space-y-4 scrollbar-none bg-slate-50/50">
         
-        <!-- 身份驗證區塊（個人符號） -->
+        <!-- 身份驗證（雙符號密碼） -->
         <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
             <label class="block text-[11px] font-bold text-slate-600 mb-2">🔐 你的身份</label>
             <div class="grid grid-cols-4 gap-1.5" id="identity-selector"></div>
-            <div class="mt-2 flex items-center gap-2">
-                <input type="password" id="identity-password" placeholder="輸入個人符號密碼" class="flex-1 border border-slate-300 rounded-lg py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
-                <button onclick="verifyIdentity()" class="py-2 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition">驗證</button>
+            
+            <div class="mt-3">
+                <label class="block text-[10px] font-bold text-slate-500 mb-1.5">請依序點擊你的兩個符號密碼：</label>
+                <div id="symbol-password-grid" class="grid grid-cols-5 gap-1.5"></div>
+                <div id="selected-symbols" class="flex gap-2 mt-2 min-h-[32px] items-center"></div>
+                <button onclick="verifyIdentity()" class="mt-2 w-full py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition">確認身份</button>
             </div>
+            
             <div id="identity-status" class="text-[10px] font-bold mt-2 hidden"></div>
         </div>
 
@@ -224,7 +228,6 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         </div>
         <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
             <label class="block text-[11px] font-bold text-slate-600 mb-2">💰 金額與幣值</label>
-            <!-- 修正：改用 grid，確保幣值按鈕不會溢出 -->
             <div class="grid grid-cols-3 gap-2">
                 <input id="ledger-amount" inputmode="decimal" oninput="updateEstimatedHKD()" placeholder="0.00" class="col-span-2 border border-slate-300 rounded-xl py-2.5 px-3 text-lg font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
                 <select id="ledger-currency" onchange="updateEstimatedHKD()" class="col-span-1 border border-slate-300 rounded-xl py-2.5 px-3 text-sm font-bold bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
@@ -293,7 +296,6 @@ const auth = firebase.auth();
 window.db = db;
 window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 
-// 顯示雲端連線狀態
 function updateCloudBadge(isConnected) {
     const badge = document.getElementById("cloud-sync-badge");
     if (badge) {
@@ -361,7 +363,6 @@ async function syncDataToCloud() {
     }
 }
 
-// 手動強制同步按鈕
 async function forceSync() {
     try {
         await syncDataToCloud();
@@ -375,24 +376,24 @@ async function forceSync() {
 // ==================== 全域變數與狀態 ====================
 const members = ["余生", "bowie", "shandy", "Connie"];
 
-// 每個成員的個人符號（唯一且難以猜測）
+// 每位成員的專屬符號（顯示用）
 const memberSymbols = {
-    "余生": "🔵",
-    "bowie": "🩷",
-    "shandy": "🟢",
-    "Connie": "🟣"
+    "余生": "🌊",
+    "bowie": "🌸",
+    "shandy": "🌲",
+    "Connie": "🌺"
 };
 
-// 每個成員的個人符號密碼（唯一且難以猜測）
+// 每位成員的雙符號密碼（依序點擊兩個符號）
 const memberPasswords = {
-    "余生": "a1b2c3",
-    "bowie": "x9y8z7",
-    "shandy": "p4q5r6",
-    "Connie": "m3n4o5"
+    "余生": ["🔵", "🟥"],
+    "bowie": ["🩷", "🟨"],
+    "shandy": ["🟢", "⬛"],
+    "Connie": ["🟣", "🟦"]
 };
 
-// 所有可選符號（防止被猜到）
-const allSymbols = ["🔵", "🩷", "🟢", "🟣", "🔴", "🟠", "🟡", "🟤", "⚫", "⚪", "🟦", "🟧", "🟨", "🟩", "🟪", "🟥", "⬛", "⬜", "🔶", "🔷"];
+// 符號池（共20個，防止被猜到）
+const symbolPool = ["🔵", "🩷", "🟢", "🟣", "🔴", "🟠", "🟡", "🟤", "⚫", "⚪", "🟦", "🟧", "🟨", "🟩", "🟪", "🟥", "⬛", "⬜", "🔶", "🔷"];
 
 const memberStyle = {
     "余生": { badge: "bg-blue-100 text-blue-800 border-blue-200", solid: "bg-blue-600 text-white border-blue-700", soft: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100", text: "text-blue-700", avatar: "bg-blue-500" },
@@ -413,6 +414,11 @@ let state = {
 
 let editingExpenseId = null;
 let lastExpense = null;
+let verifiedMember = null;
+let selectedMember = null;
+let selectedPasswordSymbols = [];
+let failedAttempts = 0;
+let lockUntil = 0;
 let settlementStatus = JSON.parse(localStorage.getItem("settlement_status")) || {};
 const exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
 
@@ -444,9 +450,7 @@ function switchLedgerSubTab(tabName) {
     }
 }
 
-// ==================== 身份驗證 ====================
-let verifiedMember = null;
-
+// ==================== 身份驗證（雙符號密碼） ====================
 function renderIdentitySelector() {
     const selector = document.getElementById("identity-selector");
     if (!selector) return;
@@ -456,51 +460,111 @@ function renderIdentitySelector() {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.dataset.member = member;
-        btn.dataset.symbol = symbol;
         btn.innerHTML = `<span class="text-xl">${symbol}</span><span class="text-[9px] font-bold">${member}</span>`;
         btn.className = "py-2 px-1 rounded-xl border-2 border-slate-200 hover:border-sky-400 transition flex flex-col items-center";
         btn.onclick = () => {
-            // 選擇身份時，清除驗證狀態
+            selectedMember = member;
             verifiedMember = null;
-            document.getElementById("identity-status").classList.add("hidden");
-            document.getElementById("identity-password").value = "";
-            // 更新所有按鈕樣式
+            selectedPasswordSymbols = [];
+            failedAttempts = 0;
+            lockUntil = 0;
             selector.querySelectorAll("button").forEach(b => {
                 b.className = "py-2 px-1 rounded-xl border-2 border-slate-200 hover:border-sky-400 transition flex flex-col items-center";
             });
             btn.className = "py-2 px-1 rounded-xl border-2 border-sky-500 bg-sky-50 transition flex flex-col items-center";
+            renderSymbolPasswordGrid();
+            updateSelectedSymbols();
+            const status = document.getElementById("identity-status");
+            status.classList.add("hidden");
         };
         selector.appendChild(btn);
     });
 }
 
+function renderSymbolPasswordGrid() {
+    const grid = document.getElementById("symbol-password-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    symbolPool.forEach(symbol => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.symbol = symbol;
+        btn.innerText = symbol;
+        btn.className = "w-full aspect-square text-2xl rounded-lg border-2 border-slate-200 hover:border-sky-400 hover:bg-sky-50 transition flex items-center justify-center";
+        btn.onclick = () => {
+            if (selectedPasswordSymbols.length >= 2) return;
+            selectedPasswordSymbols.push(symbol);
+            btn.classList.add("bg-sky-100", "border-sky-500");
+            updateSelectedSymbols();
+        };
+        grid.appendChild(btn);
+    });
+}
+
+function updateSelectedSymbols() {
+    const container = document.getElementById("selected-symbols");
+    if (!container) return;
+    container.innerHTML = "";
+    selectedPasswordSymbols.forEach((symbol, index) => {
+        const span = document.createElement("span");
+        span.innerText = symbol;
+        span.className = "text-2xl";
+        span.dataset.index = index;
+        container.appendChild(span);
+    });
+}
+
 function verifyIdentity() {
-    const selectedBtn = document.querySelector("#identity-selector button.border-sky-500");
-    if (!selectedBtn) {
+    if (!selectedMember) {
         showToast("⚠️ 請先選擇身份！", "⚠️");
         return;
     }
-    const member = selectedBtn.dataset.member;
-    const password = document.getElementById("identity-password").value.trim();
-    const status = document.getElementById("identity-status");
     
-    if (!password) {
-        showToast("⚠️ 請輸入個人符號密碼！", "⚠️");
+    const now = Date.now();
+    if (now < lockUntil) {
+        const waitSeconds = Math.ceil((lockUntil - now) / 1000);
+        const status = document.getElementById("identity-status");
+        status.innerHTML = `⏳ 嘗試次數過多，請等待 ${waitSeconds} 秒後再試。`;
+        status.className = "text-[10px] font-bold mt-2 text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5";
+        status.classList.remove("hidden");
+        showToast(`⏳ 請等待 ${waitSeconds} 秒`, "⏳");
         return;
     }
     
-    if (memberPasswords[member] === password) {
-        verifiedMember = member;
-        status.innerHTML = `✅ 已驗證為 <strong>${member} ${memberSymbols[member]}</strong>，可以記帳了！`;
+    if (selectedPasswordSymbols.length !== 2) {
+        showToast("⚠️ 請點選兩個符號！", "⚠️");
+        return;
+    }
+    
+    const expected = memberPasswords[selectedMember];
+    const isCorrect = selectedPasswordSymbols[0] === expected[0] && selectedPasswordSymbols[1] === expected[1];
+    
+    const status = document.getElementById("identity-status");
+    if (isCorrect) {
+        verifiedMember = selectedMember;
+        failedAttempts = 0;
+        status.innerHTML = `✅ 已驗證為 <strong>${selectedMember} ${memberSymbols[selectedMember]}</strong>，可以記帳了！`;
         status.className = "text-[10px] font-bold mt-2 text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-1.5";
         status.classList.remove("hidden");
-        showToast(`✅ 歡迎 ${member}！已驗證成功`);
+        showToast(`✅ 歡迎 ${selectedMember}！已驗證成功`);
     } else {
-        verifiedMember = null;
-        status.innerHTML = `❌ 個人符號密碼錯誤，請再試一次`;
-        status.className = "text-[10px] font-bold mt-2 text-red-500 bg-red-50 border border-red-200 rounded-lg px-2 py-1.5";
-        status.classList.remove("hidden");
-        showToast("❌ 個人符號密碼錯誤！", "❌");
+        failedAttempts++;
+        if (failedAttempts >= 5) {
+            lockUntil = Date.now() + 30000; // 30秒鎖定
+            status.innerHTML = `❌ 嘗試次數過多，請等待 30 秒後再試。`;
+            status.className = "text-[10px] font-bold mt-2 text-red-500 bg-red-50 border border-red-200 rounded-lg px-2 py-1.5";
+            status.classList.remove("hidden");
+            showToast("⏳ 已鎖定 30 秒！", "⏳");
+        } else {
+            status.innerHTML = `❌ 符號密碼錯誤，還剩 ${5 - failedAttempts} 次機會。`;
+            status.className = "text-[10px] font-bold mt-2 text-red-500 bg-red-50 border border-red-200 rounded-lg px-2 py-1.5";
+            status.classList.remove("hidden");
+            showToast("❌ 符號密碼錯誤！", "❌");
+        }
+        // 重置已選符號
+        selectedPasswordSymbols = [];
+        renderSymbolPasswordGrid();
+        updateSelectedSymbols();
     }
 }
 
@@ -543,10 +607,11 @@ function copyCurrentUrl() {
 
 // ==================== 記帳功能 ====================
 function openExpenseModal() {
-    // 重置身份驗證狀態
     verifiedMember = null;
-    document.getElementById("identity-status").classList.add("hidden");
-    document.getElementById("identity-password").value = "";
+    selectedMember = null;
+    selectedPasswordSymbols = [];
+    failedAttempts = 0;
+    lockUntil = 0;
     
     const backdrop = document.getElementById("expense-modal-backdrop");
     const modal = document.getElementById("expense-modal");
@@ -602,6 +667,13 @@ function openEditExpenseModal(expenseId) {
     
     state.activePayer = expense.payer;
     state.activeSplitWith = [...expense.splitWith];
+    
+    // 重置身份驗證（編輯也需要驗證）
+    verifiedMember = null;
+    selectedMember = null;
+    selectedPasswordSymbols = [];
+    failedAttempts = 0;
+    lockUntil = 0;
     
     renderIdentitySelector();
     renderLedgerSelectors();
@@ -669,7 +741,6 @@ function setSplitPreset(preset) {
     renderLedgerSelectors();
 }
 
-// 沿用上一筆功能
 function useLastExpense() {
     if (!lastExpense) {
         showToast("⚠️ 目前沒有上一筆資料", "⚠️");
@@ -699,9 +770,8 @@ function updateEstimatedHKD() {
 
 // ==================== 儲存帳目（含時間戳和歷史） ====================
 function saveExpense() {
-    // 檢查身份驗證
     if (!verifiedMember) {
-        showToast("⚠️ 請先選擇身份並輸入個人符號密碼驗證！", "⚠️");
+        showToast("⚠️ 請先選擇身份並輸入雙符號密碼驗證！", "⚠️");
         return;
     }
     
@@ -721,9 +791,7 @@ function saveExpense() {
     const rate = exchangeRates[currency.value] || 0.052;
     const now = Date.now();
     
-    // 自動生成時間
-    const currentTime = new Date(now);
-    const timeString = currentTime.toLocaleString("zh-HK", {
+    const currentTime = new Date(now).toLocaleString("zh-HK", {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
@@ -743,14 +811,13 @@ function saveExpense() {
         createdAt: now,
         updatedAt: now,
         createdBy: verifiedMember,
-        createdTime: timeString,
+        createdTime: currentTime,
         updatedBy: verifiedMember
     };
 
     if (editingExpenseId) {
         const index = state.expenses.findIndex(e => e.id === editingExpenseId);
         if (index > -1) {
-            // 記錄修改歷史
             const oldExpense = state.expenses[index];
             state.history.unshift({
                 type: "edit",
@@ -774,7 +841,6 @@ function saveExpense() {
         state.expenses.push(expense);
         lastExpense = expense;
         
-        // 記錄新增歷史
         state.history.unshift({
             type: "add",
             expenseId: expense.id,
@@ -799,14 +865,12 @@ function saveExpense() {
     }, 300);
 }
 
-// 刪除帳目（含歷史紀錄）
 function deleteExpense(expenseId) {
     if (!confirm("確定要刪除這筆帳目嗎？")) return;
     
     const expense = state.expenses.find(e => e.id === expenseId);
     if (!expense) return;
     
-    // 記錄刪除歷史
     state.history.unshift({
         type: "delete",
         expenseId: expenseId,
@@ -860,7 +924,7 @@ function renderHistoryList() {
     });
 }
 
-// ==================== 顯示列表（含時間戳） ====================
+// ==================== 顯示列表 ====================
 function updateLedgerUI() {
     let total = 0;
     state.expenses.forEach(e => total += e.amountInHKD);
@@ -889,7 +953,6 @@ function renderExpensesList() {
         return;
     }
 
-    // 搜尋與排序
     const search = document.getElementById("search-input").value.trim().toLowerCase();
     const sort = document.getElementById("sort-select").value;
     let filtered = [...state.expenses].filter(e => 
@@ -1229,7 +1292,6 @@ function executeClearExpenses() {
     state.expenses = [];
     lastExpense = null;
     settlementStatus = {};
-    // 保留歷史紀錄，不清空
     saveLocalExpenses();
     syncDataToCloud();
     updateLedgerUI();
@@ -1239,7 +1301,6 @@ function executeClearExpenses() {
 
 // ==================== 初始化 ====================
 window.addEventListener("DOMContentLoaded", () => {
-    // 從 localStorage 載入歷史紀錄
     const savedHistory = localStorage.getItem("tohoku_history_2027");
     if (savedHistory) {
         try { state.history = JSON.parse(savedHistory); } catch(e) { state.history = []; }
