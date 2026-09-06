@@ -523,6 +523,7 @@ async function syncDataToCloud() {
       <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight mb-4" style="text-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 60px rgba(255,255,255,0.2);">日本東北冬日雪景親子<br class="block md:hidden">樹冰溫泉自駕之旅 ♨️❄️</h1>
       <p class="text-sm md:text-lg text-sky-100 max-w-2xl mx-auto font-light">📅 2027年1月21日 ➔ 1月27日（7天6夜雪國探索行程）</p>
 
+      <!-- ✅ 行程概要（長期展開，內含行程速覽按鈕） -->
       <div class="mt-6 max-w-4xl mx-auto bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-4 text-left">
         <div class="flex items-center justify-between mb-3">
           <h4 class="text-sm text-white font-bold flex items-center gap-2">
@@ -603,6 +604,7 @@ async function syncDataToCloud() {
   <div id="main-itinerary-view">
     <main class="max-w-6xl mx-auto px-4 mt-8">
       <div class="space-y-6">
+        <!-- 日期標籤 -->
         <div class="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-3 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
           <div class="flex gap-1.5 overflow-x-auto scrollbar-none" id="day-tabs-container">
             <button onclick="switchDay(1)" id="tab-d1" class="day-tab active flex-shrink-0">D1 (1/21)</button>
@@ -615,6 +617,7 @@ async function syncDataToCloud() {
           </div>
         </div>
 
+        <!-- 每日行程容器 -->
         <div id="schedule-container" class="space-y-6 pt-2">
           <div id="day-section-1" class="day-section"></div>
           <div id="day-section-2" class="day-section hidden"></div>
@@ -687,9 +690,201 @@ async function syncDataToCloud() {
     <span id="toast-message">複製成功！</span>
   </div>
 
-  <!-- 彈窗們（省略重複內容，維持原本功能） -->
-  <!-- 這裡保留原本的 booking-modal, equip-modal, drive-modal, ticket-modal, weather-modal, trip-overview-modal 等（與您原本一致） -->
-  <!-- 因篇幅問題，此處省略，但請務必保留原本的彈窗 HTML -->
+  <!-- 彈窗們 -->
+  <div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeBookingModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeBookingModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4">📌 行前預訂清單</h2>
+      <div class="space-y-4">
+        <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-amber-900 mb-2">🚗 租車預訂</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li>Nippon Rent-A-Car 7-8人座雪地車 (含4WD+雪胎)</li>
+            <li>便攜式兒童安全帶 x2</li>
+            <li>已預訂完成：1/21 15:30 機場取車 / 1/27 13:45 機場還車</li>
+          </ul>
+        </div>
+        <div class="bg-sky-50/80 border border-sky-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-sky-900 mb-2">🏨 住宿預訂</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li><strong>1/21 秋保溫泉 瑞鳳大飯店</strong> - 已預訂 (含自助晚餐)</li>
+            <li><strong>1/22-23 微笑之宿 瀧之湯</strong> - 已預訂 (含懷石晚餐)</li>
+            <li><strong>1/24-26 Hotel Grand Bach 仙台</strong> - 已預訂 (連住3晚)</li>
+          </ul>
+        </div>
+        <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-indigo-900 mb-2">🎫 門票預訂</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li><strong>銀山溫泉Fast Pass</strong> - 1/8 晚上23:00搶票 (4張)</li>
+            <li><strong>藏王纜車優先票</strong> - 1/15 晚上23:00搶票 (2大2小)</li>
+            <li><strong>Spring Valley 雪之冒險王國</strong> - 1/24 假日門票 (4大2小)</li>
+            <li><strong>狐狸村入場</strong> - 現場購票即可</li>
+          </ul>
+        </div>
+        <div class="bg-emerald-50/80 border border-emerald-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-emerald-900 mb-2">❄️ 其他預訂</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li>瀧之湯貸切風呂 (私人包廂湯) - 已預約 1/23 16:30</li>
+            <li>寒河江草莓園 (彈性) - 已預約 1/23 14:00</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="equip-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeEquipModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeEquipModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4">🎒 裝備清單</h2>
+      <div class="space-y-4">
+        <div class="bg-sky-50/80 border border-sky-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-sky-900 mb-2">👕 大人裝備</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li>發熱衣 (2-3套)</li>
+            <li>羽絨外套 (防風防水)</li>
+            <li>防水雪褲</li>
+            <li>保暖毛帽、手套、圍巾</li>
+            <li>雪靴 (防水防滑)</li>
+            <li>簡易冰爪 (狐狸村和藏王用)</li>
+          </ul>
+        </div>
+        <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-amber-900 mb-2">👶 小孩裝備 (4歲)</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li>發熱衣 (多套)</li>
+            <li>防水羽絨外套</li>
+            <li>防水雪褲 (連身或分件)</li>
+            <li>雪靴 (防水)</li>
+            <li>毛帽 (蓋耳)、圍脖、手套 (備2雙)</li>
+            <li>護目鏡/太陽眼鏡 (防雪盲)</li>
+          </ul>
+        </div>
+        <div class="bg-rose-50/80 border border-rose-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-rose-900 mb-2">🧴 其他物品</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li>保溫瓶 (大人和小孩)</li>
+            <li>防曬乳、護唇膏</li>
+            <li>常用藥品 (退燒、腸胃藥)</li>
+            <li>簡易急救包</li>
+            <li>泳衣 (溫泉泳池用)</li>
+            <li>便攜式兒童安全帶 (租車用)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="drive-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeDriveModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeDriveModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4">⚠️ 雪地駕駛安全攻略</h2>
+      <div class="space-y-4">
+        <div class="bg-red-50/80 border border-red-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-red-900 mb-2">🚗 基本原則</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li>全程使用4WD + 雪胎</li>
+            <li>出發前檢查雪胎深度與胎壓</li>
+            <li>與前車保持至少3秒車距</li>
+            <li>避免急煞、急加速、急轉彎</li>
+            <li>下坡善用低速檔 (L/2檔) 引擎煞車</li>
+          </ul>
+        </div>
+        <div class="bg-sky-50/80 border border-sky-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-sky-900 mb-2">🛣️ 特殊路況注意</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li><strong>Black Ice (黑冰)</strong>：看似乾燥的路面結冰，最危險！避免急轉方向盤</li>
+            <li><strong>橋樑與陰影處</strong>：最容易結冰，減速通過</li>
+            <li><strong>山區連續彎道</strong>：減速至20-30km/h，鳴笛示警</li>
+            <li><strong>除雪車後方</strong>：保持距離，避免噴濺雪霧影響視線</li>
+          </ul>
+        </div>
+        <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-amber-900 mb-2">🛠️ 應急準備</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li>備用保暖衣物與毯子</li>
+            <li>手機行動電源 (2個)</li>
+            <li>車用充電器</li>
+            <li>食物和飲水 (至少1天份量)</li>
+            <li>小鏟子 (除雪用)</li>
+            <li>拖車繩、警示三角牌</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ticket-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeTicketModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeTicketModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4">⚔️ 搶票作戰攻略</h2>
+      <div class="space-y-4">
+        <div class="bg-purple-50/80 border border-purple-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-purple-900 mb-2">🎟️ 銀山溫泉 Fast Pass</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li><strong>開賣時間：</strong>1/8 日本時間00:00 (香港23:00)</li>
+            <li><strong>搶票平台：</strong>Asoview! (需提前註冊)</li>
+            <li><strong>提醒：</strong>設定鬧鐘，提前10分鐘登入</li>
+            <li><strong>目標：</strong>4張成人票，每人¥1,500</li>
+          </ul>
+        </div>
+        <div class="bg-sky-50/80 border border-sky-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-sky-900 mb-2">🎟️ 藏王纜車優先票</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li><strong>開賣時間：</strong>1/15 日本時間00:00 (香港23:00)</li>
+            <li><strong>搶票平台：</strong>Asoview! 或官方網站</li>
+            <li><strong>提醒：</strong>鎖定08:30或09:00時段</li>
+            <li><strong>目標：</strong>成人¥5,500/兒童¥3,500</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="weather-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeWeatherModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeWeatherModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4">📊 詳細天氣預報</h2>
+      <div id="weather-detail-content" class="text-sm text-slate-600">天氣資料載入中...</div>
+    </div>
+  </div>
+
+  <div id="trip-overview-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeTripOverview()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeTripOverview()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4 flex items-center gap-2">📋 7天6夜行程速覽</h2>
+      <div class="space-y-2">
+        <div class="flex items-start gap-3 bg-sky-50 border border-sky-200 rounded-xl p-3">
+          <span class="bg-sky-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D1</span>
+          <div><p class="text-sm font-bold text-slate-800">✈️ 抵達雪國</p><p class="text-xs text-slate-600 mt-0.5">仙台機場 → 秋保溫泉 → 蟹腳Buffet</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
+          <span class="bg-amber-500 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D2</span>
+          <div><p class="text-sm font-bold text-slate-800">🏮 天童+銀山</p><p class="text-xs text-slate-600 mt-0.5">AEON天童 → 瀧之湯 → 銀山夜景 → 深夜美食</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-indigo-50 border border-indigo-200 rounded-xl p-3">
+          <span class="bg-indigo-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D3</span>
+          <div><p class="text-sm font-bold text-slate-800">☃️ 藏王樹冰</p><p class="text-xs text-slate-600 mt-0.5">藏王纜車 → 樹冰 → 山形壽司 → 溫泉懷石</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+          <span class="bg-emerald-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D4</span>
+          <div><p class="text-sm font-bold text-slate-800">⛷️ Spring Valley</p><p class="text-xs text-slate-600 mt-0.5">玩雪 → 入住Grand Bach → 伊達牛舌</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-rose-50 border border-rose-200 rounded-xl p-3">
+          <span class="bg-rose-500 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D5</span>
+          <div><p class="text-sm font-bold text-slate-800">🦊 狐狸村</p><p class="text-xs text-slate-600 mt-0.5">客美多早餐 → 狐狸村 → 白石溫麵 → 市區血拼</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-teal-50 border border-teal-200 rounded-xl p-3">
+          <span class="bg-teal-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D6</span>
+          <div><p class="text-sm font-bold text-slate-800">🐬 水族館/採草莓</p><p class="text-xs text-slate-600 mt-0.5">早餐 → 水族館或草莓 → 仔虎和牛 → 三井Outlet</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+          <span class="bg-slate-700 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D7</span>
+          <div><p class="text-sm font-bold text-slate-800">✈️ 返港</p><p class="text-xs text-slate-600 mt-0.5">仙台車站伴手禮 → 機場還車 → 起飛返港</p></div>
+        </div>
+      </div>
+      <p class="text-[10px] text-slate-400 text-center mt-4">💡 點擊下方 Day 分頁查看每日完整詳細行程</p>
+    </div>
+  </div>
 
   <script>
     // ==================== 全域變數 ====================
@@ -808,7 +1003,52 @@ async function syncDataToCloud() {
       hideModal('booking-modal');
       setTimeout(() => document.getElementById('booking-modal').classList.add('hidden'), 300);
     }
-    // 其他彈窗控制類似，請保留您原有函式
+    function toggleEquipModal() {
+      const modal = document.getElementById('equip-modal');
+      if (modal.classList.contains('hidden')) { showModal('equip-modal'); modal.classList.remove('hidden'); }
+      else { hideModal('equip-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
+    }
+    function closeEquipModal() {
+      hideModal('equip-modal');
+      setTimeout(() => document.getElementById('equip-modal').classList.add('hidden'), 300);
+    }
+    function toggleDriveModal() {
+      const modal = document.getElementById('drive-modal');
+      if (modal.classList.contains('hidden')) { showModal('drive-modal'); modal.classList.remove('hidden'); }
+      else { hideModal('drive-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
+    }
+    function closeDriveModal() {
+      hideModal('drive-modal');
+      setTimeout(() => document.getElementById('drive-modal').classList.add('hidden'), 300);
+    }
+    function toggleTicketModal() {
+      const modal = document.getElementById('ticket-modal');
+      if (modal.classList.contains('hidden')) { showModal('ticket-modal'); modal.classList.remove('hidden'); }
+      else { hideModal('ticket-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
+    }
+    function closeTicketModal() {
+      hideModal('ticket-modal');
+      setTimeout(() => document.getElementById('ticket-modal').classList.add('hidden'), 300);
+    }
+    function openTripOverview() {
+      const modal = document.getElementById('trip-overview-modal');
+      if (modal) { modal.style.display = 'flex'; modal.classList.add('active'); }
+    }
+    function closeTripOverview() {
+      const modal = document.getElementById('trip-overview-modal');
+      if (modal) { modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; }, 300); }
+    }
+    function openWeatherModal() {
+      const modal = document.getElementById('weather-modal');
+      showModal('weather-modal');
+      modal.classList.remove('hidden');
+      document.getElementById('weather-detail-content').innerHTML = '<div class="flex justify-center py-8"><div class="loading-spinner"></div></div>';
+      fetchWeatherData();
+    }
+    function closeWeatherModal() {
+      hideModal('weather-modal');
+      setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300);
+    }
 
     // ==================== 天氣 ====================
     const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
@@ -841,7 +1081,6 @@ async function syncDataToCloud() {
       const section = document.getElementById(sectionId);
       if (!section) return;
       
-      // 生成每日地圖 iframe
       const mapHtml = generateDayMap(dayData);
       
       let html = `<div class="mb-8"><div class="bg-slate-50/95 py-3 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">${dayData.emoji}</div><div class="flex-1"><span class="text-[11px] font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span><h2 class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}</div></div><button onclick="toggleAllDetails('${sectionId}')" class="bg-white hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1 shrink-0 ml-2"><span class="icon">↕️</span><span class="hidden md:inline">全部展開</span></button></div><div class="relative mt-4 space-y-4 pb-6">`;
@@ -855,26 +1094,99 @@ async function syncDataToCloud() {
         html += `<div class="relative pl-0"><details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl"><summary class="flex items-start gap-3 p-3 md:p-4 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none"><div class="flex-1 min-w-0 pr-8"><div class="flex flex-wrap items-center gap-2 mb-1"><span class="event-time-pill">🕐 ${startTime} ${endTime ? "– "+endTime : ""}</span>${tagHtml}</div><h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>${event.location ? `<div class="text-[10px] text-slate-400 mt-0.5">📍 ${event.location}</div>` : ""}</div><div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}${event.navUrl ? `<a href="${event.navUrl}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:text-sky-700 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}<svg class="w-3 h-3 opacity-60 group-hover/nav:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>` : '<div class="h-3"></div>'}${event.content}</div></details></div>`;
       });
       
-      // 加入每日地圖（即使無 location 也會顯示仙台地圖）
       html += mapHtml;
       
       html += `</div></div>`;
       section.innerHTML = html;
     }
 
-    // ==================== 生成每日地圖（自動使用預設地點） ====================
+    // ==================== 生成每日地圖（自動提取地點） ====================
     function generateDayMap(dayData) {
-      // 收集當天所有景點
-      let locations = dayData.events
-        .filter(event => event.location && event.location.length > 0)
-        .map(event => event.location);
+      // 內建地點映射表：將常見關鍵字轉為 Google Maps 能識別的地名
+      const locationMap = {
+        "仙台機場": "Sendai Airport",
+        "仙台空港": "Sendai Airport",
+        "秋保溫泉": "秋保温泉 瑞鳳",
+        "秋保温泉 瑞鳳": "秋保温泉 瑞鳳",
+        "AEON天童": "イオンモール天童",
+        "AEON MALL 天童": "イオンモール天童",
+        "微笑の宿 瀧之湯": "微笑の宿 滝の湯",
+        "微笑之宿 瀧之湯": "微笑の宿 滝の湯",
+        "銀山溫泉": "銀山温泉",
+        "藏王纜車": "蔵王ロープウェイ",
+        "藏王索道": "蔵王ロープウェイ",
+        "Spring Valley 仙台泉": "Spring Valley 仙台泉",
+        "Spring Valley": "Spring Valley 仙台泉",
+        "狐狸村": "宮城蔵王キツネ村",
+        "宮城藏王狐狸村": "宮城蔵王キツネ村",
+        "白石溫麵": "白石市",
+        "手延白石溫麵 光庵": "手延白石温麺 光庵",
+        "白石うーめん やまぶき亭": "白石うーめん やまぶき亭",
+        "讃岐づくり本格手打ちうどん 麦の季": "讃岐づくり本格手打ちうどん 麦の季",
+        "客美多咖啡": "コメダ珈琲店 仙台富沢店",
+        "コメダ珈琲店 仙台富沢店": "コメダ珈琲店 仙台富沢店",
+        "仙台海洋森林水族館": "仙台うみの杜水族館",
+        "Sendai Umino-Mori Aquarium": "仙台うみの杜水族館",
+        "一苺一笑 松森農場": "一苺一笑 松森農場",
+        "JR水果公園仙台荒濱": "JRフルーツパーク仙台あらはま",
+        "Berry Planet": "Berry Planet",
+        "仔虎 利府店": "仔虎 利府店",
+        "Mitsui Outlet Park 仙台港": "三井アウトレットパーク 仙台港",
+        "三井Outlet": "三井アウトレットパーク 仙台港",
+        "Hotel Grand Bach 仙台": "ホテルグランバッハ仙台",
+        "仙台車站": "仙台駅",
+        "仙台駅": "仙台駅",
+        "THE MOST BAKERY": "THE MOST BAKERY ＆ COFFEE 東口店",
+        "YUKIHIRA COFFEE": "YUKIHIRA COFFEE 天童店",
+        "伊達牛舌本舗 本店": "伊達の牛たん本舗 本店",
+        "うまい鮨勘 山形南支店": "うまい鮨勘 山形南支店",
+        "寒河江草莓園": "寒河江いちご園"
+      };
+
+      // 從事件中提取地點
+      let locations = [];
       
-      // 若沒有地點，使用預設仙台
+      dayData.events.forEach(event => {
+        let location = '';
+        
+        // 1. 優先使用 event.location
+        if (event.location && event.location.trim().length > 0) {
+          location = event.location.trim();
+        }
+        // 2. 從 navUrl 中提取查詢參數
+        else if (event.navUrl && event.navUrl.includes('query=')) {
+          const match = event.navUrl.match(/query=([^&]+)/);
+          if (match) {
+            location = decodeURIComponent(match[1].replace(/\+/g, ' '));
+          }
+        }
+        // 3. 從標題中匹配關鍵字
+        else {
+          const title = event.title || '';
+          for (const [key, value] of Object.entries(locationMap)) {
+            if (title.includes(key)) {
+              location = value;
+              break;
+            }
+          }
+        }
+        
+        // 4. 若仍無地點，從 navName 提取
+        if (!location && event.navName) {
+          location = event.navName;
+        }
+        
+        if (location && !locations.includes(location)) {
+          locations.push(location);
+        }
+      });
+
+      // 若還是沒有地點，使用預設仙台
       if (locations.length === 0) {
-        locations = ["仙台市"];
+        locations = ["仙台駅"];
       }
-      
-      // 使用 Google Maps Embed（directions 或 place 模式）
+
+      // 生成地圖 URL
       let mapUrl = '';
       if (locations.length === 1) {
         mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(locations[0])}&z=14&output=embed`;
@@ -886,13 +1198,26 @@ async function syncDataToCloud() {
         const waypoints = locations.slice(1, -1).join('|');
         mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${encodeURIComponent(waypoints)}&output=embed`;
       }
-      
+
+      // 生成地點列表 HTML
+      const locationListHtml = locations.map((loc, i) => {
+        return `
+          <div class="flex items-center justify-between py-1 border-b border-slate-100 last:border-0">
+            <span class="text-xs text-slate-700">${i + 1}. ${loc}</span>
+            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}" target="_blank" class="inline-flex items-center gap-1 text-sky-600 hover:text-sky-800 font-bold text-xs">📍 導航</a>
+          </div>`;
+      }).join('');
+
       return `<div class="day-map-container mt-4">
         <div class="day-map-label">
           <span>🗺️</span>
           <span>當日路線總覽（${locations.length} 個地點）</span>
         </div>
         <iframe src="${mapUrl}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <div class="p-3 bg-slate-50">
+          <strong class="block text-[11px] text-slate-600 mb-1.5">📍 當日地點列表</strong>
+          ${locationListHtml}
+        </div>
       </div>`;
     }
 
