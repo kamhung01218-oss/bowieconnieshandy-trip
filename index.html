@@ -43,6 +43,8 @@ firebase.auth().signInAnonymously().catch(err => console.warn("匿名登入失�
 const db = firebase.firestore();
 window.db = db;
 window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
+// 留言板集合
+window.messagesRef = db.collection("spot_messages");
 
 window.dbRef.onSnapshot(docSnap => {
   if (docSnap.exists()) {
@@ -251,7 +253,7 @@ async function syncDataToCloud() {
     font-weight: bold;
   }
 
-  /* ==================== 雪花效果 ==================== */
+  /* 雪花效果 */
   .snowflake {
     position: absolute;
     top: -10px;
@@ -259,8 +261,8 @@ async function syncDataToCloud() {
     pointer-events: none;
     will-change: transform, opacity;
     animation: snowfall linear infinite;
-    background: #e0f2fe; /* 淡藍色 */
-    box-shadow: 0 0 5px rgba(224, 242, 254, 0.8); /* 光暈 */
+    background: #e0f2fe;
+    box-shadow: 0 0 5px rgba(224, 242, 254, 0.8);
   }
   @keyframes snowfall {
     0% { transform: translateY(0) rotate(0deg); opacity: 1; }
@@ -279,7 +281,7 @@ async function syncDataToCloud() {
     100% { transform: translateY(80vh) rotate(360deg); opacity: 0.7; }
   }
 
-  /* ==================== 動態角色（隨機出現） ==================== */
+  /* 動態角色 */
   .walking-character {
     position: fixed;
     bottom: 15px;
@@ -357,6 +359,200 @@ async function syncDataToCloud() {
     border-color: #0284c7 transparent transparent transparent;
   }
 
+  /* ==================== 留言板樣式 ==================== */
+  .spot-messages {
+    margin-top: 16px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 12px;
+  }
+
+  .spot-messages-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .spot-messages-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .spot-messages-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 8px;
+  }
+
+  .spot-message-item {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border: 1px solid #f1f5f9;
+  }
+
+  .spot-message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .spot-message-user {
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .spot-message-time {
+    font-size: 9px;
+    color: #94a3b8;
+  }
+
+  .spot-message-text {
+    font-size: 12px;
+    color: #334155;
+    line-height: 1.5;
+  }
+
+  .spot-message-delete {
+    font-size: 11px;
+    color: #94a3b8;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 2px;
+    transition: color 0.2s;
+  }
+
+  .spot-message-delete:hover {
+    color: #ef4444;
+  }
+
+  .spot-message-input-group {
+    display: flex;
+    gap: 6px;
+  }
+
+  .spot-message-input {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .spot-message-input:focus {
+    border-color: #0284c7;
+  }
+
+  .spot-message-send {
+    background: #0284c7;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .spot-message-send:hover {
+    background: #0369a1;
+  }
+
+  /* 身份驗證 Modal */
+  .auth-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+  }
+
+  .auth-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .auth-modal {
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    transform: scale(0.95);
+    transition: transform 0.3s;
+  }
+
+  .auth-modal-overlay.active .auth-modal {
+    transform: scale(1);
+  }
+
+  .auth-symbol-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .auth-symbol-btn {
+    aspect-ratio: 1;
+    font-size: 24px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .auth-symbol-btn:hover {
+    border-color: #0284c7;
+    background: #f0f9ff;
+  }
+
+  .auth-symbol-btn.selected {
+    border-color: #0284c7;
+    background: #0284c7;
+    color: white;
+  }
+
+  .auth-selected-symbols {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    min-height: 32px;
+    align-items: center;
+  }
+
+  .auth-selected-symbols span {
+    font-size: 24px;
+  }
+
+  .auth-status {
+    margin-top: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+  }
+
   #mini-forecast {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
@@ -383,7 +579,6 @@ async function syncDataToCloud() {
 </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-16 relative">
-  <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
   <!-- ✅ 動態角色：雪人 + 狐狸（隨機出現） -->
@@ -519,7 +714,8 @@ async function syncDataToCloud() {
   <nav class="max-w-md mx-auto mt-6 px-4 relative z-10">
     <div class="bg-white p-1.5 rounded-full shadow-lg shadow-sky-100 border border-slate-200 flex gap-1">
       <button id="nav-itinerary-btn" onclick="switchMainTab('itinerary')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active"><span>🗺️</span> 行程指南</button>
-      <button id="nav-ledger-btn" onclick="switchMainTab('ledger')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition"><span>💰</span> 隨行記帳本</button>
+      <button id="nav-ledger-btn" onclick="switchMainTab('ledger')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition"><span>💰</span> 記帳本</button>
+      <button onclick="window.open('/shopping.html', '_blank')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition"><span>🛍️</span> 購物清單</button>
     </div>
   </nav>
 
@@ -660,6 +856,25 @@ async function syncDataToCloud() {
   <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none">
     <span id="toast-icon">✅</span>
     <span id="toast-message">複製成功！</span>
+  </div>
+
+  <!-- 身份驗證 Modal（留言板用） -->
+  <div id="auth-modal" class="auth-modal-overlay">
+    <div class="auth-modal">
+      <div class="text-center mb-4">
+        <span class="text-3xl">🔐</span>
+        <h3 class="text-lg font-black text-slate-900 mt-2">請確認身份</h3>
+        <p class="text-xs text-slate-500 mt-1">輸入您的雙符號密碼以繼續操作</p>
+      </div>
+      <div class="text-center mb-3">
+        <span id="auth-member-name" class="inline-block bg-sky-100 text-sky-700 px-4 py-1 rounded-full text-sm font-bold"></span>
+      </div>
+      <div id="auth-symbol-grid" class="auth-symbol-grid"></div>
+      <div id="auth-selected-symbols" class="auth-selected-symbols"></div>
+      <button onclick="verifyAuth()" class="w-full mt-3 bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl font-bold transition active:scale-95">確認</button>
+      <button onclick="closeAuthModal()" class="w-full mt-2 bg-slate-100 hover:bg-slate-200 text-slate-600 py-2.5 rounded-xl font-bold transition text-sm">取消</button>
+      <div id="auth-status" class="auth-status"></div>
+    </div>
   </div>
 
   <!-- 彈窗們（省略重複內容，維持原本功能） -->
@@ -864,6 +1079,30 @@ async function syncDataToCloud() {
     let simulatedTime = null;
     const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27"];
 
+    // 留言板相關變數
+    let messageCache = {}; // 快取留言資料
+    let authMode = '';
+    let authDeleteSpotId = '';
+
+    // 符號密碼（與記帳本一致）
+    const memberSymbols = {
+      "余生": "🌊",
+      "bowie": "🌸",
+      "shandy": "🌲",
+      "Connie": "🌺"
+    };
+    const memberPasswords = {
+      "余生": ["🔵", "🟥"],
+      "bowie": ["🩷", "🟨"],
+      "shandy": ["🟢", "⬛"],
+      "Connie": ["🟣", "🟦"]
+    };
+    const symbolPool = ["🔵", "🩷", "🟢", "🟣", "🔴", "🟠", "🟡", "🟤", "⚫", "⚪", "🟦", "🟧", "🟨", "🟩", "🟪", "🟥", "⬛", "⬜", "🔶", "🔷"];
+    let selectedMember = null;
+    let selectedPasswordSymbols = [];
+    let failedAttempts = 0;
+    let lockUntil = 0;
+
     // ==================== 匯率 ====================
     const exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
     function toggleCurrencyWidget() {
@@ -1053,142 +1292,234 @@ async function syncDataToCloud() {
       const section = document.getElementById(sectionId);
       if (!section) return;
       let html = `<div class="mb-8"><div class="bg-slate-50/95 py-3 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">${dayData.emoji}</div><div class="flex-1"><span class="text-[11px] font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span><h2 class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}</div></div><button onclick="toggleAllDetails('${sectionId}')" class="bg-white hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1 shrink-0 ml-2"><span class="icon">↕️</span><span class="hidden md:inline">全部展開</span></button></div><div class="relative mt-4 space-y-4 pb-6">`;
+      
       dayData.events.forEach((event, index) => {
         const isOpen = event.open ? "open" : "";
         const tagHtml = event.tag ? `<span class="tag ${event.tag.class}">${event.tag.text}</span>` : "";
         const timeParts = event.time.split(" - ");
         const startTime = timeParts[0];
         const endTime = timeParts[1] ? `~ ${timeParts[1]}` : "";
-        html += `<div class="relative pl-0"><details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl"><summary class="flex items-start gap-3 p-3 md:p-4 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none"><div class="flex-1 min-w-0 pr-8"><div class="flex flex-wrap items-center gap-2 mb-1"><span class="event-time-pill">🕐 ${startTime} ${endTime ? "– "+endTime : ""}</span>${tagHtml}</div><h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>${event.location ? `<div class="text-[10px] text-slate-400 mt-0.5">📍 ${event.location}</div>` : ""}</div><div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}${event.navUrl ? `<a href="${event.navUrl}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:text-sky-700 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}<svg class="w-3 h-3 opacity-60 group-hover/nav:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>` : '<div class="h-3"></div>'}${event.content}</div></details></div>`;
+        const spotId = `day${dayData.day}_event${index}`;
+        
+        html += `<div class="relative pl-0"><details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl"><summary class="flex items-start gap-3 p-3 md:p-4 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none"><div class="flex-1 min-w-0 pr-8"><div class="flex flex-wrap items-center gap-2 mb-1"><span class="event-time-pill">🕐 ${startTime} ${endTime ? "– "+endTime : ""}</span>${tagHtml}</div><h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>${event.location ? `<div class="text-[10px] text-slate-400 mt-0.5">📍 ${event.location}</div>` : ""}</div><div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}${event.navUrl ? `<a href="${event.navUrl}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:text-sky-700 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}<svg class="w-3 h-3 opacity-60 group-hover/nav:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>` : '<div class="h-3"></div>'}${event.content}</div><div class="spot-messages" id="spot-${spotId}"><div class="spot-messages-header"><span class="spot-messages-title">💬 留言板</span></div><div class="spot-messages-list" id="spot-${spotId}-list"><div class="text-[10px] text-slate-400 italic text-center py-2">留言載入中...</div></div><div class="spot-message-input-group"><input class="spot-message-input" id="spot-${spotId}-input" placeholder="留言..." onkeydown="if(event.key==='Enter') sendSpotMessage('${spotId}')"><button class="spot-message-send" onclick="sendSpotMessage('${spotId}')">發送</button></div></div></details></div>`;
       });
+      
       html += `</div></div>`;
       section.innerHTML = html;
+      
+      // 載入留言
+      dayData.events.forEach((event, index) => {
+        const spotId = `day${dayData.day}_event${index}`;
+        loadSpotMessages(spotId);
+      });
     }
 
-    function toggleAllDetails(sectionId) {
-      const section = document.getElementById(sectionId);
-      if (!section) return;
-      const details = section.querySelectorAll("details");
-      if (details.length === 0) return;
-      let openCount = 0;
-      details.forEach(d => { if (d.open) openCount++; });
-      const shouldOpen = openCount < details.length / 2;
-      details.forEach(d => { d.open = shouldOpen; });
-      setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
-    }
-
-    function collapseAllItineraries() {
-      const activeSection = document.querySelector(".day-section:not(.hidden)");
-      if (activeSection) {
-        const details = activeSection.querySelectorAll("details");
-        const anyOpen = Array.from(details).some(d => d.open);
-        if (anyOpen) {
-          details.forEach(detail => { detail.open = false; });
-          showToast("⬆️ 已收合全部行程");
-          const btn = document.getElementById("fab-collapse-all");
-          if (btn) btn.innerHTML = '<span class="text-lg font-black">⬇️</span><span class="font-bold text-sm hidden md:inline">展開行程</span>';
-        } else {
-          details.forEach(detail => { detail.open = true; });
-          showToast("⬇️ 已展開全部行程");
-          const btn = document.getElementById("fab-collapse-all");
-          if (btn) btn.innerHTML = '<span class="text-lg font-black">⬆️</span><span class="font-bold text-sm hidden md:inline">收合行程</span>';
-        }
-      }
-    }
-
-    // ==================== 時間模擬 ====================
-    function getAppTime() { return simulatedTime ? new Date(simulatedTime) : new Date(); }
-    function toggleSimulation() {
-      const simIcon = document.getElementById("sim-icon");
-      const simText = document.getElementById("sim-text");
-      if (simulatedTime) {
-        simulatedTime = null;
-        if (simIcon) simIcon.innerText = "🔮";
-        if (simText) simText.innerText = "模擬旅途時間";
-        showToast("🕒 已恢復真實時間");
-      } else {
-        simulatedTime = new Date("2027-01-23T10:00:00").getTime();
-        if (simIcon) simIcon.innerText = "⏹️";
-        if (simText) simText.innerText = "結束模擬";
-        showToast("⛷️ 模擬啟動：跳轉至 Day 3 藏王樹冰行程！", "❄️");
-      }
-      updateCurrentEventHighlight();
-    }
-
-    function updateCurrentEventHighlight() {
-      const now = getAppTime();
-      let activeDay = -1;
-      let activeEvent = -1;
-      for (let i = 0; i < winterItineraries.length; i++) {
-        const dayData = winterItineraries[i];
-        const dateStr = tripDates[dayData.day - 1];
-        if (!dateStr) continue;
-        for (let j = 0; j < dayData.events.length; j++) {
-          const timeParts = dayData.events[j].time.split(" - ");
-          const startStr = timeParts[0].trim();
-          const endStr = timeParts[1] ? timeParts[1].trim() : "23:59";
-          const startDate = new Date(`${dateStr}T${startStr}:00`);
-          let endDate = new Date(`${dateStr}T${endStr}:00`);
-          if (endStr === "") endDate = new Date(`${dateStr}T23:59:00`);
-          if (now >= startDate && now <= endDate) { activeDay = dayData.day; activeEvent = j; break; }
-          if (now < startDate && activeDay === -1) {
-            const todayStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
-            if (todayStr === dateStr) { activeDay = dayData.day; activeEvent = j; break; }
+    // ==================== 留言板功能 ====================
+    function loadSpotMessages(spotId) {
+      if (window.messagesRef) {
+        window.messagesRef.doc(spotId).onSnapshot(doc => {
+          if (doc.exists) {
+            const messages = doc.data().messages || [];
+            renderSpotMessages(spotId, messages);
+          } else {
+            renderSpotMessages(spotId, []);
           }
-        }
-        if (activeDay !== -1) break;
+        }, err => console.warn('留言載入失敗:', err));
       }
-      document.querySelectorAll('[id^="event-card-"]').forEach(card => {
-        card.classList.remove("ring-2", "ring-sky-400", "shadow-sky-200/50", "bg-sky-50/40");
-        card.classList.add("border-slate-100", "bg-white");
+    }
+
+    function renderSpotMessages(spotId, messages) {
+      const container = document.getElementById(`spot-${spotId}-list`);
+      if (!container) return;
+      
+      if (messages.length === 0) {
+        container.innerHTML = '<div class="text-[10px] text-slate-400 italic text-center py-2">尚無留言，快來留言吧！</div>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      messages.forEach((msg, i) => {
+        const userSymbol = memberSymbols[msg.user] || '❓';
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'spot-message-item';
+        msgDiv.innerHTML = `
+          <div class="spot-message-header">
+            <span class="spot-message-user" style="color: ${getUserColor(msg.user)}">${userSymbol} ${msg.user}</span>
+            <span class="spot-message-time">${msg.time}</span>
+          </div>
+          <p class="spot-message-text">${escapeHtml(msg.text)}</p>
+          <button class="spot-message-delete" onclick="requestDeleteMessage('${spotId}', ${i})">🗑️ 刪除</button>
+        `;
+        container.appendChild(msgDiv);
       });
-      document.querySelectorAll('[id^="event-badge-"]').forEach(badge => badge.classList.add("hidden"));
-      document.querySelectorAll('[id^="event-dot-"]').forEach(dot => {
-        dot.classList.remove("bg-rose-500", "animate-pulse", "ring-rose-200");
-        dot.classList.add("bg-indigo-500", "ring-slate-50");
+    }
+
+    function sendSpotMessage(spotId) {
+      const input = document.getElementById(`spot-${spotId}-input`);
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) {
+        showToast('⚠️ 請輸入留言內容', '⚠️');
+        return;
+      }
+      
+      // 選擇身份（使用余生作為預設）
+      const user = "余生";
+      const time = new Date().toLocaleString('zh-HK', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      
+      if (window.messagesRef) {
+        window.messagesRef.doc(spotId).get().then(doc => {
+          const messages = doc.exists ? (doc.data().messages || []) : [];
+          messages.push({ user: user, text: text, time: time });
+          return window.messagesRef.doc(spotId).set({ messages: messages }, { merge: true });
+        }).then(() => {
+          input.value = '';
+          showToast('✅ 留言成功！');
+        }).catch(err => console.warn('留言發送失敗:', err));
+      }
+    }
+
+    function requestDeleteMessage(spotId, index) {
+      // 開啟身份驗證
+      authMode = 'delete_message';
+      authDeleteSpotId = spotId;
+      authDeleteIndex = index;
+      openAuthModal();
+    }
+
+    function deleteSpotMessage(spotId, index) {
+      if (window.messagesRef) {
+        window.messagesRef.doc(spotId).get().then(doc => {
+          if (doc.exists) {
+            const messages = doc.data().messages || [];
+            messages.splice(index, 1);
+            return window.messagesRef.doc(spotId).set({ messages: messages }, { merge: true });
+          }
+        }).then(() => {
+          showToast('🗑️ 留言已刪除');
+        }).catch(err => console.warn('留言刪除失敗:', err));
+      }
+    }
+
+    function getUserColor(user) {
+      const colors = {
+        '余生': '#2563eb',
+        'bowie': '#db2777',
+        'shandy': '#059669',
+        'Connie': '#7c3aed'
+      };
+      return colors[user] || '#64748b';
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ==================== 身份驗證 ====================
+    let authDeleteIndex = -1;
+
+    function openAuthModal() {
+      const modal = document.getElementById('auth-modal');
+      const memberName = document.getElementById('auth-member-name');
+      memberName.innerText = '余生 🌊';
+      
+      selectedMember = '余生';
+      selectedPasswordSymbols = [];
+      failedAttempts = 0;
+      lockUntil = 0;
+      
+      renderAuthSymbolGrid();
+      updateAuthSelectedSymbols();
+      
+      const status = document.getElementById('auth-status');
+      status.innerHTML = '';
+      status.className = 'auth-status';
+      
+      modal.classList.add('active');
+    }
+
+    function closeAuthModal() {
+      const modal = document.getElementById('auth-modal');
+      modal.classList.remove('active');
+      authMode = '';
+      authDeleteSpotId = '';
+      authDeleteIndex = -1;
+      selectedPasswordSymbols = [];
+    }
+
+    function renderAuthSymbolGrid() {
+      const grid = document.getElementById('auth-symbol-grid');
+      grid.innerHTML = '';
+      symbolPool.forEach(symbol => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.symbol = symbol;
+        btn.innerText = symbol;
+        btn.className = 'auth-symbol-btn';
+        btn.onclick = () => {
+          if (selectedPasswordSymbols.length >= 2) return;
+          selectedPasswordSymbols.push(symbol);
+          btn.classList.add('selected');
+          updateAuthSelectedSymbols();
+        };
+        grid.appendChild(btn);
       });
-      document.querySelectorAll('[id^="event-timebox-"]').forEach(box => {
-        box.classList.remove("bg-sky-500", "text-white");
-        box.classList.add("bg-indigo-50", "text-indigo-700");
+    }
+
+    function updateAuthSelectedSymbols() {
+      const container = document.getElementById('auth-selected-symbols');
+      container.innerHTML = '';
+      selectedPasswordSymbols.forEach(symbol => {
+        const span = document.createElement('span');
+        span.innerText = symbol;
+        container.appendChild(span);
       });
-      document.querySelectorAll('[id^="event-title-"]').forEach(title => {
-        title.classList.remove("text-sky-900");
-        title.classList.add("text-slate-800");
-      });
-      if (activeDay !== -1 && activeEvent !== -1) {
-        const card = document.getElementById(`event-card-${activeDay}-${activeEvent}`);
-        const badge = document.getElementById(`event-badge-${activeDay}-${activeEvent}`);
-        const dot = document.getElementById(`event-dot-${activeDay}-${activeEvent}`);
-        const timebox = document.getElementById(`event-timebox-${activeDay}-${activeEvent}`);
-        const title = document.getElementById(`event-title-${activeDay}-${activeEvent}`);
-        if (card) {
-          card.classList.remove("border-slate-100", "bg-white");
-          card.classList.add("ring-2", "ring-sky-400", "shadow-sky-200/50", "bg-sky-50/40");
-          card.open = true;
+    }
+
+    function verifyAuth() {
+      const status = document.getElementById('auth-status');
+      
+      if (selectedPasswordSymbols.length !== 2) {
+        status.innerHTML = '⚠️ 請點選兩個符號';
+        status.style.color = '#f59e0b';
+        return;
+      }
+
+      const now = Date.now();
+      if (now < lockUntil) {
+        const waitSeconds = Math.ceil((lockUntil - now) / 1000);
+        status.innerHTML = `⏳ 請等待 ${waitSeconds} 秒後再試`;
+        status.style.color = '#f59e0b';
+        return;
+      }
+
+      const expected = memberPasswords[selectedMember];
+      const isCorrect = selectedPasswordSymbols[0] === expected[0] && selectedPasswordSymbols[1] === expected[1];
+
+      if (isCorrect) {
+        status.innerHTML = '✅ 驗證成功！';
+        status.style.color = '#10b981';
+        
+        if (authMode === 'delete_message' && authDeleteSpotId && authDeleteIndex >= 0) {
+          deleteSpotMessage(authDeleteSpotId, authDeleteIndex);
         }
-        if (badge) badge.classList.remove("hidden");
-        if (dot) {
-          dot.classList.remove("bg-indigo-500", "ring-slate-50");
-          dot.classList.add("bg-rose-500", "animate-pulse", "ring-rose-200");
+        
+        setTimeout(() => closeAuthModal(), 500);
+      } else {
+        failedAttempts++;
+        if (failedAttempts >= 5) {
+          lockUntil = Date.now() + 30000;
+          status.innerHTML = '❌ 嘗試次數過多，請等待 30 秒';
+          status.style.color = '#ef4444';
+        } else {
+          status.innerHTML = `❌ 密碼錯誤，還剩 ${5 - failedAttempts} 次`;
+          status.style.color = '#ef4444';
         }
-        if (timebox) {
-          timebox.classList.remove("bg-indigo-50", "text-indigo-700");
-          timebox.classList.add("bg-sky-500", "text-white");
-        }
-        if (title) {
-          title.classList.remove("text-slate-800");
-          title.classList.add("text-sky-900");
-        }
-        if (window._lastActiveDay !== activeDay) {
-          switchDay(activeDay);
-          window._lastActiveDay = activeDay;
-          setTimeout(() => {
-            if (card) {
-              const top = card.getBoundingClientRect().top + window.scrollY - 180;
-              window.scrollTo({ top, behavior: "smooth" });
-            }
-          }, 400);
-        }
+        selectedPasswordSymbols = [];
+        renderAuthSymbolGrid();
+        updateAuthSelectedSymbols();
       }
     }
 
@@ -1385,15 +1716,15 @@ async function syncDataToCloud() {
         if (Math.random() > 0.7) snowflake.classList.add("snowflake-shine");
         snowContainer.appendChild(snowflake);
       }
-      // 添加特殊雪花（❄ 符號）
-      for (let i = 0; i < 3; i++) {
+      const specialSnowflakes = 3;
+      for (let i = 0; i < specialSnowflakes; i++) {
         const flake = document.createElement("div");
         flake.className = "snowflake";
         flake.style.cssText = `left: ${Math.random() * 100}%; width: 12px; height: 12px; animation: snowfall-medium ${Math.random() * 15 + 10}s linear infinite; animation-delay: ${Math.random() * -10}s;`;
         flake.innerHTML = '❄';
         flake.style.fontSize = `${Math.random() * 10 + 8}px`;
-        flake.style.color = "rgba(255,255,255,0.9)";
-        flake.style.textShadow = "0 0 5px rgba(255,255,255,0.7)";
+        flake.style.color = "rgba(255,255,255,0.8)";
+        flake.style.textShadow = "0 0 5px rgba(255,255,255,0.5)";
         snowContainer.appendChild(flake);
       }
     }
@@ -1414,8 +1745,6 @@ async function syncDataToCloud() {
       switchMainTab("itinerary");
       updateCountdowns();
       setInterval(updateCountdowns, 1000);
-      updateCurrentEventHighlight();
-      setInterval(updateCurrentEventHighlight, 60000);
       checkWelcomeModal();
       fetchWeatherData();
       initRandomCharacters();
