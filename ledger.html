@@ -42,6 +42,9 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             <button onclick="copyCurrentUrl()" class="flex-1 sm:flex-none py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
                 <span>📋</span> 複製分享網址
             </button>
+            <button onclick="forceSync()" class="flex-1 sm:flex-none py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                <span>🔄</span> 強制同步
+            </button>
         </div>
     </div>
 
@@ -150,15 +153,24 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
     <div class="shrink-0 flex justify-center pt-3 pb-1 md:hidden" onclick="closeExpenseModal()">
         <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
     </div>
+    
+    <!-- Modal 頂部：標題 + 保存按鈕 + 關閉按鈕 -->
     <div class="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100">
         <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
             <span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✍️</span>
             新增團隊花費
         </h3>
-        <button onclick="closeExpenseModal()" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
+        <div class="flex items-center gap-2">
+            <button id="btn-save-expense" onclick="saveExpense()" class="bg-sky-600 hover:bg-sky-700 text-white font-black py-2 px-4 rounded-xl shadow-sm transition active:scale-95 text-sm flex items-center gap-1.5">
+                <span>寫入帳本</span>
+                <span class="text-lg">✍️</span>
+            </button>
+            <button onclick="closeExpenseModal()" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
     </div>
+
     <div class="flex-1 overflow-y-auto p-6 pb-24 space-y-4 scrollbar-none bg-slate-50/50">
         <div class="grid grid-cols-2 gap-3">
             <div>
@@ -191,9 +203,10 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         </div>
         <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
             <label class="block text-[11px] font-bold text-slate-600 mb-2">💰 金額與幣值</label>
-            <div class="flex gap-2">
-                <input id="ledger-amount" inputmode="decimal" oninput="updateEstimatedHKD()" placeholder="0.00" class="flex-1 border border-slate-300 rounded-xl py-2.5 px-3 text-lg font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
-                <select id="ledger-currency" onchange="updateEstimatedHKD()" class="border border-slate-300 rounded-xl py-2.5 px-3 text-sm font-bold bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+            <!-- 修正：改用 grid，確保幣值按鈕不會溢出 -->
+            <div class="grid grid-cols-3 gap-2">
+                <input id="ledger-amount" inputmode="decimal" oninput="updateEstimatedHKD()" placeholder="0.00" class="col-span-2 border border-slate-300 rounded-xl py-2.5 px-3 text-lg font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+                <select id="ledger-currency" onchange="updateEstimatedHKD()" class="col-span-1 border border-slate-300 rounded-xl py-2.5 px-3 text-sm font-bold bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
                     <option value="JPY">JPY (¥)</option>
                     <option value="HKD">HKD ($)</option>
                     <option value="TWD">TWD</option>
@@ -220,12 +233,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             <div class="grid grid-cols-4 gap-1.5 p-2 bg-white border border-slate-200 rounded-xl" id="splitters-grid"></div>
         </div>
     </div>
-    <div class="shrink-0 p-4 border-t border-slate-100 bg-white">
-        <button id="btn-save-expense" onclick="saveExpense()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-2xl shadow-md shadow-sky-200 transition active:scale-95 flex items-center justify-center gap-1.5 text-base">
-            <span>寫入帳本</span>
-            <span class="text-xl">✍️</span>
-        </button>
-    </div>
+    <!-- 底部不再放置保存按鈕，已移至頂部 -->
 </div>
 
 <!-- 確認清空 Modal -->
@@ -255,7 +263,7 @@ const firebaseConfig = {
   projectId: "tohoku-winter-trip",
   storageBucket: "tohoku-winter-trip.firebasestorage.app",
   messagingSenderId: "991555590088",
-  appId: "1:991555590088:web:afb089890d7d546821d2fd",
+  appId: "1:991555590088:web:afb089890d7d546821d2fd",  // ✅ 已與 index.html 統一
   measurementId: "G-XLDZRXC8RT"
 };
 
@@ -265,19 +273,43 @@ const auth = firebase.auth();
 window.db = db;
 window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 
+// 顯示雲端連線狀態
+function updateCloudBadge(isConnected) {
+    const badge = document.getElementById("cloud-sync-badge");
+    if (badge) {
+        if (isConnected) {
+            badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span> 雲端連線';
+            badge.classList.remove("bg-red-100", "text-red-700", "border-red-200");
+            badge.classList.add("bg-sky-100", "text-sky-700", "border-sky-200");
+        } else {
+            badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> 雲端離線';
+            badge.classList.remove("bg-sky-100", "text-sky-700", "border-sky-200");
+            badge.classList.add("bg-red-100", "text-red-700", "border-red-200");
+        }
+    }
+}
+
 const initAuth = async () => {
     try {
         await auth.signInAnonymously();
         console.log("Firebase 匿名登入成功！");
+        updateCloudBadge(true);
     } catch(err) {
         console.warn("登入失敗，請確認是否已在 Firebase Console 開啟 Anonymous 驗證:", err);
+        updateCloudBadge(false);
     }
 };
 
 initAuth();
 
 auth.onAuthStateChanged(user => {
-    if (!user) return; 
+    if (!user) {
+        console.warn("尚未登入，嘗試匿名登入...");
+        auth.signInAnonymously().catch(err => console.warn("匿名登入失敗:", err));
+        return;
+    }
+    console.log("已登入:", user.uid);
+    updateCloudBadge(true);
     window.dbRef.onSnapshot(docSnap => {
         if (docSnap.exists) {
             const cloudData = docSnap.data();
@@ -285,9 +317,18 @@ auth.onAuthStateChanged(user => {
                 state.expenses = sanitizeExpenses(cloudData.expenses);
                 saveLocalExpenses(); 
                 updateLedgerUI();    
+            } else {
+                console.warn("雲端文檔存在但無 expenses，建立空文檔");
+                syncDataToCloud();
             }
+        } else {
+            console.warn("雲端文檔不存在，將同步本地資料到雲端");
+            syncDataToCloud();
         }
-    }, err => console.warn("Firestore 同步警告:", err));
+    }, err => {
+        console.warn("Firestore 同步警告:", err);
+        updateCloudBadge(false);
+    });
 });
 
 async function syncDataToCloud() {
@@ -298,8 +339,21 @@ async function syncDataToCloud() {
             checkedItems: state.checkedItems,
             updatedAt: Date.now()
         }, { merge: true }); 
+        updateCloudBadge(true);
     } catch(e) {
         console.warn("寫入雲端失敗:", e);
+        updateCloudBadge(false);
+    }
+}
+
+// 手動強制同步按鈕
+async function forceSync() {
+    try {
+        await syncDataToCloud();
+        showToast("✅ 已強制同步到雲端！");
+    } catch(e) {
+        console.error("強制同步失敗:", e);
+        showToast("❌ 同步失敗，請查看 Console", "❌");
     }
 }
 
@@ -449,7 +503,7 @@ function cancelEdit() {
     
     setTimeout(() => {
         document.querySelector("#expense-modal h3").innerHTML = '<span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✍️</span> 新增團隊花費';
-        document.getElementById("btn-save-expense").innerHTML = '<span>寫入帳本</span><span class="text-xl">✍️</span>';
+        document.getElementById("btn-save-expense").innerHTML = '<span>寫入帳本</span><span class="text-lg">✍️</span>';
     }, 300);
 }
 
@@ -482,7 +536,7 @@ function openEditExpenseModal(expenseId) {
     modal.classList.add("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
     
     document.querySelector("#expense-modal h3").innerHTML = '<span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✏️</span> 編輯團隊花費';
-    document.getElementById("btn-save-expense").innerHTML = '<span>更新帳本</span><span class="text-xl">💾</span>';
+    document.getElementById("btn-save-expense").innerHTML = '<span>更新帳本</span><span class="text-lg">💾</span>';
 }
 
 function renderLedgerSelectors() {
@@ -611,7 +665,7 @@ function saveExpense() {
     
     setTimeout(() => {
         document.querySelector("#expense-modal h3").innerHTML = '<span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✍️</span> 新增團隊花費';
-        document.getElementById("btn-save-expense").innerHTML = '<span>寫入帳本</span><span class="text-xl">✍️</span>';
+        document.getElementById("btn-save-expense").innerHTML = '<span>寫入帳本</span><span class="text-lg">✍️</span>';
     }, 300);
 }
 
