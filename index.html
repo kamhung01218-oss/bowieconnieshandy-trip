@@ -9,7 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
 
-<!-- 🔥 引用行程數據 -->
+<!-- 行程數據 -->
 <script src="data.js"></script>
 
 <script>
@@ -43,7 +43,6 @@ firebase.auth().signInAnonymously().catch(err => console.warn("匿名登入失�
 const db = firebase.firestore();
 window.db = db;
 window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
-// 留言板集合
 window.messagesRef = db.collection("spot_messages");
 
 window.dbRef.onSnapshot(docSnap => {
@@ -658,7 +657,7 @@ async function syncDataToCloud() {
         <div class="space-y-2.5 mb-6">
           <div class="flex items-center gap-3 bg-sky-50 border border-sky-100 rounded-xl p-3">
             <span class="text-xl">🗺️</span>
-            <div><strong class="text-sm text-slate-800">7天完整行程</strong><p class="text-[11px] text-slate-500">每日詳細安排、美食攻略、導航連結</p></div>
+            <div><strong class="text-sm text-slate-800">7天完整行程</strong><p class="text-[11px] text-slate-500">每日詳細安排、美食攻略、留言板</p></div>
           </div>
           <div class="flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-xl p-3">
             <span class="text-xl">💰</span>
@@ -711,11 +710,11 @@ async function syncDataToCloud() {
   </header>
 
   <!-- 主導航 -->
-  <nav class="max-w-md mx-auto mt-6 px-4 relative z-10">
+  <nav class="max-w-4xl mx-auto mt-6 px-4 relative z-10">
     <div class="bg-white p-1.5 rounded-full shadow-lg shadow-sky-100 border border-slate-200 flex gap-1">
       <button id="nav-itinerary-btn" onclick="switchMainTab('itinerary')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active"><span>🗺️</span> 行程指南</button>
       <button id="nav-ledger-btn" onclick="switchMainTab('ledger')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition"><span>💰</span> 記帳本</button>
-      <button onclick="window.open('/shopping.html', '_blank')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition"><span>🛍️</span> 購物清單</button>
+      <button id="nav-shopping-btn" onclick="switchMainTab('shopping')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition"><span>🛍️</span> 購物清單</button>
     </div>
   </nav>
 
@@ -804,8 +803,13 @@ async function syncDataToCloud() {
     <iframe src="/ledger.html" class="w-full h-screen border-none rounded-2xl shadow-sm" title="記帳本"></iframe>
   </div>
 
-  <!-- 收合按鈕 -->
-  <button id="fab-collapse-all" onclick="collapseAllItineraries()" class="fixed hidden bottom-20 right-4 md:right-6 z-50 bg-slate-700 hover:bg-slate-800 text-white rounded-full h-10 px-5 shadow-lg border border-slate-600 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group opacity-0 translate-y-8">
+  <!-- 購物清單 iframe -->
+  <div id="shopping-frame-container" class="hidden max-w-4xl mx-auto px-4 mt-6 pb-20 space-y-6">
+    <iframe src="/shopping.html" class="w-full h-screen border-none rounded-2xl shadow-sm" title="購物清單"></iframe>
+  </div>
+
+  <!-- ✅ 收合按鈕（固定顯示） -->
+  <button id="fab-collapse-all" onclick="collapseAllItineraries()" class="fixed bottom-20 right-4 md:right-6 z-50 bg-slate-700 hover:bg-slate-800 text-white rounded-full h-10 px-5 shadow-lg border border-slate-600 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95">
     <span class="text-lg font-black">⬆️</span>
     <span class="font-bold text-sm hidden md:inline">收合行程</span>
   </button>
@@ -1080,9 +1084,9 @@ async function syncDataToCloud() {
     const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27"];
 
     // 留言板相關變數
-    let messageCache = {}; // 快取留言資料
     let authMode = '';
     let authDeleteSpotId = '';
+    let authDeleteIndex = -1;
 
     // 符號密碼（與記帳本一致）
     const memberSymbols = {
@@ -1158,26 +1162,41 @@ async function syncDataToCloud() {
       }
     }
 
-    // ==================== 頁面切換 ====================
+    // ==================== 頁面切換（含購物清單） ====================
     function switchMainTab(tab) {
       state.currentMainTab = tab;
       const itineraryView = document.getElementById("main-itinerary-view");
       const ledgerFrameContainer = document.getElementById("ledger-frame-container");
+      const shoppingFrameContainer = document.getElementById("shopping-frame-container");
       const quickSection = document.getElementById("itinerary-quick-section");
       const navItineraryBtn = document.getElementById("nav-itinerary-btn");
       const navLedgerBtn = document.getElementById("nav-ledger-btn");
+      const navShoppingBtn = document.getElementById("nav-shopping-btn");
+      
       if (tab === "itinerary") {
         itineraryView.classList.remove("hidden");
         ledgerFrameContainer.classList.add("hidden");
+        shoppingFrameContainer.classList.add("hidden");
         if (quickSection) quickSection.classList.remove("hidden");
         navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
         navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
-      } else {
+        navShoppingBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
+      } else if (tab === "ledger") {
         itineraryView.classList.add("hidden");
         ledgerFrameContainer.classList.remove("hidden");
+        shoppingFrameContainer.classList.add("hidden");
         if (quickSection) quickSection.classList.add("hidden");
         navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
         navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
+        navShoppingBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
+      } else if (tab === "shopping") {
+        itineraryView.classList.add("hidden");
+        ledgerFrameContainer.classList.add("hidden");
+        shoppingFrameContainer.classList.remove("hidden");
+        if (quickSection) quickSection.classList.add("hidden");
+        navShoppingBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
+        navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
+        navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
       }
       setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
     }
@@ -1287,7 +1306,7 @@ async function syncDataToCloud() {
       }
     }
 
-    // ==================== 行程渲染 ====================
+    // ==================== 行程渲染（含留言板） ====================
     function renderDayItinerary(sectionId, dayData) {
       const section = document.getElementById(sectionId);
       if (!section) return;
@@ -1380,7 +1399,6 @@ async function syncDataToCloud() {
     }
 
     function requestDeleteMessage(spotId, index) {
-      // 開啟身份驗證
       authMode = 'delete_message';
       authDeleteSpotId = spotId;
       authDeleteIndex = index;
@@ -1418,8 +1436,6 @@ async function syncDataToCloud() {
     }
 
     // ==================== 身份驗證 ====================
-    let authDeleteIndex = -1;
-
     function openAuthModal() {
       const modal = document.getElementById('auth-modal');
       const memberName = document.getElementById('auth-member-name');
@@ -1523,54 +1539,22 @@ async function syncDataToCloud() {
       }
     }
 
-    // ==================== 倒數計時 ====================
-    const departureTarget = new Date("2027-01-21T10:00:00+08:00").getTime();
-    const zaoTarget = new Date("2027-01-15T23:00:00+08:00").getTime();
-    const ginzanTarget = new Date("2027-01-08T23:00:00+08:00").getTime();
-    function updateCountdowns() {
-      const now = new Date().getTime();
-      const departureDiff = departureTarget - now;
-      const departureEl = document.getElementById("departure-countdown");
-      if (departureEl) {
-        if (departureDiff < 0) {
-          departureEl.innerText = "❄️ 2027 東北冬日雪景之旅進行中！";
-          departureEl.classList.remove("animate-pulse");
+    // ==================== 收合 / 展開全部行程 ====================
+    function collapseAllItineraries() {
+      const activeSection = document.querySelector(".day-section:not(.hidden)");
+      if (activeSection) {
+        const details = activeSection.querySelectorAll("details");
+        const anyOpen = Array.from(details).some(d => d.open);
+        if (anyOpen) {
+          details.forEach(detail => { detail.open = false; });
+          showToast("⬆️ 已收合全部行程");
+          const btn = document.getElementById("fab-collapse-all");
+          if (btn) btn.innerHTML = '<span class="text-lg font-black">⬇️</span><span class="font-bold text-sm hidden md:inline">展開行程</span>';
         } else {
-          const days = Math.floor(departureDiff / 86400000);
-          const hours = Math.floor(departureDiff % 86400000 / 3600000);
-          const minutes = Math.floor(departureDiff % 3600000 / 60000);
-          const seconds = Math.floor(departureDiff % 60000 / 1000);
-          departureEl.innerText = `${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
-        }
-      }
-      const ginzanDiff = ginzanTarget - now;
-      const ginzanEl = document.getElementById("ginzan-countdown");
-      if (ginzanEl) {
-        if (ginzanDiff < 0) {
-          ginzanEl.innerText = "🎟️ 搶票時段已開始或結束！";
-          ginzanEl.classList.remove("animate-pulse", "text-purple-700");
-          ginzanEl.classList.add("text-rose-600");
-        } else {
-          const days = Math.floor(ginzanDiff / 86400000);
-          const hours = Math.floor(ginzanDiff % 86400000 / 3600000);
-          const minutes = Math.floor(ginzanDiff % 3600000 / 60000);
-          const seconds = Math.floor(ginzanDiff % 60000 / 1000);
-          ginzanEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
-        }
-      }
-      const zaoDiff = zaoTarget - now;
-      const zaoEl = document.getElementById("zao-countdown");
-      if (zaoEl) {
-        if (zaoDiff < 0) {
-          zaoEl.innerText = "🎟️ 搶票時段已開始或結束！";
-          zaoEl.classList.remove("animate-pulse", "text-sky-700");
-          zaoEl.classList.add("text-rose-600");
-        } else {
-          const days = Math.floor(zaoDiff / 86400000);
-          const hours = Math.floor(zaoDiff % 86400000 / 3600000);
-          const minutes = Math.floor(zaoDiff % 3600000 / 60000);
-          const seconds = Math.floor(zaoDiff % 60000 / 1000);
-          zaoEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+          details.forEach(detail => { detail.open = true; });
+          showToast("⬇️ 已展開全部行程");
+          const btn = document.getElementById("fab-collapse-all");
+          if (btn) btn.innerHTML = '<span class="text-lg font-black">⬆️</span><span class="font-bold text-sm hidden md:inline">收合行程</span>';
         }
       }
     }
