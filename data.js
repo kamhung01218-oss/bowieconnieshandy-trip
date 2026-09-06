@@ -1,8 +1,8 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 1.0.0 (加入 subtitle 欄位)
- *  最後更新: 2026-09-05
+ *  版本: 1.0.0 (加入 Day 6 圖片)
+ *  最後更新: 2026-09-06
  * ============================================================
  */
 
@@ -282,7 +282,7 @@ const winterItineraries = [
                 <div>
                   <span class="font-bold text-amber-800 text-[12px] border-b border-amber-200/60 pb-0.5 mb-1 block">1 樓餐廳街 (適合悠閒聚餐)</span>
                   <ul class="list-disc pl-4 space-y-1">
-                    <li><strong>大戶屋 (Ootoya)：</strong>日本家常定食代表，主打營養均衡魚肉料理與黑醋家庭菜。</li>
+                    <li><strong>大戶屋 (Ootoya)：</strong>日本家常定食代表，主打均衡魚肉料理與黑醋家庭菜。</li>
                     <li><strong>いきなりステーキ (Ikinari Steak)：</strong>人氣現切碳烤牛排，自由決定部位與克數。</li>
                     <li><strong>築地銀章魚燒：</strong>設有內用座位，外皮酥脆、內餡熱騰騰，完美小食。</li>
                   </ul>
@@ -1017,6 +1017,7 @@ const winterItineraries = [
       {
         time: "08:00 - 09:15",
         title: "☕ THE MOST BAKERY ＆ COFFEE 東口店 早餐",
+        img: "https://sendaiminami-tusin.com/wp-content/uploads/2023/08/img_7984.jpg",  // ✅ 新增圖片
         tag: { text: "🥐 人氣麵包", class: "tag-amber" },
         navUrl: "https://maps.app.goo.gl/FmsKLHRKk3g3z6UDA",
         navName: "THE MOST BAKERY",
@@ -1117,6 +1118,7 @@ const winterItineraries = [
       {
         time: "12:45 - 14:15",
         title: "極致和牛燒肉午餐 ➔ 【仔虎 利府店】(最推薦✨)",
+        img: "https://matipura.com/CORE/wp-content/uploads/2021/03/DSC00724.jpg",  // ✅ 新增圖片
         tag: { text: "🥩 頂級和牛", class: "tag-amber" },
         navUrl: "https://maps.app.goo.gl/n8F39N1Zq9q57g769",
         navName: "仔虎 利府店",
@@ -1159,6 +1161,7 @@ const winterItineraries = [
       {
         time: "14:30 - 17:30",
         title: "【Mitsui Outlet Park 仙台港】大血拚",
+        img: "https://resources.matcha-jp.com/resize/720x2000/2025/08/24-242139.webp",  // ✅ 新增圖片
         tag: { text: "🛍️ 狂買免提", class: "tag-rose" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Mitsui+Outlet+Park+Sendai+Port",
         navName: "三井Outlet",
@@ -1167,7 +1170,8 @@ const winterItineraries = [
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
             <p><strong>14:30–17:30 血拚大採買：</strong>吃飽後，開車約 15 分鐘抵達三井 Outlet。主攻 miki HOUSE, GAP Kids 童裝，與 The North Face, Mont-bell 等戶外品牌，4 位大人可分頭輪流開逛！</p>
             <div class="bg-indigo-50/80 border border-indigo-200 p-2.5 rounded-xl text-indigo-900 mt-2">
-              <strong class="block mb-1 flex items-center gap-1"><span>🚗</span> 自駕最大優勢 (狂買免提)：</strong>買到的衣物、鞋子與戰利品，隨時可以提回停在專用停車場的 Minivan 後車廂，完全不必重提或塞滿推車！
+              <strong class="block mb-1 flex items-center gap-1"><span>🚗</span> 自駕最大優勢 (狂買免提)：</strong>
+              買到的衣物、鞋子與戰利品，隨時可以提回停在專用停車場的 Minivan 後車廂，完全不必重提或塞滿推車！
             </div>
             <p class="text-[11px] text-amber-700 font-bold bg-amber-50 border border-amber-100 p-2 rounded-xl mt-1">🎟️ 優惠提醒：開逛前先憑護照至 1 樓綜合服務台領取外國遊客專屬 Coupon，部分店家可享額外折扣！</p>
           </div>
