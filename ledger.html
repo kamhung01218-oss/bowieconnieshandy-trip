@@ -16,6 +16,96 @@
 body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .scrollbar-none::-webkit-scrollbar{display:none}
 .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
+
+/* 新增動態效果 */
+@keyframes footprint-walk {
+  0% { transform: translateX(0) scale(1); opacity: 0.8; }
+  50% { transform: translateX(15px) scale(1.1); opacity: 1; }
+  100% { transform: translateX(30px) scale(0.9); opacity: 0; }
+}
+
+@keyframes penguin-walk {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(-5deg); }
+  75% { transform: translateY(3px) rotate(5deg); }
+}
+
+@keyframes penguin-jump {
+  0% { transform: translateY(0); }
+  30% { transform: translateY(-20px) scale(1.1); }
+  50% { transform: translateY(-15px) scale(0.95); }
+  70% { transform: translateY(-20px) scale(1.1); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes mountain-move {
+  0% { background-position: 0 0; }
+  100% { background-position: 100% 0; }
+}
+
+@keyframes click-snow {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(30px) scale(0.5); opacity: 0; }
+}
+
+.penguin {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  font-size: 40px;
+  z-index: 9998;
+  cursor: pointer;
+  animation: penguin-walk 2s ease-in-out infinite;
+  transition: transform 0.3s;
+}
+
+.penguin:hover {
+  animation: penguin-jump 0.6s ease;
+}
+
+.confetti {
+  position: fixed;
+  top: -10px;
+  width: 10px;
+  height: 15px;
+  z-index: 9999;
+  pointer-events: none;
+  animation: confetti-fall 3s ease-in forwards;
+}
+
+.footprint {
+  position: fixed;
+  bottom: 10px;
+  font-size: 20px;
+  z-index: 9996;
+  pointer-events: none;
+  animation: footprint-walk 2s ease-in forwards;
+}
+
+.mountain-bg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(147, 197, 253, 0.3), rgba(224, 242, 254, 0.2));
+  animation: mountain-move 20s linear infinite;
+  z-index: 0;
+}
+
+.click-snowflake {
+  position: fixed;
+  pointer-events: none;
+  font-size: 20px;
+  z-index: 9997;
+  animation: click-snow 0.8s ease-out forwards;
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-5px); }
@@ -25,6 +115,11 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen pb-16 relative">
+
+  <!-- 動態效果元素 -->
+  <div id="penguin" class="penguin" onclick="penguinJump()">🐧</div>
+  <div id="mountain-bg" class="mountain-bg"></div>
+  <div id="footprints-container"></div>
 
 <!-- 記帳本內容 -->
 <div class="max-w-4xl mx-auto px-4 pt-6 pb-20 space-y-6">
@@ -81,7 +176,9 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3">
                 <h4 class="text-sm font-bold text-slate-800">所有團隊開支</h4>
                 <div class="flex flex-wrap items-center gap-2">
+                    <!-- 搜尋框 -->
                     <input id="search-input" oninput="renderExpensesList()" placeholder="🔍 搜尋名稱/分類" class="text-xs border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500/50 w-40">
+                    <!-- 排序 -->
                     <select id="sort-select" onchange="renderExpensesList()" class="text-xs border border-slate-300 rounded-lg px-2 py-1.5 bg-white focus:outline-none">
                         <option value="newest">最新優先</option>
                         <option value="oldest">最舊優先</option>
@@ -124,6 +221,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         </div>
 
         <div id="subview-suggested" class="p-4 hidden space-y-4">
+            <!-- 清債摘要卡 -->
             <div class="grid grid-cols-3 gap-2">
                 <div class="bg-red-50 border border-red-200 p-2 rounded-xl text-center">
                     <span class="text-[10px] text-red-600 block">應付總額</span>
@@ -138,6 +236,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
                     <strong id="settled-total" class="text-sm text-sky-600">0%</strong>
                 </div>
             </div>
+            <!-- 複製方案按鈕 -->
             <div class="flex gap-2">
                 <button onclick="copySettlementPlan()" class="flex-1 py-2 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl text-xs font-bold border border-sky-200 transition">📋 複製清債方案</button>
                 <button onclick="resetSettlementStatus()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 transition">🔄 重置狀態</button>
@@ -148,6 +247,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             <div class="space-y-2" id="suggested-settle-container"></div>
         </div>
 
+        <!-- 歷史紀錄分頁 -->
         <div id="subview-history" class="p-4 hidden space-y-4">
             <h4 class="text-sm font-bold text-slate-800">🕐 修改與刪除紀錄</h4>
             <div class="space-y-2" id="history-list-container">
@@ -164,6 +264,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
     </div>
     
+    <!-- Modal 頂部：標題 + 保存按鈕 + 關閉按鈕 -->
     <div class="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100">
         <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
             <span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✍️</span>
@@ -376,7 +477,6 @@ async function forceSync() {
 // ==================== 全域變數與狀態 ====================
 const members = ["余生", "bowie", "shandy", "Connie"];
 
-// 每位成員的專屬符號（顯示用）
 const memberSymbols = {
     "余生": "🌊",
     "bowie": "🌸",
@@ -384,7 +484,6 @@ const memberSymbols = {
     "Connie": "🌺"
 };
 
-// 每位成員的雙符號密碼（依序點擊兩個符號）
 const memberPasswords = {
     "余生": ["🔵", "🟥"],
     "bowie": ["🩷", "🟨"],
@@ -392,7 +491,6 @@ const memberPasswords = {
     "Connie": ["🟣", "🟦"]
 };
 
-// 符號池（共20個，防止被猜到）
 const symbolPool = ["🔵", "🩷", "🟢", "🟣", "🔴", "🟠", "🟡", "🟤", "⚫", "⚪", "🟦", "🟧", "🟨", "🟩", "🟪", "🟥", "⬛", "⬜", "🔶", "🔷"];
 
 const memberStyle = {
@@ -550,7 +648,7 @@ function verifyIdentity() {
     } else {
         failedAttempts++;
         if (failedAttempts >= 5) {
-            lockUntil = Date.now() + 30000; // 30秒鎖定
+            lockUntil = Date.now() + 30000;
             status.innerHTML = `❌ 嘗試次數過多，請等待 30 秒後再試。`;
             status.className = "text-[10px] font-bold mt-2 text-red-500 bg-red-50 border border-red-200 rounded-lg px-2 py-1.5";
             status.classList.remove("hidden");
@@ -561,7 +659,6 @@ function verifyIdentity() {
             status.classList.remove("hidden");
             showToast("❌ 符號密碼錯誤！", "❌");
         }
-        // 重置已選符號
         selectedPasswordSymbols = [];
         renderSymbolPasswordGrid();
         updateSelectedSymbols();
@@ -668,7 +765,6 @@ function openEditExpenseModal(expenseId) {
     state.activePayer = expense.payer;
     state.activeSplitWith = [...expense.splitWith];
     
-    // 重置身份驗證（編輯也需要驗證）
     verifiedMember = null;
     selectedMember = null;
     selectedPasswordSymbols = [];
@@ -852,6 +948,7 @@ function saveExpense() {
         });
         
         showToast("🎉 記帳成功並已同步！");
+        showConfetti(); // 觸發彩帶慶祝
     }
 
     saveLocalExpenses();
@@ -1299,6 +1396,67 @@ function executeClearExpenses() {
     closeConfirmModal();
 }
 
+// ==================== 動態效果 ====================
+
+// 企鵝跳躍
+function penguinJump() {
+    const penguin = document.getElementById("penguin");
+    if (penguin) {
+        penguin.style.animation = "penguin-jump 0.6s ease";
+        setTimeout(() => {
+            penguin.style.animation = "penguin-walk 2s ease-in-out infinite";
+        }, 600);
+    }
+}
+
+// 點擊雪花效果
+document.addEventListener("click", (e) => {
+    if (e.target.closest("button, a, input, select, textarea, .modal-box, iframe")) return;
+    
+    const snowflake = document.createElement("span");
+    snowflake.className = "click-snowflake";
+    snowflake.innerText = "❄️";
+    snowflake.style.left = e.clientX + "px";
+    snowflake.style.top = e.clientY + "px";
+    document.body.appendChild(snowflake);
+    setTimeout(() => snowflake.remove(), 800);
+});
+
+// 腳印動畫
+function showFootprints() {
+    const container = document.getElementById("footprints-container");
+    if (!container) return;
+    const icons = ["👣", "🐾", "❄️"];
+    for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+            const footprint = document.createElement("span");
+            footprint.className = "footprint";
+            footprint.innerText = icons[Math.floor(Math.random() * icons.length)];
+            footprint.style.left = Math.random() * 80 + "vw";
+            container.appendChild(footprint);
+            setTimeout(() => footprint.remove(), 2500);
+        }, i * 250);
+    }
+}
+
+// 彩帶慶祝動畫
+function showConfetti() {
+    const colors = ["#f43f5e", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
+    for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement("div");
+            confetti.className = "confetti";
+            confetti.style.left = Math.random() * 100 + "vw";
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.width = Math.random() * 8 + 4 + "px";
+            confetti.style.height = Math.random() * 12 + 6 + "px";
+            confetti.style.animationDuration = Math.random() * 2 + 2 + "s";
+            document.body.appendChild(confetti);
+            setTimeout(() => confetti.remove(), 4000);
+        }, Math.random() * 500);
+    }
+}
+
 // ==================== 初始化 ====================
 window.addEventListener("DOMContentLoaded", () => {
     const savedHistory = localStorage.getItem("tohoku_history_2027");
@@ -1307,6 +1465,10 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     loadLocalExpenses();
     updateLedgerUI();
+    
+    // 初始化動態效果
+    showFootprints();
+    setInterval(showFootprints, 15000);
 });
 
 function saveLocalExpenses() {

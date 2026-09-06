@@ -9,7 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
 
-<!-- 🔥 引用行程數據 (請確保此檔案存在於同一目錄) -->
+<!-- 🔥 引用行程數據 -->
 <script src="data.js"></script>
 
 <script>
@@ -27,14 +27,14 @@ tailwind.config = {
 </script>
 
 <script>
-// Firebase 初始化 (注意：這是公開的配置，請務必在 Firebase Console 設定規則)
+// Firebase 初始化
 firebase.initializeApp({
   apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
   authDomain: "tohoku-winter-trip.firebaseapp.com",
   projectId: "tohoku-winter-trip",
   storageBucket: "tohoku-winter-trip.firebasestorage.app",
   messagingSenderId: "991555590088",
-  appId: "1:991555590088:web:afb089890d7d546821d2fd",  // ✅ 已統一
+  appId: "1:991555590088:web:afb089890d7d546821d2fd",
   measurementId: "G-9EN9JG5F3F"
 });
 
@@ -64,10 +64,8 @@ async function syncDataToCloud() {
 </script>
 
 <style>
-  /* ✅ 導入的字型 */
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
 
-  /* ✅ CSS 變數 */
   :root {
     --radius-sm: 8px;
     --radius-md: 12px;
@@ -88,7 +86,6 @@ async function syncDataToCloud() {
     color: #1e293b;
   }
 
-  /* ✅ 卡片樣式 */
   .glass-card {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
@@ -108,7 +105,6 @@ async function syncDataToCloud() {
   .text-contrast { color: #475569; }
   .text-contrast-light { color: #64748b; }
 
-  /* ✅ 導航按鈕 */
   .nav-btn {
     border-radius: 999px;
     backdrop-filter: blur(10px);
@@ -127,7 +123,6 @@ async function syncDataToCloud() {
     box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
   }
 
-  /* ✅ 日期標籤 */
   .day-tab {
     border-radius: 999px !important;
     transition: all 0.3s ease;
@@ -163,7 +158,6 @@ async function syncDataToCloud() {
   .scrollbar-none::-webkit-scrollbar { display: none; }
   .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* ✅ 新增：時間膠囊標籤 */
   .event-time-pill {
     display: inline-flex;
     align-items: center;
@@ -177,7 +171,6 @@ async function syncDataToCloud() {
     margin-bottom: 0.25rem;
   }
 
-  /* ✅ 新增：線框導航按鈕 */
   .nav-link-outline {
     background: white;
     color: #64748b;
@@ -193,7 +186,6 @@ async function syncDataToCloud() {
     color: #0284c7;
   }
 
-  /* ✅ 內部摺疊手風琴指示器 */
   details > summary {
     list-style: none;
   }
@@ -257,7 +249,6 @@ async function syncDataToCloud() {
     box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
   }
 
-  /* ✅ 雪花特效 */
   .snowflake {
     position: absolute;
     top: -10px;
@@ -295,7 +286,6 @@ async function syncDataToCloud() {
     50% { opacity: 1; }
   }
 
-  /* ✅ 彈窗過渡 */
   .modal-overlay {
     opacity: 0;
     visibility: hidden;
@@ -313,16 +303,6 @@ async function syncDataToCloud() {
     transform: scale(1) translateY(0);
   }
 
-  /* ✅ 下拉選單 */
-  details > summary {
-    list-style: none;
-    cursor: pointer;
-  }
-  details > summary::-webkit-details-marker {
-    display: none;
-  }
-
-  /* ✅ 新增：統一標籤樣式 */
   .tag {
     display: inline-flex;
     align-items: center;
@@ -341,7 +321,6 @@ async function syncDataToCloud() {
   .tag-indigo { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
   .tag-emerald { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 
-  /* ✅ 新增：統一關閉按鈕 */
   .modal-close {
     position: absolute;
     top: 1rem;
@@ -362,7 +341,6 @@ async function syncDataToCloud() {
     color: #0f172a;
   }
 
-  /* ✅ 新增：天氣橫條滾動 */
   #mini-forecast {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
@@ -377,7 +355,6 @@ async function syncDataToCloud() {
     text-align: center;
   }
 
-  /* ✅ 新增：加載動畫 */
   .loading-spinner {
     border: 3px solid rgba(0,0,0,0.1);
     border-top-color: #0284c7;
@@ -388,7 +365,6 @@ async function syncDataToCloud() {
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ✅ 移動端安全區調整 */
   @media (max-width: 768px) {
     #currency-fab {
       bottom: calc(env(safe-area-inset-bottom) + 80px) !important;
@@ -397,10 +373,105 @@ async function syncDataToCloud() {
       bottom: calc(env(safe-area-inset-bottom) + 150px) !important;
     }
   }
+
+  /* ==================== 新增動態效果 CSS ==================== */
+  @keyframes footprint-walk {
+    0% { transform: translateX(0) scale(1); opacity: 0.8; }
+    50% { transform: translateX(15px) scale(1.1); opacity: 1; }
+    100% { transform: translateX(30px) scale(0.9); opacity: 0; }
+  }
+
+  @keyframes penguin-walk {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-3px) rotate(-5deg); }
+    75% { transform: translateY(3px) rotate(5deg); }
+  }
+
+  @keyframes penguin-jump {
+    0% { transform: translateY(0); }
+    30% { transform: translateY(-20px) scale(1.1); }
+    50% { transform: translateY(-15px) scale(0.95); }
+    70% { transform: translateY(-20px) scale(1.1); }
+    100% { transform: translateY(0); }
+  }
+
+  @keyframes confetti-fall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  @keyframes mountain-move {
+    0% { background-position: 0 0; }
+    100% { background-position: 100% 0; }
+  }
+
+  .penguin {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-size: 40px;
+    z-index: 9998;
+    cursor: pointer;
+    animation: penguin-walk 2s ease-in-out infinite;
+    transition: transform 0.3s;
+  }
+
+  .penguin:hover {
+    animation: penguin-jump 0.6s ease;
+  }
+
+  .confetti {
+    position: fixed;
+    top: -10px;
+    width: 10px;
+    height: 15px;
+    z-index: 9999;
+    pointer-events: none;
+    animation: confetti-fall 3s ease-in forwards;
+  }
+
+  .footprint {
+    position: fixed;
+    bottom: 10px;
+    font-size: 20px;
+    z-index: 9996;
+    pointer-events: none;
+    animation: footprint-walk 2s ease-in forwards;
+  }
+
+  .mountain-bg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(147, 197, 253, 0.3), rgba(224, 242, 254, 0.2));
+    animation: mountain-move 20s linear infinite;
+    z-index: 0;
+  }
+
+  .click-snowflake {
+    position: fixed;
+    pointer-events: none;
+    font-size: 20px;
+    z-index: 9997;
+    animation: click-snow 0.8s ease-out forwards;
+  }
+
+  @keyframes click-snow {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(30px) scale(0.5); opacity: 0; }
+  }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-16 relative">
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
+  
+  <!-- ✅ 動態效果元素 -->
+  <div id="penguin" class="penguin" onclick="penguinJump()">🐧</div>
+  <div id="mountain-bg" class="mountain-bg"></div>
+  <div id="footprints-container"></div>
+  <div id="confetti-container"></div>
 
   <!-- 歡迎導覽 -->
   <div id="welcome-modal" class="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-100">
@@ -476,7 +547,7 @@ async function syncDataToCloud() {
     </div>
   </nav>
 
-  <!-- 快捷功能 + 信息橫條（已加 id，切換時可隱藏） -->
+  <!-- 快捷功能 + 信息橫條 -->
   <div id="itinerary-quick-section" class="max-w-6xl mx-auto px-4 mt-6 space-y-4">
     
     <!-- ① 三個快捷按鈕 -->
@@ -495,9 +566,9 @@ async function syncDataToCloud() {
       </button>
     </div>
 
-    <!-- ② 天氣 + 搶票 (強化天氣) -->
+    <!-- ② 天氣 + 搶票 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- 天氣橫條 (更醒目) -->
+      <!-- 天氣橫條 -->
       <div class="bg-gradient-to-r from-sky-100 via-blue-100 to-indigo-100 border-2 border-sky-300 p-4 rounded-2xl shadow-lg">
         <div class="flex items-center justify-between flex-wrap gap-3">
           <div class="flex items-center gap-3">
@@ -535,8 +606,7 @@ async function syncDataToCloud() {
     <main class="max-w-6xl mx-auto px-4 mt-8">
       <div class="space-y-6">
         
-
-        <!-- 日期標籤 (sticky 長期浮動在頂部) -->
+        <!-- 日期標籤 -->
         <div class="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-3 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
           <div class="flex gap-1.5 overflow-x-auto scrollbar-none" id="day-tabs-container">
             <button onclick="switchDay(1)" id="tab-d1" class="day-tab active flex-shrink-0">D1 (1/21)</button>
@@ -622,7 +692,7 @@ async function syncDataToCloud() {
     <span id="toast-message">複製成功！</span>
   </div>
 
-  <!-- ==================== 五個彈窗 (完整版) ==================== -->
+  <!-- ==================== 五個彈窗 ==================== -->
 
   <!-- 行前預訂彈窗 -->
   <div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeBookingModal()">
@@ -960,7 +1030,7 @@ async function syncDataToCloud() {
       if (targetSection) targetSection.classList.remove("hidden");
     }
 
-    // ==================== 裝備清單 (需要實際用於 modal 中) ====================
+    // ==================== 裝備清單 ====================
     function toggleCheckItem(id) {
       const checkbox = document.getElementById(id);
       if (checkbox) {
@@ -1146,7 +1216,7 @@ function closeTripOverview() {
       }
     }
 
-    // ==================== 行程渲染（新版） ====================
+    // ==================== 行程渲染 ====================
     function renderDayItinerary(sectionId, dayData) {
       const section = document.getElementById(sectionId);
       if (!section) return;
@@ -1448,6 +1518,68 @@ function closeTripOverview() {
       }
     });
 
+    // ==================== 動態效果 ====================
+
+    // 企鵝跳躍
+    function penguinJump() {
+        const penguin = document.getElementById("penguin");
+        if (penguin) {
+            penguin.style.animation = "penguin-jump 0.6s ease";
+            setTimeout(() => {
+                penguin.style.animation = "penguin-walk 2s ease-in-out infinite";
+            }, 600);
+        }
+    }
+
+    // 點擊雪花效果
+    document.addEventListener("click", (e) => {
+        // 如果點擊的是 modal 或按鈕，不觸發雪花
+        if (e.target.closest("button, a, input, select, textarea, .modal-box, iframe")) return;
+        
+        const snowflake = document.createElement("span");
+        snowflake.className = "click-snowflake";
+        snowflake.innerText = "❄️";
+        snowflake.style.left = e.clientX + "px";
+        snowflake.style.top = e.clientY + "px";
+        document.body.appendChild(snowflake);
+        setTimeout(() => snowflake.remove(), 800);
+    });
+
+    // 腳印動畫
+    function showFootprints() {
+        const container = document.getElementById("footprints-container");
+        if (!container) return;
+        const icons = ["👣", "🐾", "❄️"];
+        for (let i = 0; i < 6; i++) {
+            setTimeout(() => {
+                const footprint = document.createElement("span");
+                footprint.className = "footprint";
+                footprint.innerText = icons[Math.floor(Math.random() * icons.length)];
+                footprint.style.left = Math.random() * 80 + "vw";
+                container.appendChild(footprint);
+                setTimeout(() => footprint.remove(), 2500);
+            }, i * 250);
+        }
+    }
+
+    // 彩帶慶祝動畫（供記帳本觸發）
+    function showConfetti() {
+        const colors = ["#f43f5e", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
+        for (let i = 0; i < 30; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement("div");
+                confetti.className = "confetti";
+                confetti.style.left = Math.random() * 100 + "vw";
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = Math.random() * 8 + 4 + "px";
+                confetti.style.height = Math.random() * 12 + 6 + "px";
+                confetti.style.animationDuration = Math.random() * 2 + 2 + "s";
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 4000);
+            }, Math.random() * 500);
+        }
+    }
+
     // ==================== 初始化 ====================
     function initSnowEffect() {
       const snowContainer = document.getElementById("snow-fall");
@@ -1498,6 +1630,10 @@ function closeTripOverview() {
       setInterval(updateCurrentEventHighlight, 60000);
       checkWelcomeModal();
       fetchWeatherData();
+      
+      // 初始化動態效果
+      showFootprints();
+      setInterval(showFootprints, 15000); // 每15秒重複一次
     });
   </script>
 </body>
