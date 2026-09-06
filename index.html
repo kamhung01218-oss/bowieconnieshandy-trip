@@ -66,20 +66,8 @@ async function syncDataToCloud() {
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
 
-  :root {
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 24px;
-    --padding-card: 16px;
-    --gap-main: 20px;
-    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
-    --border-card: 1px solid rgba(186, 230, 253, 0.6);
-    --font-family: 'Noto Sans TC', sans-serif;
-  }
-
   body {
-    font-family: var(--font-family);
+    font-family: 'Noto Sans TC', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background: linear-gradient(180deg, #f0f9ff 0%, #ecfeff 40%, #f8fafc 100%);
@@ -89,11 +77,10 @@ async function syncDataToCloud() {
   .glass-card {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: var(--border-card);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
-    padding: var(--padding-card);
+    border: 1px solid rgba(186, 230, 253, 0.6);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    padding: 16px;
     transition: all 0.3s ease;
   }
 
@@ -102,13 +89,9 @@ async function syncDataToCloud() {
     transform: translateY(-2px);
   }
 
-  .text-contrast { color: #475569; }
-  .text-contrast-light { color: #64748b; }
-
   .nav-btn {
     border-radius: 999px;
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
     min-height: 44px;
@@ -171,138 +154,6 @@ async function syncDataToCloud() {
     margin-bottom: 0.25rem;
   }
 
-  .nav-link-outline {
-    background: white;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
-    border-radius: 9999px;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.625rem;
-    font-weight: 700;
-    transition: all 0.2s;
-  }
-  .nav-link-outline:hover {
-    border-color: #bae6fd;
-    color: #0284c7;
-  }
-
-  details > summary {
-    list-style: none;
-  }
-  details > summary::-webkit-details-marker {
-    display: none;
-  }
-  details > summary::after {
-    content: '+';
-    font-size: 1.2rem;
-    color: #64748b;
-    float: right;
-    transition: transform 0.2s;
-  }
-  details[open] > summary::after {
-    content: '−';
-  }
-
-  input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    border: 2px solid #94a3b8;
-    border-radius: 5px;
-    position: relative;
-    cursor: pointer;
-    vertical-align: middle;
-    margin-right: 6px;
-    transition: all 0.2s;
-    background: white;
-  }
-
-  input[type="checkbox"]:checked {
-    background: #0284c7;
-    border-color: #0284c7;
-  }
-
-  input[type="checkbox"]:checked::after {
-    content: '✓';
-    position: absolute;
-    color: white;
-    font-size: 12px;
-    left: 2px;
-    top: -1px;
-    font-weight: bold;
-  }
-
-  .btn-gradient {
-    background: linear-gradient(135deg, #0284c7, #0c4a6e) !important;
-    box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
-    transition: all 0.3s;
-  }
-
-  .btn-gradient:hover {
-    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
-    transform: translateY(-1px);
-  }
-
-  .btn-gradient:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
-  }
-
-  .snowflake {
-    position: absolute;
-    top: -10px;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9999;
-  }
-
-  @keyframes snowfall {
-    0% { transform: translateY(-10px) translateX(0) rotate(0deg); opacity: 0; }
-    10% { opacity: 1; }
-    50% { transform: translateY(50vh) translateX(20px) rotate(180deg); }
-    90% { opacity: 1; }
-    100% { transform: translateY(110vh) translateX(-20px) rotate(360deg); opacity: 0; }
-  }
-  @keyframes snowfall-small {
-    0% { transform: translateY(-10px) translateX(0) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.8; }
-    100% { transform: translateY(110vh) translateX(30px) rotate(360deg); opacity: 0; }
-  }
-  @keyframes snowfall-medium {
-    0% { transform: translateY(-10px) translateX(0) rotate(0deg); opacity: 0; }
-    10% { opacity: 1; }
-    100% { transform: translateY(110vh) translateX(-40px) rotate(-360deg); opacity: 0; }
-  }
-  @keyframes snowfall-large {
-    0% { transform: translateY(-10px) translateX(0) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.9; }
-    100% { transform: translateY(110vh) translateX(50px) rotate(720deg); opacity: 0; }
-  }
-
-  .snowflake-shine { animation: shine 2s ease-in-out infinite; }
-  @keyframes shine {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-  }
-
-  .modal-overlay {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s;
-  }
-  .modal-overlay.active {
-    opacity: 1;
-    visibility: visible;
-  }
-  .modal-box {
-    transform: scale(0.95) translateY(10px);
-    transition: transform 0.3s ease;
-  }
-  .modal-overlay.active .modal-box {
-    transform: scale(1) translateY(0);
-  }
-
   .tag {
     display: inline-flex;
     align-items: center;
@@ -341,6 +192,174 @@ async function syncDataToCloud() {
     color: #0f172a;
   }
 
+  .modal-overlay {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+  }
+  .modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  .modal-box {
+    transform: scale(0.95) translateY(10px);
+    transition: transform 0.3s ease;
+  }
+  .modal-overlay.active .modal-box {
+    transform: scale(1) translateY(0);
+  }
+
+  .btn-gradient {
+    background: linear-gradient(135deg, #0284c7, #0c4a6e) !important;
+    box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
+    transition: all 0.3s;
+  }
+  .btn-gradient:hover {
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    transform: translateY(-1px);
+  }
+  .btn-gradient:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+  }
+
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #94a3b8;
+    border-radius: 5px;
+    position: relative;
+    cursor: pointer;
+    vertical-align: middle;
+    margin-right: 6px;
+    transition: all 0.2s;
+    background: white;
+  }
+  input[type="checkbox"]:checked {
+    background: #0284c7;
+    border-color: #0284c7;
+  }
+  input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    left: 2px;
+    top: -1px;
+    font-weight: bold;
+  }
+
+  /* ==================== 動態角色 ==================== */
+  .walking-character {
+    position: fixed;
+    bottom: 10px;
+    font-size: 44px;
+    z-index: 9998;
+    cursor: pointer;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+    transition: transform 0.2s;
+  }
+
+  /* 雪人走路 */
+  .snowman {
+    left: 10px;
+    animation: snowman-walk 15s ease-in-out infinite;
+  }
+  @keyframes snowman-walk {
+    0% { left: 10px; transform: translateY(0) rotate(-2deg); }
+    25% { transform: translateY(-5px) rotate(2deg); }
+    50% { left: calc(100vw - 70px); transform: translateY(0) rotate(-2deg); }
+    75% { transform: translateY(-5px) rotate(2deg); }
+    100% { left: 10px; transform: translateY(0) rotate(-2deg); }
+  }
+
+  /* 狐狸走路 */
+  .fox {
+    right: 10px;
+    animation: fox-walk 10s ease-in-out infinite;
+  }
+  @keyframes fox-walk {
+    0% { right: 10px; transform: translateY(0) scaleX(1); }
+    25% { transform: translateY(-6px) scaleX(1); }
+    50% { right: calc(100vw - 70px); transform: translateY(0) scaleX(-1); }
+    75% { transform: translateY(-6px) scaleX(-1); }
+    100% { right: 10px; transform: translateY(0) scaleX(1); }
+  }
+
+  /* 點擊跳躍 */
+  @keyframes jump {
+    0% { transform: translateY(0) scale(1); }
+    30% { transform: translateY(-40px) scale(1.2); }
+    50% { transform: translateY(-25px) scale(0.95); }
+    70% { transform: translateY(-40px) scale(1.15); }
+    100% { transform: translateY(0) scale(1); }
+  }
+
+  .jumping {
+    animation: jump 0.7s ease !important;
+  }
+
+  /* 點擊雪花 */
+  .click-snowflake {
+    position: fixed;
+    pointer-events: none;
+    font-size: 20px;
+    z-index: 9997;
+    animation: click-snow 0.8s ease-out forwards;
+  }
+  @keyframes click-snow {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(30px) scale(0.5); opacity: 0; }
+  }
+
+  /* 腳印 */
+  .footprint {
+    position: fixed;
+    bottom: 10px;
+    font-size: 20px;
+    z-index: 9996;
+    pointer-events: none;
+    animation: footprint-walk 2s ease-in forwards;
+  }
+  @keyframes footprint-walk {
+    0% { transform: translateX(0) scale(1); opacity: 0.8; }
+    50% { transform: translateX(15px) scale(1.1); opacity: 1; }
+    100% { transform: translateX(30px) scale(0.9); opacity: 0; }
+  }
+
+  /* 彩帶 */
+  .confetti {
+    position: fixed;
+    top: -10px;
+    width: 10px;
+    height: 15px;
+    z-index: 9999;
+    pointer-events: none;
+    animation: confetti-fall 3s ease-in forwards;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* 山脈 */
+  .mountain-bg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(147, 197, 253, 0.3), rgba(224, 242, 254, 0.2));
+    animation: mountain-move 20s linear infinite;
+    z-index: 0;
+  }
+  @keyframes mountain-move {
+    0% { background-position: 0 0; }
+    100% { background-position: 100% 0; }
+  }
+
   #mini-forecast {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
@@ -364,111 +383,16 @@ async function syncDataToCloud() {
     animation: spin 0.8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  @media (max-width: 768px) {
-    #currency-fab {
-      bottom: calc(env(safe-area-inset-bottom) + 80px) !important;
-    }
-    #fab-collapse-all {
-      bottom: calc(env(safe-area-inset-bottom) + 150px) !important;
-    }
-  }
-
-  /* ==================== 新增動態效果 CSS ==================== */
-  @keyframes footprint-walk {
-    0% { transform: translateX(0) scale(1); opacity: 0.8; }
-    50% { transform: translateX(15px) scale(1.1); opacity: 1; }
-    100% { transform: translateX(30px) scale(0.9); opacity: 0; }
-  }
-
-  @keyframes penguin-walk {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    25% { transform: translateY(-3px) rotate(-5deg); }
-    75% { transform: translateY(3px) rotate(5deg); }
-  }
-
-  @keyframes penguin-jump {
-    0% { transform: translateY(0); }
-    30% { transform: translateY(-20px) scale(1.1); }
-    50% { transform: translateY(-15px) scale(0.95); }
-    70% { transform: translateY(-20px) scale(1.1); }
-    100% { transform: translateY(0); }
-  }
-
-  @keyframes confetti-fall {
-    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-  }
-
-  @keyframes mountain-move {
-    0% { background-position: 0 0; }
-    100% { background-position: 100% 0; }
-  }
-
-  .penguin {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    font-size: 40px;
-    z-index: 9998;
-    cursor: pointer;
-    animation: penguin-walk 2s ease-in-out infinite;
-    transition: transform 0.3s;
-  }
-
-  .penguin:hover {
-    animation: penguin-jump 0.6s ease;
-  }
-
-  .confetti {
-    position: fixed;
-    top: -10px;
-    width: 10px;
-    height: 15px;
-    z-index: 9999;
-    pointer-events: none;
-    animation: confetti-fall 3s ease-in forwards;
-  }
-
-  .footprint {
-    position: fixed;
-    bottom: 10px;
-    font-size: 20px;
-    z-index: 9996;
-    pointer-events: none;
-    animation: footprint-walk 2s ease-in forwards;
-  }
-
-  .mountain-bg {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-    background: linear-gradient(135deg, rgba(147, 197, 253, 0.3), rgba(224, 242, 254, 0.2));
-    animation: mountain-move 20s linear infinite;
-    z-index: 0;
-  }
-
-  .click-snowflake {
-    position: fixed;
-    pointer-events: none;
-    font-size: 20px;
-    z-index: 9997;
-    animation: click-snow 0.8s ease-out forwards;
-  }
-
-  @keyframes click-snow {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(30px) scale(0.5); opacity: 0; }
-  }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-16 relative">
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
-  
-  <!-- ✅ 動態效果元素 -->
-  <div id="penguin" class="penguin" onclick="penguinJump()">🐧</div>
+
+  <!-- ✅ 動態角色：雪人 + 狐狸 -->
+  <div id="snowman" class="walking-character snowman" onclick="jump('snowman')" title="點我！">⛄</div>
+  <div id="fox" class="walking-character fox" onclick="jump('fox')" title="點我！">🦊</div>
+
+  <!-- 其他動態元素 -->
   <div id="mountain-bg" class="mountain-bg"></div>
   <div id="footprints-container"></div>
   <div id="confetti-container"></div>
@@ -519,27 +443,27 @@ async function syncDataToCloud() {
       <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight mb-4" style="text-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 60px rgba(255,255,255,0.2);">日本東北冬日雪景親子<br class="block md:hidden">樹冰溫泉自駕之旅 ♨️❄️</h1>
       <p class="text-sm md:text-lg text-sky-100 max-w-2xl mx-auto font-light">📅 2027年1月21日 ➔ 1月27日（7天6夜雪國探索行程）</p>
 
-  <!-- ✅ 行程概要（長期展開，內含行程速覽按鈕） -->
-<div class="mt-6 max-w-4xl mx-auto bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-4 text-left">
-  <div class="flex items-center justify-between mb-3">
-    <h4 class="text-sm text-white font-bold flex items-center gap-2">
-      <span>📋</span> 行程概要
-    </h4>
-    <button onclick="openTripOverview()" class="text-[10px] font-bold bg-sky-500 hover:bg-sky-600 text-white px-3 py-1.5 rounded-full transition shadow-sm flex items-center gap-1.5 active:scale-95">
-      <span>📋</span>
-      <span class="hidden sm:inline">行程速覽</span>
-    </button>
-  </div>
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-left text-xs md:text-sm">
-    <div><span class="text-sky-300 block text-[9px]">行程天數</span><strong class="text-white">冬季 7天6夜</strong></div>
-    <div><span class="text-sky-300 block text-[9px]">團隊陣容</span><strong class="text-white">4大2小 (Alphard)</strong></div>
-    <div><span class="text-sky-300 block text-[9px]">✈️ 航班</span><strong class="text-white text-[11px]">去 1/21 14:05 / 回 1/27 16:05</strong></div>
-    <div class="text-center"><span class="text-sky-200 block text-[9px] mb-0.5">距離出發還有</span><div id="departure-countdown" class="font-bold text-amber-300 text-lg tracking-wide animate-pulse">計算中...</div></div>
-  </div>
-</div>
+      <!-- ✅ 行程概要（長期展開，內含行程速覽按鈕） -->
+      <div class="mt-6 max-w-4xl mx-auto bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-4 text-left">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-sm text-white font-bold flex items-center gap-2">
+            <span>📋</span> 行程概要
+          </h4>
+          <button onclick="openTripOverview()" class="text-[10px] font-bold bg-sky-500 hover:bg-sky-600 text-white px-3 py-1.5 rounded-full transition shadow-sm flex items-center gap-1.5 active:scale-95">
+            <span>📋</span>
+            <span class="hidden sm:inline">行程速覽</span>
+          </button>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-left text-xs md:text-sm">
+          <div><span class="text-sky-300 block text-[9px]">行程天數</span><strong class="text-white">冬季 7天6夜</strong></div>
+          <div><span class="text-sky-300 block text-[9px]">團隊陣容</span><strong class="text-white">4大2小 (Alphard)</strong></div>
+          <div><span class="text-sky-300 block text-[9px]">✈️ 航班</span><strong class="text-white text-[11px]">去 1/21 14:05 / 回 1/27 16:05</strong></div>
+          <div class="text-center"><span class="text-sky-200 block text-[9px] mb-0.5">距離出發還有</span><div id="departure-countdown" class="font-bold text-amber-300 text-lg tracking-wide animate-pulse">計算中...</div></div>
+        </div>
+      </div>
   </header>
 
-  <!-- 主導航 (不固定) -->
+  <!-- 主導航 -->
   <nav class="max-w-md mx-auto mt-6 px-4 relative z-10">
     <div class="bg-white p-1.5 rounded-full shadow-lg shadow-sky-100 border border-slate-200 flex gap-1">
       <button id="nav-itinerary-btn" onclick="switchMainTab('itinerary')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active"><span>🗺️</span> 行程指南</button>
@@ -549,8 +473,6 @@ async function syncDataToCloud() {
 
   <!-- 快捷功能 + 信息橫條 -->
   <div id="itinerary-quick-section" class="max-w-6xl mx-auto px-4 mt-6 space-y-4">
-    
-    <!-- ① 三個快捷按鈕 -->
     <div class="grid grid-cols-3 gap-3">
       <button onclick="toggleBookingModal()" class="group bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-md p-4 rounded-2xl border border-amber-400/40 hover:bg-amber-500/30 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[120px] active:scale-95">
         <span class="text-2xl mb-2 transition-transform group-hover:scale-110 group-hover:rotate-6">📌</span>
@@ -566,9 +488,7 @@ async function syncDataToCloud() {
       </button>
     </div>
 
-    <!-- ② 天氣 + 搶票 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- 天氣橫條 -->
       <div class="bg-gradient-to-r from-sky-100 via-blue-100 to-indigo-100 border-2 border-sky-300 p-4 rounded-2xl shadow-lg">
         <div class="flex items-center justify-between flex-wrap gap-3">
           <div class="flex items-center gap-3">
@@ -586,7 +506,6 @@ async function syncDataToCloud() {
         <div class="flex gap-2 text-center overflow-x-auto scrollbar-none snap-x flex-1 mt-3" id="mini-forecast"></div>
       </div>
 
-      <!-- 搶票橫條 -->
       <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 p-3 rounded-2xl shadow-sm flex flex-col justify-center">
         <div class="flex justify-between items-center text-xs mb-2">
           <span class="font-black text-indigo-900">🎟️ 銀山Fast Pass</span>
@@ -605,7 +524,6 @@ async function syncDataToCloud() {
   <div id="main-itinerary-view">
     <main class="max-w-6xl mx-auto px-4 mt-8">
       <div class="space-y-6">
-        
         <!-- 日期標籤 -->
         <div class="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-3 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
           <div class="flex gap-1.5 overflow-x-auto scrollbar-none" id="day-tabs-container">
@@ -633,7 +551,7 @@ async function syncDataToCloud() {
     </main>
   </div>
 
-  <!-- 記帳本 iframe 容器 -->
+  <!-- 記帳本 iframe -->
   <div id="ledger-frame-container" class="hidden max-w-4xl mx-auto px-4 mt-6 pb-20 space-y-6">
     <iframe src="/ledger.html" class="w-full h-screen border-none rounded-2xl shadow-sm" title="記帳本"></iframe>
   </div>
@@ -644,7 +562,7 @@ async function syncDataToCloud() {
     <span class="font-bold text-sm hidden md:inline">收合行程</span>
   </button>
 
-  <!-- 匯率試算 FAB -->
+  <!-- 匯率 FAB -->
   <div class="fixed bottom-40 right-4 md:right-6 z-40 flex flex-col items-end pointer-events-none">
     <div id="currency-widget-panel" class="absolute bottom-full right-0 mb-4 bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] border border-slate-200 w-[calc(100vw-2rem)] sm:w-80 overflow-hidden transition-all duration-300 origin-bottom-right pointer-events-none opacity-0 scale-90 translate-y-4 invisible">
       <div class="bg-gradient-to-r from-sky-900 to-indigo-900 p-4 flex justify-between items-center text-white">
@@ -686,15 +604,13 @@ async function syncDataToCloud() {
     </button>
   </div>
 
-  <!-- Toast 通知 -->
+  <!-- Toast -->
   <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none">
     <span id="toast-icon">✅</span>
     <span id="toast-message">複製成功！</span>
   </div>
 
-  <!-- ==================== 五個彈窗 ==================== -->
-
-  <!-- 行前預訂彈窗 -->
+  <!-- 彈窗們（省略重複內容，維持原本功能） -->
   <div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeBookingModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeBookingModal()" class="modal-close">✕</button>
@@ -736,7 +652,6 @@ async function syncDataToCloud() {
     </div>
   </div>
 
-  <!-- 裝備清單彈窗 -->
   <div id="equip-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeEquipModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeEquipModal()" class="modal-close">✕</button>
@@ -779,7 +694,6 @@ async function syncDataToCloud() {
     </div>
   </div>
 
-  <!-- 雪地攻略彈窗 -->
   <div id="drive-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeDriveModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeDriveModal()" class="modal-close">✕</button>
@@ -819,7 +733,6 @@ async function syncDataToCloud() {
     </div>
   </div>
 
-  <!-- 搶票攻略彈窗 -->
   <div id="ticket-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeTicketModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeTicketModal()" class="modal-close">✕</button>
@@ -847,7 +760,6 @@ async function syncDataToCloud() {
     </div>
   </div>
 
-  <!-- 詳細天氣彈窗 -->
   <div id="weather-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeWeatherModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeWeatherModal()" class="modal-close">✕</button>
@@ -855,90 +767,53 @@ async function syncDataToCloud() {
       <div id="weather-detail-content" class="text-sm text-slate-600">天氣資料載入中...</div>
     </div>
   </div>
-  
-  <!-- 行程速覽彈窗 -->
-<div id="trip-overview-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeTripOverview()">
-  <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-    <button onclick="closeTripOverview()" class="modal-close">✕</button>
-    <h2 class="text-xl font-black mb-4 flex items-center gap-2">📋 7天6夜行程速覽</h2>
 
-    <div class="space-y-2">
-      <div class="flex items-start gap-3 bg-sky-50 border border-sky-200 rounded-xl p-3">
-        <span class="bg-sky-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D1</span>
-        <div>
-          <p class="text-sm font-bold text-slate-800">✈️ 抵達雪國</p>
-          <p class="text-xs text-slate-600 mt-0.5">仙台機場 → 秋保溫泉 → 蟹腳Buffet</p>
+  <div id="trip-overview-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeTripOverview()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeTripOverview()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4 flex items-center gap-2">📋 7天6夜行程速覽</h2>
+      <div class="space-y-2">
+        <div class="flex items-start gap-3 bg-sky-50 border border-sky-200 rounded-xl p-3">
+          <span class="bg-sky-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D1</span>
+          <div><p class="text-sm font-bold text-slate-800">✈️ 抵達雪國</p><p class="text-xs text-slate-600 mt-0.5">仙台機場 → 秋保溫泉 → 蟹腳Buffet</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
+          <span class="bg-amber-500 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D2</span>
+          <div><p class="text-sm font-bold text-slate-800">🏮 天童+銀山</p><p class="text-xs text-slate-600 mt-0.5">AEON天童 → 瀧之湯 → 銀山夜景 → 深夜美食</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-indigo-50 border border-indigo-200 rounded-xl p-3">
+          <span class="bg-indigo-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D3</span>
+          <div><p class="text-sm font-bold text-slate-800">☃️ 藏王樹冰</p><p class="text-xs text-slate-600 mt-0.5">藏王纜車 → 樹冰 → 山形壽司 → 溫泉懷石</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+          <span class="bg-emerald-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D4</span>
+          <div><p class="text-sm font-bold text-slate-800">⛷️ Spring Valley</p><p class="text-xs text-slate-600 mt-0.5">玩雪 → 入住Grand Bach → 伊達牛舌</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-rose-50 border border-rose-200 rounded-xl p-3">
+          <span class="bg-rose-500 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D5</span>
+          <div><p class="text-sm font-bold text-slate-800">🦊 狐狸村</p><p class="text-xs text-slate-600 mt-0.5">客美多早餐 → 狐狸村 → 白石溫麵 → 市區血拼</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-teal-50 border border-teal-200 rounded-xl p-3">
+          <span class="bg-teal-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D6</span>
+          <div><p class="text-sm font-bold text-slate-800">🐬 水族館/採草莓</p><p class="text-xs text-slate-600 mt-0.5">早餐 → 水族館或草莓 → 仔虎和牛 → 三井Outlet</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+          <span class="bg-slate-700 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D7</span>
+          <div><p class="text-sm font-bold text-slate-800">✈️ 返港</p><p class="text-xs text-slate-600 mt-0.5">仙台車站伴手禮 → 機場還車 → 起飛返港</p></div>
         </div>
       </div>
-
-      <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
-        <span class="bg-amber-500 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D2</span>
-        <div>
-          <p class="text-sm font-bold text-slate-800">🏮 天童+銀山</p>
-          <p class="text-xs text-slate-600 mt-0.5">AEON天童 → 瀧之湯 → 銀山夜景 → 深夜美食</p>
-        </div>
-      </div>
-
-      <div class="flex items-start gap-3 bg-indigo-50 border border-indigo-200 rounded-xl p-3">
-        <span class="bg-indigo-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D3</span>
-        <div>
-          <p class="text-sm font-bold text-slate-800">☃️ 藏王樹冰</p>
-          <p class="text-xs text-slate-600 mt-0.5">藏王纜車 → 樹冰 → 山形壽司 → 溫泉懷石</p>
-        </div>
-      </div>
-
-      <div class="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-        <span class="bg-emerald-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D4</span>
-        <div>
-          <p class="text-sm font-bold text-slate-800">⛷️ Spring Valley</p>
-          <p class="text-xs text-slate-600 mt-0.5">玩雪 → 入住Grand Bach → 伊達牛舌</p>
-        </div>
-      </div>
-
-      <div class="flex items-start gap-3 bg-rose-50 border border-rose-200 rounded-xl p-3">
-        <span class="bg-rose-500 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D5</span>
-        <div>
-          <p class="text-sm font-bold text-slate-800">🦊 狐狸村</p>
-          <p class="text-xs text-slate-600 mt-0.5">客美多早餐 → 狐狸村 → 白石溫麵 → 市區血拼</p>
-        </div>
-      </div>
-
-      <div class="flex items-start gap-3 bg-teal-50 border border-teal-200 rounded-xl p-3">
-        <span class="bg-teal-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D6</span>
-        <div>
-          <p class="text-sm font-bold text-slate-800">🐬 水族館/採草莓</p>
-          <p class="text-xs text-slate-600 mt-0.5">早餐 → 水族館或草莓 → 仔虎和牛 → 三井Outlet</p>
-        </div>
-      </div>
-
-      <div class="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
-        <span class="bg-slate-700 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D7</span>
-        <div>
-          <p class="text-sm font-bold text-slate-800">✈️ 返港</p>
-          <p class="text-xs text-slate-600 mt-0.5">仙台車站伴手禮 → 機場還車 → 起飛返港</p>
-        </div>
-      </div>
+      <p class="text-[10px] text-slate-400 text-center mt-4">💡 點擊下方 Day 分頁查看每日完整詳細行程</p>
     </div>
-
-    <p class="text-[10px] text-slate-400 text-center mt-4">💡 點擊下方 Day 分頁查看每日完整詳細行程</p>
   </div>
-</div>
-
-  <!-- ==================== JS 代碼 ==================== -->
 
   <script>
-    // ==================== 全域變數與狀態 ====================
-    let state = {
-      currentMainTab: "itinerary",
-      checkedItems: {}
-    };
-
+    // ==================== 全域變數 ====================
+    let state = { currentMainTab: "itinerary", checkedItems: {} };
     let simulatedTime = null;
     const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27"];
 
-    // ==================== 匯率試算 ====================
+    // ==================== 匯率 ====================
     const exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
-
     function toggleCurrencyWidget() {
       const panel = document.getElementById("currency-widget-panel");
       if (panel) {
@@ -955,7 +830,6 @@ async function syncDataToCloud() {
         }
       }
     }
-
     function convertCurrency(type) {
       const hkdInput = document.getElementById("calc-hkd");
       const jpyInput = document.getElementById("calc-jpy");
@@ -970,13 +844,12 @@ async function syncDataToCloud() {
         jpyInput.value = (isNaN(hkd) || hkd === 0) ? "" : Math.round(hkd / rate);
       }
     }
-
     function quickConvert(currency, amount) {
       const input = document.getElementById("calc-" + currency);
       if (input) { input.value = amount; convertCurrency(currency); }
     }
 
-    // ==================== Toast 通知 ====================
+    // ==================== Toast ====================
     function showToast(message, icon = "✅") {
       const toast = document.getElementById("toast");
       const toastMessage = document.getElementById("toast-message");
@@ -1002,7 +875,6 @@ async function syncDataToCloud() {
       const quickSection = document.getElementById("itinerary-quick-section");
       const navItineraryBtn = document.getElementById("nav-itinerary-btn");
       const navLedgerBtn = document.getElementById("nav-ledger-btn");
-
       if (tab === "itinerary") {
         itineraryView.classList.remove("hidden");
         ledgerFrameContainer.classList.add("hidden");
@@ -1030,130 +902,67 @@ async function syncDataToCloud() {
       if (targetSection) targetSection.classList.remove("hidden");
     }
 
-    // ==================== 裝備清單 ====================
-    function toggleCheckItem(id) {
-      const checkbox = document.getElementById(id);
-      if (checkbox) {
-        state.checkedItems[id] = checkbox.checked;
-        localStorage.setItem("tohoku_checklist_2027", JSON.stringify(state.checkedItems));
-        syncDataToCloud();
-      }
-    }
-
-    function restoreChecklistUI() {
-      Object.keys(state.checkedItems).forEach(id => {
-        const checkbox = document.getElementById(id);
-        if (checkbox) checkbox.checked = state.checkedItems[id];
-      });
-    }
-
     // ==================== 彈窗控制 ====================
     function showModal(id) {
       const overlay = document.getElementById(id);
-      if (overlay) {
-        overlay.classList.add('active');
-        overlay.style.display = 'flex';
-      }
+      if (overlay) { overlay.classList.add('active'); overlay.style.display = 'flex'; }
     }
-
     function hideModal(id) {
       const overlay = document.getElementById(id);
       if (overlay) {
         overlay.classList.remove('active');
-        setTimeout(() => {
-          overlay.style.display = 'none';
-        }, 300);
+        setTimeout(() => { overlay.style.display = 'none'; }, 300);
       }
     }
-
     function toggleBookingModal() {
       const modal = document.getElementById('booking-modal');
-      if (modal.classList.contains('hidden')) {
-        showModal('booking-modal');
-        modal.classList.remove('hidden');
-      } else {
-        hideModal('booking-modal');
-        setTimeout(() => modal.classList.add('hidden'), 300);
-      }
+      if (modal.classList.contains('hidden')) { showModal('booking-modal'); modal.classList.remove('hidden'); }
+      else { hideModal('booking-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
     }
     function closeBookingModal() {
       hideModal('booking-modal');
       setTimeout(() => document.getElementById('booking-modal').classList.add('hidden'), 300);
     }
-
     function toggleEquipModal() {
       const modal = document.getElementById('equip-modal');
-      if (modal.classList.contains('hidden')) {
-        showModal('equip-modal');
-        modal.classList.remove('hidden');
-      } else {
-        hideModal('equip-modal');
-        setTimeout(() => modal.classList.add('hidden'), 300);
-      }
+      if (modal.classList.contains('hidden')) { showModal('equip-modal'); modal.classList.remove('hidden'); }
+      else { hideModal('equip-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
     }
     function closeEquipModal() {
       hideModal('equip-modal');
       setTimeout(() => document.getElementById('equip-modal').classList.add('hidden'), 300);
     }
-
     function toggleDriveModal() {
       const modal = document.getElementById('drive-modal');
-      if (modal.classList.contains('hidden')) {
-        showModal('drive-modal');
-        modal.classList.remove('hidden');
-      } else {
-        hideModal('drive-modal');
-        setTimeout(() => modal.classList.add('hidden'), 300);
-      }
+      if (modal.classList.contains('hidden')) { showModal('drive-modal'); modal.classList.remove('hidden'); }
+      else { hideModal('drive-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
     }
     function closeDriveModal() {
       hideModal('drive-modal');
       setTimeout(() => document.getElementById('drive-modal').classList.add('hidden'), 300);
     }
-
     function toggleTicketModal() {
       const modal = document.getElementById('ticket-modal');
-      if (modal.classList.contains('hidden')) {
-        showModal('ticket-modal');
-        modal.classList.remove('hidden');
-      } else {
-        hideModal('ticket-modal');
-        setTimeout(() => modal.classList.add('hidden'), 300);
-      }
+      if (modal.classList.contains('hidden')) { showModal('ticket-modal'); modal.classList.remove('hidden'); }
+      else { hideModal('ticket-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
     }
     function closeTicketModal() {
       hideModal('ticket-modal');
       setTimeout(() => document.getElementById('ticket-modal').classList.add('hidden'), 300);
     }
-    
-    // ==================== 行程速覽彈窗 ====================
-function openTripOverview() {
-  const modal = document.getElementById('trip-overview-modal');
-  if (modal) {
-    modal.style.display = 'flex';
-    modal.classList.add('active');
-  }
-}
-
-function closeTripOverview() {
-  const modal = document.getElementById('trip-overview-modal');
-  if (modal) {
-    modal.classList.remove('active');
-    setTimeout(() => {
-      modal.style.display = 'none';
-    }, 300);
-  }
-}
-
+    function openTripOverview() {
+      const modal = document.getElementById('trip-overview-modal');
+      if (modal) { modal.style.display = 'flex'; modal.classList.add('active'); }
+    }
+    function closeTripOverview() {
+      const modal = document.getElementById('trip-overview-modal');
+      if (modal) { modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; }, 300); }
+    }
     function openWeatherModal() {
       const modal = document.getElementById('weather-modal');
       showModal('weather-modal');
       modal.classList.remove('hidden');
-      document.getElementById('weather-detail-content').innerHTML = `
-        <div class="flex justify-center py-8">
-          <div class="loading-spinner"></div>
-        </div>
-      `;
+      document.getElementById('weather-detail-content').innerHTML = '<div class="flex justify-center py-8"><div class="loading-spinner"></div></div>';
       fetchWeatherData();
     }
     function closeWeatherModal() {
@@ -1161,19 +970,15 @@ function closeTripOverview() {
       setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300);
     }
 
-    // ==================== 天氣功能 ====================
+    // ==================== 天氣 ====================
     const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
-
     async function fetchWeatherData() {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${weatherDest.lat}&longitude=${weatherDest.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo`;
-      
       try {
         const response = await fetch(url);
         const data = await response.json();
-
         document.getElementById('mini-temp').innerText = `${Math.round(data.current.temperature_2m)}°C`;
         document.getElementById('mini-feels').innerText = `體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}% | 風速 ${data.current.wind_speed_10m} km/h`;
-
         const miniForecast = document.getElementById('mini-forecast');
         miniForecast.innerHTML = "";
         for(let i=0; i<7; i++) {
@@ -1181,38 +986,13 @@ function closeTripOverview() {
           const max = Math.round(data.daily.temperature_2m_max[i]);
           const min = Math.round(data.daily.temperature_2m_min[i]);
           const icon = data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️";
-          miniForecast.innerHTML += `
-            <div class="bg-white/70 p-1.5 rounded text-center min-w-[55px]">
-              <span class="block text-[8px] text-slate-400">${date}</span>
-              <span class="block text-[14px]">${icon}</span>
-              <span class="block text-[9px] font-bold text-slate-700">${max}°/${min}°</span>
-            </div>
-          `;
+          miniForecast.innerHTML += `<div class="bg-white/70 p-1.5 rounded text-center min-w-[55px]"><span class="block text-[8px] text-slate-400">${date}</span><span class="block text-[14px]">${icon}</span><span class="block text-[9px] font-bold text-slate-700">${max}°/${min}°</span></div>`;
         }
-
         const detail = document.getElementById('weather-detail-content');
-        detail.innerHTML = `
-          <div class="bg-sky-50 p-3 rounded-xl border border-sky-200">
-            <span class="text-xs text-slate-500">目前氣溫</span>
-            <strong class="block text-xl text-slate-800">${Math.round(data.current.temperature_2m)}°C</strong>
-            <span class="text-[10px] text-slate-600">體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}% | 風速 ${data.current.wind_speed_10m} km/h</span>
-          </div>
-          <div class="text-xs text-slate-700 space-y-2">
-            <strong class="block text-slate-800 mb-1">未來7天預報</strong>
-            ${[0,1,2,3,4,5,6].map(i => `
-              <div class="flex justify-between border-b border-slate-100 pb-1">
-                <span>${data.daily.time[i]} (${["日","一","二","三","四","五","六"][new Date(data.daily.time[i]).getDay()]})</span>
-                <span>${Math.round(data.daily.temperature_2m_max[i])}° / ${Math.round(data.daily.temperature_2m_min[i])}°</span>
-                <span class="text-blue-500">💧 ${data.daily.precipitation_probability_max[i] ?? 0}%</span>
-              </div>
-            `).join('')}
-          </div>
-        `;
+        detail.innerHTML = `<div class="bg-sky-50 p-3 rounded-xl border border-sky-200"><span class="text-xs text-slate-500">目前氣溫</span><strong class="block text-xl text-slate-800">${Math.round(data.current.temperature_2m)}°C</strong><span class="text-[10px] text-slate-600">體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}% | 風速 ${data.current.wind_speed_10m} km/h</span></div><div class="text-xs text-slate-700 space-y-2"><strong class="block text-slate-800 mb-1">未來7天預報</strong>${[0,1,2,3,4,5,6].map(i => `<div class="flex justify-between border-b border-slate-100 pb-1"><span>${data.daily.time[i]} (${["日","一","二","三","四","五","六"][new Date(data.daily.time[i]).getDay()]})</span><span>${Math.round(data.daily.temperature_2m_max[i])}° / ${Math.round(data.daily.temperature_2m_min[i])}°</span><span class="text-blue-500">💧 ${data.daily.precipitation_probability_max[i] ?? 0}%</span></div>`).join('')}</div>`;
       } catch(e) {
         console.warn("天氣讀取失敗", e);
-        document.getElementById('weather-detail-content').innerHTML = `
-          <div class="text-center py-8 text-slate-500 text-sm">天氣資料暫時無法取得，請稍後再試。</div>
-        `;
+        document.getElementById('weather-detail-content').innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">天氣資料暫時無法取得，請稍後再試。</div>';
       }
     }
 
@@ -1220,63 +1000,16 @@ function closeTripOverview() {
     function renderDayItinerary(sectionId, dayData) {
       const section = document.getElementById(sectionId);
       if (!section) return;
-
-      let html = `
-        <div class="mb-8">
-          <div class="bg-slate-50/95 py-3 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">${dayData.emoji}</div>
-              <div class="flex-1">
-                <span class="text-[11px] font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span>
-                <h2 class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>
-                ${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}
-              </div>
-            </div>
-            <button onclick="toggleAllDetails('${sectionId}')" class="bg-white hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1 shrink-0 ml-2">
-              <span class="icon">↕️</span>
-              <span class="hidden md:inline">全部展開</span>
-            </button>
-          </div>
-          <div class="relative mt-4 space-y-4 pb-6">
-      `;
-
+      let html = `<div class="mb-8"><div class="bg-slate-50/95 py-3 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">${dayData.emoji}</div><div class="flex-1"><span class="text-[11px] font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span><h2 class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}</div></div><button onclick="toggleAllDetails('${sectionId}')" class="bg-white hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1 shrink-0 ml-2"><span class="icon">↕️</span><span class="hidden md:inline">全部展開</span></button></div><div class="relative mt-4 space-y-4 pb-6">`;
       dayData.events.forEach((event, index) => {
         const isOpen = event.open ? "open" : "";
         const tagHtml = event.tag ? `<span class="tag ${event.tag.class}">${event.tag.text}</span>` : "";
         const timeParts = event.time.split(" - ");
         const startTime = timeParts[0];
         const endTime = timeParts[1] ? `~ ${timeParts[1]}` : "";
-
-        html += `
-          <div class="relative pl-0">
-            <details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl">
-              <summary class="flex items-start gap-3 p-3 md:p-4 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none">
-                <div class="flex-1 min-w-0 pr-8">
-                  <div class="flex flex-wrap items-center gap-2 mb-1">
-                    <span class="event-time-pill">🕐 ${startTime} ${endTime ? "– "+endTime : ""}</span>
-                    ${tagHtml}
-                  </div>
-                  <h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>
-                  ${event.location ? `<div class="text-[10px] text-slate-400 mt-0.5">📍 ${event.location}</div>` : ""}
-                </div>
-                <div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100">
-                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-              </summary>
-              <div class="p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">
-                ${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}
-                ${event.navUrl ? `<a href="${event.navUrl}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:text-sky-700 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}<svg class="w-3 h-3 opacity-60 group-hover/nav:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>` : '<div class="h-3"></div>'}
-                ${event.content}
-              </div>
-            </details>
-          </div>
-        `;
+        html += `<div class="relative pl-0"><details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl"><summary class="flex items-start gap-3 p-3 md:p-4 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none"><div class="flex-1 min-w-0 pr-8"><div class="flex flex-wrap items-center gap-2 mb-1"><span class="event-time-pill">🕐 ${startTime} ${endTime ? "– "+endTime : ""}</span>${tagHtml}</div><h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>${event.location ? `<div class="text-[10px] text-slate-400 mt-0.5">📍 ${event.location}</div>` : ""}</div><div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}${event.navUrl ? `<a href="${event.navUrl}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:text-sky-700 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}<svg class="w-3 h-3 opacity-60 group-hover/nav:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>` : '<div class="h-3"></div>'}${event.content}</div></details></div>`;
       });
-
-      html += `
-          </div>
-        </div>
-      `;
+      html += `</div></div>`;
       section.innerHTML = html;
     }
 
@@ -1312,10 +1045,7 @@ function closeTripOverview() {
     }
 
     // ==================== 時間模擬 ====================
-    function getAppTime() {
-      return simulatedTime ? new Date(simulatedTime) : new Date();
-    }
-
+    function getAppTime() { return simulatedTime ? new Date(simulatedTime) : new Date(); }
     function toggleSimulation() {
       const simIcon = document.getElementById("sim-icon");
       const simText = document.getElementById("sim-text");
@@ -1337,7 +1067,6 @@ function closeTripOverview() {
       const now = getAppTime();
       let activeDay = -1;
       let activeEvent = -1;
-
       for (let i = 0; i < winterItineraries.length; i++) {
         const dayData = winterItineraries[i];
         const dateStr = tripDates[dayData.day - 1];
@@ -1349,23 +1078,14 @@ function closeTripOverview() {
           const startDate = new Date(`${dateStr}T${startStr}:00`);
           let endDate = new Date(`${dateStr}T${endStr}:00`);
           if (endStr === "") endDate = new Date(`${dateStr}T23:59:00`);
-          if (now >= startDate && now <= endDate) {
-            activeDay = dayData.day;
-            activeEvent = j;
-            break;
-          }
+          if (now >= startDate && now <= endDate) { activeDay = dayData.day; activeEvent = j; break; }
           if (now < startDate && activeDay === -1) {
             const todayStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
-            if (todayStr === dateStr) {
-              activeDay = dayData.day;
-              activeEvent = j;
-              break;
-            }
+            if (todayStr === dateStr) { activeDay = dayData.day; activeEvent = j; break; }
           }
         }
         if (activeDay !== -1) break;
       }
-
       document.querySelectorAll('[id^="event-card-"]').forEach(card => {
         card.classList.remove("ring-2", "ring-sky-400", "shadow-sky-200/50", "bg-sky-50/40");
         card.classList.add("border-slate-100", "bg-white");
@@ -1383,14 +1103,12 @@ function closeTripOverview() {
         title.classList.remove("text-sky-900");
         title.classList.add("text-slate-800");
       });
-
       if (activeDay !== -1 && activeEvent !== -1) {
         const card = document.getElementById(`event-card-${activeDay}-${activeEvent}`);
         const badge = document.getElementById(`event-badge-${activeDay}-${activeEvent}`);
         const dot = document.getElementById(`event-dot-${activeDay}-${activeEvent}`);
         const timebox = document.getElementById(`event-timebox-${activeDay}-${activeEvent}`);
         const title = document.getElementById(`event-title-${activeDay}-${activeEvent}`);
-
         if (card) {
           card.classList.remove("border-slate-100", "bg-white");
           card.classList.add("ring-2", "ring-sky-400", "shadow-sky-200/50", "bg-sky-50/40");
@@ -1409,7 +1127,6 @@ function closeTripOverview() {
           title.classList.remove("text-slate-800");
           title.classList.add("text-sky-900");
         }
-
         if (window._lastActiveDay !== activeDay) {
           switchDay(activeDay);
           window._lastActiveDay = activeDay;
@@ -1427,7 +1144,6 @@ function closeTripOverview() {
     const departureTarget = new Date("2027-01-21T10:00:00+08:00").getTime();
     const zaoTarget = new Date("2027-01-15T23:00:00+08:00").getTime();
     const ginzanTarget = new Date("2027-01-08T23:00:00+08:00").getTime();
-
     function updateCountdowns() {
       const now = new Date().getTime();
       const departureDiff = departureTarget - now;
@@ -1444,7 +1160,6 @@ function closeTripOverview() {
           departureEl.innerText = `${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
         }
       }
-
       const ginzanDiff = ginzanTarget - now;
       const ginzanEl = document.getElementById("ginzan-countdown");
       if (ginzanEl) {
@@ -1460,7 +1175,6 @@ function closeTripOverview() {
           ginzanEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
         }
       }
-
       const zaoDiff = zaoTarget - now;
       const zaoEl = document.getElementById("zao-countdown");
       if (zaoEl) {
@@ -1489,7 +1203,6 @@ function closeTripOverview() {
         localStorage.setItem("tohoku_welcome_dismissed", "true");
       }
     }
-
     function checkWelcomeModal() {
       const dismissed = localStorage.getItem("tohoku_welcome_dismissed");
       const modal = document.getElementById("welcome-modal");
@@ -1498,86 +1211,63 @@ function closeTripOverview() {
       }
     }
 
-    // ==================== 滾動事件 ====================
-    window.addEventListener("scroll", () => {
-      const btn = document.getElementById("fab-collapse-all");
-      if (btn) {
-        if (state.currentMainTab === "itinerary" && window.scrollY > 300) {
-          btn.classList.remove("hidden");
-          setTimeout(() => {
-            btn.classList.remove("opacity-0", "translate-y-8");
-            btn.classList.add("opacity-100", "translate-y-0");
-          }, 10);
-        } else {
-          btn.classList.remove("opacity-100", "translate-y-0");
-          btn.classList.add("opacity-0", "translate-y-8");
-          setTimeout(() => {
-            if (btn.classList.contains("opacity-0")) btn.classList.add("hidden");
-          }, 300);
-        }
+    // ==================== 動態角色 ====================
+    function jump(characterId) {
+      const char = document.getElementById(characterId);
+      if (char) {
+        char.classList.add("jumping");
+        setTimeout(() => {
+          char.classList.remove("jumping");
+        }, 700);
+        showToast(`你點了一下${characterId === 'snowman' ? '雪人' : '狐狸'}！`, "❄️");
       }
-    });
-
-    // ==================== 動態效果 ====================
-
-    // 企鵝跳躍
-    function penguinJump() {
-        const penguin = document.getElementById("penguin");
-        if (penguin) {
-            penguin.style.animation = "penguin-jump 0.6s ease";
-            setTimeout(() => {
-                penguin.style.animation = "penguin-walk 2s ease-in-out infinite";
-            }, 600);
-        }
     }
 
-    // 點擊雪花效果
+    // 點擊雪花
     document.addEventListener("click", (e) => {
-        // 如果點擊的是 modal 或按鈕，不觸發雪花
-        if (e.target.closest("button, a, input, select, textarea, .modal-box, iframe")) return;
-        
-        const snowflake = document.createElement("span");
-        snowflake.className = "click-snowflake";
-        snowflake.innerText = "❄️";
-        snowflake.style.left = e.clientX + "px";
-        snowflake.style.top = e.clientY + "px";
-        document.body.appendChild(snowflake);
-        setTimeout(() => snowflake.remove(), 800);
+      if (e.target.closest("button, a, input, select, textarea, .modal-box, iframe, .walking-character")) return;
+      const snowflake = document.createElement("span");
+      snowflake.className = "click-snowflake";
+      snowflake.innerText = "❄️";
+      snowflake.style.left = e.clientX + "px";
+      snowflake.style.top = e.clientY + "px";
+      document.body.appendChild(snowflake);
+      setTimeout(() => snowflake.remove(), 800);
     });
 
     // 腳印動畫
     function showFootprints() {
-        const container = document.getElementById("footprints-container");
-        if (!container) return;
-        const icons = ["👣", "🐾", "❄️"];
-        for (let i = 0; i < 6; i++) {
-            setTimeout(() => {
-                const footprint = document.createElement("span");
-                footprint.className = "footprint";
-                footprint.innerText = icons[Math.floor(Math.random() * icons.length)];
-                footprint.style.left = Math.random() * 80 + "vw";
-                container.appendChild(footprint);
-                setTimeout(() => footprint.remove(), 2500);
-            }, i * 250);
-        }
+      const container = document.getElementById("footprints-container");
+      if (!container) return;
+      const icons = ["👣", "🐾", "❄️"];
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          const footprint = document.createElement("span");
+          footprint.className = "footprint";
+          footprint.innerText = icons[Math.floor(Math.random() * icons.length)];
+          footprint.style.left = Math.random() * 80 + "vw";
+          container.appendChild(footprint);
+          setTimeout(() => footprint.remove(), 2500);
+        }, i * 250);
+      }
     }
 
-    // 彩帶慶祝動畫（供記帳本觸發）
+    // 彩帶慶祝
     function showConfetti() {
-        const colors = ["#f43f5e", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
-        for (let i = 0; i < 30; i++) {
-            setTimeout(() => {
-                const confetti = document.createElement("div");
-                confetti.className = "confetti";
-                confetti.style.left = Math.random() * 100 + "vw";
-                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.width = Math.random() * 8 + 4 + "px";
-                confetti.style.height = Math.random() * 12 + 6 + "px";
-                confetti.style.animationDuration = Math.random() * 2 + 2 + "s";
-                document.body.appendChild(confetti);
-                setTimeout(() => confetti.remove(), 4000);
-            }, Math.random() * 500);
-        }
+      const colors = ["#f43f5e", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
+      for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement("div");
+          confetti.className = "confetti";
+          confetti.style.left = Math.random() * 100 + "vw";
+          confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.width = Math.random() * 8 + 4 + "px";
+          confetti.style.height = Math.random() * 12 + 6 + "px";
+          confetti.style.animationDuration = Math.random() * 2 + 2 + "s";
+          document.body.appendChild(confetti);
+          setTimeout(() => confetti.remove(), 4000);
+        }, Math.random() * 500);
+      }
     }
 
     // ==================== 初始化 ====================
@@ -1630,10 +1320,8 @@ function closeTripOverview() {
       setInterval(updateCurrentEventHighlight, 60000);
       checkWelcomeModal();
       fetchWeatherData();
-      
-      // 初始化動態效果
       showFootprints();
-      setInterval(showFootprints, 15000); // 每15秒重複一次
+      setInterval(showFootprints, 15000);
     });
   </script>
 </body>
