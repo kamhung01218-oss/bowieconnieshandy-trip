@@ -1100,126 +1100,111 @@ async function syncDataToCloud() {
       section.innerHTML = html;
     }
 
-    // ==================== 生成每日地圖（自動提取地點） ====================
-    function generateDayMap(dayData) {
-      // 內建地點映射表：將常見關鍵字轉為 Google Maps 能識別的地名
-      const locationMap = {
-        "仙台機場": "Sendai Airport",
-        "仙台空港": "Sendai Airport",
-        "秋保溫泉": "秋保温泉 瑞鳳",
-        "秋保温泉 瑞鳳": "秋保温泉 瑞鳳",
-        "AEON天童": "イオンモール天童",
-        "AEON MALL 天童": "イオンモール天童",
-        "微笑の宿 瀧之湯": "微笑の宿 滝の湯",
-        "微笑之宿 瀧之湯": "微笑の宿 滝の湯",
-        "銀山溫泉": "銀山温泉",
-        "藏王纜車": "蔵王ロープウェイ",
-        "藏王索道": "蔵王ロープウェイ",
-        "Spring Valley 仙台泉": "Spring Valley 仙台泉",
-        "Spring Valley": "Spring Valley 仙台泉",
-        "狐狸村": "宮城蔵王キツネ村",
-        "宮城藏王狐狸村": "宮城蔵王キツネ村",
-        "白石溫麵": "白石市",
-        "手延白石溫麵 光庵": "手延白石温麺 光庵",
-        "白石うーめん やまぶき亭": "白石うーめん やまぶき亭",
-        "讃岐づくり本格手打ちうどん 麦の季": "讃岐づくり本格手打ちうどん 麦の季",
-        "客美多咖啡": "コメダ珈琲店 仙台富沢店",
-        "コメダ珈琲店 仙台富沢店": "コメダ珈琲店 仙台富沢店",
-        "仙台海洋森林水族館": "仙台うみの杜水族館",
-        "Sendai Umino-Mori Aquarium": "仙台うみの杜水族館",
-        "一苺一笑 松森農場": "一苺一笑 松森農場",
-        "JR水果公園仙台荒濱": "JRフルーツパーク仙台あらはま",
-        "Berry Planet": "Berry Planet",
-        "仔虎 利府店": "仔虎 利府店",
-        "Mitsui Outlet Park 仙台港": "三井アウトレットパーク 仙台港",
-        "三井Outlet": "三井アウトレットパーク 仙台港",
-        "Hotel Grand Bach 仙台": "ホテルグランバッハ仙台",
-        "仙台車站": "仙台駅",
-        "仙台駅": "仙台駅",
-        "THE MOST BAKERY": "THE MOST BAKERY ＆ COFFEE 東口店",
-        "YUKIHIRA COFFEE": "YUKIHIRA COFFEE 天童店",
-        "伊達牛舌本舗 本店": "伊達の牛たん本舗 本店",
-        "うまい鮨勘 山形南支店": "うまい鮨勘 山形南支店",
-        "寒河江草莓園": "寒河江いちご園"
-      };
+// ==================== 生成每日地圖（改為開啟原生 Google Maps 導航） ====================
+function generateDayMap(dayData) {
+  // 內建地點映射表
+  const locationMap = {
+    "仙台機場": "Sendai Airport",
+    "仙台空港": "Sendai Airport",
+    "秋保溫泉": "秋保温泉 瑞鳳",
+    "秋保温泉 瑞鳳": "秋保温泉 瑞鳳",
+    "AEON天童": "イオンモール天童",
+    "AEON MALL 天童": "イオンモール天童",
+    "微笑の宿 瀧之湯": "微笑の宿 滝の湯",
+    "微笑之宿 瀧之湯": "微笑の宿 滝の湯",
+    "銀山溫泉": "銀山温泉",
+    "藏王纜車": "蔵王ロープウェイ",
+    "藏王索道": "蔵王ロープウェイ",
+    "Spring Valley 仙台泉": "Spring Valley 仙台泉",
+    "Spring Valley": "Spring Valley 仙台泉",
+    "狐狸村": "宮城蔵王キツネ村",
+    "宮城藏王狐狸村": "宮城蔵王キツネ村",
+    "白石溫麵": "白石市",
+    "手延白石溫麵 光庵": "手延白石温麺 光庵",
+    "白石うーめん やまぶき亭": "白石うーめん やまぶき亭",
+    "讃岐づくり本格手打ちうどん 麦の季": "讃岐づくり本格手打ちうどん 麦の季",
+    "客美多咖啡": "コメダ珈琲店 仙台富沢店",
+    "コメダ珈琲店 仙台富沢店": "コメダ珈琲店 仙台富沢店",
+    "仙台海洋森林水族館": "仙台うみの杜水族館",
+    "Sendai Umino-Mori Aquarium": "仙台うみの杜水族館",
+    "一苺一笑 松森農場": "一苺一笑 松森農場",
+    "JR水果公園仙台荒濱": "JRフルーツパーク仙台あらはま",
+    "Berry Planet": "Berry Planet",
+    "仔虎 利府店": "仔虎 利府店",
+    "Mitsui Outlet Park 仙台港": "三井アウトレットパーク 仙台港",
+    "三井Outlet": "三井アウトレットパーク 仙台港",
+    "Hotel Grand Bach 仙台": "ホテルグランバッハ仙台",
+    "仙台車站": "仙台駅",
+    "仙台駅": "仙台駅",
+    "THE MOST BAKERY": "THE MOST BAKERY ＆ COFFEE 東口店",
+    "YUKIHIRA COFFEE": "YUKIHIRA COFFEE 天童店",
+    "伊達牛舌本舗 本店": "伊達の牛たん本舗 本店",
+    "うまい鮨勘 山形南支店": "うまい鮨勘 山形南支店",
+    "寒河江草莓園": "寒河江いちご園"
+  };
 
-      // 從事件中提取地點
-      let locations = [];
-      
-      dayData.events.forEach(event => {
-        let location = '';
-        
-        // 1. 優先使用 event.location
-        if (event.location && event.location.trim().length > 0) {
-          location = event.location.trim();
-        }
-        // 2. 從 navUrl 中提取查詢參數
-        else if (event.navUrl && event.navUrl.includes('query=')) {
-          const match = event.navUrl.match(/query=([^&]+)/);
-          if (match) {
-            location = decodeURIComponent(match[1].replace(/\+/g, ' '));
-          }
-        }
-        // 3. 從標題中匹配關鍵字
-        else {
-          const title = event.title || '';
-          for (const [key, value] of Object.entries(locationMap)) {
-            if (title.includes(key)) {
-              location = value;
-              break;
-            }
-          }
-        }
-        
-        // 4. 若仍無地點，從 navName 提取
-        if (!location && event.navName) {
-          location = event.navName;
-        }
-        
-        if (location && !locations.includes(location)) {
-          locations.push(location);
-        }
-      });
-
-      // 若還是沒有地點，使用預設仙台
-      if (locations.length === 0) {
-        locations = ["仙台駅"];
+  // 從事件中提取地點
+  let locations = [];
+  
+  dayData.events.forEach(event => {
+    let location = '';
+    if (event.location && event.location.trim().length > 0) {
+      location = event.location.trim();
+    } else if (event.navUrl && event.navUrl.includes('query=')) {
+      const match = event.navUrl.match(/query=([^&]+)/);
+      if (match) location = decodeURIComponent(match[1].replace(/\+/g, ' '));
+    } else {
+      const title = event.title || '';
+      for (const [key, value] of Object.entries(locationMap)) {
+        if (title.includes(key)) { location = value; break; }
       }
-
-      // 生成地圖 URL
-      let mapUrl = '';
-      if (locations.length === 1) {
-        mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(locations[0])}&z=14&output=embed`;
-      } else if (locations.length === 2) {
-        mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(locations[0])}&destination=${encodeURIComponent(locations[1])}&output=embed`;
-      } else {
-        const origin = locations[0];
-        const destination = locations[locations.length - 1];
-        const waypoints = locations.slice(1, -1).join('|');
-        mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${encodeURIComponent(waypoints)}&output=embed`;
-      }
-
-      // 生成地點列表 HTML
-      const locationListHtml = locations.map((loc, i) => {
-        return `
-          <div class="flex items-center justify-between py-1 border-b border-slate-100 last:border-0">
-            <span class="text-xs text-slate-700">${i + 1}. ${loc}</span>
-            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}" target="_blank" class="inline-flex items-center gap-1 text-sky-600 hover:text-sky-800 font-bold text-xs">📍 導航</a>
-          </div>`;
-      }).join('');
-
-      return `<div class="day-map-container mt-4">
-        <div class="day-map-label">
-          <span>🗺️</span>
-          <span>當日路線總覽（${locations.length} 個地點）</span>
-        </div>
-        <iframe src="${mapUrl}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
-        <div class="p-3 bg-slate-50">
-          <strong class="block text-[11px] text-slate-600 mb-1.5">📍 當日地點列表</strong>
-          ${locationListHtml}
-        </div>
-      </div>`;
     }
+    if (!location && event.navName) location = event.navName;
+    if (location && !locations.includes(location)) locations.push(location);
+  });
+
+  if (locations.length === 0) locations = ["仙台駅"];
+
+  // 生成原生 Google Maps 路線網址（開啟 App 或網頁版）
+  let nativeUrl = '';
+  if (locations.length === 1) {
+    nativeUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locations[0])}`;
+  } else if (locations.length === 2) {
+    nativeUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(locations[0])}&destination=${encodeURIComponent(locations[1])}&travelmode=driving`;
+  } else {
+    const origin = locations[0];
+    const destination = locations[locations.length - 1];
+    const waypoints = locations.slice(1, -1).join('|');
+    nativeUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${encodeURIComponent(waypoints)}&travelmode=driving`;
+  }
+
+  // 地點列表 HTML
+  const locationListHtml = locations.map((loc, i) => {
+    return `
+      <div class="flex items-center justify-between py-1 border-b border-slate-100 last:border-0">
+        <span class="text-xs text-slate-700">${i + 1}. ${loc}</span>
+        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}" target="_blank" class="inline-flex items-center gap-1 text-sky-600 hover:text-sky-800 font-bold text-xs">📍 導航</a>
+      </div>`;
+  }).join('');
+
+  // 返回卡片（無 iframe，改為原生跳轉）
+  return `<div class="day-map-container mt-4">
+    <div class="day-map-label">
+      <span>🗺️</span>
+      <span>當日路線總覽（${locations.length} 個地點）</span>
+    </div>
+    <div class="p-4 bg-slate-50 text-center">
+      <p class="text-xs text-slate-600 mb-3">點擊按鈕直接開啟 Google Maps（支援手機 App 語音導航）</p>
+      <a href="${nativeUrl}" target="_blank" class="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition active:scale-95">
+        <span>🧭</span> 開啟全程路線導航
+      </a>
+    </div>
+    <div class="p-3 bg-white border-t border-slate-100">
+      <strong class="block text-[11px] text-slate-600 mb-1.5">📍 當日地點列表</strong>
+      ${locationListHtml}
+    </div>
+  </div>`;
+}
 
     function toggleAllDetails(sectionId) {
       const section = document.getElementById(sectionId);
