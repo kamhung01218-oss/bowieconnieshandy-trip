@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>💰 團隊記帳本</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Firebase SDK (Compat 版本) -->
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/ledger.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-16 relative">
+
+  <!-- 雪花容器 -->
+  <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
+
+  <!-- ✅ 動態角色：雪人 + 狐狸（隨機出現） -->
+  <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！">
+    <svg width="55" height="55" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="snowGrad" cx="50%" cy="30%" r="60%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#dbeafe"/>
+        </radialGradient>
+        <linearGradient id="hatGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ef4444"/>
+          <stop offset="100%" stop-color="#b91c1c"/>
+        </linearGradient>
+      </defs>
+      <circle cx="32" cy="48" r="13" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/>
+      <circle cx="32" cy="30" r="10" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/>
+      <path d="M22 24 L42 24 L40 16 L24 16 Z" fill="url(#hatGrad)"/>
+      <rect x="26" y="14" width="12" height="3" rx="1.5" fill="#b91c1c"/>
+      <circle cx="32" cy="14" r="3" fill="#ef4444"/>
+      <path d="M26 34 Q32 38 38 34 L37 42 L27 42 Z" fill="#3b82f6"/>
+      <path d="M28 42 L28 48 L32 45 L36 48 L36 42" fill="#2563eb"/>
+      <circle cx="28" cy="28" r="2" fill="#1e293b"/>
+      <circle cx="36" cy="28" r="2" fill="#1e293b"/>
+      <ellipse cx="32" cy="31" rx="1.8" ry="3" fill="#f97316"/>
+      <path d="M26 35 Q32 40 38 35" stroke="#475569" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M22 32 L16 28" stroke="#92400e" stroke-width="2" stroke-linecap="round"/>
+      <path d="M42 32 L48 28" stroke="#92400e" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="28" cy="45" rx="3" ry="1.5" fill="white" opacity="0.8"/>
+    </svg>
+  </div>
+  <div id="fox" class="walking-character" onclick="jump('fox')" title="點我！">
+    <svg width="55" height="55" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="foxBody" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fdba74"/>
+          <stop offset="100%" stop-color="#f97316"/>
+        </linearGradient>
+        <radialGradient id="foxCheek" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fecdd3"/>
+          <stop offset="100%" stop-color="#fda4af"/>
+        </radialGradient>
+      </defs>
+      <path d="M58 44 Q68 38 62 28 Q56 20 48 26 Q44 30 46 38 Q50 48 58 44 Z" fill="url(#foxBody)"/>
+      <path d="M58 44 Q64 42 62 34 Q58 28 52 32" fill="#fff" opacity="0.5"/>
+      <ellipse cx="34" cy="42" rx="20" ry="14" fill="url(#foxBody)"/>
+      <path d="M20 22 L16 10 L28 16 Z" fill="#f97316"/>
+      <path d="M20 22 L18 14 L26 18 Z" fill="#fed7aa"/>
+      <path d="M48 22 L52 10 L40 16 Z" fill="#f97316"/>
+      <path d="M48 22 L50 14 L42 18 Z" fill="#fed7aa"/>
+      <circle cx="34" cy="26" r="14" fill="url(#foxBody)"/>
+      <ellipse cx="27" cy="30" rx="6" ry="5" fill="url(#foxCheek)" opacity="0.7"/>
+      <ellipse cx="41" cy="30" rx="6" ry="5" fill="url(#foxCheek)" opacity="0.7"/>
+      <ellipse cx="29" cy="24" rx="3" ry="4" fill="#1e293b"/>
+      <ellipse cx="39" cy="24" rx="3" ry="4" fill="#1e293b"/>
+      <circle cx="30" cy="23" r="1.2" fill="white"/>
+      <circle cx="40" cy="23" r="1.2" fill="white"/>
+      <path d="M32 31 L36 31 L34 34 Z" fill="#1e293b"/>
+      <path d="M32 34 Q34 36 36 34" stroke="#1e293b" stroke-width="1.2" fill="none"/>
+      <path d="M26 48 Q28 54 24 56" stroke="#f97316" stroke-width="4" stroke-linecap="round"/>
+      <path d="M40 48 Q42 54 38 56" stroke="#f97316" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="32" cy="40" rx="6" ry="2" fill="white" opacity="0.3"/>
+    </svg>
+  </div>
+
+  <!-- 記帳本內容 -->
+  <div class="max-w-4xl mx-auto px-4 pt-6 pb-20 space-y-6">
+
+    <!-- 頂部標題區 -->
+    <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="flex flex-col gap-1">
+            <h4 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                <span id="cloud-sync-badge" class="text-[10px] bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-sky-200 mr-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span> 雲端連線
+                </span>
+                團隊記帳本同步中
+            </h4>
+            <p class="text-[10px] text-slate-500">所有人打開同一網址，新增修改會即時同步！</p>
+        </div>
+
+        <div class="flex gap-2 w-full sm:w-auto">
+            <button onclick="openExpenseModal()" class="flex-1 sm:flex-none py-2 px-4 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                <span>＋</span> 記一筆
+            </button>
+            <button onclick="copyCurrentUrl()" class="flex-1 sm:flex-none py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                <span>📋</span> 複製分享網址
+            </button>
+            <button onclick="forceSync()" class="flex-1 sm:flex-none py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                <span>🔄</span> 強制同步
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-3">
+        <div class="bg-gradient-to-br from-sky-950 to-sky-900 text-white p-4 rounded-2xl shadow-sm text-center">
+            <span class="text-[10px] text-sky-200 block uppercase font-bold tracking-widest mb-1">總開支 (折合)</span>
+            <strong id="stat-total" class="text-base md:text-xl font-black">0.00 HKD</strong>
+        </div>
+        <div class="bg-gradient-to-br from-blue-900 to-indigo-800 text-white p-4 rounded-2xl shadow-sm text-center">
+            <span class="text-[10px] text-sky-200 block uppercase font-bold tracking-widest mb-1">人均花費</span>
+            <strong id="stat-average" class="text-base md:text-xl font-black">0.00 HKD</strong>
+        </div>
+        <div class="bg-gradient-to-br from-slate-800 to-slate-700 text-white p-4 rounded-2xl shadow-sm text-center">
+            <span class="text-[10px] text-slate-300 block uppercase font-bold tracking-widest mb-1">記帳筆數</span>
+            <strong id="stat-count" class="text-base md:text-xl font-black">0 筆</strong>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden min-h-[500px]">
+        <div class="border-b border-slate-200 bg-slate-50 p-2 flex gap-2 overflow-x-auto scrollbar-none">
+            <button id="tab-records-btn" onclick='switchLedgerSubTab("records")' class="whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black bg-white text-sky-900 shadow-sm transition">🧾 帳目明細</button>
+            <button id="tab-balances-btn" onclick='switchLedgerSubTab("balances")' class="whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition">📊 差額結算</button>
+            <button id="tab-suggested-btn" onclick='switchLedgerSubTab("suggested")' class="whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition flex items-center justify-center gap-1">🚀 最佳清債 <span id="debt-count-badge" class="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full hidden">0</span></button>
+            <button id="tab-history-btn" onclick='switchLedgerSubTab("history")' class="whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition">🕐 歷史紀錄</button>
+        </div>
+
+        <div id="subview-records" class="p-4 space-y-3">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3">
+                <h4 class="text-sm font-bold text-slate-800">所有團隊開支</h4>
+                <div class="flex flex-wrap items-center gap-2">
+                    <input id="search-input" oninput="renderExpensesList()" placeholder="🔍 搜尋名稱/分類" class="text-xs border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500/50 w-40">
+                    <select id="sort-select" onchange="renderExpensesList()" class="text-xs border border-slate-300 rounded-lg px-2 py-1.5 bg-white focus:outline-none">
+                        <option value="newest">最新優先</option>
+                        <option value="oldest">最舊優先</option>
+                        <option value="amountHigh">金額高→低</option>
+                        <option value="amountLow">金額低→高</option>
+                    </select>
+                    <div class="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 shadow-inner">
+                        <span class="text-[10px] text-slate-500 font-bold">👀 視角</span>
+                        <select id="ledger-view-as" onchange="changeViewAs(this.value)" class="text-xs font-black bg-transparent text-sky-700 outline-none cursor-pointer">
+                            <option value="余生">余生 🌊</option>
+                            <option value="bowie">bowie 🌸</option>
+                            <option value="shandy">shandy 🌲</option>
+                            <option value="Connie">Connie 🌺</option>
+                        </select>
+                    </div>
+                    <button onclick="exportLedgerText()" class="text-[10px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded transition">📋 輸出</button>
+                    <button onclick="openConfirmModal()" class="text-[10px] font-bold text-red-500 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 px-2 py-1 rounded transition">清空</button>
+                </div>
+            </div>
+            <div class="space-y-2" id="records-list-container">
+                <div class="text-slate-400 text-xs italic text-center py-12">暫無支出紀錄</div>
+            </div>
+        </div>
+
+        <div id="subview-balances" class="p-4 hidden space-y-4">
+            <h4 class="text-sm font-bold text-slate-800">各成員收支明細</h4>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-400">
+                            <th class="py-2.5">成員</th>
+                            <th class="py-2.5 text-right">實付 (HKD)</th>
+                            <th class="py-2.5 text-right">應付 (HKD)</th>
+                            <th class="py-2.5 text-right">差額 (HKD)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="balances-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="subview-suggested" class="p-4 hidden space-y-4">
+            <div class="grid grid-cols-3 gap-2">
+                <div class="bg-red-50 border border-red-200 p-2 rounded-xl text-center">
+                    <span class="text-[10px] text-red-600 block">應付總額</span>
+                    <strong id="debt-total" class="text-sm text-red-600">$0.00</strong>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-xl text-center">
+                    <span class="text-[10px] text-emerald-600 block">應收總額</span>
+                    <strong id="credit-total" class="text-sm text-emerald-600">$0.00</strong>
+                </div>
+                <div class="bg-sky-50 border border-sky-200 p-2 rounded-xl text-center">
+                    <span class="text-[10px] text-sky-600 block">已清償</span>
+                    <strong id="settled-total" class="text-sm text-sky-600">0%</strong>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="copySettlementPlan()" class="flex-1 py-2 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl text-xs font-bold border border-sky-200 transition">📋 複製清債方案</button>
+                <button onclick="resetSettlementStatus()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 transition">🔄 重置狀態</button>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-900 leading-relaxed">
+                💡 系統已自動計算最優結算路線，點擊「標記完成」可追蹤進度。
+            </div>
+            <div class="space-y-2" id="suggested-settle-container"></div>
+        </div>
+
+        <div id="subview-history" class="p-4 hidden space-y-4">
+            <h4 class="text-sm font-bold text-slate-800">🕐 修改與刪除紀錄</h4>
+            <div class="space-y-2" id="history-list-container">
+                <div class="text-slate-400 text-xs italic text-center py-12">暫無歷史紀錄</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 記帳 Modal -->
+<div id="expense-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeExpenseModal()"></div>
+<div id="expense-modal" class="fixed bottom-0 left-0 right-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-full md:max-w-lg bg-white rounded-t-3xl md:rounded-3xl shadow-2xl z-[70] transform translate-y-full md:translate-y-8 md:scale-95 opacity-0 hidden transition-all duration-300 flex flex-col max-h-[92vh] md:max-h-[85vh]">
+    <div class="shrink-0 flex justify-center pt-3 pb-1 md:hidden" onclick="closeExpenseModal()">
+        <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
+    </div>
+    
+    <div class="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+            <span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✍️</span>
+            新增團隊花費
+        </h3>
+        <div class="flex items-center gap-2">
+            <button id="btn-save-expense" onclick="saveExpense()" class="bg-sky-600 hover:bg-sky-700 text-white font-black py-2 px-4 rounded-xl shadow-sm transition active:scale-95 text-sm flex items-center gap-1.5">
+                <span>寫入帳本</span>
+                <span class="text-lg">✍️</span>
+            </button>
+            <button onclick="closeExpenseModal()" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6 pb-24 space-y-4 scrollbar-none bg-slate-50/50">
+        
+        <!-- 身份驗證（雙符號密碼） -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+            <label class="block text-[11px] font-bold text-slate-600 mb-2">🔐 你的身份</label>
+            <div class="grid grid-cols-4 gap-1.5" id="identity-selector"></div>
+            
+            <div class="mt-3">
+                <label class="block text-[10px] font-bold text-slate-500 mb-1.5">請依序點擊你的兩個符號密碼：</label>
+                <div id="symbol-password-grid" class="grid grid-cols-5 gap-1.5"></div>
+                <div id="selected-symbols" class="flex gap-2 mt-2 min-h-[32px] items-center"></div>
+                <button onclick="verifyIdentity()" class="mt-2 w-full py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition">確認身份</button>
+            </div>
+            
+            <div id="identity-status" class="text-[10px] font-bold mt-2 hidden"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">📅 行程天數</label>
+                <select id="ledger-day" class="block w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+                    <option value="1">Day 1 (1/21)</option>
+                    <option value="2">Day 2 (1/22)</option>
+                    <option value="3">Day 3 (1/23)</option>
+                    <option value="4">Day 4 (1/24)</option>
+                    <option value="5">Day 5 (1/25)</option>
+                    <option value="6">Day 6 (1/26)</option>
+                    <option value="7">Day 7 (1/27)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">🏷️ 支出分類</label>
+                <select id="ledger-category" class="block w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+                    <option value="🍽️ 飲食">🍽️ 飲食</option>
+                    <option value="🚗 交通">🚗 交通/雪胎</option>
+                    <option value="🏨 溫泉住宿">🏨 溫泉住宿</option>
+                    <option value="🛍️ 購物">🛍️ 購物</option>
+                    <option value="🎫 纜車/門票">🎫 纜車/門票</option>
+                    <option value="📝 其他">📝 其他</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">📝 支出項目 / 名稱</label>
+            <input id="ledger-desc" placeholder="例如：藏王樹冰纜車票、ETC過路費" class="block w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <label class="block text-[11px] font-bold text-slate-600 mb-2">💰 金額與幣值</label>
+            <div class="grid grid-cols-3 gap-2">
+                <input id="ledger-amount" inputmode="decimal" oninput="updateEstimatedHKD()" placeholder="0.00" class="col-span-2 border border-slate-300 rounded-xl py-2.5 px-3 text-lg font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+                <select id="ledger-currency" onchange="updateEstimatedHKD()" class="col-span-1 border border-slate-300 rounded-xl py-2.5 px-3 text-sm font-bold bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+                    <option value="JPY">JPY (¥)</option>
+                    <option value="HKD">HKD ($)</option>
+                    <option value="TWD">TWD</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+            <div class="text-right mt-1.5">
+                <span id="estimated-hkd-text" class="text-[11px] text-sky-600 font-bold bg-sky-50 px-2 py-0.5 rounded border border-sky-100">估算折合：0.00 HKD</span>
+            </div>
+        </div>
+        <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1.5">👤 誰先付款（代付人）</label>
+            <div class="grid grid-cols-4 gap-1.5" id="payer-grid"></div>
+        </div>
+        <div>
+            <div class="flex justify-between items-center mb-1.5">
+                <label class="block text-[11px] font-bold text-slate-600">👥 參與分攤成員</label>
+                <div class="flex gap-1">
+                    <button type="button" onclick='setSplitPreset("all")' class="text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 px-2 py-1 rounded">全團</button>
+                    <button type="button" onclick='setSplitPreset("adults")' class="text-[10px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 px-2 py-1 rounded">僅大人</button>
+                    <button type="button" onclick="useLastExpense()" class="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded">↩️ 沿用上一筆</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 p-2 bg-white border border-slate-200 rounded-xl" id="splitters-grid"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 確認清空 Modal -->
+<div id="confirm-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] hidden opacity-0 transition-opacity duration-300" onclick="closeConfirmModal()"></div>
+<div id="confirm-modal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl z-[90] w-11/12 max-w-sm p-6 hidden opacity-0 transition-all duration-300 scale-95">
+    <h3 class="text-lg font-black text-slate-900 mb-2 flex items-center gap-2">
+        <span class="text-xl">⚠️</span> 確定要清空嗎？
+    </h3>
+    <p class="text-sm text-slate-600 mb-6">此操作將刪除所有團隊記帳資料，且 <strong>無法復原</strong>！</p>
+    <div class="flex gap-3">
+        <button onclick="closeConfirmModal()" class="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">取消</button>
+        <button onclick="executeClearExpenses()" class="flex-1 py-3 rounded-xl font-bold bg-red-500 text-white hover:bg-red-600 transition shadow-sm">確認清空</button>
+    </div>
+</div>
+
+<!-- Toast 通知 -->
+<div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none">
+    <span id="toast-icon">✅</span>
+    <span id="toast-message">複製成功！</span>
+</div>
+
+<script src="js/common.js"></script>
+<script src="js/ledger.js"></script>
+</body>
+</html>
