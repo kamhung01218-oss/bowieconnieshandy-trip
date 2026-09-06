@@ -68,6 +68,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             <button id="tab-records-btn" onclick='switchLedgerSubTab("records")' class="whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black bg-white text-sky-900 shadow-sm transition">🧾 帳目明細</button>
             <button id="tab-balances-btn" onclick='switchLedgerSubTab("balances")' class="whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition">📊 差額結算</button>
             <button id="tab-suggested-btn" onclick='switchLedgerSubTab("suggested")' class="whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition flex items-center justify-center gap-1">🚀 最佳清債 <span id="debt-count-badge" class="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full hidden">0</span></button>
+            <button id="tab-history-btn" onclick='switchLedgerSubTab("history")' class="whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition">🕐 歷史紀錄</button>
         </div>
 
         <div id="subview-records" class="p-4 space-y-3">
@@ -86,10 +87,10 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
                     <div class="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 shadow-inner">
                         <span class="text-[10px] text-slate-500 font-bold">👀 視角</span>
                         <select id="ledger-view-as" onchange="changeViewAs(this.value)" class="text-xs font-black bg-transparent text-sky-700 outline-none cursor-pointer">
-                            <option value="余生">余生</option>
-                            <option value="bowie">bowie</option>
-                            <option value="shandy">shandy</option>
-                            <option value="Connie">Connie</option>
+                            <option value="余生">余生 🔵</option>
+                            <option value="bowie">bowie 🩷</option>
+                            <option value="shandy">shandy 🟢</option>
+                            <option value="Connie">Connie 🟣</option>
                         </select>
                     </div>
                     <button onclick="exportLedgerText()" class="text-[10px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded transition">📋 輸出</button>
@@ -144,6 +145,14 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             </div>
             <div class="space-y-2" id="suggested-settle-container"></div>
         </div>
+
+        <!-- 歷史紀錄分頁 -->
+        <div id="subview-history" class="p-4 hidden space-y-4">
+            <h4 class="text-sm font-bold text-slate-800">🕐 修改與刪除紀錄</h4>
+            <div class="space-y-2" id="history-list-container">
+                <div class="text-slate-400 text-xs italic text-center py-12">暫無歷史紀錄</div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -172,6 +181,18 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
     </div>
 
     <div class="flex-1 overflow-y-auto p-6 pb-24 space-y-4 scrollbar-none bg-slate-50/50">
+        
+        <!-- 身份驗證區塊（個人符號） -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+            <label class="block text-[11px] font-bold text-slate-600 mb-2">🔐 你的身份</label>
+            <div class="grid grid-cols-4 gap-1.5" id="identity-selector"></div>
+            <div class="mt-2 flex items-center gap-2">
+                <input type="password" id="identity-password" placeholder="輸入個人符號密碼" class="flex-1 border border-slate-300 rounded-lg py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+                <button onclick="verifyIdentity()" class="py-2 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition">驗證</button>
+            </div>
+            <div id="identity-status" class="text-[10px] font-bold mt-2 hidden"></div>
+        </div>
+
         <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">📅 行程天數</label>
@@ -233,7 +254,6 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             <div class="grid grid-cols-4 gap-1.5 p-2 bg-white border border-slate-200 rounded-xl" id="splitters-grid"></div>
         </div>
     </div>
-    <!-- 底部不再放置保存按鈕，已移至頂部 -->
 </div>
 
 <!-- 確認清空 Modal -->
@@ -263,7 +283,7 @@ const firebaseConfig = {
   projectId: "tohoku-winter-trip",
   storageBucket: "tohoku-winter-trip.firebasestorage.app",
   messagingSenderId: "991555590088",
-  appId: "1:991555590088:web:afb089890d7d546821d2fd",  // ✅ 已與 index.html 統一
+  appId: "1:991555590088:web:afb089890d7d546821d2fd",
   measurementId: "G-XLDZRXC8RT"
 };
 
@@ -317,13 +337,7 @@ auth.onAuthStateChanged(user => {
                 state.expenses = sanitizeExpenses(cloudData.expenses);
                 saveLocalExpenses(); 
                 updateLedgerUI();    
-            } else {
-                console.warn("雲端文檔存在但無 expenses，建立空文檔");
-                syncDataToCloud();
             }
-        } else {
-            console.warn("雲端文檔不存在，將同步本地資料到雲端");
-            syncDataToCloud();
         }
     }, err => {
         console.warn("Firestore 同步警告:", err);
@@ -337,6 +351,7 @@ async function syncDataToCloud() {
         await window.dbRef.set({
             expenses: state.expenses,
             checkedItems: state.checkedItems,
+            history: state.history,
             updatedAt: Date.now()
         }, { merge: true }); 
         updateCloudBadge(true);
@@ -359,7 +374,26 @@ async function forceSync() {
 
 // ==================== 全域變數與狀態 ====================
 const members = ["余生", "bowie", "shandy", "Connie"];
-const adults = ["余生", "bowie", "shandy", "Connie"];
+
+// 每個成員的個人符號（唯一且難以猜測）
+const memberSymbols = {
+    "余生": "🔵",
+    "bowie": "🩷",
+    "shandy": "🟢",
+    "Connie": "🟣"
+};
+
+// 每個成員的個人符號密碼（唯一且難以猜測）
+const memberPasswords = {
+    "余生": "a1b2c3",
+    "bowie": "x9y8z7",
+    "shandy": "p4q5r6",
+    "Connie": "m3n4o5"
+};
+
+// 所有可選符號（防止被猜到）
+const allSymbols = ["🔵", "🩷", "🟢", "🟣", "🔴", "🟠", "🟡", "🟤", "⚫", "⚪", "🟦", "🟧", "🟨", "🟩", "🟪", "🟥", "⬛", "⬜", "🔶", "🔷"];
+
 const memberStyle = {
     "余生": { badge: "bg-blue-100 text-blue-800 border-blue-200", solid: "bg-blue-600 text-white border-blue-700", soft: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100", text: "text-blue-700", avatar: "bg-blue-500" },
     "bowie": { badge: "bg-pink-100 text-pink-800 border-pink-200", solid: "bg-pink-500 text-white border-pink-600", soft: "bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100", text: "text-pink-600", avatar: "bg-pink-400" },
@@ -373,23 +407,27 @@ let state = {
     activePayer: members[0],
     activeSplitWith: [...members],
     expenses: [],
-    checkedItems: {}
+    checkedItems: {},
+    history: []
 };
 
 let editingExpenseId = null;
-let lastExpense = null; // 用於「沿用上一筆」
-let settlementStatus = JSON.parse(localStorage.getItem("settlement_status")) || {}; // 清債狀態
+let lastExpense = null;
+let settlementStatus = JSON.parse(localStorage.getItem("settlement_status")) || {};
 const exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
 
+// ==================== 分頁切換 ====================
 function switchLedgerSubTab(tabName) {
     document.getElementById("subview-records").classList.add("hidden");
     document.getElementById("subview-balances").classList.add("hidden");
     document.getElementById("subview-suggested").classList.add("hidden");
+    document.getElementById("subview-history").classList.add("hidden");
     
     const inactiveClass = "whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition";
     document.getElementById("tab-records-btn").className = inactiveClass;
     document.getElementById("tab-balances-btn").className = inactiveClass;
     document.getElementById("tab-suggested-btn").className = inactiveClass + " flex items-center justify-center gap-1";
+    document.getElementById("tab-history-btn").className = inactiveClass;
 
     document.getElementById(`subview-${tabName}`).classList.remove("hidden");
     const activeClass = "whitespace-nowrap flex-1 py-2.5 px-3 rounded-xl text-xs font-black bg-white text-sky-900 shadow-sm transition";
@@ -400,36 +438,73 @@ function switchLedgerSubTab(tabName) {
         document.getElementById("tab-balances-btn").className = activeClass;
     } else if (tabName === "suggested") {
         document.getElementById("tab-suggested-btn").className = activeClass + " flex items-center justify-center gap-1";
+    } else if (tabName === "history") {
+        document.getElementById("tab-history-btn").className = activeClass;
+        renderHistoryList();
     }
 }
 
-function sanitizeExpenses(e) {
-    return Array.isArray(e) ? e.filter(item => item !== null && typeof item === "object").map(item => ({
-        ...item,
-        id: item.id || "exp-" + Math.random().toString(36).substr(2, 9),
-        day: parseInt(item.day) || 1,
-        desc: item.desc || "未命名項目",
-        category: item.category || "📝 其他",
-        amount: Number(item.amount) || 0,
-        currency: item.currency || "JPY",
-        amountInHKD: Number(item.amountInHKD) || 0,
-        payer: item.payer || members[0],
-        splitWith: Array.isArray(item.splitWith) && item.splitWith.length > 0 ? item.splitWith : [members[0]],
-        createdAt: item.createdAt || Date.now()
-    })) : [];
+// ==================== 身份驗證 ====================
+let verifiedMember = null;
+
+function renderIdentitySelector() {
+    const selector = document.getElementById("identity-selector");
+    if (!selector) return;
+    selector.innerHTML = "";
+    members.forEach(member => {
+        const symbol = memberSymbols[member];
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.member = member;
+        btn.dataset.symbol = symbol;
+        btn.innerHTML = `<span class="text-xl">${symbol}</span><span class="text-[9px] font-bold">${member}</span>`;
+        btn.className = "py-2 px-1 rounded-xl border-2 border-slate-200 hover:border-sky-400 transition flex flex-col items-center";
+        btn.onclick = () => {
+            // 選擇身份時，清除驗證狀態
+            verifiedMember = null;
+            document.getElementById("identity-status").classList.add("hidden");
+            document.getElementById("identity-password").value = "";
+            // 更新所有按鈕樣式
+            selector.querySelectorAll("button").forEach(b => {
+                b.className = "py-2 px-1 rounded-xl border-2 border-slate-200 hover:border-sky-400 transition flex flex-col items-center";
+            });
+            btn.className = "py-2 px-1 rounded-xl border-2 border-sky-500 bg-sky-50 transition flex flex-col items-center";
+        };
+        selector.appendChild(btn);
+    });
 }
 
-function saveLocalExpenses() {
-    localStorage.setItem("tohoku_expenses_2027", JSON.stringify(state.expenses));
-}
-
-function loadLocalExpenses() {
-    const saved = localStorage.getItem("tohoku_expenses_2027");
-    if (saved) {
-        try { state.expenses = sanitizeExpenses(JSON.parse(saved)); } catch(e) { state.expenses = []; }
+function verifyIdentity() {
+    const selectedBtn = document.querySelector("#identity-selector button.border-sky-500");
+    if (!selectedBtn) {
+        showToast("⚠️ 請先選擇身份！", "⚠️");
+        return;
+    }
+    const member = selectedBtn.dataset.member;
+    const password = document.getElementById("identity-password").value.trim();
+    const status = document.getElementById("identity-status");
+    
+    if (!password) {
+        showToast("⚠️ 請輸入個人符號密碼！", "⚠️");
+        return;
+    }
+    
+    if (memberPasswords[member] === password) {
+        verifiedMember = member;
+        status.innerHTML = `✅ 已驗證為 <strong>${member} ${memberSymbols[member]}</strong>，可以記帳了！`;
+        status.className = "text-[10px] font-bold mt-2 text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-1.5";
+        status.classList.remove("hidden");
+        showToast(`✅ 歡迎 ${member}！已驗證成功`);
+    } else {
+        verifiedMember = null;
+        status.innerHTML = `❌ 個人符號密碼錯誤，請再試一次`;
+        status.className = "text-[10px] font-bold mt-2 text-red-500 bg-red-50 border border-red-200 rounded-lg px-2 py-1.5";
+        status.classList.remove("hidden");
+        showToast("❌ 個人符號密碼錯誤！", "❌");
     }
 }
 
+// ==================== Toast ====================
 function showToast(message, icon = "✅") {
     const toast = document.getElementById("toast");
     const toastMessage = document.getElementById("toast-message");
@@ -468,6 +543,11 @@ function copyCurrentUrl() {
 
 // ==================== 記帳功能 ====================
 function openExpenseModal() {
+    // 重置身份驗證狀態
+    verifiedMember = null;
+    document.getElementById("identity-status").classList.add("hidden");
+    document.getElementById("identity-password").value = "";
+    
     const backdrop = document.getElementById("expense-modal-backdrop");
     const modal = document.getElementById("expense-modal");
     backdrop.classList.remove("hidden");
@@ -477,6 +557,7 @@ function openExpenseModal() {
     backdrop.classList.add("opacity-100");
     modal.classList.remove("translate-y-full", "md:translate-y-8", "md:scale-95", "opacity-0");
     modal.classList.add("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
+    renderIdentitySelector();
     renderLedgerSelectors();
     updateEstimatedHKD();
 }
@@ -522,6 +603,7 @@ function openEditExpenseModal(expenseId) {
     state.activePayer = expense.payer;
     state.activeSplitWith = [...expense.splitWith];
     
+    renderIdentitySelector();
     renderLedgerSelectors();
     updateEstimatedHKD();
     
@@ -545,11 +627,12 @@ function renderLedgerSelectors() {
         payerGrid.innerHTML = "";
         members.forEach(member => {
             const style = memberStyle[member] || memberStyle["余生"];
+            const symbol = memberSymbols[member] || "";
             const btn = document.createElement("button");
             btn.type = "button";
             btn.onclick = () => { state.activePayer = member; renderLedgerSelectors(); };
             btn.className = `py-1.5 px-1 text-xs rounded-xl font-bold transition border text-center min-h-[48px] flex flex-col items-center justify-center gap-0.5 ${state.activePayer === member ? style.solid + " shadow-sm scale-105" : style.soft}`;
-            btn.innerHTML = `<div class="w-5 h-5 rounded-full ${state.activePayer === member ? "bg-white/20 text-white" : style.avatar + " text-white"} flex items-center justify-center text-[10px] font-black shadow-sm">${member[0].toUpperCase()}</div><span class="${state.activePayer === member ? "text-white" : style.text} text-[10px]">${member}</span>`;
+            btn.innerHTML = `<div class="w-5 h-5 rounded-full ${state.activePayer === member ? "bg-white/20 text-white" : style.avatar + " text-white"} flex items-center justify-center text-[10px] font-black shadow-sm">${member[0].toUpperCase()}</div><span class="${state.activePayer === member ? "text-white" : style.text} text-[10px]">${member} ${symbol}</span>`;
             payerGrid.appendChild(btn);
         });
     }
@@ -559,12 +642,13 @@ function renderLedgerSelectors() {
         splittersGrid.innerHTML = "";
         members.forEach(member => {
             const style = memberStyle[member] || memberStyle["余生"];
+            const symbol = memberSymbols[member] || "";
             const btn = document.createElement("button");
             btn.type = "button";
             btn.onclick = () => toggleSplitter(member);
             const isActive = state.activeSplitWith.includes(member);
             btn.className = `py-1.5 px-1 text-[11px] rounded-lg font-bold transition border text-center min-h-[40px] flex items-center justify-center gap-1.5 ${isActive ? style.solid + " shadow-sm" : style.soft}`;
-            btn.innerHTML = `<div class="w-3.5 h-3.5 rounded-full border border-white/60 ${isActive ? "bg-white" : "bg-white/50"} flex items-center justify-center shrink-0 shadow-inner"><div class="w-2 h-2 rounded-full ${isActive ? style.avatar : "bg-transparent"}"></div></div><span>${member}</span>`;
+            btn.innerHTML = `<div class="w-3.5 h-3.5 rounded-full border border-white/60 ${isActive ? "bg-white" : "bg-white/50"} flex items-center justify-center shrink-0 shadow-inner"><div class="w-2 h-2 rounded-full ${isActive ? style.avatar : "bg-transparent"}"></div></div><span>${member} ${symbol}</span>`;
             splittersGrid.appendChild(btn);
         });
     }
@@ -581,7 +665,7 @@ function toggleSplitter(member) {
 }
 
 function setSplitPreset(preset) {
-    state.activeSplitWith = preset === "all" ? [...members] : [...adults];
+    state.activeSplitWith = preset === "all" ? [...members] : [...members];
     renderLedgerSelectors();
 }
 
@@ -613,7 +697,14 @@ function updateEstimatedHKD() {
     estText.innerText = `估算折合：${(amount * rate).toFixed(2)} HKD`;
 }
 
+// ==================== 儲存帳目（含時間戳和歷史） ====================
 function saveExpense() {
+    // 檢查身份驗證
+    if (!verifiedMember) {
+        showToast("⚠️ 請先選擇身份並輸入個人符號密碼驗證！", "⚠️");
+        return;
+    }
+    
     const day = document.getElementById("ledger-day");
     const category = document.getElementById("ledger-category");
     const desc = document.getElementById("ledger-desc");
@@ -628,6 +719,18 @@ function saveExpense() {
     }
 
     const rate = exchangeRates[currency.value] || 0.052;
+    const now = Date.now();
+    
+    // 自動生成時間
+    const currentTime = new Date(now);
+    const timeString = currentTime.toLocaleString("zh-HK", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+    
     const expenseData = {
         day: parseInt(day.value),
         category: category.value,
@@ -637,24 +740,51 @@ function saveExpense() {
         amountInHKD: parseFloat((amountValue * rate).toFixed(2)),
         payer: state.activePayer,
         splitWith: [...state.activeSplitWith],
-        updatedAt: Date.now()
+        createdAt: now,
+        updatedAt: now,
+        createdBy: verifiedMember,
+        createdTime: timeString,
+        updatedBy: verifiedMember
     };
 
     if (editingExpenseId) {
         const index = state.expenses.findIndex(e => e.id === editingExpenseId);
         if (index > -1) {
+            // 記錄修改歷史
+            const oldExpense = state.expenses[index];
+            state.history.unshift({
+                type: "edit",
+                expenseId: editingExpenseId,
+                expenseDesc: oldExpense.desc,
+                actionBy: verifiedMember,
+                actionSymbol: memberSymbols[verifiedMember],
+                actionTime: new Date().toLocaleString("zh-HK"),
+                details: `修改了「${oldExpense.desc}」的資料`
+            });
+            
             state.expenses[index] = { ...state.expenses[index], ...expenseData };
             showToast("✅ 已更新記帳！");
         }
         editingExpenseId = null;
     } else {
         const expense = {
-            id: "exp-" + Date.now(),
+            id: "exp-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5),
             ...expenseData,
-            createdAt: Date.now()
         };
         state.expenses.push(expense);
-        lastExpense = expense; // 儲存為上一筆
+        lastExpense = expense;
+        
+        // 記錄新增歷史
+        state.history.unshift({
+            type: "add",
+            expenseId: expense.id,
+            expenseDesc: expense.desc,
+            actionBy: verifiedMember,
+            actionSymbol: memberSymbols[verifiedMember],
+            actionTime: new Date().toLocaleString("zh-HK"),
+            details: `新增了「${expense.desc}」${expense.amount} ${expense.currency}`
+        });
+        
         showToast("🎉 記帳成功並已同步！");
     }
 
@@ -669,9 +799,24 @@ function saveExpense() {
     }, 300);
 }
 
-// 刪除確認（使用原生 confirm，簡單可靠）
+// 刪除帳目（含歷史紀錄）
 function deleteExpense(expenseId) {
     if (!confirm("確定要刪除這筆帳目嗎？")) return;
+    
+    const expense = state.expenses.find(e => e.id === expenseId);
+    if (!expense) return;
+    
+    // 記錄刪除歷史
+    state.history.unshift({
+        type: "delete",
+        expenseId: expenseId,
+        expenseDesc: expense.desc,
+        actionBy: verifiedMember || "未知",
+        actionSymbol: verifiedMember ? memberSymbols[verifiedMember] : "❓",
+        actionTime: new Date().toLocaleString("zh-HK"),
+        details: `刪除了「${expense.desc}」${expense.amount} ${expense.currency}`
+    });
+    
     state.expenses = state.expenses.filter(e => e.id !== expenseId);
     saveLocalExpenses();
     syncDataToCloud();
@@ -679,10 +824,44 @@ function deleteExpense(expenseId) {
     showToast("🗑️ 已移除該筆花費");
 }
 
-function updateLedgerUI() {
-    const badge = document.getElementById("ledger-badge");
-    if (badge) badge.innerText = state.expenses.length;
+// ==================== 歷史紀錄功能 ====================
+function renderHistoryList() {
+    const container = document.getElementById("history-list-container");
+    if (!container) return;
+    container.innerHTML = "";
+    
+    if (!state.history || state.history.length === 0) {
+        container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-12">暫無修改或刪除紀錄</div>';
+        return;
+    }
+    
+    state.history.slice(0, 50).forEach(item => {
+        const isAdd = item.type === "add";
+        const isEdit = item.type === "edit";
+        const isDelete = item.type === "delete";
+        
+        const typeColor = isAdd ? "bg-emerald-100 text-emerald-800" : isEdit ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800";
+        const typeText = isAdd ? "新增" : isEdit ? "修改" : "刪除";
+        
+        const card = document.createElement("div");
+        card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start gap-2";
+        card.innerHTML = `
+            <span class="text-xl">${item.actionSymbol || "❓"}</span>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] font-black px-2 py-0.5 rounded-full ${typeColor}">${typeText}</span>
+                    <span class="text-[10px] font-bold text-slate-700">${item.actionBy}</span>
+                    <span class="text-[9px] text-slate-400">${item.actionTime}</span>
+                </div>
+                <p class="text-[11px] text-slate-600">${item.details}</p>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
 
+// ==================== 顯示列表（含時間戳） ====================
+function updateLedgerUI() {
     let total = 0;
     state.expenses.forEach(e => total += e.amountInHKD);
     
@@ -697,6 +876,7 @@ function updateLedgerUI() {
     renderExpensesList();
     renderBalancesTable();
     renderSuggestedSettlements();
+    renderHistoryList();
 }
 
 function renderExpensesList() {
@@ -760,19 +940,24 @@ function renderExpensesList() {
         }
 
         const payerStyle = memberStyle[expense.payer] || memberStyle["余生"];
+        const symbol = memberSymbols[expense.payer] || "";
+        const timeStr = expense.createdTime || new Date(expense.createdAt).toLocaleString("zh-HK");
+        
         const card = document.createElement("div");
         card.className = `${cardBg} p-3 rounded-2xl border ${cardBorder} flex justify-between items-center text-xs group transition shadow-sm hover:shadow`;
         card.innerHTML = `
             <div class="flex items-center gap-2.5 flex-1 min-w-0 pr-2">
                 <div class="w-8 h-8 rounded-full ${payerStyle.avatar} text-white font-black flex items-center justify-center shrink-0 border-2 border-white shadow-sm text-sm">${expense.payer[0].toUpperCase()}</div>
-                <div class="space-y-1.5 flex-1 min-w-0">
+                <div class="space-y-1 flex-1 min-w-0">
                     <div class="flex items-center gap-2">
                         <span class="bg-sky-100 text-sky-800 font-bold px-1.5 py-0.5 rounded text-[9px] shrink-0 border border-sky-200">D${expense.day}</span>
                         <strong class="text-slate-900 text-[13px] truncate">${expense.desc}</strong>
+                        <span class="text-[10px]">${symbol}</span>
                     </div>
                     <div class="flex items-center gap-1.5 text-[10px] text-slate-500 flex-wrap mt-0.5">
                         <span class="bg-white/80 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-medium">${expense.category}</span>
                         <span class="flex items-center gap-1">代付: <span class="${payerStyle.badge} px-1.5 py-0.5 rounded font-bold border">${expense.payer}</span></span>
+                        <span class="text-slate-400">🕐 ${timeStr}</span>
                     </div>
                 </div>
             </div>
@@ -811,7 +996,7 @@ function calculateBalances() {
 
     let balances = {};
     members.forEach(m => {
-        balances[m] = Math.round((paidMap[m] - owedMap[m]) * 100) / 100; // 四捨五入至分
+        balances[m] = Math.round((paidMap[m] - owedMap[m]) * 100) / 100;
     });
 
     return { paidMap, owedMap, balances };
@@ -831,12 +1016,13 @@ function renderBalancesTable() {
         const balanceText = balance > 0 ? `+${balance.toFixed(2)}` : balance.toFixed(2);
         const balanceClass = balance > 0 ? "text-emerald-600 font-bold" : balance < 0 ? "text-red-500 font-bold" : "text-slate-400";
         const style = memberStyle[member] || memberStyle["余生"];
+        const symbol = memberSymbols[member] || "";
 
         tbody.innerHTML += `
             <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
                 <td class="py-3 font-bold text-slate-800 flex items-center gap-2">
                     <div class="w-6 h-6 rounded-full ${style.avatar} text-white font-black flex items-center justify-center text-[10px] border border-white shadow-sm">${member[0].toUpperCase()}</div>
-                    ${member}
+                    ${member} ${symbol}
                 </td>
                 <td class="py-3 text-right text-slate-600 font-medium">$${paid}</td>
                 <td class="py-3 text-right text-slate-600 font-medium">$${owed}</td>
@@ -886,7 +1072,6 @@ function renderSuggestedSettlements() {
         if (creditor.amount < 0.01) c++;
     }
 
-    // 更新摘要數字
     const totalDebt = debtors.reduce((sum, d) => sum + d.amount, 0).toFixed(2);
     const totalCredit = creditors.reduce((sum, c) => sum + c.amount, 0).toFixed(2);
     const settledCount = settlements.filter(s => settlementStatus[`${s.from}_${s.to}_${s.amount}`]).length;
@@ -913,6 +1098,8 @@ function renderSuggestedSettlements() {
     settlements.forEach(s => {
         const fromStyle = memberStyle[s.from] || memberStyle["余生"];
         const toStyle = memberStyle[s.to] || memberStyle["余生"];
+        const fromSymbol = memberSymbols[s.from] || "";
+        const toSymbol = memberSymbols[s.to] || "";
         const key = `${s.from}_${s.to}_${s.amount}`;
         const isDone = settlementStatus[key] || false;
 
@@ -921,7 +1108,7 @@ function renderSuggestedSettlements() {
                 <div class="flex items-center gap-1.5 md:gap-2">
                     <div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                         <div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${s.from[0].toUpperCase()}</div>
-                        <span class="font-bold text-slate-700 hidden sm:inline">${s.from}</span>
+                        <span class="font-bold text-slate-700 hidden sm:inline">${s.from} ${fromSymbol}</span>
                     </div>
                     <span class="text-slate-400 text-[10px] font-bold flex flex-col items-center px-1">
                         <span>付款給</span>
@@ -929,7 +1116,7 @@ function renderSuggestedSettlements() {
                     </span>
                     <div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                         <div class="w-5 h-5 rounded-full ${toStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${s.to[0].toUpperCase()}</div>
-                        <span class="font-bold text-slate-700 hidden sm:inline">${s.to}</span>
+                        <span class="font-bold text-slate-700 hidden sm:inline">${s.to} ${toSymbol}</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -1042,7 +1229,7 @@ function executeClearExpenses() {
     state.expenses = [];
     lastExpense = null;
     settlementStatus = {};
-    localStorage.removeItem("settlement_status");
+    // 保留歷史紀錄，不清空
     saveLocalExpenses();
     syncDataToCloud();
     updateLedgerUI();
@@ -1052,9 +1239,46 @@ function executeClearExpenses() {
 
 // ==================== 初始化 ====================
 window.addEventListener("DOMContentLoaded", () => {
+    // 從 localStorage 載入歷史紀錄
+    const savedHistory = localStorage.getItem("tohoku_history_2027");
+    if (savedHistory) {
+        try { state.history = JSON.parse(savedHistory); } catch(e) { state.history = []; }
+    }
     loadLocalExpenses();
     updateLedgerUI();
 });
+
+function saveLocalExpenses() {
+    localStorage.setItem("tohoku_expenses_2027", JSON.stringify(state.expenses));
+    localStorage.setItem("tohoku_history_2027", JSON.stringify(state.history));
+}
+
+function loadLocalExpenses() {
+    const saved = localStorage.getItem("tohoku_expenses_2027");
+    if (saved) {
+        try { state.expenses = sanitizeExpenses(JSON.parse(saved)); } catch(e) { state.expenses = []; }
+    }
+}
+
+function sanitizeExpenses(e) {
+    return Array.isArray(e) ? e.filter(item => item !== null && typeof item === "object").map(item => ({
+        ...item,
+        id: item.id || "exp-" + Math.random().toString(36).substr(2, 9),
+        day: parseInt(item.day) || 1,
+        desc: item.desc || "未命名項目",
+        category: item.category || "📝 其他",
+        amount: Number(item.amount) || 0,
+        currency: item.currency || "JPY",
+        amountInHKD: Number(item.amountInHKD) || 0,
+        payer: item.payer || members[0],
+        splitWith: Array.isArray(item.splitWith) && item.splitWith.length > 0 ? item.splitWith : [members[0]],
+        createdAt: item.createdAt || Date.now(),
+        createdTime: item.createdTime || "",
+        createdBy: item.createdBy || "",
+        updatedAt: item.updatedAt || Date.now(),
+        updatedBy: item.updatedBy || ""
+    })) : [];
+}
 </script>
 </body>
 </html>
