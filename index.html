@@ -251,113 +251,110 @@ async function syncDataToCloud() {
     font-weight: bold;
   }
 
-  /* ==================== 動態角色 ==================== */
+  /* ==================== 雪花效果 ==================== */
+  .snowflake {
+    position: absolute;
+    top: -10px;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform, opacity;
+    animation: snowfall linear infinite;
+    background: #e0f2fe; /* 淡藍色 */
+    box-shadow: 0 0 5px rgba(224, 242, 254, 0.8); /* 光暈 */
+  }
+  @keyframes snowfall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(360deg); opacity: 0.5; }
+  }
+  @keyframes snowfall-small {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(180deg); opacity: 0.3; }
+  }
+  @keyframes snowfall-medium {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(90vh) rotate(270deg); opacity: 0.5; }
+  }
+  @keyframes snowfall-large {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(80vh) rotate(360deg); opacity: 0.7; }
+  }
+
+  /* ==================== 動態角色（隨機出現） ==================== */
   .walking-character {
     position: fixed;
-    bottom: 10px;
-    font-size: 44px;
+    bottom: 15px;
     z-index: 9998;
     cursor: pointer;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-    transition: transform 0.2s;
+    opacity: 0;
+    transform: translateY(100px);
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
   }
 
-  /* 雪人走路 */
-  .snowman {
-    left: 10px;
-    animation: snowman-walk 15s ease-in-out infinite;
-  }
-  @keyframes snowman-walk {
-    0% { left: 10px; transform: translateY(0) rotate(-2deg); }
-    25% { transform: translateY(-5px) rotate(2deg); }
-    50% { left: calc(100vw - 70px); transform: translateY(0) rotate(-2deg); }
-    75% { transform: translateY(-5px) rotate(2deg); }
-    100% { left: 10px; transform: translateY(0) rotate(-2deg); }
+  .walking-character svg {
+    width: 55px;
+    height: 55px;
   }
 
-  /* 狐狸走路 */
-  .fox {
-    right: 10px;
-    animation: fox-walk 10s ease-in-out infinite;
-  }
-  @keyframes fox-walk {
-    0% { right: 10px; transform: translateY(0) scaleX(1); }
-    25% { transform: translateY(-6px) scaleX(1); }
-    50% { right: calc(100vw - 70px); transform: translateY(0) scaleX(-1); }
-    75% { transform: translateY(-6px) scaleX(-1); }
-    100% { right: 10px; transform: translateY(0) scaleX(1); }
+  .walking-character.show {
+    opacity: 1;
+    transform: translateY(0);
   }
 
-  /* 點擊跳躍 */
-  @keyframes jump {
+  .walking-character.hide {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+
+  .walking-character.greet {
+    animation: greet-bounce 0.8s ease;
+  }
+  @keyframes greet-bounce {
     0% { transform: translateY(0) scale(1); }
-    30% { transform: translateY(-40px) scale(1.2); }
-    50% { transform: translateY(-25px) scale(0.95); }
-    70% { transform: translateY(-40px) scale(1.15); }
+    30% { transform: translateY(-15px) scale(1.1); }
+    50% { transform: translateY(0) scale(1); }
+    70% { transform: translateY(-10px) scale(0.95); }
     100% { transform: translateY(0) scale(1); }
   }
 
-  .jumping {
-    animation: jump 0.7s ease !important;
+  .walking-character.jumping {
+    animation: jump 0.6s ease !important;
+  }
+  @keyframes jump {
+    0% { transform: translateY(0) scale(1); }
+    30% { transform: translateY(-35px) scale(1.15); }
+    50% { transform: translateY(-20px) scale(0.95); }
+    70% { transform: translateY(-35px) scale(1.1); }
+    100% { transform: translateY(0) scale(1); }
   }
 
-  /* 點擊雪花 */
-  .click-snowflake {
+  .character-bubble {
     position: fixed;
-    pointer-events: none;
-    font-size: 20px;
+    background: white;
+    border: 2px solid #0284c7;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #0369a1;
     z-index: 9997;
-    animation: click-snow 0.8s ease-out forwards;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
   }
-  @keyframes click-snow {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(30px) scale(0.5); opacity: 0; }
+  .character-bubble.show {
+    opacity: 1;
+    transform: translateY(0);
   }
-
-  /* 腳印 */
-  .footprint {
-    position: fixed;
-    bottom: 10px;
-    font-size: 20px;
-    z-index: 9996;
-    pointer-events: none;
-    animation: footprint-walk 2s ease-in forwards;
-  }
-  @keyframes footprint-walk {
-    0% { transform: translateX(0) scale(1); opacity: 0.8; }
-    50% { transform: translateX(15px) scale(1.1); opacity: 1; }
-    100% { transform: translateX(30px) scale(0.9); opacity: 0; }
-  }
-
-  /* 彩帶 */
-  .confetti {
-    position: fixed;
-    top: -10px;
-    width: 10px;
-    height: 15px;
-    z-index: 9999;
-    pointer-events: none;
-    animation: confetti-fall 3s ease-in forwards;
-  }
-  @keyframes confetti-fall {
-    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-  }
-
-  /* 山脈 */
-  .mountain-bg {
+  .character-bubble::after {
+    content: '';
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-    background: linear-gradient(135deg, rgba(147, 197, 253, 0.3), rgba(224, 242, 254, 0.2));
-    animation: mountain-move 20s linear infinite;
-    z-index: 0;
-  }
-  @keyframes mountain-move {
-    0% { background-position: 0 0; }
-    100% { background-position: 100% 0; }
+    bottom: -8px;
+    left: 20px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: #0284c7 transparent transparent transparent;
   }
 
   #mini-forecast {
@@ -386,16 +383,71 @@ async function syncDataToCloud() {
 </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-16 relative">
+  <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
-  <!-- ✅ 動態角色：雪人 + 狐狸 -->
-  <div id="snowman" class="walking-character snowman" onclick="jump('snowman')" title="點我！">⛄</div>
-  <div id="fox" class="walking-character fox" onclick="jump('fox')" title="點我！">🦊</div>
-
-  <!-- 其他動態元素 -->
-  <div id="mountain-bg" class="mountain-bg"></div>
-  <div id="footprints-container"></div>
-  <div id="confetti-container"></div>
+  <!-- ✅ 動態角色：雪人 + 狐狸（隨機出現） -->
+  <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！">
+    <svg width="55" height="55" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="snowGrad" cx="50%" cy="30%" r="60%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#dbeafe"/>
+        </radialGradient>
+        <linearGradient id="hatGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ef4444"/>
+          <stop offset="100%" stop-color="#b91c1c"/>
+        </linearGradient>
+      </defs>
+      <circle cx="32" cy="48" r="13" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/>
+      <circle cx="32" cy="30" r="10" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/>
+      <path d="M22 24 L42 24 L40 16 L24 16 Z" fill="url(#hatGrad)"/>
+      <rect x="26" y="14" width="12" height="3" rx="1.5" fill="#b91c1c"/>
+      <circle cx="32" cy="14" r="3" fill="#ef4444"/>
+      <path d="M26 34 Q32 38 38 34 L37 42 L27 42 Z" fill="#3b82f6"/>
+      <path d="M28 42 L28 48 L32 45 L36 48 L36 42" fill="#2563eb"/>
+      <circle cx="28" cy="28" r="2" fill="#1e293b"/>
+      <circle cx="36" cy="28" r="2" fill="#1e293b"/>
+      <ellipse cx="32" cy="31" rx="1.8" ry="3" fill="#f97316"/>
+      <path d="M26 35 Q32 40 38 35" stroke="#475569" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M22 32 L16 28" stroke="#92400e" stroke-width="2" stroke-linecap="round"/>
+      <path d="M42 32 L48 28" stroke="#92400e" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="28" cy="45" rx="3" ry="1.5" fill="white" opacity="0.8"/>
+    </svg>
+  </div>
+  <div id="fox" class="walking-character" onclick="jump('fox')" title="點我！">
+    <svg width="55" height="55" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="foxBody" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fdba74"/>
+          <stop offset="100%" stop-color="#f97316"/>
+        </linearGradient>
+        <radialGradient id="foxCheek" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fecdd3"/>
+          <stop offset="100%" stop-color="#fda4af"/>
+        </radialGradient>
+      </defs>
+      <path d="M58 44 Q68 38 62 28 Q56 20 48 26 Q44 30 46 38 Q50 48 58 44 Z" fill="url(#foxBody)"/>
+      <path d="M58 44 Q64 42 62 34 Q58 28 52 32" fill="#fff" opacity="0.5"/>
+      <ellipse cx="34" cy="42" rx="20" ry="14" fill="url(#foxBody)"/>
+      <path d="M20 22 L16 10 L28 16 Z" fill="#f97316"/>
+      <path d="M20 22 L18 14 L26 18 Z" fill="#fed7aa"/>
+      <path d="M48 22 L52 10 L40 16 Z" fill="#f97316"/>
+      <path d="M48 22 L50 14 L42 18 Z" fill="#fed7aa"/>
+      <circle cx="34" cy="26" r="14" fill="url(#foxBody)"/>
+      <ellipse cx="27" cy="30" rx="6" ry="5" fill="url(#foxCheek)" opacity="0.7"/>
+      <ellipse cx="41" cy="30" rx="6" ry="5" fill="url(#foxCheek)" opacity="0.7"/>
+      <ellipse cx="29" cy="24" rx="3" ry="4" fill="#1e293b"/>
+      <ellipse cx="39" cy="24" rx="3" ry="4" fill="#1e293b"/>
+      <circle cx="30" cy="23" r="1.2" fill="white"/>
+      <circle cx="40" cy="23" r="1.2" fill="white"/>
+      <path d="M32 31 L36 31 L34 34 Z" fill="#1e293b"/>
+      <path d="M32 34 Q34 36 36 34" stroke="#1e293b" stroke-width="1.2" fill="none"/>
+      <path d="M26 48 Q28 54 24 56" stroke="#f97316" stroke-width="4" stroke-linecap="round"/>
+      <path d="M40 48 Q42 54 38 56" stroke="#f97316" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="32" cy="40" rx="6" ry="2" fill="white" opacity="0.3"/>
+    </svg>
+  </div>
 
   <!-- 歡迎導覽 -->
   <div id="welcome-modal" class="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-100">
@@ -1211,63 +1263,109 @@ async function syncDataToCloud() {
       }
     }
 
-    // ==================== 動態角色 ====================
+    // ==================== 動態角色（隨機出現） ====================
+    let characterTimeout = null;
+    let bubbleTimeout = null;
+
+    function spawnCharacters() {
+      clearTimeout(characterTimeout);
+      clearTimeout(bubbleTimeout);
+      
+      const snowman = document.getElementById('snowman');
+      const fox = document.getElementById('fox');
+      if (!snowman || !fox) return;
+
+      snowman.classList.remove('show', 'greet');
+      fox.classList.remove('show', 'greet');
+      snowman.classList.add('hide');
+      fox.classList.add('hide');
+
+      const rand = Math.random();
+      let count = 0;
+      if (rand < 0.2) {
+        count = 0;
+      } else if (rand < 0.9) {
+        count = 1;
+      } else {
+        count = 2;
+      }
+
+      if (count === 0) {
+        characterTimeout = setTimeout(spawnCharacters, Math.random() * 5000 + 4000);
+        return;
+      }
+
+      let showSnowman = false;
+      let showFox = false;
+      if (count === 1) {
+        if (Math.random() < 0.5) {
+          showSnowman = true;
+        } else {
+          showFox = true;
+        }
+      } else {
+        showSnowman = true;
+        showFox = true;
+      }
+
+      if (showSnowman) {
+        snowman.style.left = '20px';
+        snowman.classList.remove('hide');
+        snowman.classList.add('show');
+      }
+      if (showFox) {
+        fox.style.right = '20px';
+        fox.classList.remove('hide');
+        fox.classList.add('show');
+      }
+
+      if (count === 2) {
+        setTimeout(() => {
+          snowman.classList.add('greet');
+          fox.classList.add('greet');
+          showCharacterBubble(snowman, '嗨！');
+          showCharacterBubble(fox, '哈囉～');
+        }, 600);
+      }
+
+      characterTimeout = setTimeout(() => {
+        snowman.classList.remove('show', 'greet');
+        fox.classList.remove('show', 'greet');
+        snowman.classList.add('hide');
+        fox.classList.add('hide');
+        setTimeout(spawnCharacters, Math.random() * 5000 + 2000);
+      }, count === 2 ? 5000 : 3500);
+    }
+
+    function showCharacterBubble(element, text) {
+      const oldBubble = document.querySelector('.character-bubble');
+      if (oldBubble) oldBubble.remove();
+
+      const bubble = document.createElement('div');
+      bubble.className = 'character-bubble';
+      bubble.innerText = text;
+      const rect = element.getBoundingClientRect();
+      bubble.style.left = rect.left + rect.width / 2 - 30 + 'px';
+      bubble.style.top = rect.top - 30 + 'px';
+      document.body.appendChild(bubble);
+      bubble.classList.add('show');
+      bubbleTimeout = setTimeout(() => {
+        bubble.classList.remove('show');
+        setTimeout(() => bubble.remove(), 300);
+      }, 2000);
+    }
+
     function jump(characterId) {
       const char = document.getElementById(characterId);
       if (char) {
-        char.classList.add("jumping");
-        setTimeout(() => {
-          char.classList.remove("jumping");
-        }, 700);
+        char.classList.add('jumping');
+        setTimeout(() => char.classList.remove('jumping'), 600);
         showToast(`你點了一下${characterId === 'snowman' ? '雪人' : '狐狸'}！`, "❄️");
       }
     }
 
-    // 點擊雪花
-    document.addEventListener("click", (e) => {
-      if (e.target.closest("button, a, input, select, textarea, .modal-box, iframe, .walking-character")) return;
-      const snowflake = document.createElement("span");
-      snowflake.className = "click-snowflake";
-      snowflake.innerText = "❄️";
-      snowflake.style.left = e.clientX + "px";
-      snowflake.style.top = e.clientY + "px";
-      document.body.appendChild(snowflake);
-      setTimeout(() => snowflake.remove(), 800);
-    });
-
-    // 腳印動畫
-    function showFootprints() {
-      const container = document.getElementById("footprints-container");
-      if (!container) return;
-      const icons = ["👣", "🐾", "❄️"];
-      for (let i = 0; i < 6; i++) {
-        setTimeout(() => {
-          const footprint = document.createElement("span");
-          footprint.className = "footprint";
-          footprint.innerText = icons[Math.floor(Math.random() * icons.length)];
-          footprint.style.left = Math.random() * 80 + "vw";
-          container.appendChild(footprint);
-          setTimeout(() => footprint.remove(), 2500);
-        }, i * 250);
-      }
-    }
-
-    // 彩帶慶祝
-    function showConfetti() {
-      const colors = ["#f43f5e", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
-      for (let i = 0; i < 30; i++) {
-        setTimeout(() => {
-          const confetti = document.createElement("div");
-          confetti.className = "confetti";
-          confetti.style.left = Math.random() * 100 + "vw";
-          confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-          confetti.style.width = Math.random() * 8 + 4 + "px";
-          confetti.style.height = Math.random() * 12 + 6 + "px";
-          confetti.style.animationDuration = Math.random() * 2 + 2 + "s";
-          document.body.appendChild(confetti);
-          setTimeout(() => confetti.remove(), 4000);
-        }, Math.random() * 500);
-      }
+    function initRandomCharacters() {
+      setTimeout(spawnCharacters, 2000);
     }
 
     // ==================== 初始化 ====================
@@ -1282,20 +1380,20 @@ async function syncDataToCloud() {
         const snowflake = document.createElement("div");
         snowflake.className = "snowflake";
         const size = Math.random() * 7 + 3;
-        snowflake.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; opacity: ${Math.random() * 0.4 + 0.1}; animation: ${animations[Math.floor(Math.random() * animations.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%;`;
+        snowflake.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; opacity: ${Math.random() * 0.4 + 0.1}; animation: ${animations[Math.floor(Math.random() * animations.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%; box-shadow: 0 0 4px rgba(224, 242, 254, 0.8);`;
         if (size > 8) snowflake.style.boxShadow = "0 0 10px 2px rgba(255,255,255,0.4)";
         if (Math.random() > 0.7) snowflake.classList.add("snowflake-shine");
         snowContainer.appendChild(snowflake);
       }
-      const specialSnowflakes = 3;
-      for (let i = 0; i < specialSnowflakes; i++) {
+      // 添加特殊雪花（❄ 符號）
+      for (let i = 0; i < 3; i++) {
         const flake = document.createElement("div");
         flake.className = "snowflake";
         flake.style.cssText = `left: ${Math.random() * 100}%; width: 12px; height: 12px; animation: snowfall-medium ${Math.random() * 15 + 10}s linear infinite; animation-delay: ${Math.random() * -10}s;`;
         flake.innerHTML = '❄';
         flake.style.fontSize = `${Math.random() * 10 + 8}px`;
-        flake.style.color = "rgba(255,255,255,0.8)";
-        flake.style.textShadow = "0 0 5px rgba(255,255,255,0.5)";
+        flake.style.color = "rgba(255,255,255,0.9)";
+        flake.style.textShadow = "0 0 5px rgba(255,255,255,0.7)";
         snowContainer.appendChild(flake);
       }
     }
@@ -1320,8 +1418,7 @@ async function syncDataToCloud() {
       setInterval(updateCurrentEventHighlight, 60000);
       checkWelcomeModal();
       fetchWeatherData();
-      showFootprints();
-      setInterval(showFootprints, 15000);
+      initRandomCharacters();
     });
   </script>
 </body>
