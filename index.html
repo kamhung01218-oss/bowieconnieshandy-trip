@@ -251,7 +251,7 @@ async function syncDataToCloud() {
     font-weight: bold;
   }
 
-  /* 雪花效果 */
+  /* ==================== 雪花效果 ==================== */
   .snowflake {
     position: absolute;
     top: -10px;
@@ -259,8 +259,8 @@ async function syncDataToCloud() {
     pointer-events: none;
     will-change: transform, opacity;
     animation: snowfall linear infinite;
-    background: #e0f2fe;
-    box-shadow: 0 0 5px rgba(224, 242, 254, 0.8);
+    background: #e0f2fe; /* 淡藍色 */
+    box-shadow: 0 0 5px rgba(224, 242, 254, 0.8); /* 光暈 */
   }
   @keyframes snowfall {
     0% { transform: translateY(0) rotate(0deg); opacity: 1; }
@@ -279,7 +279,7 @@ async function syncDataToCloud() {
     100% { transform: translateY(80vh) rotate(360deg); opacity: 0.7; }
   }
 
-  /* 動態角色 */
+  /* ==================== 動態角色（隨機出現） ==================== */
   .walking-character {
     position: fixed;
     bottom: 15px;
@@ -357,35 +357,6 @@ async function syncDataToCloud() {
     border-color: #0284c7 transparent transparent transparent;
   }
 
-  /* 每日地圖 */
-  .day-map-container {
-    margin-top: 16px;
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    background: white;
-  }
-
-  .day-map-container iframe {
-    width: 100%;
-    height: 300px;
-    border: none;
-    display: block;
-  }
-
-  .day-map-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, #f0f9ff, #ecfeff);
-    border-bottom: 1px solid #e2e8f0;
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: #0369a1;
-  }
-
   #mini-forecast {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
@@ -412,6 +383,7 @@ async function syncDataToCloud() {
 </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-16 relative">
+  <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
   <!-- ✅ 動態角色：雪人 + 狐狸（隨機出現） -->
@@ -690,7 +662,7 @@ async function syncDataToCloud() {
     <span id="toast-message">複製成功！</span>
   </div>
 
-  <!-- 彈窗們 -->
+  <!-- 彈窗們（省略重複內容，維持原本功能） -->
   <div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeBookingModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeBookingModal()" class="modal-close">✕</button>
@@ -1076,15 +1048,11 @@ async function syncDataToCloud() {
       }
     }
 
-    // ==================== 行程渲染（含每日地圖） ====================
+    // ==================== 行程渲染 ====================
     function renderDayItinerary(sectionId, dayData) {
       const section = document.getElementById(sectionId);
       if (!section) return;
-      
-      const mapHtml = generateDayMap(dayData);
-      
       let html = `<div class="mb-8"><div class="bg-slate-50/95 py-3 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">${dayData.emoji}</div><div class="flex-1"><span class="text-[11px] font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span><h2 class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}</div></div><button onclick="toggleAllDetails('${sectionId}')" class="bg-white hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1 shrink-0 ml-2"><span class="icon">↕️</span><span class="hidden md:inline">全部展開</span></button></div><div class="relative mt-4 space-y-4 pb-6">`;
-      
       dayData.events.forEach((event, index) => {
         const isOpen = event.open ? "open" : "";
         const tagHtml = event.tag ? `<span class="tag ${event.tag.class}">${event.tag.text}</span>` : "";
@@ -1093,118 +1061,9 @@ async function syncDataToCloud() {
         const endTime = timeParts[1] ? `~ ${timeParts[1]}` : "";
         html += `<div class="relative pl-0"><details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl"><summary class="flex items-start gap-3 p-3 md:p-4 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none"><div class="flex-1 min-w-0 pr-8"><div class="flex flex-wrap items-center gap-2 mb-1"><span class="event-time-pill">🕐 ${startTime} ${endTime ? "– "+endTime : ""}</span>${tagHtml}</div><h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>${event.location ? `<div class="text-[10px] text-slate-400 mt-0.5">📍 ${event.location}</div>` : ""}</div><div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}${event.navUrl ? `<a href="${event.navUrl}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:text-sky-700 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}<svg class="w-3 h-3 opacity-60 group-hover/nav:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>` : '<div class="h-3"></div>'}${event.content}</div></details></div>`;
       });
-      
-      html += mapHtml;
-      
       html += `</div></div>`;
       section.innerHTML = html;
     }
-
-// ==================== 生成每日地圖（純文字版，100% 無需連線） ====================
-function generateDayMap(dayData) {
-  // 內建地點映射表
-  const locationMap = {
-    "仙台機場": "仙台機場",
-    "仙台空港": "仙台機場",
-    "秋保溫泉": "秋保温泉 瑞鳳",
-    "秋保温泉 瑞鳳": "秋保温泉 瑞鳳",
-    "AEON天童": "イオンモール天童",
-    "AEON MALL 天童": "イオンモール天童",
-    "微笑の宿 瀧之湯": "微笑の宿 滝の湯",
-    "微笑之宿 瀧之湯": "微笑の宿 滝の湯",
-    "銀山溫泉": "銀山温泉",
-    "藏王纜車": "蔵王ロープウェイ",
-    "藏王索道": "蔵王ロープウェイ",
-    "Spring Valley 仙台泉": "Spring Valley 仙台泉",
-    "Spring Valley": "Spring Valley 仙台泉",
-    "狐狸村": "宮城蔵王キツネ村",
-    "宮城藏王狐狸村": "宮城蔵王キツネ村",
-    "白石溫麵": "白石市",
-    "手延白石溫麵 光庵": "手延白石温麺 光庵",
-    "白石うーめん やまぶき亭": "白石うーめん やまぶき亭",
-    "讃岐づくり本格手打ちうどん 麦の季": "讃岐づくり本格手打ちうどん 麦の季",
-    "客美多咖啡": "コメダ珈琲店 仙台富沢店",
-    "コメダ珈琲店 仙台富沢店": "コメダ珈琲店 仙台富沢店",
-    "仙台海洋森林水族館": "仙台うみの杜水族館",
-    "Sendai Umino-Mori Aquarium": "仙台うみの杜水族館",
-    "一苺一笑 松森農場": "一苺一笑 松森農場",
-    "JR水果公園仙台荒濱": "JRフルーツパーク仙台あらはま",
-    "Berry Planet": "Berry Planet",
-    "仔虎 利府店": "仔虎 利府店",
-    "Mitsui Outlet Park 仙台港": "三井アウトレットパーク 仙台港",
-    "三井Outlet": "三井アウトレットパーク 仙台港",
-    "Hotel Grand Bach 仙台": "ホテルグランバッハ仙台",
-    "仙台車站": "仙台駅",
-    "仙台駅": "仙台駅",
-    "THE MOST BAKERY": "THE MOST BAKERY ＆ COFFEE 東口店",
-    "YUKIHIRA COFFEE": "YUKIHIRA COFFEE 天童店",
-    "伊達牛舌本舗 本店": "伊達の牛たん本舗 本店",
-    "うまい鮨勘 山形南支店": "うまい鮨勘 山形南支店",
-    "寒河江草莓園": "寒河江いちご園"
-  };
-
-  // 從事件中提取地點
-  let locations = [];
-  
-  dayData.events.forEach(event => {
-    let location = '';
-    if (event.location && event.location.trim().length > 0) {
-      location = event.location.trim();
-    } else if (event.navUrl && event.navUrl.includes('query=')) {
-      const match = event.navUrl.match(/query=([^&]+)/);
-      if (match) location = decodeURIComponent(match[1].replace(/\+/g, ' '));
-    } else {
-      const title = event.title || '';
-      for (const [key, value] of Object.entries(locationMap)) {
-        if (title.includes(key)) { location = value; break; }
-      }
-    }
-    if (!location && event.navName) location = event.navName;
-    if (location && !locations.includes(location)) locations.push(location);
-  });
-
-  if (locations.length === 0) locations = ["仙台駅"];
-
-  // 生成原生 Google Maps 路線網址（開啟 App 或網頁版）
-  let nativeUrl = '';
-  if (locations.length === 1) {
-    nativeUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locations[0])}`;
-  } else if (locations.length === 2) {
-    nativeUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(locations[0])}&destination=${encodeURIComponent(locations[1])}&travelmode=driving`;
-  } else {
-    const origin = locations[0];
-    const destination = locations[locations.length - 1];
-    const waypoints = locations.slice(1, -1).join('|');
-    nativeUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${encodeURIComponent(waypoints)}&travelmode=driving`;
-  }
-
-  // 地點列表 HTML（純文字，不需任何 iframe）
-  const locationListHtml = locations.map((loc, i) => {
-    return `
-      <div class="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
-        <span class="text-xs text-slate-700">${i + 1}. ${loc}</span>
-        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}" target="_blank" class="inline-flex items-center gap-1 text-sky-600 hover:text-sky-800 font-bold text-xs">📍 導航</a>
-      </div>`;
-  }).join('');
-
-  // 純文字卡片（無 iframe）
-  return `<div class="day-map-container mt-4">
-    <div class="day-map-label">
-      <span>🗺️</span>
-      <span>當日路線總覽（${locations.length} 個地點）</span>
-    </div>
-    <div class="p-4 bg-slate-50 text-center">
-      <p class="text-xs text-slate-600 mb-3">點擊按鈕直接開啟 Google Maps（支援手機 App 語音導航）</p>
-      <a href="${nativeUrl}" target="_blank" class="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition active:scale-95">
-        <span>🧭</span> 開啟全程路線導航
-      </a>
-    </div>
-    <div class="p-3 bg-white border-t border-slate-100">
-      <strong class="block text-[11px] text-slate-600 mb-1.5">📍 當日地點列表</strong>
-      ${locationListHtml}
-    </div>
-  </div>`;
-}
 
     function toggleAllDetails(sectionId) {
       const section = document.getElementById(sectionId);
@@ -1526,15 +1385,15 @@ function generateDayMap(dayData) {
         if (Math.random() > 0.7) snowflake.classList.add("snowflake-shine");
         snowContainer.appendChild(snowflake);
       }
-      const specialSnowflakes = 3;
-      for (let i = 0; i < specialSnowflakes; i++) {
+      // 添加特殊雪花（❄ 符號）
+      for (let i = 0; i < 3; i++) {
         const flake = document.createElement("div");
         flake.className = "snowflake";
         flake.style.cssText = `left: ${Math.random() * 100}%; width: 12px; height: 12px; animation: snowfall-medium ${Math.random() * 15 + 10}s linear infinite; animation-delay: ${Math.random() * -10}s;`;
         flake.innerHTML = '❄';
         flake.style.fontSize = `${Math.random() * 10 + 8}px`;
-        flake.style.color = "rgba(255,255,255,0.8)";
-        flake.style.textShadow = "0 0 5px rgba(255,255,255,0.5)";
+        flake.style.color = "rgba(255,255,255,0.9)";
+        flake.style.textShadow = "0 0 5px rgba(255,255,255,0.7)";
         snowContainer.appendChild(flake);
       }
     }
