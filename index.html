@@ -259,8 +259,8 @@ async function syncDataToCloud() {
     pointer-events: none;
     will-change: transform, opacity;
     animation: snowfall linear infinite;
-    background: #e0f2fe; /* 淡藍色 */
-    box-shadow: 0 0 5px rgba(224, 242, 254, 0.8); /* 光暈 */
+    background: #e0f2fe;
+    box-shadow: 0 0 5px rgba(224, 242, 254, 0.8);
   }
   @keyframes snowfall {
     0% { transform: translateY(0) rotate(0deg); opacity: 1; }
@@ -357,6 +357,35 @@ async function syncDataToCloud() {
     border-color: #0284c7 transparent transparent transparent;
   }
 
+  /* ==================== 每日地圖 ==================== */
+  .day-map-container {
+    margin-top: 16px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: white;
+  }
+
+  .day-map-container iframe {
+    width: 100%;
+    height: 300px;
+    border: none;
+    display: block;
+  }
+
+  .day-map-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f0f9ff, #ecfeff);
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #0369a1;
+  }
+
   #mini-forecast {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
@@ -383,7 +412,6 @@ async function syncDataToCloud() {
 </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-16 relative">
-  <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
   <!-- ✅ 動態角色：雪人 + 狐狸（隨機出現） -->
@@ -677,7 +705,7 @@ async function syncDataToCloud() {
           </ul>
         </div>
         <div class="bg-sky-50/80 border border-sky-200 rounded-xl p-4">
-          <h3 class="text-sm font-bold text-sky-900 mb-2">🏨 住宿預訂</h3>
+          <h3 class="text-sm font-bold text-sky-900 mb-2">?? 住宿預訂</h3>
           <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
             <li><strong>1/21 秋保溫泉 瑞鳳大飯店</strong> - 已預訂 (含自助晚餐)</li>
             <li><strong>1/22-23 微笑之宿 瀧之湯</strong> - 已預訂 (含懷石晚餐)</li>
@@ -1048,11 +1076,16 @@ async function syncDataToCloud() {
       }
     }
 
-    // ==================== 行程渲染 ====================
+    // ==================== 行程渲染（含每日地圖） ====================
     function renderDayItinerary(sectionId, dayData) {
       const section = document.getElementById(sectionId);
       if (!section) return;
+      
+      // 生成每日地圖 iframe
+      const mapHtml = generateDayMap(dayData);
+      
       let html = `<div class="mb-8"><div class="bg-slate-50/95 py-3 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">${dayData.emoji}</div><div class="flex-1"><span class="text-[11px] font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span><h2 class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}</div></div><button onclick="toggleAllDetails('${sectionId}')" class="bg-white hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1 shrink-0 ml-2"><span class="icon">↕️</span><span class="hidden md:inline">全部展開</span></button></div><div class="relative mt-4 space-y-4 pb-6">`;
+      
       dayData.events.forEach((event, index) => {
         const isOpen = event.open ? "open" : "";
         const tagHtml = event.tag ? `<span class="tag ${event.tag.class}">${event.tag.text}</span>` : "";
@@ -1061,8 +1094,51 @@ async function syncDataToCloud() {
         const endTime = timeParts[1] ? `~ ${timeParts[1]}` : "";
         html += `<div class="relative pl-0"><details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl"><summary class="flex items-start gap-3 p-3 md:p-4 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none"><div class="flex-1 min-w-0 pr-8"><div class="flex flex-wrap items-center gap-2 mb-1"><span class="event-time-pill">🕐 ${startTime} ${endTime ? "– "+endTime : ""}</span>${tagHtml}</div><h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>${event.location ? `<div class="text-[10px] text-slate-400 mt-0.5">📍 ${event.location}</div>` : ""}</div><div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}${event.navUrl ? `<a href="${event.navUrl}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:text-sky-700 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}<svg class="w-3 h-3 opacity-60 group-hover/nav:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>` : '<div class="h-3"></div>'}${event.content}</div></details></div>`;
       });
+      
+      // 加入每日地圖
+      html += mapHtml;
+      
       html += `</div></div>`;
       section.innerHTML = html;
+    }
+
+    // ==================== 生成每日地圖 ====================
+    function generateDayMap(dayData) {
+      // 收集當天所有景點
+      const locations = dayData.events
+        .filter(event => event.location && event.location.length > 0)
+        .map(event => event.location);
+      
+      if (locations.length === 0) {
+        return '';
+      }
+      
+      // 使用 Google Maps Embed API（directions 模式）
+      // 格式：https://www.google.com/maps?q=...&output=embed
+      // 路線模式：https://www.google.com/maps/dir/?api=1&origin=...&destination=...&waypoints=...&output=embed
+      
+      let mapUrl = '';
+      if (locations.length === 1) {
+        // 只有一個景點，顯示地點
+        mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(locations[0])}&z=14&output=embed`;
+      } else if (locations.length === 2) {
+        // 兩個景點，顯示路線
+        mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(locations[0])}&destination=${encodeURIComponent(locations[1])}&output=embed`;
+      } else {
+        // 多個景點，顯示路線（waypoints 格式）
+        const origin = locations[0];
+        const destination = locations[locations.length - 1];
+        const waypoints = locations.slice(1, -1).join('|');
+        mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${encodeURIComponent(waypoints)}&output=embed`;
+      }
+      
+      return `<div class="day-map-container mt-4">
+        <div class="day-map-label">
+          <span>🗺️</span>
+          <span>當日路線總覽（${locations.length} 個地點）</span>
+        </div>
+        <iframe src="${mapUrl}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>`;
     }
 
     function toggleAllDetails(sectionId) {
@@ -1385,15 +1461,15 @@ async function syncDataToCloud() {
         if (Math.random() > 0.7) snowflake.classList.add("snowflake-shine");
         snowContainer.appendChild(snowflake);
       }
-      // 添加特殊雪花（❄ 符號）
-      for (let i = 0; i < 3; i++) {
+      const specialSnowflakes = 3;
+      for (let i = 0; i < specialSnowflakes; i++) {
         const flake = document.createElement("div");
         flake.className = "snowflake";
         flake.style.cssText = `left: ${Math.random() * 100}%; width: 12px; height: 12px; animation: snowfall-medium ${Math.random() * 15 + 10}s linear infinite; animation-delay: ${Math.random() * -10}s;`;
         flake.innerHTML = '❄';
         flake.style.fontSize = `${Math.random() * 10 + 8}px`;
-        flake.style.color = "rgba(255,255,255,0.9)";
-        flake.style.textShadow = "0 0 5px rgba(255,255,255,0.7)";
+        flake.style.color = "rgba(255,255,255,0.8)";
+        flake.style.textShadow = "0 0 5px rgba(255,255,255,0.5)";
         snowContainer.appendChild(flake);
       }
     }
