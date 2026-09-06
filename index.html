@@ -34,7 +34,7 @@ firebase.initializeApp({
   projectId: "tohoku-winter-trip",
   storageBucket: "tohoku-winter-trip.firebasestorage.app",
   messagingSenderId: "991555590088",
-  appId: "1:991555590088:web:51518698f7b63be821d2fd",
+  appId: "1:991555590088:web:afb089890d7d546821d2fd",  // ✅ 已統一
   measurementId: "G-9EN9JG5F3F"
 });
 
@@ -668,13 +668,13 @@ async function syncDataToCloud() {
   <!-- ==================== 五個彈窗 (完整版) ==================== -->
 
   <!-- 行前預訂彈窗 -->
-  <div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
+  <div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeBookingModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeBookingModal()" class="modal-close">✕</button>
       <h2 class="text-xl font-black mb-4">📌 行前預訂清單</h2>
       <div class="space-y-4">
         <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4">
-          <h3 class="text-sm font-bold text-amber-900 mb-2">?? 租車預訂</h3>
+          <h3 class="text-sm font-bold text-amber-900 mb-2">🚗 租車預訂</h3>
           <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
             <li>Nippon Rent-A-Car 7-8人座雪地車 (含4WD+雪胎)</li>
             <li>便攜式兒童安全帶 x2</li>
@@ -710,8 +710,8 @@ async function syncDataToCloud() {
   </div>
 
   <!-- 裝備清單彈窗 -->
-  <div id="equip-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
+  <div id="equip-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeEquipModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeEquipModal()" class="modal-close">✕</button>
       <h2 class="text-xl font-black mb-4">🎒 裝備清單</h2>
       <div class="space-y-4">
@@ -753,8 +753,8 @@ async function syncDataToCloud() {
   </div>
 
   <!-- 雪地攻略彈窗 -->
-  <div id="drive-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
+  <div id="drive-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeDriveModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeDriveModal()" class="modal-close">✕</button>
       <h2 class="text-xl font-black mb-4">⚠️ 雪地駕駛安全攻略</h2>
       <div class="space-y-4">
@@ -793,8 +793,8 @@ async function syncDataToCloud() {
   </div>
 
   <!-- 搶票攻略彈窗 -->
-  <div id="ticket-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
+  <div id="ticket-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeTicketModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeTicketModal()" class="modal-close">✕</button>
       <h2 class="text-xl font-black mb-4">⚔️ 搶票作戰攻略</h2>
       <div class="space-y-4">
@@ -821,8 +821,8 @@ async function syncDataToCloud() {
   </div>
 
   <!-- 詳細天氣彈窗 -->
-  <div id="weather-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
+  <div id="weather-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeWeatherModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeWeatherModal()" class="modal-close">✕</button>
       <h2 class="text-xl font-black mb-4">📊 詳細天氣預報</h2>
       <div id="weather-detail-content" class="text-sm text-slate-600">天氣資料載入中...</div>
@@ -904,20 +904,20 @@ async function syncDataToCloud() {
       state.currentMainTab = tab;
       const itineraryView = document.getElementById("main-itinerary-view");
       const ledgerFrameContainer = document.getElementById("ledger-frame-container");
-      const quickSection = document.getElementById("itinerary-quick-section"); // 新增
+      const quickSection = document.getElementById("itinerary-quick-section");
       const navItineraryBtn = document.getElementById("nav-itinerary-btn");
       const navLedgerBtn = document.getElementById("nav-ledger-btn");
 
       if (tab === "itinerary") {
         itineraryView.classList.remove("hidden");
         ledgerFrameContainer.classList.add("hidden");
-        if (quickSection) quickSection.classList.remove("hidden"); // 顯示快捷區
+        if (quickSection) quickSection.classList.remove("hidden");
         navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
         navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
       } else {
         itineraryView.classList.add("hidden");
         ledgerFrameContainer.classList.remove("hidden");
-        if (quickSection) quickSection.classList.add("hidden"); // 隱藏快捷區
+        if (quickSection) quickSection.classList.add("hidden");
         navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
         navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
       }
