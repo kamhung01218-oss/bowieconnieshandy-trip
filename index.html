@@ -11,6 +11,8 @@
 
 <!-- 🔥 引用行程數據 -->
 <script src="data.js"></script>
+<!-- 🔥 新增：引用拍攝靈感資料 -->
+<script src="shoot-tips.js"></script>
 
 <script>
 tailwind.config = {
@@ -576,6 +578,25 @@ async function syncDataToCloud() {
     pointer-events: none;
     z-index: 9999;
   }
+  
+  /* ==================== 拍攝靈感 Modal 樣式 ==================== */
+  #shoot-tips-modal .photo-tips-bg {
+    background: linear-gradient(135deg, #f97316, #f59e0b);
+  }
+  
+  .shoot-tips-content {
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+  
+  .shoot-tips-pill {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    padding: 2px 10px;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+  }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-16 relative">
@@ -1009,6 +1030,17 @@ async function syncDataToCloud() {
     <div id="lightbox-caption" class="absolute bottom-6 left-0 right-0 text-center text-white/90 text-sm"></div>
   </div>
   
+  <!-- ==================== 新增：拍攝靈感 Modal ==================== -->
+  <div id="shoot-tips-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeShootTipsModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeShootTipsModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4 flex items-center gap-2">
+        <span class="text-2xl">🎬</span> 拍攝靈感 & Pocket 3 參數
+      </h2>
+      <div id="shoot-tips-content"></div>
+    </div>
+  </div>
+  
   <script>
     // ==================== 全域變數 ====================
     let state = { currentMainTab: "itinerary", checkedItems: {} };
@@ -1221,6 +1253,43 @@ async function syncDataToCloud() {
       setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300);
     }
   
+    // ==================== 拍攝靈感 Modal 控制 ====================
+    function openShootTipsModal(day, eventIndex) {
+      const dayData = winterItineraries.find(d => d.day === day);
+      if (!dayData) return;
+      const event = dayData.events[eventIndex];
+      if (!event) return;
+      const tips = shootTips[event.title];
+      
+      const content = document.getElementById("shoot-tips-content");
+      let html = "";
+      
+      if (tips) {
+        html = `
+          <div class="space-y-4">
+            <div class="bg-orange-50 border border-orange-200 rounded-xl p-4">
+              <h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3>
+              <p class="text-sm text-slate-700 leading-relaxed">${tips["拍照建議"]}</p>
+            </div>
+            <div class="bg-sky-50 border border-sky-200 rounded-xl p-4">
+              <h3 class="text-sm font-black text-sky-800 mb-2">📸 Pocket 3 參數</h3>
+              <p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 參數"]}</p>
+            </div>
+          </div>`;
+      } else {
+        html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議，你可以自行在 shoot-tips.js 中加入。</div>`;
+      }
+      
+      content.innerHTML = html;
+      showModal('shoot-tips-modal');
+      document.getElementById('shoot-tips-modal').classList.remove('hidden');
+    }
+    
+    function closeShootTipsModal() {
+      hideModal('shoot-tips-modal');
+      setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300);
+    }
+  
     // ==================== 天氣 ====================
     const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
     async function fetchWeatherData() {
@@ -1326,6 +1395,9 @@ async function syncDataToCloud() {
         const catColors = { "tag-teal": "bg-teal-400", "tag-amber": "bg-amber-400", "tag-rose": "bg-rose-400", "tag-sky": "bg-sky-400", "tag-indigo": "bg-indigo-400", "tag-emerald": "bg-emerald-400" };
         const catColor = event.tag ? catColors[event.tag.class] || "bg-slate-400" : "bg-slate-400";
         
+        // ===== 新增：拍攝靈感按鈕 =====
+        const shootBtnHtml = `<button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition mt-1">🎬 拍攝靈感</button>`;
+        
         html += `
           <div class="timeline-node" id="event-dot-${dayData.day}-${index}">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1345,6 +1417,7 @@ async function syncDataToCloud() {
                 <div class="flex-1 min-w-0 pr-8">
                   <div class="flex flex-wrap items-center gap-2 mb-1">${tagHtml}</div>
                   <h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>
+                  ${shootBtnHtml}
                   ${event.location ? `<div class="text-xs text-slate-500 mt-0.5">📍 ${event.location}</div>` : ""}
                 </div>
                 <div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100">
