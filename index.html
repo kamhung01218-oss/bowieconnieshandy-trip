@@ -9,9 +9,9 @@
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
 
-<!-- 🔥 引用行程數據 -->
+<!-- 引用行程数据 -->
 <script src="data.js"></script>
-<!-- 🔥 新增：引用拍攝靈感資料 -->
+<!-- 引用拍摄灵感数据 -->
 <script src="shoot-tips.js"></script>
 
 <script>
@@ -464,8 +464,7 @@ async function syncDataToCloud() {
     to { opacity: 1; transform: translateY(0); }
   }
   
-  /* ==================== 新增功能樣式 ==================== */
-  /* 今日焦點卡片 */
+  /* ==================== 今日焦點卡片 ==================== */
   .focus-card {
     border-radius: 24px;
     margin-bottom: 16px;
@@ -579,7 +578,7 @@ async function syncDataToCloud() {
     z-index: 9999;
   }
   
-  /* ==================== 拍攝靈感 Modal 樣式 ==================== */
+  /* 拍攝靈感 Modal 樣式 */
   #shoot-tips-modal .photo-tips-bg {
     background: linear-gradient(135deg, #f97316, #f59e0b);
   }
@@ -1030,7 +1029,7 @@ async function syncDataToCloud() {
     <div id="lightbox-caption" class="absolute bottom-6 left-0 right-0 text-center text-white/90 text-sm"></div>
   </div>
   
-  <!-- ==================== 新增：拍攝靈感 Modal ==================== -->
+  <!-- 拍攝靈感 Modal -->
   <div id="shoot-tips-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeShootTipsModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeShootTipsModal()" class="modal-close">✕</button>
@@ -1038,6 +1037,17 @@ async function syncDataToCloud() {
         <span class="text-2xl">🎬</span> 拍攝靈感 & Pocket 3 參數
       </h2>
       <div id="shoot-tips-content"></div>
+    </div>
+  </div>
+  
+  <!-- Vlog 構思 Modal -->
+  <div id="vlog-plan-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeVlogPlanModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeVlogPlanModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4 flex items-center gap-2">
+        <span class="text-2xl">🎬</span> 今日 Vlog 分鏡構思
+      </h2>
+      <div id="vlog-plan-content"></div>
     </div>
   </div>
   
@@ -1177,7 +1187,7 @@ async function syncDataToCloud() {
       document.querySelectorAll(".day-section").forEach(section => section.classList.add("hidden"));
       const targetSection = document.getElementById("day-section-" + day);
       if (targetSection) targetSection.classList.remove("hidden");
-      updateFocusCard(day); // 加入：切換 Day 時更新焦點卡片
+      updateFocusCard(day);
     }
   
     // ==================== 彈窗控制 ====================
@@ -1253,81 +1263,164 @@ async function syncDataToCloud() {
       setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300);
     }
   
-// ==================== 拍攝靈感 Modal 控制 ====================
-function openShootTipsModal(day, eventIndex) {
-  const dayData = winterItineraries.find(d => d.day === day);
-  if (!dayData) return;
-  const event = dayData.events[eventIndex];
-  if (!event) return;
-  const tips = shootTips[event.title];
-  
-  const content = document.getElementById("shoot-tips-content");
-  let html = "";
-  
-  if (tips) {
-    // 1. 拍照建議
-    if (tips["拍照建議"]) {
-      html += `
-        <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3">
-          <h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3>
-          <p class="text-sm text-slate-700 leading-relaxed">${tips["拍照建議"]}</p>
-        </div>`;
+    // ==================== 拍攝靈感 Modal 控制 ====================
+    function openShootTipsModal(day, eventIndex) {
+      const dayData = winterItineraries.find(d => d.day === day);
+      if (!dayData) return;
+      const event = dayData.events[eventIndex];
+      if (!event) return;
+      const tips = shootTips[event.title];
+      
+      const content = document.getElementById("shoot-tips-content");
+      let html = "";
+      
+      if (tips) {
+        // 1. 拍照建議
+        if (tips["拍照建議"]) {
+          html += `
+            <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3">
+              <h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3>
+              <p class="text-sm text-slate-700 leading-relaxed">${tips["拍照建議"]}</p>
+            </div>`;
+        }
+        
+        // 2. Pocket 3 參數
+        if (tips["Pocket 3 參數"]) {
+          html += `
+            <div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3">
+              <h3 class="text-sm font-black text-sky-800 mb-2">📸 Pocket 3 參數</h3>
+              <p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 參數"]}</p>
+            </div>`;
+        }
+        
+        // 3. Vlog 必拍鏡頭 (陣列)
+        if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) {
+          const items = tips["Vlog 必拍鏡頭"].map(item => `<li class="text-slate-700 text-sm mb-1">${item}</li>`).join("");
+          html += `
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-3">
+              <h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3>
+              <ul class="list-disc pl-4 space-y-1">${items}</ul>
+            </div>`;
+        }
+        
+        // 4. Pocket 3 技巧
+        if (tips["Pocket 3 技巧"]) {
+          html += `
+            <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-3">
+              <h3 class="text-sm font-black text-purple-800 mb-2">💡 Pocket 3 技巧</h3>
+              <p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 技巧"]}</p>
+            </div>`;
+        }
+        
+        // 5. 最佳拍攝時間 & 拍攝時長
+        if (tips["最佳拍攝時間"] || tips["拍攝時長"]) {
+          let timeInfo = "";
+          if (tips["最佳拍攝時間"]) timeInfo += `<span class="block mb-1">⏰ ${tips["最佳拍攝時間"]}</span>`;
+          if (tips["拍攝時長"]) timeInfo += `<span class="block">⏳ ${tips["拍攝時長"]}</span>`;
+          html += `
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3">
+              <h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3>
+              <p class="text-sm text-slate-700 leading-relaxed">${timeInfo}</p>
+            </div>`;
+        }
+        
+        // 6. 參考照片（圖片牆 + Lightbox）
+        if (tips["參考照片"] && tips["參考照片"].length > 0) {
+          const imgHtml = tips["參考照片"].map((url, idx) => 
+            `<img src="${url}" onclick="openLightbox(['${url}'], 0)" class="w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" loading="lazy" onerror="this.style.display='none'">`
+          ).join("");
+          html += `
+            <div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3">
+              <h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3>
+              <div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div>
+              <p class="text-[10px] text-slate-500 mt-1">點擊照片可全屏預覽</p>
+            </div>`;
+        }
+        
+        // 7. 拍攝角度
+        if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) {
+          const items = tips["拍攝角度"].map(item => `<li class="text-slate-700 text-sm mb-1">🎯 ${item}</li>`).join("");
+          html += `
+            <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3">
+              <h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3>
+              <ul class="list-disc pl-4 space-y-1">${items}</ul>
+            </div>`;
+        }
+        
+        // 8. 人物動作建議
+        if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) {
+          const items = tips["人物動作建議"].map(item => `<li class="text-slate-700 text-sm mb-1">🧍 ${item}</li>`).join("");
+          html += `
+            <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-3">
+              <h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3>
+              <ul class="list-disc pl-4 space-y-1">${items}</ul>
+            </div>`;
+        }
+        
+      } else {
+        html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議，你可以自行在 shoot-tips.js 中加入。</div>`;
+      }
+      
+      content.innerHTML = html;
+      showModal('shoot-tips-modal');
+      document.getElementById('shoot-tips-modal').classList.remove('hidden');
     }
-    
-    // 2. Pocket 3 參數
-    if (tips["Pocket 3 參數"]) {
-      html += `
-        <div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3">
-          <h3 class="text-sm font-black text-sky-800 mb-2">📸 Pocket 3 參數</h3>
-          <p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 參數"]}</p>
-        </div>`;
-    }
-    
-    // 3. Vlog 必拍鏡頭 (陣列)
-    if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) {
-      const items = tips["Vlog 必拍鏡頭"].map(item => `<li class="text-slate-700 text-sm mb-1">${item}</li>`).join("");
-      html += `
-        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-3">
-          <h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3>
-          <ul class="list-disc pl-4 space-y-1">${items}</ul>
-        </div>`;
-    }
-    
-    // 4. Pocket 3 技巧
-    if (tips["Pocket 3 技巧"]) {
-      html += `
-        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-3">
-          <h3 class="text-sm font-black text-purple-800 mb-2">💡 Pocket 3 技巧</h3>
-          <p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 技巧"]}</p>
-        </div>`;
-    }
-    
-    // 5. 最佳拍攝時間 & 拍攝時長
-    if (tips["最佳拍攝時間"] || tips["拍攝時長"]) {
-      let timeInfo = "";
-      if (tips["最佳拍攝時間"]) timeInfo += `<span class="block mb-1">⏰ ${tips["最佳拍攝時間"]}</span>`;
-      if (tips["拍攝時長"]) timeInfo += `<span class="block">⏳ ${tips["拍攝時長"]}</span>`;
-      html += `
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3">
-          <h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3>
-          <p class="text-sm text-slate-700 leading-relaxed">${timeInfo}</p>
-        </div>`;
-    }
-    
-  } else {
-    html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議，你可以自行在 shoot-tips.js 中加入。</div>`;
-  }
-  
-  content.innerHTML = html;
-  showModal('shoot-tips-modal');
-  document.getElementById('shoot-tips-modal').classList.remove('hidden');
-}
 
-function closeShootTipsModal() {
-  hideModal('shoot-tips-modal');
-  setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300);
-}
+    function closeShootTipsModal() {
+      hideModal('shoot-tips-modal');
+      setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300);
+    }
 
+    // ==================== Vlog 構思 Modal 控制 ====================
+    function openVlogPlanModal(day) {
+      const plan = vlogPlan["D" + day];
+      const content = document.getElementById("vlog-plan-content");
+      let html = "";
+      
+      if (plan) {
+        // 1. 整支 Vlog 構思
+        if (plan["整支Vlog構思"]) {
+          html += `
+            <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3">
+              <h3 class="text-sm font-black text-indigo-800 mb-2">🎬 整支 Vlog 構思</h3>
+              <p class="text-sm text-slate-700 leading-relaxed">${plan["整支Vlog構思"]}</p>
+            </div>`;
+        }
+        
+        // 2. 人物構圖
+        if (plan["人物構圖"] && plan["人物構圖"].length > 0) {
+          const items = plan["人物構圖"].map(item => `<li class="text-slate-700 text-sm mb-1">🧍 ${item}</li>`).join("");
+          html += `
+            <div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3">
+              <h3 class="text-sm font-black text-sky-800 mb-2">🧍 人物構圖</h3>
+              <ul class="list-disc pl-4 space-y-1">${items}</ul>
+            </div>`;
+        }
+        
+        // 3. 風景構圖
+        if (plan["風景構圖"] && plan["風景構圖"].length > 0) {
+          const items = plan["風景構圖"].map(item => `<li class="text-slate-700 text-sm mb-1">🏞️ ${item}</li>`).join("");
+          html += `
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-3">
+              <h3 class="text-sm font-black text-teal-800 mb-2">🏞️ 風景構圖</h3>
+              <ul class="list-disc pl-4 space-y-1">${items}</ul>
+            </div>`;
+        }
+        
+      } else {
+        html = `<div class="text-center py-8 text-slate-500 text-sm">暫時未填寫今天的 Vlog 構思，你可以打開 shoot-tips.js 加入。</div>`;
+      }
+      
+      content.innerHTML = html;
+      showModal('vlog-plan-modal');
+      document.getElementById('vlog-plan-modal').classList.remove('hidden');
+    }
+
+    function closeVlogPlanModal() {
+      hideModal('vlog-plan-modal');
+      setTimeout(() => document.getElementById('vlog-plan-modal').classList.add('hidden'), 300);
+    }
+  
     // ==================== 天氣 ====================
     const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
     async function fetchWeatherData() {
@@ -1411,12 +1504,15 @@ function closeShootTipsModal() {
               ${weatherHtml}
             </div>
           </div>
-          <button onclick="toggleAllDetails('${sectionId}')" class="bg-white hover:bg-slate-50 text-slate-600 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1 shrink-0 ml-2">
-            <span class="icon">↕️</span>
-            <span class="hidden md:inline">全部展開</span>
+          <!-- 📷 冰藍漸層相機按鈕（點擊打開 Vlog 構思） -->
+          <button onclick="openVlogPlanModal(${dayData.day})" title="查看今日 Vlog 構思" class="w-9 h-9 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white rounded-full shadow-sm shadow-sky-200/50 transition-all duration-300 active:scale-95 shrink-0 ml-2 hover:rotate-12">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
           </button>
         </div>
-        <!-- ===== 新增：今日焦點大卡片 ===== -->
+        <!-- 今日焦點大卡片 -->
         <div id="focus-card-${dayData.day}" class="focus-card" onclick="scrollToEvent(${dayData.day}, ${getFocusEventIndex(dayData.day)})">
           <span class="focus-tag" id="focus-tag-${dayData.day}">📍 今日焦點</span>
           <div class="focus-title" id="focus-title-${dayData.day}">載入中...</div>
@@ -1433,7 +1529,7 @@ function closeShootTipsModal() {
         const catColors = { "tag-teal": "bg-teal-400", "tag-amber": "bg-amber-400", "tag-rose": "bg-rose-400", "tag-sky": "bg-sky-400", "tag-indigo": "bg-indigo-400", "tag-emerald": "bg-emerald-400" };
         const catColor = event.tag ? catColors[event.tag.class] || "bg-slate-400" : "bg-slate-400";
         
-        // ===== 新增：拍攝靈感按鈕 =====
+        // 拍攝靈感按鈕
         const shootBtnHtml = `<button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition mt-1">🎬 拍攝靈感</button>`;
         
         html += `
@@ -1489,7 +1585,7 @@ function closeShootTipsModal() {
       html += `</div></div>`;
       section.innerHTML = html;
       
-      // 初始化焦點卡片（因為 html 是動態生成的）
+      // 初始化焦點卡片
       updateFocusCard(dayData.day);
     }
   
@@ -1523,7 +1619,6 @@ function closeShootTipsModal() {
   
     // ==================== 今日焦點卡片功能 ====================
     function getFocusEventIndex(day) {
-      // 根據當前時間計算第一個未完成/正在進行的活動 index
       const dayData = winterItineraries.find(d => d.day === day);
       if (!dayData) return 0;
       const now = getAppTime();
@@ -1537,7 +1632,7 @@ function closeShootTipsModal() {
         if (now >= startDate && now <= endDate) return i;
         if (now < startDate) return i;
       }
-      return dayData.events.length - 1; // 最後一個
+      return dayData.events.length - 1;
     }
     
     function updateFocusCard(day) {
@@ -1588,7 +1683,6 @@ function closeShootTipsModal() {
       if (target) {
         target.open = true;
         target.scrollIntoView({ behavior: "smooth", block: "center" });
-        // 高亮目標
         target.classList.remove("ring-2", "ring-sky-400");
         setTimeout(() => target.classList.add("ring-2", "ring-sky-400"), 100);
         setTimeout(() => target.classList.remove("ring-2", "ring-sky-400"), 2000);
@@ -1606,7 +1700,6 @@ function closeShootTipsModal() {
       const img = document.getElementById("lightbox-img");
       if (lightboxImages.length === 0) return;
       img.src = lightboxImages[lightboxIndex];
-      // 更新 caption
       document.getElementById("lightbox-caption").innerText = `${lightboxIndex + 1} / ${lightboxImages.length}`;
       lightbox.classList.add("active");
       document.body.style.overflow = "hidden";
@@ -1656,7 +1749,6 @@ function closeShootTipsModal() {
       setTimeout(() => circle.remove(), 600);
     }
     
-    // 為所有按鈕加上漣漪效果（動態監聽）
     document.addEventListener("click", function(e) {
       if (e.target.closest("button")) {
         createRipple(e);
@@ -1760,7 +1852,6 @@ function closeShootTipsModal() {
           }, 400);
         }
       }
-      // 更新焦點卡片
       if (window._lastActiveDay) updateFocusCard(window._lastActiveDay);
     }
   
@@ -1834,7 +1925,7 @@ function closeShootTipsModal() {
     }
   }
   
-  // ==================== 動態角色（每次只出現一個，隨機位置） ====================
+  // ==================== 動態角色 ====================
   let characterTimeout = null;
   let bubbleTimeout = null;
   
@@ -1917,7 +2008,6 @@ function closeShootTipsModal() {
         snowmanProgress = Math.min(snowmanProgress + 1, 5);
         localStorage.setItem("snowman_progress", JSON.stringify(snowmanProgress));
         updateSnowmanVisual();
-        // 加入雪人成長粒子特效
         snowParticles();
         showToast(`雪人成長度：${snowmanProgress}/5！`, "⛄");
       } else {
@@ -1938,11 +2028,9 @@ function closeShootTipsModal() {
     if (progress >= 4) { hatColor = "#38bdf8"; accessory = "手套已升級！"; }
     if (progress >= 5) { hatColor = "#a78bfa"; accessory = "終極雪人！"; }
     
-    // 修改帽子顏色（簡單方式：修改 gradient stop）
     const hatPath = snowman.querySelector('#hatGrad stop:first-child');
     if (hatPath) hatPath.setAttribute('stop-color', hatColor);
     
-    // 顯示成長提示
     if (accessory) {
       showToast(`⛄ ${accessory}`, "🎉");
     }
@@ -1952,7 +2040,7 @@ function closeShootTipsModal() {
     setTimeout(spawnCharacters, 2000);
   }
   
-  // ==================== 行前預訂 Check List（完整） ====================
+  // ==================== 行前預訂 Check List ====================
   const bookingList = [
     { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
     { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
@@ -2108,16 +2196,13 @@ function closeShootTipsModal() {
     showToast("已刪除項目");
   }
   
-  // ==================== 裝備清單 Check List（完整更新版） ====================
+  // ==================== 裝備清單 Check List ====================
   const equipmentList = [
-    // 重要證件與金錢
     { id: "passport", category: "重要證件", label: "身份證 / 護照（效期需剩餘6個月以上）", icon: "🪪" },
     { id: "license", category: "重要證件", label: "國際車牌 / 駕駛執照", icon: "🚗" },
     { id: "tickets", category: "重要證件", label: "機票 / 住宿憑證 / Visit Japan Web QR Code", icon: "✈️" },
     { id: "money", category: "重要證件", label: "日幣現金與信用卡（部分小店只收現金）", icon: "💴" },
     { id: "car-mount", category: "重要證件", label: "車用手機架", icon: "📱" },
-  
-    // 保暖衣物
     { id: "thermal", category: "保暖衣物", label: "發熱衣 / 保暖內衣（3-4件，貼身排汗）", icon: "👕" },
     { id: "mid-layer", category: "保暖衣物", label: "中層保暖衣物（毛衣或刷毛絨，2-3件）", icon: "🧶" },
     { id: "outer-coat", category: "保暖衣物", label: "防風防水厚外套 / 羽絨服（1-2件）", icon: "🧥" },
@@ -2126,16 +2211,12 @@ function closeShootTipsModal() {
     { id: "gloves", category: "保暖衣物", label: "觸控手套", icon: "🧤" },
     { id: "boots", category: "保暖衣物", label: "舒適好走且防水防滑的雪靴或厚底運動鞋", icon: "👢" },
     { id: "socks", category: "保暖衣物", label: "厚羊毛襪（3-5雙）", icon: "🧦" },
-  
-    // 電子與隨身用品
     { id: "sim", category: "電子與隨身", label: "日本上網卡（SIM卡 / eSIM / 漫遊）", icon: "📶" },
     { id: "powerbank", category: "電子與隨身", label: "行動電源（僅限手提，不可託運）", icon: "🔋" },
     { id: "thermos", category: "電子與隨身", label: "保溫瓶（隨時補充熱飲）", icon: "🍶" },
     { id: "skincare", category: "電子與隨身", label: "保濕護膚品與潤唇膏", icon: "🧴" },
     { id: "medicine", category: "電子與隨身", label: "常備藥品（感冒藥、腸胃藥、個人處方箋）", icon: "💊" },
     { id: "warmpack", category: "電子與隨身", label: "暖暖包（注意不可貼在皮膚或薄內衣上）", icon: "🔥" },
-  
-    // 原有項目
     { id: "adult-crampons", category: "其他", label: "簡易冰爪", icon: "⛸️" },
     { id: "kid-hat", category: "小孩", label: "小孩毛帽 (蓋耳)", icon: "🧢" },
     { id: "kid-gloves", category: "小孩", label: "小孩手套 (備2雙)", icon: "🧤" },
@@ -2419,7 +2500,7 @@ function closeShootTipsModal() {
         initRandomCharacters();
         renderBookingChecklist();
         renderEquipChecklist();
-        updateSnowmanVisual(); // 初始化雪人視覺
+        updateSnowmanVisual();
       });
     </script>
   </body>
