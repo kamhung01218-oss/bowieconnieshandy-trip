@@ -1322,6 +1322,12 @@ function openShootTipsModal(day, eventIndex) {
   showModal('shoot-tips-modal');
   document.getElementById('shoot-tips-modal').classList.remove('hidden');
 }
+
+function closeShootTipsModal() {
+  hideModal('shoot-tips-modal');
+  setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300);
+}
+
     // ==================== 天氣 ====================
     const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
     async function fetchWeatherData() {
