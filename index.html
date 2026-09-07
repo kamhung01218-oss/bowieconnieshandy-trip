@@ -65,7 +65,7 @@ async function syncDataToCloud() {
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
-
+  
   body {
     font-family: 'Noto Sans TC', sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -84,12 +84,12 @@ async function syncDataToCloud() {
     padding: 16px;
     transition: all 0.3s ease;
   }
-
+  
   .glass-card:hover {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
   }
-
+  
   .nav-btn {
     border-radius: 999px;
     backdrop-filter: blur(10px);
@@ -100,13 +100,13 @@ async function syncDataToCloud() {
     align-items: center;
     justify-content: center;
   }
-
+  
   .nav-btn.active {
     background: linear-gradient(135deg, #0284c7, #0c4a6e) !important;
     color: white;
     box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
   }
-
+  
   .day-tab {
     border-radius: 999px !important;
     transition: all 0.3s ease;
@@ -119,13 +119,13 @@ async function syncDataToCloud() {
     font-size: 0.875rem;
     min-width: 64px;
   }
-
+  
   .day-tab.active {
     background: linear-gradient(135deg, #0369a1, #0c4a6e) !important;
     color: white;
     box-shadow: 0 4px 10px rgba(12, 74, 110, 0.3);
   }
-
+  
   .day-tabs-wrapper { position: relative; }
   
   .day-tabs-wrapper::after {
@@ -139,16 +139,16 @@ async function syncDataToCloud() {
     pointer-events: none;
     z-index: 10;
   }
-
+  
   .scrollbar-none::-webkit-scrollbar { display: none; }
   .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
-
+  
   /* ==================== 直式時間軸 ==================== */
   .timeline {
     position: relative;
     padding-left: 2.5rem;
   }
-
+  
   .timeline::before {
     content: '';
     position: absolute;
@@ -159,7 +159,7 @@ async function syncDataToCloud() {
     background: linear-gradient(to bottom, #bae6fd, #e0f2fe);
     border-radius: 2px;
   }
-
+  
   .timeline-node {
     position: absolute;
     left: 0;
@@ -175,17 +175,17 @@ async function syncDataToCloud() {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     z-index: 1;
   }
-
+  
   .timeline-node.active {
     background: #0284c7;
     color: white;
   }
-
+  
   .timeline-card {
     position: relative;
     margin-bottom: 1rem;
   }
-
+  
   .timeline-time {
     display: inline-flex;
     align-items: center;
@@ -195,14 +195,14 @@ async function syncDataToCloud() {
     color: #0369a1;
     margin-bottom: 0.25rem;
   }
-
+  
   .timeline-time-end {
     font-size: 0.625rem;
     color: #94a3b8;
     font-weight: 600;
     margin-left: 0.25rem;
   }
-
+  
   /* 其他樣式 */
   .event-time-pill {
     display: inline-flex;
@@ -216,7 +216,7 @@ async function syncDataToCloud() {
     border-radius: 9999px;
     line-height: 1.2;
   }
-
+  
   .tag {
     display: inline-flex;
     align-items: center;
@@ -234,7 +234,7 @@ async function syncDataToCloud() {
   .tag-sky { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
   .tag-indigo { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
   .tag-emerald { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-
+  
   .modal-close {
     position: absolute;
     top: 1rem;
@@ -254,7 +254,7 @@ async function syncDataToCloud() {
     background: #e2e8f0;
     color: #0f172a;
   }
-
+  
   .modal-overlay {
     opacity: 0;
     visibility: hidden;
@@ -271,7 +271,7 @@ async function syncDataToCloud() {
   .modal-overlay.active .modal-box {
     transform: scale(1) translateY(0);
   }
-
+  
   .btn-gradient {
     background: linear-gradient(135deg, #0284c7, #0c4a6e) !important;
     box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
@@ -285,7 +285,7 @@ async function syncDataToCloud() {
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
   }
-
+  
   input[type="checkbox"] {
     appearance: none;
     -webkit-appearance: none;
@@ -313,7 +313,7 @@ async function syncDataToCloud() {
     top: -1px;
     font-weight: bold;
   }
-
+  
   /* ==================== 雪花效果 ==================== */
   .snowflake {
     position: absolute;
@@ -342,7 +342,7 @@ async function syncDataToCloud() {
     0% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
     100% { transform: translateY(80vh) rotate(360deg); opacity: 0.2; }
   }
-
+  
   /* ==================== 動態角色 ==================== */
   .walking-character {
     position: fixed;
@@ -353,22 +353,22 @@ async function syncDataToCloud() {
     transition: all 0.5s ease;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
   }
-
+  
   .walking-character svg {
     width: 55px;
     height: 55px;
   }
-
+  
   .walking-character.show {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-
+  
   .walking-character.hide {
     opacity: 0;
     transform: translateY(50px) scale(0.8);
   }
-
+  
   .walking-character.greet {
     animation: greet-bounce 0.8s ease;
   }
@@ -379,7 +379,7 @@ async function syncDataToCloud() {
     70% { transform: translateY(-10px) scale(0.95); }
     100% { transform: translateY(0) scale(1); }
   }
-
+  
   .walking-character.jumping {
     animation: jump 0.6s ease !important;
   }
@@ -390,7 +390,7 @@ async function syncDataToCloud() {
     70% { transform: translateY(-35px) scale(1.1); }
     100% { transform: translateY(0) scale(1); }
   }
-
+  
   .character-bubble {
     position: fixed;
     background: white;
@@ -419,7 +419,7 @@ async function syncDataToCloud() {
     border-style: solid;
     border-color: #0284c7 transparent transparent transparent;
   }
-
+  
   #mini-forecast {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
@@ -433,7 +433,7 @@ async function syncDataToCloud() {
     background: rgba(255,255,255,0.7);
     text-align: center;
   }
-
+  
   .loading-spinner {
     border: 3px solid rgba(0,0,0,0.1);
     border-top-color: #0284c7;
@@ -443,7 +443,7 @@ async function syncDataToCloud() {
     animation: spin 0.8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
+  
   .itinerary-cat-strip {
     position: absolute;
     left: 0;
@@ -452,7 +452,7 @@ async function syncDataToCloud() {
     width: 4px;
     border-radius: 4px 0 0 4px;
   }
-
+  
   /* 天氣聯動卡片 */
   .weather-card {
     animation: fadeIn 0.3s ease;
@@ -461,13 +461,128 @@ async function syncDataToCloud() {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  
+  /* ==================== 新增功能樣式 ==================== */
+  /* 今日焦點卡片 */
+  .focus-card {
+    border-radius: 24px;
+    margin-bottom: 16px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .focus-card:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 12px 25px rgba(37, 99, 235, 0.5);
+  }
+  
+  .focus-card:active {
+    transform: scale(0.98);
+  }
+  
+  .focus-card .focus-tag {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+  
+  .focus-card .focus-title {
+    font-size: 1.25rem;
+    font-weight: 900;
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+  
+  .focus-card .focus-time {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-top: 4px;
+  }
+  
+  /* 平滑卡片展開動畫 */
+  details.event-card[open] .event-content-wrapper {
+    animation: slideDown 0.3s ease;
+  }
+  
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* 按鈕漣漪效果 */
+  .ripple-effect {
+    position: absolute;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    pointer-events: none;
+  }
+  
+  @keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+  }
+  
+  /* 全屏圖片燈箱 */
+  #lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+  }
+  
+  #lightbox.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  #lightbox img {
+    max-width: 95vw;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 12px;
+  }
+  
+  .lightbox-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 12px;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  /* 雪人特效粒子 */
+  .particle {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+  }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-16 relative">
   <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
-
-  <!-- ✅ 動態角色：雪人 + 狐狸 -->
+  
+  <!-- 動態角色：雪人 + 狐狸 -->
   <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！">
     <svg width="55" height="55" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -529,7 +644,7 @@ async function syncDataToCloud() {
       <ellipse cx="32" cy="40" rx="6" ry="2" fill="white" opacity="0.3"/>
     </svg>
   </div>
-
+  
   <!-- 歡迎導覽 -->
   <div id="welcome-modal" class="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-100">
     <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 md:p-8 relative overflow-hidden modal-box">
@@ -560,14 +675,14 @@ async function syncDataToCloud() {
       </div>
     </div>
   </div>
-
+  
   <!-- Header -->
   <header class="relative bg-slate-900 text-white py-6 px-4 shadow-xl overflow-hidden">
     <div class="absolute inset-0 z-0 pointer-events-none bg-gradient-to-r from-slate-900 via-sky-900 to-indigo-950">
       <img src="https://images.unsplash.com/photo-1418985991508-e47386d96a71?q=80&w=2000&auto=format&fit=crop" alt="東北冬季雪景" class="w-full h-full object-cover opacity-70" onerror="this.style.display='none'">
       <div class="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-sky-900/70 to-indigo-950/90"></div>
     </div>
-
+  
     <div class="max-w-6xl mx-auto relative z-10 text-center">
       <div class="flex items-center justify-center gap-2 mb-2">
         <span class="inline-block bg-sky-500/30 text-sky-200 text-[11px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-sky-400/30">❄️ Tohoku Winter Family Tour 2027</span>
@@ -575,7 +690,7 @@ async function syncDataToCloud() {
       </div>
       <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight mb-2" style="text-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 60px rgba(255,255,255,0.2);">日本東北冬日雪景親子<br class="block md:hidden">樹冰溫泉自駕之旅 ♨️❄️</h1>
       <p class="text-sm md:text-base text-sky-100 max-w-2xl mx-auto font-light">📅 2027年1月21日 ➔ 1月27日（7天6夜雪國探索行程）</p>
-
+  
       <div class="mt-4 max-w-4xl mx-auto bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-4 text-left">
         <div class="flex items-center justify-between mb-2">
           <h4 class="text-sm text-white font-bold flex items-center gap-2">
@@ -597,7 +712,7 @@ async function syncDataToCloud() {
         </div>
       </div>
   </header>
-
+  
   <!-- 主導航 -->
   <nav class="max-w-md mx-auto mt-4 px-4 relative z-10">
     <div class="bg-white p-1.5 rounded-full shadow-lg shadow-sky-100 border border-slate-200 flex gap-1">
@@ -609,7 +724,7 @@ async function syncDataToCloud() {
       </button>
     </div>
   </nav>
-
+  
   <!-- 快捷功能 -->
   <div id="itinerary-quick-section" class="max-w-6xl mx-auto px-4 mt-4 space-y-4">
     <div class="grid grid-cols-3 gap-3">
@@ -626,7 +741,7 @@ async function syncDataToCloud() {
         <span class="text-white text-sm font-black">雪地攻略</span>
       </button>
     </div>
-
+  
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="bg-gradient-to-r from-sky-100 via-blue-100 to-indigo-100 border-2 border-sky-300 p-4 rounded-2xl shadow-lg">
         <div class="flex items-center justify-between flex-wrap gap-3">
@@ -644,7 +759,7 @@ async function syncDataToCloud() {
         </div>
         <div class="flex gap-2 text-center overflow-x-auto scrollbar-none snap-x flex-1 mt-3" id="mini-forecast"></div>
       </div>
-
+  
       <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 p-3 rounded-2xl shadow-sm flex flex-col justify-center">
         <div class="flex justify-between items-center text-xs mb-2">
           <span class="font-black text-indigo-900">🎟️ 銀山Fast Pass</span>
@@ -658,7 +773,7 @@ async function syncDataToCloud() {
       </div>
     </div>
   </div>
-
+  
   <!-- 主內容區 -->
   <div id="main-itinerary-view">
     <main class="max-w-6xl mx-auto px-4 mt-6">
@@ -676,7 +791,7 @@ async function syncDataToCloud() {
           </div>
           <div class="border-b border-slate-200 mt-1"></div>
         </div>
-
+  
         <!-- 每日行程容器 -->
         <div id="schedule-container" class="space-y-6 pt-2">
           <div id="day-section-1" class="day-section"></div>
@@ -690,1327 +805,1511 @@ async function syncDataToCloud() {
       </div>
     </main>
   </div>
-
+  
   <!-- 記帳本 iframe -->
   <div id="ledger-frame-container" class="hidden max-w-4xl mx-auto px-4 mt-6 pb-20 space-y-6">
     <iframe src="/ledger.html" class="w-full h-screen border-none rounded-2xl shadow-sm" title="記帳本"></iframe>
   </div>
-  <!-- 收合/展開按鈕 -->
-<button id="fab-collapse-all" onclick="collapseAllItineraries()" class="fixed bottom-28 left-4 md:left-6 z-[9998] bg-slate-700 hover:bg-slate-800 text-white rounded-full h-10 px-5 shadow-lg border border-slate-600 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group opacity-0 translate-y-8 pointer-events-none">
-  <span class="text-lg font-black">⬆️</span>
-  <span class="font-bold text-sm hidden md:inline">收合行程</span>
-</button>
-
-<!-- 匯率 FAB -->
-<div class="fixed bottom-20 right-4 md:right-6 z-[10001] flex flex-col items-end pointer-events-none">
-  <div id="currency-widget-panel" class="absolute bottom-full right-0 mb-4 bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] border border-slate-200 w-[calc(100vw-2rem)] sm:w-80 overflow-hidden transition-all duration-300 origin-bottom-right pointer-events-none opacity-0 scale-90 translate-y-4 invisible z-[10000]">
-    <div class="bg-gradient-to-r from-sky-900 to-indigo-900 p-4 flex justify-between items-center text-white">
-      <div class="flex items-center gap-2"><span class="text-xl">🪙</span><h3 class="text-sm font-black tracking-wide">即時匯率試算</h3></div>
-      <button onclick="toggleCurrencyWidget()" class="bg-white/20 hover:bg-white/40 text-white rounded-full p-1.5 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-    </div>
-    <div class="p-4 space-y-3 pointer-events-auto">
-      <div class="flex justify-between items-center">
-        <p id="rate-hint-text" class="text-xs text-slate-500 font-semibold">目前匯率：1 JPY ≈ 0.052 HKD</p>
-        <button onclick='convertCurrency("clear")' class="text-[10px] text-slate-400 hover:text-red-500 transition font-bold flex items-center gap-1 bg-slate-100 px-2 py-1 rounded"><span>🧹</span> 清除</button>
-      </div>
-      <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none snap-x">
-        <button onclick='quickConvert("jpy",1e3)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 transition">¥1千 JPY</button>
-        <button onclick='quickConvert("jpy",1e4)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 transition">¥1萬 JPY</button>
-        <button onclick='quickConvert("hkd",100)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition">$100 HKD</button>
-      </div>
-      <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 shadow-inner">
-        <div>
-          <label class="block text-xs font-bold text-rose-800 mb-1.5">🇯🇵 日圓 (JPY)</label>
-          <div class="relative rounded-xl shadow-xs">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-rose-600 text-base font-black">¥</span></div>
-            <input type="number" id="calc-jpy" oninput='convertCurrency("jpy")' value="10000" class="block w-full pl-8 pr-12 text-lg font-black text-rose-900 border border-rose-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 transition">
-            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span class="text-rose-400 text-xs font-bold">JPY</span></div>
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-sky-800 mb-1.5">🇭🇰 港幣 (HKD)</label>
-          <div class="relative rounded-xl shadow-xs">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-sky-600 text-base font-black">$</span></div>
-            <input type="number" id="calc-hkd" oninput='convertCurrency("hkd")' class="block w-full pl-8 pr-12 text-lg font-black text-sky-900 border border-sky-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <button onclick="toggleCurrencyWidget()" id="currency-fab" class="pointer-events-auto relative bg-slate-800 hover:bg-slate-700 text-white rounded-full h-14 w-14 md:h-auto md:w-auto md:px-5 md:py-3.5 shadow-[0_8px_25px_rgb(0,0,0,0.2)] border border-slate-600 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group">
-    <span class="text-2xl group-hover:rotate-12 transition-transform drop-shadow-sm">🪙</span>
-    <span class="font-bold text-sm hidden md:inline tracking-wide drop-shadow-sm">匯率換算</span>
-  </button>
-</div>
-
-<!-- Toast -->
-<div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none">
-  <span id="toast-icon">✅</span>
-  <span id="toast-message">複製成功！</span>
-</div>
-
-<!-- 彈窗們 -->
-<!-- 行前預訂 -->
-<div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeBookingModal()">
-  <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-    <button onclick="closeBookingModal()" class="modal-close">✕</button>
-    <h2 class="text-xl font-black mb-4">📌 行前預訂 Check List</h2>
-    <div id="booking-checklist-container"></div>
-  </div>
-</div>
-
-<!-- 裝備清單 -->
-<div id="equip-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeEquipModal()">
-  <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-    <button onclick="closeEquipModal()" class="modal-close">✕</button>
-    <h2 class="text-xl font-black mb-4">🎒 裝備清單 Check List</h2>
-    <div id="equip-checklist-container"></div>
-  </div>
-</div>
-
-<!-- 雪地攻略 -->
-<div id="drive-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeDriveModal()">
-  <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-    <button onclick="closeDriveModal()" class="modal-close">✕</button>
-    <h2 class="text-xl font-black mb-4">⚠️ 雪地駕駛安全攻略</h2>
-    <div class="space-y-4">
-      <div class="bg-red-50/80 border border-red-200 rounded-xl p-4">
-        <h3 class="text-sm font-bold text-red-900 mb-2">🚗 基本原則</h3>
-        <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
-          <li>全程使用4WD + 雪胎</li>
-          <li>出發前檢查雪胎深度與胎壓</li>
-          <li>與前車保持至少3秒車距</li>
-          <li>避免急煞、急加速、急轉彎</li>
-          <li>下坡善用低速檔 (L/2檔) 引擎煞車</li>
-        </ul>
-      </div>
-      <div class="bg-sky-50/80 border border-sky-200 rounded-xl p-4">
-        <h3 class="text-sm font-bold text-sky-900 mb-2">🛣️ 特殊路況注意</h3>
-        <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
-          <li><strong>Black Ice (黑冰)</strong>：看似乾燥的路面結冰，最危險！避免急轉方向盤</li>
-          <li><strong>橋樑與陰影處</strong>：最容易結冰，減速通過</li>
-          <li><strong>山區連續彎道</strong>：減速至20-30km/h，鳴笛示警</li>
-          <li><strong>除雪車後方</strong>：保持距離，避免噴濺雪霧影響視線</li>
-        </ul>
-      </div>
-      <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4">
-        <h3 class="text-sm font-bold text-amber-900 mb-2">🛠️ 應急準備</h3>
-        <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
-          <li>備用保暖衣物與毯子</li>
-          <li>手機行動電源 (2個)</li>
-          <li>車用充電器</li>
-          <li>食物和飲水 (至少1天份量)</li>
-          <li>小鏟子 (除雪用)</li>
-          <li>拖車繩、警示三角牌</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 搶票攻略 -->
-<div id="ticket-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeTicketModal()">
-  <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-    <button onclick="closeTicketModal()" class="modal-close">✕</button>
-    <h2 class="text-xl font-black mb-4">⚔️ 搶票作戰攻略</h2>
-    <div class="space-y-4">
-      <div class="bg-purple-50/80 border border-purple-200 rounded-xl p-4">
-        <h3 class="text-sm font-bold text-purple-900 mb-2">🎟️ 銀山溫泉 Fast Pass</h3>
-        <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
-          <li><strong>開賣時間：</strong>1/8 日本時間00:00 (香港23:00)</li>
-          <li><strong>搶票平台：</strong>Asoview! (需提前註冊)</li>
-          <li><strong>提醒：</strong>設定鬧鐘，提前10分鐘登入</li>
-          <li><strong>目標：</strong>4張成人票，每人¥1,500</li>
-        </ul>
-      </div>
-      <div class="bg-sky-50/80 border border-sky-200 rounded-xl p-4">
-        <h3 class="text-sm font-bold text-sky-900 mb-2">🎟️ 藏王纜車優先票</h3>
-        <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
-          <li><strong>開賣時間：</strong>1/15 日本時間00:00 (香港23:00)</li>
-          <li><strong>搶票平台：</strong>Asoview! 或官方網站</li>
-          <li><strong>提醒：</strong>鎖定08:30或09:00時段</li>
-          <li><strong>目標：</strong>成人¥5,500/兒童¥3,500</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 天氣 -->
-<div id="weather-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeWeatherModal()">
-  <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-    <button onclick="closeWeatherModal()" class="modal-close">✕</button>
-    <h2 class="text-xl font-black mb-4">📊 詳細天氣預報</h2>
-    <div id="weather-detail-content" class="text-sm text-slate-600">天氣資料載入中...</div>
-  </div>
-</div>
-
-<!-- 行程速覽 -->
-<div id="trip-overview-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeTripOverview()">
-  <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-    <button onclick="closeTripOverview()" class="modal-close">✕</button>
-    <h2 class="text-xl font-black mb-4 flex items-center gap-2">📋 7天6夜行程速覽</h2>
-    <div class="space-y-2">
-      <div class="flex items-start gap-3 bg-sky-50 border border-sky-200 rounded-xl p-3">
-        <span class="bg-sky-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D1</span>
-        <div><p class="text-sm font-bold text-slate-800">✈️ 抵達雪國</p><p class="text-xs text-slate-600 mt-0.5">仙台機場 → 秋保溫泉 → 蟹腳Buffet</p></div>
-      </div>
-      <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
-        <span class="bg-amber-500 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D2</span>
-        <div><p class="text-sm font-bold text-slate-800">🏮 天童+銀山</p><p class="text-xs text-slate-600 mt-0.5">AEON天童 → 瀧之湯 → 銀山夜景 → 深夜美食</p></div>
-      </div>
-      <div class="flex items-start gap-3 bg-indigo-50 border border-indigo-200 rounded-xl p-3">
-        <span class="bg-indigo-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D3</span>
-        <div><p class="text-sm font-bold text-slate-800">☃️ 藏王樹冰</p><p class="text-xs text-slate-600 mt-0.5">藏王纜車 → 樹冰 → 山形壽司 → 溫泉懷石</p></div>
-      </div>
-      <div class="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-        <span class="bg-emerald-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D4</span>
-        <div><p class="text-sm font-bold text-slate-800">⛷️ Spring Valley</p><p class="text-xs text-slate-600 mt-0.5">玩雪 → 入住Grand Bach → 伊達牛舌</p></div>
-      </div>
-      <div class="flex items-start gap-3 bg-rose-50 border border-rose-200 rounded-xl p-3">
-        <span class="bg-rose-500 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D5</span>
-        <div><p class="text-sm font-bold text-slate-800">🦊 狐狸村</p><p class="text-xs text-slate-600 mt-0.5">客美多早餐 → 狐狸村 → 白石溫麵 → 市區血拼</p></div>
-      </div>
-      <div class="flex items-start gap-3 bg-teal-50 border border-teal-200 rounded-xl p-3">
-        <span class="bg-teal-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D6</span>
-        <div><p class="text-sm font-bold text-slate-800">🐬 水族館/採草莓</p><p class="text-xs text-slate-600 mt-0.5">早餐 → 水族館或草莓 → 仔虎和牛 → 三井Outlet</p></div>
-      </div>
-      <div class="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
-        <span class="bg-slate-700 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D7</span>
-        <div><p class="text-sm font-bold text-slate-800">✈️ 返港</p><p class="text-xs text-slate-600 mt-0.5">仙台車站伴手禮 → 機場還車 → 起飛返港</p></div>
-      </div>
-    </div>
-    <p class="text-xs text-slate-400 text-center mt-4">💡 點擊下方 Day 分頁查看每日完整詳細行程</p>
-  </div>
-</div>
-<script>
-  // ==================== 全域變數 ====================
-  let state = { currentMainTab: "itinerary", checkedItems: {} };
-  let simulatedTime = null;
-  const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27"];
   
-  // ==================== 雪人成長任務 ====================
-  let snowmanProgress = JSON.parse(localStorage.getItem("snowman_progress")) || 0;
-
-  // ==================== 天氣快取 ====================
-  if (!window.weatherCache) window.weatherCache = {};
-
-  // ==================== 匯率 ====================
-  let exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
-
-  async function fetchLiveRates() {
-    try {
-      const response = await fetch('https://open.er-api.com/v6/latest/JPY');
-      const data = await response.json();
-      if (data && data.rates) {
-        exchangeRates.JPY = 1;
-        exchangeRates.HKD = 1 / data.rates.JPY * data.rates.HKD;
-        exchangeRates.TWD = 1 / data.rates.JPY * data.rates.TWD;
-        exchangeRates.USD = 1 / data.rates.JPY * data.rates.USD;
-        exchangeRates.CNY = 1 / data.rates.JPY * data.rates.CNY;
-        localStorage.setItem('tohoku_exchange_rates', JSON.stringify({ rates: exchangeRates, updatedAt: Date.now() }));
-        updateRateHud();
-      }
-    } catch(e) {
-      console.warn("即時匯率獲取失敗，嘗試讀取快取:", e);
-      const cached = localStorage.getItem('tohoku_exchange_rates');
-      if (cached) {
-        try {
-          const cachedData = JSON.parse(cached);
-          if (cachedData.rates && Date.now() - cachedData.updatedAt < 7 * 24 * 60 * 60 * 1000) {
-            exchangeRates = cachedData.rates;
-            updateRateHud();
-          }
-        } catch(e2) {}
-      }
-    }
-  }
-
-  function updateRateHud() {
-    const rateText = document.getElementById("rate-hint-text");
-    if (rateText) rateText.innerText = `目前匯率：1 JPY ≈ ${exchangeRates.HKD.toFixed(3)} HKD`;
-  }
-
-  function toggleCurrencyWidget() {
-    const panel = document.getElementById("currency-widget-panel");
-    if (panel) {
-      if (panel.classList.contains("opacity-0")) {
-        panel.classList.remove("invisible");
-        setTimeout(() => {
-          panel.classList.remove("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
-          panel.classList.add("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
-        }, 10);
-      } else {
-        panel.classList.add("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
-        panel.classList.remove("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
-        setTimeout(() => { if (panel.classList.contains("opacity-0")) panel.classList.add("invisible"); }, 300);
-      }
-    }
-  }
-
-  function convertCurrency(type) {
-    const hkdInput = document.getElementById("calc-hkd");
-    const jpyInput = document.getElementById("calc-jpy");
-    if (!hkdInput || !jpyInput) return;
-    if (type === "clear") { hkdInput.value = ""; jpyInput.value = ""; return; }
-    const rate = exchangeRates.JPY || 0.052;
-    if (type === "jpy") {
-      const jpy = parseFloat(jpyInput.value);
-      hkdInput.value = (isNaN(jpy) || jpy === 0) ? "" : (jpy * rate).toFixed(2);
-    } else if (type === "hkd") {
-      const hkd = parseFloat(hkdInput.value);
-      jpyInput.value = (isNaN(hkd) || hkd === 0) ? "" : Math.round(hkd / rate);
-    }
-  }
-
-  function quickConvert(currency, amount) {
-    const input = document.getElementById("calc-" + currency);
-    if (input) { input.value = amount; convertCurrency(currency); }
-  }
-
-  // ==================== Toast ====================
-  function showToast(message, icon = "✅") {
-    const toast = document.getElementById("toast");
-    const toastMessage = document.getElementById("toast-message");
-    const toastIcon = document.getElementById("toast-icon");
-    if (toast && toastMessage && toastIcon) {
-      toastMessage.innerText = message;
-      toastIcon.innerText = icon;
-      toast.classList.remove("-translate-y-24", "opacity-0");
-      toast.classList.add("translate-y-0", "opacity-100");
-      if (window.toastTimeout) clearTimeout(window.toastTimeout);
-      window.toastTimeout = setTimeout(() => {
-        toast.classList.remove("translate-y-0", "opacity-100");
-        toast.classList.add("-translate-y-24", "opacity-0");
-      }, 3000);
-    }
-  }
-
-  // ==================== 頁面切換 ====================
-  function switchMainTab(tab) {
-    state.currentMainTab = tab;
-    const itineraryView = document.getElementById("main-itinerary-view");
-    const ledgerFrameContainer = document.getElementById("ledger-frame-container");
-    const quickSection = document.getElementById("itinerary-quick-section");
-    const navItineraryBtn = document.getElementById("nav-itinerary-btn");
-    const navLedgerBtn = document.getElementById("nav-ledger-btn");
-    if (tab === "itinerary") {
-      itineraryView.classList.remove("hidden");
-      ledgerFrameContainer.classList.add("hidden");
-      if (quickSection) quickSection.classList.remove("hidden");
-      navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
-      navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
-    } else {
-      itineraryView.classList.add("hidden");
-      ledgerFrameContainer.classList.remove("hidden");
-      if (quickSection) quickSection.classList.add("hidden");
-      navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
-      navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
-    }
-    setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
-  }
-
-  function switchDay(day) {
-    document.querySelectorAll("#day-tabs-container button").forEach(btn => {
-      btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
-    });
-    const activeTab = document.getElementById("tab-d" + day);
-    if (activeTab) activeTab.className = "day-tab active flex-shrink-0 transition";
-    document.querySelectorAll(".day-section").forEach(section => section.classList.add("hidden"));
-    const targetSection = document.getElementById("day-section-" + day);
-    if (targetSection) targetSection.classList.remove("hidden");
-  }
-
-  // ==================== 彈窗控制 ====================
-  function showModal(id) {
-    const overlay = document.getElementById(id);
-    if (overlay) { 
-      overlay.classList.add('active'); 
-      overlay.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-    }
-  }
-  function hideModal(id) {
-    const overlay = document.getElementById(id);
-    if (overlay) {
-      overlay.classList.remove('active');
-      setTimeout(() => { overlay.style.display = 'none'; }, 300);
-      document.body.style.overflow = '';
-    }
-  }
-  function toggleBookingModal() {
-    const modal = document.getElementById('booking-modal');
-    if (modal.classList.contains('hidden')) { showModal('booking-modal'); modal.classList.remove('hidden'); renderBookingChecklist(); }
-    else { hideModal('booking-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
-  }
-  function closeBookingModal() {
-    hideModal('booking-modal');
-    setTimeout(() => document.getElementById('booking-modal').classList.add('hidden'), 300);
-  }
-  function toggleEquipModal() {
-    const modal = document.getElementById('equip-modal');
-    if (modal.classList.contains('hidden')) { showModal('equip-modal'); modal.classList.remove('hidden'); renderEquipChecklist(); }
-    else { hideModal('equip-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
-  }
-  function closeEquipModal() {
-    hideModal('equip-modal');
-    setTimeout(() => document.getElementById('equip-modal').classList.add('hidden'), 300);
-  }
-  function toggleDriveModal() {
-    const modal = document.getElementById('drive-modal');
-    if (modal.classList.contains('hidden')) { showModal('drive-modal'); modal.classList.remove('hidden'); }
-    else { hideModal('drive-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
-  }
-  function closeDriveModal() {
-    hideModal('drive-modal');
-    setTimeout(() => document.getElementById('drive-modal').classList.add('hidden'), 300);
-  }
-  function toggleTicketModal() {
-    const modal = document.getElementById('ticket-modal');
-    if (modal.classList.contains('hidden')) { showModal('ticket-modal'); modal.classList.remove('hidden'); }
-    else { hideModal('ticket-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
-  }
-  function closeTicketModal() {
-    hideModal('ticket-modal');
-    setTimeout(() => document.getElementById('ticket-modal').classList.add('hidden'), 300);
-  }
-  function openTripOverview() {
-    const modal = document.getElementById('trip-overview-modal');
-    if (modal) { modal.style.display = 'flex'; modal.classList.add('active'); }
-  }
-  function closeTripOverview() {
-    const modal = document.getElementById('trip-overview-modal');
-    if (modal) { modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; }, 300); }
-  }
-  function openWeatherModal() {
-    const modal = document.getElementById('weather-modal');
-    showModal('weather-modal');
-    modal.classList.remove('hidden');
-    document.getElementById('weather-detail-content').innerHTML = '<div class="flex justify-center py-8"><div class="loading-spinner"></div></div>';
-    fetchWeatherData();
-  }
-  function closeWeatherModal() {
-    hideModal('weather-modal');
-    setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300);
-  }
-
-  // ==================== 天氣 ====================
-  const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
-  async function fetchWeatherData() {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${weatherDest.lat}&longitude=${weatherDest.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo`;
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      document.getElementById('mini-temp').innerText = `${Math.round(data.current.temperature_2m)}°C`;
-      document.getElementById('mini-feels').innerText = `體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}% | 風速 ${data.current.wind_speed_10m} km/h`;
-      const miniForecast = document.getElementById('mini-forecast');
-      miniForecast.innerHTML = "";
-      for(let i=0; i<7; i++) {
-        const date = data.daily.time[i].substring(5);
-        const max = Math.round(data.daily.temperature_2m_max[i]);
-        const min = Math.round(data.daily.temperature_2m_min[i]);
-        const icon = data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️";
-        miniForecast.innerHTML += `<div class="bg-white/70 p-1.5 rounded text-center min-w-[55px]"><span class="block text-[8px] text-slate-400">${date}</span><span class="block text-[14px]">${icon}</span><span class="block text-[9px] font-bold text-slate-700">${max}°/${min}°</span></div>`;
-      }
-      
-      // 存入天氣快取
-      for (let i = 0; i < 7; i++) {
-        const dateStr = data.daily.time[i];
-        window.weatherCache[dateStr] = {
-            max: Math.round(data.daily.temperature_2m_max[i]),
-            min: Math.round(data.daily.temperature_2m_min[i]),
-            rain: data.daily.precipitation_probability_max[i] ?? 0,
-            icon: data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️"
-        };
-      }
-      
-      // 重新渲染當前日（讓天氣資訊出現在行程中）
-      if (window._lastActiveDay) switchDay(window._lastActiveDay);
-      
-      const detail = document.getElementById('weather-detail-content');
-      detail.innerHTML = `<div class="bg-sky-50 p-3 rounded-xl border border-sky-200"><span class="text-xs text-slate-500">目前氣溫</span><strong class="block text-xl text-slate-800">${Math.round(data.current.temperature_2m)}°C</strong><span class="text-[10px] text-slate-600">體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}% | 風速 ${data.current.wind_speed_10m} km/h</span></div><div class="text-xs text-slate-700 space-y-2"><strong class="block text-slate-800 mb-1">未來7天預報</strong>${[0,1,2,3,4,5,6].map(i => `<div class="flex justify-between border-b border-slate-100 pb-1"><span>${data.daily.time[i]} (${["日","一","二","三","四","五","六"][new Date(data.daily.time[i]).getDay()]})</span><span>${Math.round(data.daily.temperature_2m_max[i])}° / ${Math.round(data.daily.temperature_2m_min[i])}°</span><span class="text-blue-500">💧 ${data.daily.precipitation_probability_max[i] ?? 0}%</span></div>`).join('')}</div>`;
-    } catch(e) {
-      console.warn("天氣讀取失敗", e);
-      document.getElementById('weather-detail-content').innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">天氣資料暫時無法取得，請稍後再試。</div>';
-    }
-  }
-
-  // ==================== 行程渲染（直式時間軸） ====================
-  function renderDayItinerary(sectionId, dayData) {
-    const section = document.getElementById(sectionId);
-    if (!section) return;
-    
-    // ===== 天氣與行程聯動 =====
-    const dateStr = tripDates[dayData.day - 1];
-    const weatherInfo = window.weatherCache[dateStr] || null;
-    let weatherHtml = "";
-    if (weatherInfo) {
-        const icon = weatherInfo.icon;
-        const max = weatherInfo.max;
-        const min = weatherInfo.min;
-        const rain = weatherInfo.rain;
-        let advice = "";
-        if (min < -5) advice = "❄️ 極寒！羽絨+雪靴+毛帽必備";
-        else if (min < 0) advice = "🧣 寒冷，圍巾手套不可少";
-        else advice = "🧥 偏涼，外套防風防水";
-        if (rain > 50) advice += "，攜帶雨具⚠️";
-        
-        weatherHtml = `
-        <div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs text-slate-700 weather-card">
-            <span class="text-lg">${icon}</span>
-            <span class="font-bold text-sky-700">${dateStr.substring(5)} 天氣：</span>
-            <span>最高 ${max}° / 最低 ${min}°</span>
-            <span class="text-slate-400">|</span>
-            <span class="text-slate-500">💧 ${rain}%</span>
-            <span class="ml-auto font-bold text-slate-600">${advice}</span>
-        </div>`;
-    }
-    
-    let html = `<div class="mb-8">
-      <div class="bg-slate-50/95 py-3 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">${dayData.emoji}</div>
-          <div class="flex-1">
-            <span class="text-xs font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span>
-            <h2 class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>
-            ${dayData.subtitle ? `<p class="text-xs text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}
-            ${weatherHtml}
-          </div>
-        </div>
-        <button onclick="toggleAllDetails('${sectionId}')" class="bg-white hover:bg-slate-50 text-slate-600 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1 shrink-0 ml-2">
-          <span class="icon">↕️</span>
-          <span class="hidden md:inline">全部展開</span>
-        </button>
+  <!-- 收合/展開按鈕 -->
+  <button id="fab-collapse-all" onclick="collapseAllItineraries()" class="fixed bottom-28 left-4 md:left-6 z-[9998] bg-slate-700 hover:bg-slate-800 text-white rounded-full h-10 px-5 shadow-lg border border-slate-600 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group opacity-0 translate-y-8 pointer-events-none">
+    <span class="text-lg font-black">⬆️</span>
+    <span class="font-bold text-sm hidden md:inline">收合行程</span>
+  </button>
+  
+  <!-- 匯率 FAB -->
+  <div class="fixed bottom-20 right-4 md:right-6 z-[10001] flex flex-col items-end pointer-events-none">
+    <div id="currency-widget-panel" class="absolute bottom-full right-0 mb-4 bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] border border-slate-200 w-[calc(100vw-2rem)] sm:w-80 overflow-hidden transition-all duration-300 origin-bottom-right pointer-events-none opacity-0 scale-90 translate-y-4 invisible z-[10000]">
+      <div class="bg-gradient-to-r from-sky-900 to-indigo-900 p-4 flex justify-between items-center text-white">
+        <div class="flex items-center gap-2"><span class="text-xl">🪙</span><h3 class="text-sm font-black tracking-wide">即時匯率試算</h3></div>
+        <button onclick="toggleCurrencyWidget()" class="bg-white/20 hover:bg-white/40 text-white rounded-full p-1.5 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
       </div>
-      <div class="relative mt-4 timeline pb-6">`;
-      
-    dayData.events.forEach((event, index) => {
-      const isOpen = event.open ? "open" : "";
-      const tagHtml = event.tag ? `<span class="tag ${event.tag.class}">${event.tag.text}</span>` : "";
-      const timeParts = event.time.split(" - ");
-      const startTime = timeParts[0].trim();
-      const endTime = timeParts[1] ? timeParts[1].trim() : "";
-      const catColors = { "tag-teal": "bg-teal-400", "tag-amber": "bg-amber-400", "tag-rose": "bg-rose-400", "tag-sky": "bg-sky-400", "tag-indigo": "bg-indigo-400", "tag-emerald": "bg-emerald-400" };
-      const catColor = event.tag ? catColors[event.tag.class] || "bg-slate-400" : "bg-slate-400";
-      
-      html += `
-        <div class="timeline-node" id="event-dot-${dayData.day}-${index}">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
+      <div class="p-4 space-y-3 pointer-events-auto">
+        <div class="flex justify-between items-center">
+          <p id="rate-hint-text" class="text-xs text-slate-500 font-semibold">目前匯率：1 JPY ≈ 0.052 HKD</p>
+          <button onclick='convertCurrency("clear")' class="text-[10px] text-slate-400 hover:text-red-500 transition font-bold flex items-center gap-1 bg-slate-100 px-2 py-1 rounded"><span>🧹</span> 清除</button>
         </div>
-        
-        <div class="timeline-card">
-          <div class="timeline-time">
-            <strong>${startTime}</strong>
-            ${endTime ? `<span class="timeline-time-end">→ ${endTime}</span>` : ""}
-          </div>
-          
-          <details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl relative overflow-hidden">
-            <div class="itinerary-cat-strip ${catColor}"></div>
-            <summary class="flex items-start gap-3 p-3 md:p-4 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none pl-5">
-              <div class="flex-1 min-w-0 pr-8">
-                <div class="flex flex-wrap items-center gap-2 mb-1">${tagHtml}</div>
-                <h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>
-                ${event.location ? `<div class="text-xs text-slate-500 mt-0.5">📍 ${event.location}</div>` : ""}
-              </div>
-              <div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100">
-                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </div>
-            </summary>
-            <div class="p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">
-              ${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}
-              ${event.navUrl ? `<a href="${event.navUrl}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700 border border-sky-300 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}</a>` : '<div class="h-3"></div>'}
-              ${event.content}
+        <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none snap-x">
+          <button onclick='quickConvert("jpy",1e3)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 transition">¥1千 JPY</button>
+          <button onclick='quickConvert("jpy",1e4)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 transition">¥1萬 JPY</button>
+          <button onclick='quickConvert("hkd",100)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition">$100 HKD</button>
+        </div>
+        <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 shadow-inner">
+          <div>
+            <label class="block text-xs font-bold text-rose-800 mb-1.5">🇯🇵 日圓 (JPY)</label>
+            <div class="relative rounded-xl shadow-xs">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-rose-600 text-base font-black">¥</span></div>
+              <input type="number" id="calc-jpy" oninput='convertCurrency("jpy")' value="10000" class="block w-full pl-8 pr-12 text-lg font-black text-rose-900 border border-rose-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 transition">
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span class="text-rose-400 text-xs font-bold">JPY</span></div>
             </div>
-          </details>
-        </div>`;
-    });
-    
-    // ===== 旅行日記 =====
-    const diaryKey = `diary_day_${dayData.day}`;
-    const savedDiary = localStorage.getItem(diaryKey) || "";
-    html += `
-    <div class="mt-4 mb-6 bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 rounded-2xl p-4">
-        <div class="flex items-center gap-2 mb-2">
-            <span class="text-lg">📖</span>
-            <strong class="text-sm text-slate-800">今日旅行日記</strong>
-            <button onclick="saveDiary(${dayData.day})" class="ml-auto text-[10px] bg-sky-500 hover:bg-sky-600 text-white px-2 py-1 rounded font-bold transition">儲存</button>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-sky-800 mb-1.5">🇭🇰 港幣 (HKD)</label>
+            <div class="relative rounded-xl shadow-xs">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-sky-600 text-base font-black">$</span></div>
+              <input type="number" id="calc-hkd" oninput='convertCurrency("hkd")' class="block w-full pl-8 pr-12 text-lg font-black text-sky-900 border border-sky-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
+            </div>
+          </div>
         </div>
-        <textarea id="diary-input-${dayData.day}" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none">${savedDiary}</textarea>
-    </div>`;
+      </div>
+    </div>
+    <button onclick="toggleCurrencyWidget()" id="currency-fab" class="pointer-events-auto relative bg-slate-800 hover:bg-slate-700 text-white rounded-full h-14 w-14 md:h-auto md:w-auto md:px-5 md:py-3.5 shadow-[0_8px_25px_rgb(0,0,0,0.2)] border border-slate-600 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group">
+      <span class="text-2xl group-hover:rotate-12 transition-transform drop-shadow-sm">🪙</span>
+      <span class="font-bold text-sm hidden md:inline tracking-wide drop-shadow-sm">匯率換算</span>
+    </button>
+  </div>
+  
+  <!-- Toast -->
+  <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none">
+    <span id="toast-icon">✅</span>
+    <span id="toast-message">複製成功！</span>
+  </div>
+  
+  <!-- 彈窗們 -->
+  <!-- 行前預訂 -->
+  <div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeBookingModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeBookingModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4">📌 行前預訂 Check List</h2>
+      <div id="booking-checklist-container"></div>
+    </div>
+  </div>
+  
+  <!-- 裝備清單 -->
+  <div id="equip-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeEquipModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeEquipModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4">🎒 裝備清單 Check List</h2>
+      <div id="equip-checklist-container"></div>
+    </div>
+  </div>
+  
+  <!-- 雪地攻略 -->
+  <div id="drive-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeDriveModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeDriveModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4">⚠️ 雪地駕駛安全攻略</h2>
+      <div class="space-y-4">
+        <div class="bg-red-50/80 border border-red-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-red-900 mb-2">🚗 基本原則</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li>全程使用4WD + 雪胎</li>
+            <li>出發前檢查雪胎深度與胎壓</li>
+            <li>與前車保持至少3秒車距</li>
+            <li>避免急煞、急加速、急轉彎</li>
+            <li>下坡善用低速檔 (L/2檔) 引擎煞車</li>
+          </ul>
+        </div>
+        <div class="bg-sky-50/80 border border-sky-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-sky-900 mb-2">🛣️ 特殊路況注意</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li><strong>Black Ice (黑冰)</strong>：看似乾燥的路面結冰，最危險！避免急轉方向盤</li>
+            <li><strong>橋樑與陰影處</strong>：最容易結冰，減速通過</li>
+            <li><strong>山區連續彎道</strong>：減速至20-30km/h，鳴笛示警</li>
+            <li><strong>除雪車後方</strong>：保持距離，避免噴濺雪霧影響視線</li>
+          </ul>
+        </div>
+        <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-amber-900 mb-2">🛠️ 應急準備</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li>備用保暖衣物與毯子</li>
+            <li>手機行動電源 (2個)</li>
+            <li>車用充電器</li>
+            <li>食物和飲水 (至少1天份量)</li>
+            <li>小鏟子 (除雪用)</li>
+            <li>拖車繩、警示三角牌</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 搶票攻略 -->
+  <div id="ticket-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeTicketModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeTicketModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4">⚔️ 搶票作戰攻略</h2>
+      <div class="space-y-4">
+        <div class="bg-purple-50/80 border border-purple-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-purple-900 mb-2">🎟️ 銀山溫泉 Fast Pass</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li><strong>開賣時間：</strong>1/8 日本時間00:00 (香港23:00)</li>
+            <li><strong>搶票平台：</strong>Asoview! (需提前註冊)</li>
+            <li><strong>提醒：</strong>設定鬧鐘，提前10分鐘登入</li>
+            <li><strong>目標：</strong>4張成人票，每人¥1,500</li>
+          </ul>
+        </div>
+        <div class="bg-sky-50/80 border border-sky-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-sky-900 mb-2">🎟️ 藏王纜車優先票</h3>
+          <ul class="list-disc pl-4 space-y-1 text-xs text-slate-700">
+            <li><strong>開賣時間：</strong>1/15 日本時間00:00 (香港23:00)</li>
+            <li><strong>搶票平台：</strong>Asoview! 或官方網站</li>
+            <li><strong>提醒：</strong>鎖定08:30或09:00時段</li>
+            <li><strong>目標：</strong>成人¥5,500/兒童¥3,500</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 天氣 -->
+  <div id="weather-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeWeatherModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeWeatherModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4">📊 詳細天氣預報</h2>
+      <div id="weather-detail-content" class="text-sm text-slate-600">天氣資料載入中...</div>
+    </div>
+  </div>
+  
+  <!-- 行程速覽 -->
+  <div id="trip-overview-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeTripOverview()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeTripOverview()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4 flex items-center gap-2">📋 7天6夜行程速覽</h2>
+      <div class="space-y-2">
+        <div class="flex items-start gap-3 bg-sky-50 border border-sky-200 rounded-xl p-3">
+          <span class="bg-sky-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D1</span>
+          <div><p class="text-sm font-bold text-slate-800">✈️ 抵達雪國</p><p class="text-xs text-slate-600 mt-0.5">仙台機場 → 秋保溫泉 → 蟹腳Buffet</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
+          <span class="bg-amber-500 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D2</span>
+          <div><p class="text-sm font-bold text-slate-800">🏮 天童+銀山</p><p class="text-xs text-slate-600 mt-0.5">AEON天童 → 瀧之湯 → 銀山夜景 → 深夜美食</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-indigo-50 border border-indigo-200 rounded-xl p-3">
+          <span class="bg-indigo-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D3</span>
+          <div><p class="text-sm font-bold text-slate-800">☃️ 藏王樹冰</p><p class="text-xs text-slate-600 mt-0.5">藏王纜車 → 樹冰 → 山形壽司 → 溫泉懷石</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+          <span class="bg-emerald-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D4</span>
+          <div><p class="text-sm font-bold text-slate-800">⛷️ Spring Valley</p><p class="text-xs text-slate-600 mt-0.5">玩雪 → 入住Grand Bach → 伊達牛舌</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-rose-50 border border-rose-200 rounded-xl p-3">
+          <span class="bg-rose-500 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D5</span>
+          <div><p class="text-sm font-bold text-slate-800">🦊 狐狸村</p><p class="text-xs text-slate-600 mt-0.5">客美多早餐 → 狐狸村 → 白石溫麵 → 市區血拼</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-teal-50 border border-teal-200 rounded-xl p-3">
+          <span class="bg-teal-600 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D6</span>
+          <div><p class="text-sm font-bold text-slate-800">🐬 水族館/採草莓</p><p class="text-xs text-slate-600 mt-0.5">早餐 → 水族館或草莓 → 仔虎和牛 → 三井Outlet</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+          <span class="bg-slate-700 text-white text-xs font-black px-2 py-1 rounded-full shrink-0 mt-0.5">D7</span>
+          <div><p class="text-sm font-bold text-slate-800">✈️ 返港</p><p class="text-xs text-slate-600 mt-0.5">仙台車站伴手禮 → 機場還車 → 起飛返港</p></div>
+        </div>
+      </div>
+      <p class="text-xs text-slate-400 text-center mt-4">💡 點擊下方 Day 分頁查看每日完整詳細行程</p>
+    </div>
+  </div>
+  
+  <!-- 全屏圖片燈箱 -->
+  <div id="lightbox" onclick="closeLightbox(event)">
+    <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white text-3xl w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition z-10">✕</button>
+    <button id="lightbox-prev" class="lightbox-btn absolute left-4 top-1/2 -translate-y-1/2" onclick="changeLightbox(-1)">‹</button>
+    <img id="lightbox-img" src="" alt="預覽圖片" onclick="event.stopPropagation()">
+    <button id="lightbox-next" class="lightbox-btn absolute right-4 top-1/2 -translate-y-1/2" onclick="changeLightbox(1)">›</button>
+    <div id="lightbox-caption" class="absolute bottom-6 left-0 right-0 text-center text-white/90 text-sm"></div>
+  </div>
+  
+  <script>
+    // ==================== 全域變數 ====================
+    let state = { currentMainTab: "itinerary", checkedItems: {} };
+    let simulatedTime = null;
+    const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27"];
     
-    html += `</div></div>`;
-    section.innerHTML = html;
-  }
-
-  function toggleAllDetails(sectionId) {
-    const section = document.getElementById(sectionId);
-    if (!section) return;
-    const details = section.querySelectorAll("details");
-    if (details.length === 0) return;
-    let openCount = 0;
-    details.forEach(d => { if (d.open) openCount++; });
-    const shouldOpen = openCount < details.length / 2;
-    details.forEach(d => { d.open = shouldOpen; });
-    setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
-  }
-
-  function collapseAllItineraries() {
-  const activeSection = document.querySelector(".day-section:not(.hidden)");
-  if (activeSection) {
-    const details = activeSection.querySelectorAll("details");
-    const anyOpen = Array.from(details).some(d => d.open);
-    if (anyOpen) {
-      details.forEach(detail => { detail.open = false; });
-      showToast("⬆️ 已收合全部行程");
-    } else {
-      details.forEach(detail => { detail.open = true; });
-      showToast("⬇️ 已展開全部行程");
-    }
-    // 觸發 scroll 事件以立即更新按鈕文字
-    window.dispatchEvent(new Event("scroll"));
-  }
-}
-
-  // ==================== 時間模擬 ====================
-  function getAppTime() { return simulatedTime ? new Date(simulatedTime) : new Date(); }
-  function toggleSimulation() {
-    const simIcon = document.getElementById("sim-icon");
-    const simText = document.getElementById("sim-text");
-    if (simulatedTime) {
-      simulatedTime = null;
-      if (simIcon) simIcon.innerText = "🔮";
-      if (simText) simText.innerText = "模擬旅途時間";
-      showToast("🕒 已恢復真實時間");
-    } else {
-      simulatedTime = new Date("2027-01-23T10:00:00").getTime();
-      if (simIcon) simIcon.innerText = "⏹️";
-      if (simText) simText.innerText = "結束模擬";
-      showToast("⛷️ 模擬啟動：跳轉至 Day 3 藏王樹冰行程！", "❄️");
-    }
-    updateCurrentEventHighlight();
-  }
-
-  function updateCurrentEventHighlight() {
-    const now = getAppTime();
-    let activeDay = -1;
-    let activeEvent = -1;
-    for (let i = 0; i < winterItineraries.length; i++) {
-      const dayData = winterItineraries[i];
-      const dateStr = tripDates[dayData.day - 1];
-      if (!dateStr) continue;
-      for (let j = 0; j < dayData.events.length; j++) {
-        const timeParts = dayData.events[j].time.split(" - ");
-        const startStr = timeParts[0].trim();
-        const endStr = timeParts[1] ? timeParts[1].trim() : "23:59";
-        const startDate = new Date(`${dateStr}T${startStr}:00`);
-        let endDate = new Date(`${dateStr}T${endStr}:00`);
-        if (endStr === "") endDate = new Date(`${dateStr}T23:59:00`);
-        if (now >= startDate && now <= endDate) { activeDay = dayData.day; activeEvent = j; break; }
-        if (now < startDate && activeDay === -1) {
-          const todayStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
-          if (todayStr === dateStr) { activeDay = dayData.day; activeEvent = j; break; }
+    // ==================== 雪人成長任務 ====================
+    let snowmanProgress = JSON.parse(localStorage.getItem("snowman_progress")) || 0;
+  
+    // ==================== 天氣快取 ====================
+    if (!window.weatherCache) window.weatherCache = {};
+  
+    // ==================== 匯率 ====================
+    let exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
+  
+    async function fetchLiveRates() {
+      try {
+        const response = await fetch('https://open.er-api.com/v6/latest/JPY');
+        const data = await response.json();
+        if (data && data.rates) {
+          exchangeRates.JPY = 1;
+          exchangeRates.HKD = 1 / data.rates.JPY * data.rates.HKD;
+          exchangeRates.TWD = 1 / data.rates.JPY * data.rates.TWD;
+          exchangeRates.USD = 1 / data.rates.JPY * data.rates.USD;
+          exchangeRates.CNY = 1 / data.rates.JPY * data.rates.CNY;
+          localStorage.setItem('tohoku_exchange_rates', JSON.stringify({ rates: exchangeRates, updatedAt: Date.now() }));
+          updateRateHud();
+        }
+      } catch(e) {
+        console.warn("即時匯率獲取失敗，嘗試讀取快取:", e);
+        const cached = localStorage.getItem('tohoku_exchange_rates');
+        if (cached) {
+          try {
+            const cachedData = JSON.parse(cached);
+            if (cachedData.rates && Date.now() - cachedData.updatedAt < 7 * 24 * 60 * 60 * 1000) {
+              exchangeRates = cachedData.rates;
+              updateRateHud();
+            }
+          } catch(e2) {}
         }
       }
-      if (activeDay !== -1) break;
     }
-    document.querySelectorAll('[id^="event-card-"]').forEach(card => {
-      card.classList.remove("ring-2", "ring-sky-400", "shadow-sky-200/50", "bg-sky-50/40");
-      card.classList.add("border-slate-100", "bg-white");
-    });
-    document.querySelectorAll('[id^="event-badge-"]').forEach(badge => badge.classList.add("hidden"));
-    document.querySelectorAll('[id^="event-dot-"]').forEach(dot => {
-      dot.classList.remove("bg-rose-500", "animate-pulse", "ring-rose-200");
-      dot.classList.add("bg-indigo-500", "ring-slate-50");
-    });
-    document.querySelectorAll('[id^="event-timebox-"]').forEach(box => {
-      box.classList.remove("bg-sky-500", "text-white");
-      box.classList.add("bg-indigo-50", "text-indigo-700");
-    });
-    document.querySelectorAll('[id^="event-title-"]').forEach(title => {
-      title.classList.remove("text-sky-900");
-      title.classList.add("text-slate-800");
-    });
-    if (activeDay !== -1 && activeEvent !== -1) {
-      const card = document.getElementById(`event-card-${activeDay}-${activeEvent}`);
-      if (card) {
-        card.classList.remove("border-slate-100", "bg-white");
-        card.classList.add("ring-2", "ring-sky-400", "shadow-sky-200/50", "bg-sky-50/40");
-        card.open = true;
-      }
-      if (window._lastActiveDay !== activeDay) {
-        switchDay(activeDay);
-        window._lastActiveDay = activeDay;
-        setTimeout(() => {
-          if (card) {
-            const top = card.getBoundingClientRect().top + window.scrollY - 180;
-            window.scrollTo({ top, behavior: "smooth" });
-          }
-        }, 400);
+  
+    function updateRateHud() {
+      const rateText = document.getElementById("rate-hint-text");
+      if (rateText) rateText.innerText = `目前匯率：1 JPY ≈ ${exchangeRates.HKD.toFixed(3)} HKD`;
+    }
+  
+    function toggleCurrencyWidget() {
+      const panel = document.getElementById("currency-widget-panel");
+      if (panel) {
+        if (panel.classList.contains("opacity-0")) {
+          panel.classList.remove("invisible");
+          setTimeout(() => {
+            panel.classList.remove("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
+            panel.classList.add("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
+          }, 10);
+        } else {
+          panel.classList.add("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
+          panel.classList.remove("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
+          setTimeout(() => { if (panel.classList.contains("opacity-0")) panel.classList.add("invisible"); }, 300);
+        }
       }
     }
-  }
-
-  // ==================== 倒數計時 ====================
-  const departureTarget = new Date("2027-01-21T10:00:00+08:00").getTime();
-  const zaoTarget = new Date("2027-01-15T23:00:00+08:00").getTime();
-  const ginzanTarget = new Date("2027-01-08T23:00:00+08:00").getTime();
-  function updateCountdowns() {
-    const now = new Date().getTime();
-    const departureDiff = departureTarget - now;
-    const departureEl = document.getElementById("departure-countdown");
-    if (departureEl) {
-      if (departureDiff < 0) {
-        departureEl.innerText = "❄️ 2027 東北冬日雪景之旅進行中！";
-        departureEl.classList.remove("animate-pulse");
+  
+    function convertCurrency(type) {
+      const hkdInput = document.getElementById("calc-hkd");
+      const jpyInput = document.getElementById("calc-jpy");
+      if (!hkdInput || !jpyInput) return;
+      if (type === "clear") { hkdInput.value = ""; jpyInput.value = ""; return; }
+      const rate = exchangeRates.JPY || 0.052;
+      if (type === "jpy") {
+        const jpy = parseFloat(jpyInput.value);
+        hkdInput.value = (isNaN(jpy) || jpy === 0) ? "" : (jpy * rate).toFixed(2);
+      } else if (type === "hkd") {
+        const hkd = parseFloat(hkdInput.value);
+        jpyInput.value = (isNaN(hkd) || hkd === 0) ? "" : Math.round(hkd / rate);
+      }
+    }
+  
+    function quickConvert(currency, amount) {
+      const input = document.getElementById("calc-" + currency);
+      if (input) { input.value = amount; convertCurrency(currency); }
+    }
+  
+    // ==================== Toast ====================
+    function showToast(message, icon = "✅") {
+      const toast = document.getElementById("toast");
+      const toastMessage = document.getElementById("toast-message");
+      const toastIcon = document.getElementById("toast-icon");
+      if (toast && toastMessage && toastIcon) {
+        toastMessage.innerText = message;
+        toastIcon.innerText = icon;
+        toast.classList.remove("-translate-y-24", "opacity-0");
+        toast.classList.add("translate-y-0", "opacity-100");
+        if (window.toastTimeout) clearTimeout(window.toastTimeout);
+        window.toastTimeout = setTimeout(() => {
+          toast.classList.remove("translate-y-0", "opacity-100");
+          toast.classList.add("-translate-y-24", "opacity-0");
+        }, 3000);
+      }
+    }
+  
+    // ==================== 頁面切換 ====================
+    function switchMainTab(tab) {
+      state.currentMainTab = tab;
+      const itineraryView = document.getElementById("main-itinerary-view");
+      const ledgerFrameContainer = document.getElementById("ledger-frame-container");
+      const quickSection = document.getElementById("itinerary-quick-section");
+      const navItineraryBtn = document.getElementById("nav-itinerary-btn");
+      const navLedgerBtn = document.getElementById("nav-ledger-btn");
+      if (tab === "itinerary") {
+        itineraryView.classList.remove("hidden");
+        ledgerFrameContainer.classList.add("hidden");
+        if (quickSection) quickSection.classList.remove("hidden");
+        navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
+        navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
       } else {
-        const days = Math.floor(departureDiff / 86400000);
-        const hours = Math.floor(departureDiff % 86400000 / 3600000);
-        const minutes = Math.floor(departureDiff % 3600000 / 60000);
-        const seconds = Math.floor(departureDiff % 60000 / 1000);
-        departureEl.innerText = `${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+        itineraryView.classList.add("hidden");
+        ledgerFrameContainer.classList.remove("hidden");
+        if (quickSection) quickSection.classList.add("hidden");
+        navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
+        navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
       }
+      setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
     }
-    const ginzanDiff = ginzanTarget - now;
-    const ginzanEl = document.getElementById("ginzan-countdown");
-    if (ginzanEl) {
-      if (ginzanDiff < 0) {
-        ginzanEl.innerText = "🎟️ 搶票時段已開始或結束！";
-        ginzanEl.classList.remove("animate-pulse", "text-purple-700");
-        ginzanEl.classList.add("text-rose-600");
-      } else {
-        const days = Math.floor(ginzanDiff / 86400000);
-        const hours = Math.floor(ginzanDiff % 86400000 / 3600000);
-        const minutes = Math.floor(ginzanDiff % 3600000 / 60000);
-        const seconds = Math.floor(ginzanDiff % 60000 / 1000);
-        ginzanEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
-      }
-    }
-    const zaoDiff = zaoTarget - now;
-    const zaoEl = document.getElementById("zao-countdown");
-    if (zaoEl) {
-      if (zaoDiff < 0) {
-        zaoEl.innerText = "🎟️ 搶票時段已開始或結束！";
-        zaoEl.classList.remove("animate-pulse", "text-sky-700");
-        zaoEl.classList.add("text-rose-600");
-      } else {
-        const days = Math.floor(zaoDiff / 86400000);
-        const hours = Math.floor(zaoDiff % 86400000 / 3600000);
-        const minutes = Math.floor(zaoDiff % 3600000 / 60000);
-        const seconds = Math.floor(zaoDiff % 60000 / 1000);
-        zaoEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
-      }
-    }
-  }
-  // ==================== 歡迎導覽 ====================
-function closeWelcomeModal(skipForever = false) {
-  const modal = document.getElementById("welcome-modal");
-  if (modal) {
-    modal.style.opacity = "0";
-    setTimeout(() => { modal.style.display = "none"; }, 300);
-  }
-  if (skipForever) {
-    localStorage.setItem("tohoku_welcome_dismissed", "true");
-  }
-}
-function checkWelcomeModal() {
-  const dismissed = localStorage.getItem("tohoku_welcome_dismissed");
-  const modal = document.getElementById("welcome-modal");
-  if (dismissed === "true" && modal) {
-    modal.style.display = "none";
-  }
-}
-
-// ==================== 動態角色（每次只出現一個，隨機位置） ====================
-let characterTimeout = null;
-let bubbleTimeout = null;
-
-function spawnCharacters() {
-  clearTimeout(characterTimeout);
-  clearTimeout(bubbleTimeout);
   
-  const snowman = document.getElementById('snowman');
-  const fox = document.getElementById('fox');
-  if (!snowman || !fox) return;
-
-  snowman.classList.remove('show', 'greet');
-  fox.classList.remove('show', 'greet');
-  snowman.classList.add('hide');
-  fox.classList.add('hide');
-
-  if (Math.random() < 0.5) {
-    characterTimeout = setTimeout(spawnCharacters, Math.random() * 5000 + 4000);
-    return;
-  }
-
-  const showSnowman = Math.random() < 0.5;
-  const character = showSnowman ? snowman : fox;
-  const characterId = showSnowman ? 'snowman' : 'fox';
-
-  const isLeft = Math.random() < 0.5;
-  const randomX = isLeft ? `${Math.random() * 15}vw` : '';
-  const randomRight = isLeft ? '' : `${Math.random() * 15}vw`;
-  const randomBottom = `${Math.random() * 20 + 5}vh`;
-
-  if (isLeft) {
-    character.style.left = randomX;
-    character.style.right = 'auto';
-  } else {
-    character.style.right = randomRight;
-    character.style.left = 'auto';
-  }
-  character.style.bottom = randomBottom;
-
-  character.classList.remove('hide');
-  character.classList.add('show');
-
-  setTimeout(() => {
-    character.classList.add('greet');
-    showCharacterBubble(character, showSnowman ? '嗨！我是雪人⛄' : '嗨！我是狐狸🦊');
-  }, 600);
-
-  characterTimeout = setTimeout(() => {
-    character.classList.remove('show', 'greet');
-    character.classList.add('hide');
-    setTimeout(spawnCharacters, Math.random() * 5000 + 3000);
-  }, 4000);
-}
-
-function showCharacterBubble(element, text) {
-  const oldBubble = document.querySelector('.character-bubble');
-  if (oldBubble) oldBubble.remove();
-
-  const bubble = document.createElement('div');
-  bubble.className = 'character-bubble';
-  bubble.innerText = text;
-  const rect = element.getBoundingClientRect();
-  bubble.style.left = rect.left + rect.width / 2 - 30 + 'px';
-  bubble.style.top = rect.top - 30 + 'px';
-  document.body.appendChild(bubble);
-  bubble.classList.add('show');
-  bubbleTimeout = setTimeout(() => {
-    bubble.classList.remove('show');
-    setTimeout(() => bubble.remove(), 300);
-  }, 2000);
-}
-
-// ==================== 雪人成長任務 ====================
-function jump(characterId) {
-  const char = document.getElementById(characterId);
-  if (char) {
-    char.classList.add('jumping');
-    setTimeout(() => char.classList.remove('jumping'), 600);
-    if (characterId === 'snowman') {
-      snowmanProgress = Math.min(snowmanProgress + 1, 5);
-      localStorage.setItem("snowman_progress", JSON.stringify(snowmanProgress));
-      updateSnowmanVisual();
-      showToast(`雪人成長度：${snowmanProgress}/5！`, "⛄");
-    } else {
-      showToast(`你點了一下狐狸！`, "🦊");
-    }
-  }
-}
-
-function updateSnowmanVisual() {
-  const snowman = document.getElementById("snowman");
-  if (!snowman) return;
-  const progress = snowmanProgress;
-  let hatColor = "#ef4444";
-  let accessory = "";
-  if (progress >= 1) hatColor = "#f97316";
-  if (progress >= 2) hatColor = "#facc15";
-  if (progress >= 3) { hatColor = "#4ade80"; accessory = "圍巾已升級！"; }
-  if (progress >= 4) { hatColor = "#38bdf8"; accessory = "手套已升級！"; }
-  if (progress >= 5) { hatColor = "#a78bfa"; accessory = "終極雪人！"; }
-  
-  // 修改帽子顏色（簡單方式：修改 gradient stop）
-  const hatPath = snowman.querySelector('#hatGrad stop:first-child');
-  if (hatPath) hatPath.setAttribute('stop-color', hatColor);
-  
-  // 顯示成長提示
-  if (accessory) {
-    showToast(`⛄ ${accessory}`, "🎉");
-  }
-}
-
-function initRandomCharacters() {
-  setTimeout(spawnCharacters, 2000);
-}
-
-// ==================== 行前預訂 Check List（完整） ====================
-const bookingList = [
-  { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
-  { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
-  { id: "car-pickup", category: "租車", label: "1/21 15:30 機場取車", icon: "⏰" },
-  { id: "car-dropoff", category: "租車", label: "1/27 13:45 機場還車", icon: "⏰" },
-  { id: "hotel-akiu", category: "住宿", label: "1/21 秋保溫泉 瑞鳳大飯店 (含自助晚餐)", icon: "🏨" },
-  { id: "hotel-tendo", category: "住宿", label: "1/22-23 微笑之宿 瀧之湯 (含懷石晚餐)", icon: "🏨" },
-  { id: "hotel-sendai", category: "住宿", label: "1/24-26 Hotel Grand Bach 仙台 (連住3晚)", icon: "🏨" },
-  { id: "ticket-ginzan", category: "門票", label: "銀山溫泉 Fast Pass (1/8 23:00搶票)", icon: "🎟️" },
-  { id: "ticket-zao", category: "門票", label: "藏王纜車優先票 (1/15 23:00搶票)", icon: "🎟️" },
-  { id: "ticket-springvalley", category: "門票", label: "Spring Valley 雪之冒險王國 (1/24)", icon: "⛷️" },
-  { id: "ticket-foxvillage", category: "門票", label: "狐狸村入場 (現場購票)", icon: "🦊" },
-  { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/23 16:30)", icon: "♨️" },
-  { id: "other-strawberry", category: "其他", label: "寒河江草莓園 (1/23 14:00)", icon: "🍓" },
-];
-
-let customBookingItems = [];
-
-function renderBookingChecklist() {
-  const container = document.getElementById("booking-checklist-container");
-  if (!container) return;
-
-  const categories = ["租車", "住宿", "門票", "其他"];
-  let html = "";
-  
-  categories.forEach(cat => {
-    const items = bookingList.filter(item => item.category === cat);
-    const customItems = customBookingItems.filter(item => item.category === cat);
-    const allItems = [...items, ...customItems];
-    if (allItems.length === 0) return;
-    
-    html += `<div class="mb-4">
-      <h4 class="text-sm font-bold text-slate-800 mb-2">${cat}</h4>
-      <div class="space-y-1.5">`;
-    
-    allItems.forEach(item => {
-      const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
-      const isChecked = state.checkedItems[key] === true;
-      html += `
-        <div class="flex items-center gap-2">
-          <label class="flex-1 flex items-center gap-2.5 p-2 rounded-lg border ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'} cursor-pointer hover:bg-slate-50 transition">
-            <input type="checkbox" class="w-4 h-4 shrink-0" ${isChecked ? 'checked' : ''} onchange="toggleBookingCheck('${key}')">
-            <span class="text-xs text-slate-700">${item.icon} ${item.label}</span>
-          </label>
-          ${item.isCustom ? `<button onclick="deleteCustomBooking('${item.id}')" class="text-red-400 hover:text-red-600 p-1.5 shrink-0" title="刪除"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ""}
-        </div>`;
-    });
-    
-    html += `</div></div>`;
-  });
-
-  html += `
-    <div class="mt-4 pt-4 border-t border-slate-200">
-      <h4 class="text-sm font-bold text-slate-800 mb-2">新增項目</h4>
-      <div class="flex gap-2">
-        <input id="new-booking-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
-        <select id="new-booking-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white">
-          <option value="租車">租車</option>
-          <option value="住宿">住宿</option>
-          <option value="門票">門票</option>
-          <option value="其他">其他</option>
-        </select>
-        <button onclick="addCustomBooking()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button>
-      </div>
-    </div>`;
-
-  html += `
-    <div class="flex gap-2 mt-4">
-      <button onclick="checkAllBooking()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button>
-      <button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button>
-      <button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button>
-    </div>`;
-
-  container.innerHTML = html;
-}
-
-function toggleBookingCheck(key) {
-  state.checkedItems[key] = !state.checkedItems[key];
-  saveLocalCheckedItems();
-  syncDataToCloud();
-  renderBookingChecklist();
-}
-
-function checkAllBooking() {
-  [...bookingList, ...customBookingItems].forEach(item => {
-    const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
-    state.checkedItems[key] = true;
-  });
-  saveLocalCheckedItems();
-  syncDataToCloud();
-  renderBookingChecklist();
-  showToast("✅ 已全部勾選！");
-}
-
-function uncheckAllBooking() {
-  [...bookingList, ...customBookingItems].forEach(item => {
-    const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
-    state.checkedItems[key] = false;
-  });
-  saveLocalCheckedItems();
-  syncDataToCloud();
-  renderBookingChecklist();
-  showToast("🧹 已清除所有勾選！");
-}
-
-function copyBookingList() {
-  let text = "📌 行前預訂 Check List\n";
-  text += "=====================\n";
-  
-  const categories = ["租車", "住宿", "門票", "其他"];
-  categories.forEach(cat => {
-    const items = bookingList.filter(item => item.category === cat);
-    const customItems = customBookingItems.filter(item => item.category === cat);
-    const allItems = [...items, ...customItems];
-    if (allItems.length === 0) return;
-    text += `\n【${cat}】\n`;
-    allItems.forEach(item => {
-      const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
-      const checked = state.checkedItems[key] ? "✅" : "⬜";
-      text += `${checked} ${item.icon} ${item.label}\n`;
-    });
-  });
-  
-  copyText(text);
-  showToast("📋 行前預訂清單已複製！");
-}
-
-function addCustomBooking() {
-  const labelInput = document.getElementById("new-booking-label");
-  const categorySelect = document.getElementById("new-booking-category");
-  const label = labelInput.value.trim();
-  if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
-  const newItem = {
-    id: "custom-" + Date.now(),
-    category: categorySelect.value,
-    label: label,
-    icon: "📌",
-    isCustom: true
-  };
-  customBookingItems.push(newItem);
-  saveCustomItems();
-  syncDataToCloud();
-  renderBookingChecklist();
-  labelInput.value = "";
-  showToast("已新增項目！");
-}
-
-function deleteCustomBooking(id) {
-  customBookingItems = customBookingItems.filter(item => item.id !== id);
-  saveCustomItems();
-  syncDataToCloud();
-  renderBookingChecklist();
-  showToast("已刪除項目");
-}
-
-// ==================== 裝備清單 Check List（完整更新版） ====================
-const equipmentList = [
-  // 重要證件與金錢
-  { id: "passport", category: "重要證件", label: "身份證 / 護照（效期需剩餘6個月以上）", icon: "🪪" },
-  { id: "license", category: "重要證件", label: "國際車牌 / 駕駛執照", icon: "🚗" },
-  { id: "tickets", category: "重要證件", label: "機票 / 住宿憑證 / Visit Japan Web QR Code", icon: "✈️" },
-  { id: "money", category: "重要證件", label: "日幣現金與信用卡（部分小店只收現金）", icon: "💴" },
-  { id: "car-mount", category: "重要證件", label: "車用手機架", icon: "📱" },
-
-  // 保暖衣物
-  { id: "thermal", category: "保暖衣物", label: "發熱衣 / 保暖內衣（3-4件，貼身排汗）", icon: "👕" },
-  { id: "mid-layer", category: "保暖衣物", label: "中層保暖衣物（毛衣或刷毛絨，2-3件）", icon: "🧶" },
-  { id: "outer-coat", category: "保暖衣物", label: "防風防水厚外套 / 羽絨服（1-2件）", icon: "🧥" },
-  { id: "pants", category: "保暖衣物", label: "長褲與發熱內搭褲（2-3條）", icon: "👖" },
-  { id: "scarf", category: "保暖衣物", label: "圍巾、毛帽或耳罩", icon: "🧣" },
-  { id: "gloves", category: "保暖衣物", label: "觸控手套", icon: "🧤" },
-  { id: "boots", category: "保暖衣物", label: "舒適好走且防水防滑的雪靴或厚底運動鞋", icon: "👢" },
-  { id: "socks", category: "保暖衣物", label: "厚羊毛襪（3-5雙）", icon: "🧦" },
-
-  // 電子與隨身用品
-  { id: "sim", category: "電子與隨身", label: "日本上網卡（SIM卡 / eSIM / 漫遊）", icon: "📶" },
-  { id: "powerbank", category: "電子與隨身", label: "行動電源（僅限手提，不可託運）", icon: "🔋" },
-  { id: "thermos", category: "電子與隨身", label: "保溫瓶（隨時補充熱飲）", icon: "🍶" },
-  { id: "skincare", category: "電子與隨身", label: "保濕護膚品與潤唇膏", icon: "🧴" },
-  { id: "medicine", category: "電子與隨身", label: "常備藥品（感冒藥、腸胃藥、個人處方箋）", icon: "💊" },
-  { id: "warmpack", category: "電子與隨身", label: "暖暖包（注意不可貼在皮膚或薄內衣上）", icon: "🔥" },
-
-  // 原有項目
-  { id: "adult-crampons", category: "其他", label: "簡易冰爪", icon: "⛸️" },
-  { id: "kid-hat", category: "小孩", label: "小孩毛帽 (蓋耳)", icon: "🧢" },
-  { id: "kid-gloves", category: "小孩", label: "小孩手套 (備2雙)", icon: "🧤" },
-  { id: "kid-scarf", category: "小孩", label: "小孩圍脖", icon: "🧣" },
-  { id: "kid-snowpants", category: "小孩", label: "小孩防水雪褲", icon: "👖" },
-  { id: "kid-boots", category: "小孩", label: "小孩雪靴 (防水)", icon: "👢" },
-  { id: "swimwear", category: "其他", label: "泳衣 (溫泉泳池用)", icon: "🩱" },
-  { id: "safetybelt", category: "其他", label: "便攜式兒童安全帶", icon: "🪑" },
-  { id: "firstaid", category: "其他", label: "簡易急救包", icon: "🩹" },
-];
-
-let customEquipItems = [];
-
-function renderEquipChecklist() {
-  const container = document.getElementById("equip-checklist-container");
-  if (!container) return;
-
-  const categories = ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"];
-  let html = "";
-  
-  categories.forEach(cat => {
-    const items = equipmentList.filter(item => item.category === cat);
-    const customItems = customEquipItems.filter(item => item.category === cat);
-    const allItems = [...items, ...customItems];
-    if (allItems.length === 0) return;
-    
-    html += `<div class="mb-4">
-      <h4 class="text-sm font-bold text-slate-800 mb-2">${cat}</h4>
-      <div class="space-y-1.5">`;
-    
-    allItems.forEach(item => {
-      const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-      const isChecked = state.checkedItems[key] === true;
-      html += `
-        <div class="flex items-center gap-2">
-          <label class="flex-1 flex items-center gap-2.5 p-2 rounded-lg border ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'} cursor-pointer hover:bg-slate-50 transition">
-            <input type="checkbox" class="w-4 h-4 shrink-0" ${isChecked ? 'checked' : ''} onchange="toggleEquipCheck('${key}')">
-            <span class="text-xs text-slate-700">${item.icon} ${item.label}</span>
-          </label>
-          ${item.isCustom ? `<button onclick="deleteCustomEquip('${item.id}')" class="text-red-400 hover:text-red-600 p-1.5 shrink-0" title="刪除"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ""}
-        </div>`;
-    });
-    
-    html += `</div></div>`;
-  });
-
-  html += `
-    <div class="mt-4 pt-4 border-t border-slate-200">
-      <h4 class="text-sm font-bold text-slate-800 mb-2">新增項目</h4>
-      <div class="flex gap-2">
-        <input id="new-equip-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
-        <select id="new-equip-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white">
-          <option value="重要證件">重要證件</option>
-          <option value="保暖衣物">保暖衣物</option>
-          <option value="電子與隨身">電子與隨身</option>
-          <option value="小孩">小孩</option>
-          <option value="其他">其他</option>
-        </select>
-        <button onclick="addCustomEquip()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button>
-      </div>
-    </div>`;
-
-  html += `
-    <div class="flex gap-2 mt-4">
-      <button onclick="checkAllEquipment()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button>
-      <button onclick="uncheckAllEquipment()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button>
-      <button onclick="copyEquipmentList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button>
-    </div>`;
-
-  container.innerHTML = html;
-}
-
-function toggleEquipCheck(key) {
-  state.checkedItems[key] = !state.checkedItems[key];
-  saveLocalCheckedItems();
-  syncDataToCloud();
-  renderEquipChecklist();
-}
-
-function checkAllEquipment() {
-  [...equipmentList, ...customEquipItems].forEach(item => {
-    const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-    state.checkedItems[key] = true;
-  });
-  saveLocalCheckedItems();
-  syncDataToCloud();
-  renderEquipChecklist();
-  showToast("✅ 已全部勾選！");
-}
-
-function uncheckAllEquipment() {
-  [...equipmentList, ...customEquipItems].forEach(item => {
-    const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-    state.checkedItems[key] = false;
-  });
-  saveLocalCheckedItems();
-  syncDataToCloud();
-  renderEquipChecklist();
-  showToast("🧹 已清除所有勾選！");
-}
-
-function copyEquipmentList() {
-  let text = "🎒 裝備清單 Check List\n";
-  text += "=====================\n";
-  
-  const categories = ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"];
-  categories.forEach(cat => {
-    const items = equipmentList.filter(item => item.category === cat);
-    const customItems = customEquipItems.filter(item => item.category === cat);
-    const allItems = [...items, ...customItems];
-    if (allItems.length === 0) return;
-    text += `\n【${cat}】\n`;
-    allItems.forEach(item => {
-      const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-      const checked = state.checkedItems[key] ? "✅" : "⬜";
-      text += `${checked} ${item.icon} ${item.label}\n`;
-    });
-  });
-  
-  copyText(text);
-  showToast("📋 裝備清單已複製！");
-}
-
-function addCustomEquip() {
-  const labelInput = document.getElementById("new-equip-label");
-  const categorySelect = document.getElementById("new-equip-category");
-  const label = labelInput.value.trim();
-  if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
-  const newItem = {
-    id: "custom-" + Date.now(),
-    category: categorySelect.value,
-    label: label,
-    icon: "📦",
-    isCustom: true
-  };
-  customEquipItems.push(newItem);
-  saveCustomItems();
-  syncDataToCloud();
-  renderEquipChecklist();
-  labelInput.value = "";
-  showToast("已新增項目！");
-}
-
-function deleteCustomEquip(id) {
-  customEquipItems = customEquipItems.filter(item => item.id !== id);
-  saveCustomItems();
-  syncDataToCloud();
-  renderEquipChecklist();
-  showToast("已刪除項目");
-}
-
-function saveLocalCheckedItems() {
-  localStorage.setItem("tohoku_checked_items", JSON.stringify(state.checkedItems));
-  localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
-  localStorage.setItem("custom_equip_items", JSON.stringify(customEquipItems));
-}
-
-function saveCustomItems() {
-  localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
-  localStorage.setItem("custom_equip_items", JSON.stringify(customEquipItems));
-}
-
-function loadCustomItems() {
-  const savedBooking = localStorage.getItem("custom_booking_items");
-  if (savedBooking) { try { customBookingItems = JSON.parse(savedBooking); } catch(e) {} }
-  const savedEquip = localStorage.getItem("custom_equip_items");
-  if (savedEquip) { try { customEquipItems = JSON.parse(savedEquip); } catch(e) {} }
-}
-
-function restoreChecklistUI() {
-  renderBookingChecklist();
-  renderEquipChecklist();
-}
-
-// ==================== 旅行日記 ====================
-function saveDiary(day) {
-  const input = document.getElementById(`diary-input-${day}`);
-  if (input) {
-    localStorage.setItem(`diary_day_${day}`, input.value);
-    showToast("📖 日記已儲存！", "✅");
-  }
-}
-
-    // ==================== 雪花 ====================
-    function initSnowEffect() {
-      const snowContainer = document.getElementById("snow-fall");
-      if (!snowContainer) return;
-      snowContainer.innerHTML = "";
-      const snowflakeCount = window.innerWidth < 768 ? 20 : 40;
-      const animations = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"];
-      const colors = ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#ffffff"];
-      for (let i = 0; i < snowflakeCount; i++) {
-        const snowflake = document.createElement("div");
-        snowflake.className = "snowflake";
-        const size = Math.random() * 7 + 3;
-        snowflake.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; animation: ${animations[Math.floor(Math.random() * animations.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%;`;
-        snowContainer.appendChild(snowflake);
-      }
-      for (let i = 0; i < 2; i++) {
-        const flake = document.createElement("div");
-        flake.className = "snowflake";
-        flake.style.cssText = `left: ${Math.random() * 100}%; width: 12px; height: 12px; animation: snowfall-medium ${Math.random() * 15 + 10}s linear infinite; animation-delay: ${Math.random() * -10}s;`;
-        flake.innerHTML = '❄';
-        flake.style.fontSize = `${Math.random() * 10 + 8}px`;
-        flake.style.color = "rgba(255,255,255,0.7)";
-        flake.style.textShadow = "0 0 5px rgba(255,255,255,0.5)";
-        snowContainer.appendChild(flake);
-      }
-    }
-    
-    // ==================== copyText 通用函數 ====================
-    function copyText(text) {
-      try {
-        const textarea = document.createElement("textarea");
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-      } catch(e) {
-        navigator.clipboard.writeText(text).catch(() => {});
-      }
-    }
-
-    window.addEventListener("scroll", () => {
-  const btn = document.getElementById("fab-collapse-all");
-  const schedule = document.getElementById("schedule-container");
-  if (!btn || !schedule) return;
-  const rect = schedule.getBoundingClientRect();
-  const isScheduleVisible = rect.top < window.innerHeight && rect.bottom > 0;
-  const activeSection = document.querySelector(".day-section:not(.hidden)");
-  
-  // 根據當前是否有展開的卡片決定按鈕文字
-  const anyOpen = activeSection ? Array.from(activeSection.querySelectorAll("details")).some(d => d.open) : false;
-  btn.innerHTML = anyOpen
-    ? '<span class="text-lg font-black">⬆️</span><span class="font-bold text-sm hidden md:inline">收合行程</span>'
-    : '<span class="text-lg font-black">⬇️</span><span class="font-bold text-sm hidden md:inline">展開行程</span>';
-
-  // 只有在行程頁籤且行程區可見時才顯示按鈕（不再依賴 hasOpenDetails）
-  if (state.currentMainTab === "itinerary" && isScheduleVisible) {
-    btn.classList.remove("opacity-0", "translate-y-8", "pointer-events-none");
-    btn.classList.add("opacity-100", "translate-y-0", "pointer-events-auto");
-  } else {
-    btn.classList.remove("opacity-100", "translate-y-0", "pointer-events-auto");
-    btn.classList.add("opacity-0", "translate-y-8", "pointer-events-none");
-  }
-});
-
-    document.addEventListener("click", (e) => {
-      if (e.target.closest('.day-tab')) {
-        setTimeout(() => window.dispatchEvent(new Event("scroll")), 100);
-      }
-    });
-
-    window.addEventListener("resize", () => {
-      clearTimeout(window.snowResizeTimeout);
-      window.snowResizeTimeout = setTimeout(() => {
-        const snowContainer = document.getElementById("snow-fall");
-        if (snowContainer && snowContainer.children.length > 0) initSnowEffect();
-      }, 300);
-    });
-
-    window.addEventListener("DOMContentLoaded", () => {
-      loadCustomItems();
-      const savedChecked = localStorage.getItem("tohoku_checked_items");
-      if (savedChecked) {
-        try { state.checkedItems = JSON.parse(savedChecked); } catch(e) {}
-      }
-      
-      fetchLiveRates();
-      
-      initSnowEffect();
-      winterItineraries.forEach((dayData, index) => {
-        renderDayItinerary(`day-section-${index + 1}`, dayData);
+    function switchDay(day) {
+      document.querySelectorAll("#day-tabs-container button").forEach(btn => {
+        btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
       });
-      switchMainTab("itinerary");
-      updateCountdowns();
-      setInterval(updateCountdowns, 1000);
-      updateCurrentEventHighlight();
-      setInterval(updateCurrentEventHighlight, 60000);
-      checkWelcomeModal();
+      const activeTab = document.getElementById("tab-d" + day);
+      if (activeTab) activeTab.className = "day-tab active flex-shrink-0 transition";
+      document.querySelectorAll(".day-section").forEach(section => section.classList.add("hidden"));
+      const targetSection = document.getElementById("day-section-" + day);
+      if (targetSection) targetSection.classList.remove("hidden");
+      updateFocusCard(day); // 加入：切換 Day 時更新焦點卡片
+    }
+  
+    // ==================== 彈窗控制 ====================
+    function showModal(id) {
+      const overlay = document.getElementById(id);
+      if (overlay) { 
+        overlay.classList.add('active'); 
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+    function hideModal(id) {
+      const overlay = document.getElementById(id);
+      if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => { overlay.style.display = 'none'; }, 300);
+        document.body.style.overflow = '';
+      }
+    }
+    function toggleBookingModal() {
+      const modal = document.getElementById('booking-modal');
+      if (modal.classList.contains('hidden')) { showModal('booking-modal'); modal.classList.remove('hidden'); renderBookingChecklist(); }
+      else { hideModal('booking-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
+    }
+    function closeBookingModal() {
+      hideModal('booking-modal');
+      setTimeout(() => document.getElementById('booking-modal').classList.add('hidden'), 300);
+    }
+    function toggleEquipModal() {
+      const modal = document.getElementById('equip-modal');
+      if (modal.classList.contains('hidden')) { showModal('equip-modal'); modal.classList.remove('hidden'); renderEquipChecklist(); }
+      else { hideModal('equip-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
+    }
+    function closeEquipModal() {
+      hideModal('equip-modal');
+      setTimeout(() => document.getElementById('equip-modal').classList.add('hidden'), 300);
+    }
+    function toggleDriveModal() {
+      const modal = document.getElementById('drive-modal');
+      if (modal.classList.contains('hidden')) { showModal('drive-modal'); modal.classList.remove('hidden'); }
+      else { hideModal('drive-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
+    }
+    function closeDriveModal() {
+      hideModal('drive-modal');
+      setTimeout(() => document.getElementById('drive-modal').classList.add('hidden'), 300);
+    }
+    function toggleTicketModal() {
+      const modal = document.getElementById('ticket-modal');
+      if (modal.classList.contains('hidden')) { showModal('ticket-modal'); modal.classList.remove('hidden'); }
+      else { hideModal('ticket-modal'); setTimeout(() => modal.classList.add('hidden'), 300); }
+    }
+    function closeTicketModal() {
+      hideModal('ticket-modal');
+      setTimeout(() => document.getElementById('ticket-modal').classList.add('hidden'), 300);
+    }
+    function openTripOverview() {
+      const modal = document.getElementById('trip-overview-modal');
+      if (modal) { modal.style.display = 'flex'; modal.classList.add('active'); }
+    }
+    function closeTripOverview() {
+      const modal = document.getElementById('trip-overview-modal');
+      if (modal) { modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; }, 300); }
+    }
+    function openWeatherModal() {
+      const modal = document.getElementById('weather-modal');
+      showModal('weather-modal');
+      modal.classList.remove('hidden');
+      document.getElementById('weather-detail-content').innerHTML = '<div class="flex justify-center py-8"><div class="loading-spinner"></div></div>';
       fetchWeatherData();
-      initRandomCharacters();
-      renderBookingChecklist();
-      renderEquipChecklist();
-      updateSnowmanVisual(); // 初始化雪人視覺
+    }
+    function closeWeatherModal() {
+      hideModal('weather-modal');
+      setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300);
+    }
+  
+    // ==================== 天氣 ====================
+    const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
+    async function fetchWeatherData() {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${weatherDest.lat}&longitude=${weatherDest.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo`;
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        document.getElementById('mini-temp').innerText = `${Math.round(data.current.temperature_2m)}°C`;
+        document.getElementById('mini-feels').innerText = `體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}% | 風速 ${data.current.wind_speed_10m} km/h`;
+        const miniForecast = document.getElementById('mini-forecast');
+        miniForecast.innerHTML = "";
+        for(let i=0; i<7; i++) {
+          const date = data.daily.time[i].substring(5);
+          const max = Math.round(data.daily.temperature_2m_max[i]);
+          const min = Math.round(data.daily.temperature_2m_min[i]);
+          const icon = data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️";
+          miniForecast.innerHTML += `<div class="bg-white/70 p-1.5 rounded text-center min-w-[55px]"><span class="block text-[8px] text-slate-400">${date}</span><span class="block text-[14px]">${icon}</span><span class="block text-[9px] font-bold text-slate-700">${max}°/${min}°</span></div>`;
+        }
+        
+        // 存入天氣快取
+        for (let i = 0; i < 7; i++) {
+          const dateStr = data.daily.time[i];
+          window.weatherCache[dateStr] = {
+              max: Math.round(data.daily.temperature_2m_max[i]),
+              min: Math.round(data.daily.temperature_2m_min[i]),
+              rain: data.daily.precipitation_probability_max[i] ?? 0,
+              icon: data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️"
+          };
+        }
+        
+        // 重新渲染當前日（讓天氣資訊出現在行程中）
+        if (window._lastActiveDay) switchDay(window._lastActiveDay);
+        
+        const detail = document.getElementById('weather-detail-content');
+        detail.innerHTML = `<div class="bg-sky-50 p-3 rounded-xl border border-sky-200"><span class="text-xs text-slate-500">目前氣溫</span><strong class="block text-xl text-slate-800">${Math.round(data.current.temperature_2m)}°C</strong><span class="text-[10px] text-slate-600">體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}% | 風速 ${data.current.wind_speed_10m} km/h</span></div><div class="text-xs text-slate-700 space-y-2"><strong class="block text-slate-800 mb-1">未來7天預報</strong>${[0,1,2,3,4,5,6].map(i => `<div class="flex justify-between border-b border-slate-100 pb-1"><span>${data.daily.time[i]} (${["日","一","二","三","四","五","六"][new Date(data.daily.time[i]).getDay()]})</span><span>${Math.round(data.daily.temperature_2m_max[i])}° / ${Math.round(data.daily.temperature_2m_min[i])}°</span><span class="text-blue-500">💧 ${data.daily.precipitation_probability_max[i] ?? 0}%</span></div>`).join('')}</div>`;
+      } catch(e) {
+        console.warn("天氣讀取失敗", e);
+        document.getElementById('weather-detail-content').innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">天氣資料暫時無法取得，請稍後再試。</div>';
+      }
+    }
+  
+    // ==================== 行程渲染（直式時間軸） ====================
+    function renderDayItinerary(sectionId, dayData) {
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      
+      // ===== 天氣與行程聯動 =====
+      const dateStr = tripDates[dayData.day - 1];
+      const weatherInfo = window.weatherCache[dateStr] || null;
+      let weatherHtml = "";
+      if (weatherInfo) {
+          const icon = weatherInfo.icon;
+          const max = weatherInfo.max;
+          const min = weatherInfo.min;
+          const rain = weatherInfo.rain;
+          let advice = "";
+          if (min < -5) advice = "❄️ 極寒！羽絨+雪靴+毛帽必備";
+          else if (min < 0) advice = "🧣 寒冷，圍巾手套不可少";
+          else advice = "🧥 偏涼，外套防風防水";
+          if (rain > 50) advice += "，攜帶雨具⚠️";
+          
+          weatherHtml = `
+          <div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs text-slate-700 weather-card">
+              <span class="text-lg">${icon}</span>
+              <span class="font-bold text-sky-700">${dateStr.substring(5)} 天氣：</span>
+              <span>最高 ${max}° / 最低 ${min}°</span>
+              <span class="text-slate-400">|</span>
+              <span class="text-slate-500">💧 ${rain}%</span>
+              <span class="ml-auto font-bold text-slate-600">${advice}</span>
+          </div>`;
+      }
+      
+      let html = `<div class="mb-8">
+        <div class="bg-slate-50/95 py-3 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">${dayData.emoji}</div>
+            <div class="flex-1">
+              <span class="text-xs font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span>
+              <h2 class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>
+              ${dayData.subtitle ? `<p class="text-xs text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}
+              ${weatherHtml}
+            </div>
+          </div>
+          <button onclick="toggleAllDetails('${sectionId}')" class="bg-white hover:bg-slate-50 text-slate-600 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm transition flex items-center gap-1 shrink-0 ml-2">
+            <span class="icon">↕️</span>
+            <span class="hidden md:inline">全部展開</span>
+          </button>
+        </div>
+        <!-- ===== 新增：今日焦點大卡片 ===== -->
+        <div id="focus-card-${dayData.day}" class="focus-card" onclick="scrollToEvent(${dayData.day}, ${getFocusEventIndex(dayData.day)})">
+          <span class="focus-tag" id="focus-tag-${dayData.day}">📍 今日焦點</span>
+          <div class="focus-title" id="focus-title-${dayData.day}">載入中...</div>
+          <div class="focus-time" id="focus-time-${dayData.day}"></div>
+        </div>
+        <div class="relative mt-4 timeline pb-6">`;
+        
+      dayData.events.forEach((event, index) => {
+        const isOpen = event.open ? "open" : "";
+        const tagHtml = event.tag ? `<span class="tag ${event.tag.class}">${event.tag.text}</span>` : "";
+        const timeParts = event.time.split(" - ");
+        const startTime = timeParts[0].trim();
+        const endTime = timeParts[1] ? timeParts[1].trim() : "";
+        const catColors = { "tag-teal": "bg-teal-400", "tag-amber": "bg-amber-400", "tag-rose": "bg-rose-400", "tag-sky": "bg-sky-400", "tag-indigo": "bg-indigo-400", "tag-emerald": "bg-emerald-400" };
+        const catColor = event.tag ? catColors[event.tag.class] || "bg-slate-400" : "bg-slate-400";
+        
+        html += `
+          <div class="timeline-node" id="event-dot-${dayData.day}-${index}">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          
+          <div class="timeline-card">
+            <div class="timeline-time">
+              <strong>${startTime}</strong>
+              ${endTime ? `<span class="timeline-time-end">→ ${endTime}</span>` : ""}
+            </div>
+            
+            <details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl relative overflow-hidden event-card">
+              <div class="itinerary-cat-strip ${catColor}"></div>
+              <summary class="flex items-start gap-3 p-3 md:p-4 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none pl-5">
+                <div class="flex-1 min-w-0 pr-8">
+                  <div class="flex flex-wrap items-center gap-2 mb-1">${tagHtml}</div>
+                  <h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>
+                  ${event.location ? `<div class="text-xs text-slate-500 mt-0.5">📍 ${event.location}</div>` : ""}
+                </div>
+                <div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+              </summary>
+              <div class="event-content-wrapper p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">
+                ${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm cursor-pointer" onclick="openLightbox(['${event.img}'], 0)"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}
+                ${event.navUrl ? `<a href="${event.navUrl}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700 border border-sky-300 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}</a>` : '<div class="h-3"></div>'}
+                ${event.content}
+              </div>
+            </details>
+          </div>`;
+      });
+      
+      // ===== 旅行日記 =====
+      const diaryKey = `diary_day_${dayData.day}`;
+      const savedDiary = localStorage.getItem(diaryKey) || "";
+      html += `
+      <div class="mt-4 mb-6 bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 rounded-2xl p-4">
+          <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">📖</span>
+              <strong class="text-sm text-slate-800">今日旅行日記</strong>
+              <button onclick="saveDiary(${dayData.day})" class="ml-auto text-[10px] bg-sky-500 hover:bg-sky-600 text-white px-2 py-1 rounded font-bold transition">儲存</button>
+          </div>
+          <textarea id="diary-input-${dayData.day}" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none">${savedDiary}</textarea>
+      </div>`;
+      
+      html += `</div></div>`;
+      section.innerHTML = html;
+      
+      // 初始化焦點卡片（因為 html 是動態生成的）
+      updateFocusCard(dayData.day);
+    }
+  
+    function toggleAllDetails(sectionId) {
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      const details = section.querySelectorAll("details");
+      if (details.length === 0) return;
+      let openCount = 0;
+      details.forEach(d => { if (d.open) openCount++; });
+      const shouldOpen = openCount < details.length / 2;
+      details.forEach(d => { d.open = shouldOpen; });
+      setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
+    }
+  
+    function collapseAllItineraries() {
+      const activeSection = document.querySelector(".day-section:not(.hidden)");
+      if (activeSection) {
+        const details = activeSection.querySelectorAll("details");
+        const anyOpen = Array.from(details).some(d => d.open);
+        if (anyOpen) {
+          details.forEach(detail => { detail.open = false; });
+          showToast("⬆️ 已收合全部行程");
+        } else {
+          details.forEach(detail => { detail.open = true; });
+          showToast("⬇️ 已展開全部行程");
+        }
+        window.dispatchEvent(new Event("scroll"));
+      }
+    }
+  
+    // ==================== 今日焦點卡片功能 ====================
+    function getFocusEventIndex(day) {
+      // 根據當前時間計算第一個未完成/正在進行的活動 index
+      const dayData = winterItineraries.find(d => d.day === day);
+      if (!dayData) return 0;
+      const now = getAppTime();
+      for (let i = 0; i < dayData.events.length; i++) {
+        const event = dayData.events[i];
+        const timeParts = event.time.split(" - ");
+        const startTime = timeParts[0].trim();
+        const endTime = timeParts[1] ? timeParts[1].trim() : "23:59";
+        const startDate = new Date(`${tripDates[day-1]}T${startTime}:00`);
+        const endDate = new Date(`${tripDates[day-1]}T${endTime}:00`);
+        if (now >= startDate && now <= endDate) return i;
+        if (now < startDate) return i;
+      }
+      return dayData.events.length - 1; // 最後一個
+    }
+    
+    function updateFocusCard(day) {
+      const dayData = winterItineraries.find(d => d.day === day);
+      if (!dayData) return;
+      const now = getAppTime();
+      let currentEventIndex = -1;
+      let nextEventIndex = -1;
+      
+      for (let i = 0; i < dayData.events.length; i++) {
+        const event = dayData.events[i];
+        const timeParts = event.time.split(" - ");
+        const startTime = timeParts[0].trim();
+        const endTime = timeParts[1] ? timeParts[1].trim() : "23:59";
+        const startDate = new Date(`${tripDates[day-1]}T${startTime}:00`);
+        const endDate = new Date(`${tripDates[day-1]}T${endTime}:00`);
+        if (now >= startDate && now <= endDate) {
+          currentEventIndex = i;
+          break;
+        }
+        if (now < startDate && nextEventIndex === -1) {
+          nextEventIndex = i;
+        }
+      }
+      
+      if (currentEventIndex !== -1) {
+        const event = dayData.events[currentEventIndex];
+        document.getElementById(`focus-tag-${day}`).innerText = "⏳ 正在進行";
+        document.getElementById(`focus-title-${day}`).innerText = event.title;
+        document.getElementById(`focus-time-${day}`).innerText = event.time;
+        document.getElementById(`focus-card-${day}`).classList.add("bg-gradient-to-r", "from-emerald-500", "to-teal-500");
+      } else if (nextEventIndex !== -1) {
+        const event = dayData.events[nextEventIndex];
+        document.getElementById(`focus-tag-${day}`).innerText = "⏭️ 下一站";
+        document.getElementById(`focus-title-${day}`).innerText = event.title;
+        document.getElementById(`focus-time-${day}`).innerText = event.time;
+        document.getElementById(`focus-card-${day}`).classList.add("bg-gradient-to-r", "from-sky-500", "to-indigo-500");
+      } else {
+        document.getElementById(`focus-tag-${day}`).innerText = "✅ 今日完成";
+        document.getElementById(`focus-title-${day}`).innerText = "所有行程已結束！";
+        document.getElementById(`focus-time-${day}`).innerText = "好好休息，明天見！";
+        document.getElementById(`focus-card-${day}`).classList.add("bg-gradient-to-r", "from-slate-500", "to-slate-700");
+      }
+    }
+    
+    function scrollToEvent(day, eventIndex) {
+      const target = document.getElementById(`event-card-${day}-${eventIndex}`);
+      if (target) {
+        target.open = true;
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        // 高亮目標
+        target.classList.remove("ring-2", "ring-sky-400");
+        setTimeout(() => target.classList.add("ring-2", "ring-sky-400"), 100);
+        setTimeout(() => target.classList.remove("ring-2", "ring-sky-400"), 2000);
+      }
+    }
+  
+    // ==================== 全屏圖片燈箱 ====================
+    let lightboxImages = [];
+    let lightboxIndex = 0;
+    
+    function openLightbox(images, index) {
+      lightboxImages = images || [];
+      lightboxIndex = index || 0;
+      const lightbox = document.getElementById("lightbox");
+      const img = document.getElementById("lightbox-img");
+      if (lightboxImages.length === 0) return;
+      img.src = lightboxImages[lightboxIndex];
+      // 更新 caption
+      document.getElementById("lightbox-caption").innerText = `${lightboxIndex + 1} / ${lightboxImages.length}`;
+      lightbox.classList.add("active");
+      document.body.style.overflow = "hidden";
+    }
+    
+    function closeLightbox() {
+      const lightbox = document.getElementById("lightbox");
+      lightbox.classList.remove("active");
+      document.body.style.overflow = "";
+    }
+    
+    function changeLightbox(direction) {
+      lightboxIndex += direction;
+      if (lightboxIndex < 0) lightboxIndex = lightboxImages.length - 1;
+      if (lightboxIndex >= lightboxImages.length) lightboxIndex = 0;
+      const img = document.getElementById("lightbox-img");
+      img.src = lightboxImages[lightboxIndex];
+      document.getElementById("lightbox-caption").innerText = `${lightboxIndex + 1} / ${lightboxImages.length}`;
+    }
+    
+    // 支援滑動切換
+    let touchStartX = 0;
+    document.getElementById("lightbox").addEventListener("touchstart", function(e) {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    
+    document.getElementById("lightbox").addEventListener("touchend", function(e) {
+      const touchEndX = e.changedTouches[0].clientX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 50) {
+        changeLightbox(diff > 0 ? 1 : -1);
+      }
+    }, { passive: true });
+  
+    // ==================== 按鈕漣漪效果 ====================
+    function createRipple(event) {
+      const button = event.currentTarget;
+      const circle = document.createElement("span");
+      const diameter = Math.max(button.clientWidth, button.clientHeight);
+      const radius = diameter / 2;
+      const rect = button.getBoundingClientRect();
+      circle.style.width = circle.style.height = `${diameter}px`;
+      circle.style.left = `${event.clientX - rect.left - radius}px`;
+      circle.style.top = `${event.clientY - rect.top - radius}px`;
+      circle.classList.add("ripple-effect");
+      button.appendChild(circle);
+      setTimeout(() => circle.remove(), 600);
+    }
+    
+    // 為所有按鈕加上漣漪效果（動態監聽）
+    document.addEventListener("click", function(e) {
+      if (e.target.closest("button")) {
+        createRipple(e);
+      }
     });
-  </script>
-</body>
-</html>
+  
+    // ==================== 雪人成長粒子特效 ====================
+    function snowParticles() {
+      const particles = document.createElement("div");
+      particles.className = "particle";
+      const colors = ["#ffffff", "#e0f2fe", "#bae6fd", "#38bdf8", "#a78bfa"];
+      for (let i = 0; i < 30; i++) {
+        const particle = document.createElement("div");
+        particle.style.width = `${Math.random() * 10 + 5}px`;
+        particle.style.height = particle.style.width;
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 20 - 10}vh`;
+        particle.style.opacity = Math.random();
+        particle.style.animation = `snowfall ${Math.random() * 3 + 2}s linear forwards`;
+        particles.appendChild(particle);
+      }
+      document.body.appendChild(particles);
+      setTimeout(() => particles.remove(), 5000);
+    }
+  
+    // ==================== 時間模擬 ====================
+    function getAppTime() { return simulatedTime ? new Date(simulatedTime) : new Date(); }
+    function toggleSimulation() {
+      const simIcon = document.getElementById("sim-icon");
+      const simText = document.getElementById("sim-text");
+      if (simulatedTime) {
+        simulatedTime = null;
+        if (simIcon) simIcon.innerText = "🔮";
+        if (simText) simText.innerText = "模擬旅途時間";
+        showToast("🕒 已恢復真實時間");
+      } else {
+        simulatedTime = new Date("2027-01-23T10:00:00").getTime();
+        if (simIcon) simIcon.innerText = "⏹️";
+        if (simText) simText.innerText = "結束模擬";
+        showToast("⛷️ 模擬啟動：跳轉至 Day 3 藏王樹冰行程！", "❄️");
+      }
+      updateCurrentEventHighlight();
+    }
+  
+    function updateCurrentEventHighlight() {
+      const now = getAppTime();
+      let activeDay = -1;
+      let activeEvent = -1;
+      for (let i = 0; i < winterItineraries.length; i++) {
+        const dayData = winterItineraries[i];
+        const dateStr = tripDates[dayData.day - 1];
+        if (!dateStr) continue;
+        for (let j = 0; j < dayData.events.length; j++) {
+          const timeParts = dayData.events[j].time.split(" - ");
+          const startStr = timeParts[0].trim();
+          const endStr = timeParts[1] ? timeParts[1].trim() : "23:59";
+          const startDate = new Date(`${dateStr}T${startStr}:00`);
+          let endDate = new Date(`${dateStr}T${endStr}:00`);
+          if (endStr === "") endDate = new Date(`${dateStr}T23:59:00`);
+          if (now >= startDate && now <= endDate) { activeDay = dayData.day; activeEvent = j; break; }
+          if (now < startDate && activeDay === -1) {
+            const todayStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+            if (todayStr === dateStr) { activeDay = dayData.day; activeEvent = j; break; }
+          }
+        }
+        if (activeDay !== -1) break;
+      }
+      document.querySelectorAll('[id^="event-card-"]').forEach(card => {
+        card.classList.remove("ring-2", "ring-sky-400", "shadow-sky-200/50", "bg-sky-50/40");
+        card.classList.add("border-slate-100", "bg-white");
+      });
+      document.querySelectorAll('[id^="event-badge-"]').forEach(badge => badge.classList.add("hidden"));
+      document.querySelectorAll('[id^="event-dot-"]').forEach(dot => {
+        dot.classList.remove("bg-rose-500", "animate-pulse", "ring-rose-200");
+        dot.classList.add("bg-indigo-500", "ring-slate-50");
+      });
+      document.querySelectorAll('[id^="event-timebox-"]').forEach(box => {
+        box.classList.remove("bg-sky-500", "text-white");
+        box.classList.add("bg-indigo-50", "text-indigo-700");
+      });
+      document.querySelectorAll('[id^="event-title-"]').forEach(title => {
+        title.classList.remove("text-sky-900");
+        title.classList.add("text-slate-800");
+      });
+      if (activeDay !== -1 && activeEvent !== -1) {
+        const card = document.getElementById(`event-card-${activeDay}-${activeEvent}`);
+        if (card) {
+          card.classList.remove("border-slate-100", "bg-white");
+          card.classList.add("ring-2", "ring-sky-400", "shadow-sky-200/50", "bg-sky-50/40");
+          card.open = true;
+        }
+        if (window._lastActiveDay !== activeDay) {
+          switchDay(activeDay);
+          window._lastActiveDay = activeDay;
+          setTimeout(() => {
+            if (card) {
+              const top = card.getBoundingClientRect().top + window.scrollY - 180;
+              window.scrollTo({ top, behavior: "smooth" });
+            }
+          }, 400);
+        }
+      }
+      // 更新焦點卡片
+      if (window._lastActiveDay) updateFocusCard(window._lastActiveDay);
+    }
+  
+    // ==================== 倒數計時 ====================
+    const departureTarget = new Date("2027-01-21T10:00:00+08:00").getTime();
+    const zaoTarget = new Date("2027-01-15T23:00:00+08:00").getTime();
+    const ginzanTarget = new Date("2027-01-08T23:00:00+08:00").getTime();
+    function updateCountdowns() {
+      const now = new Date().getTime();
+      const departureDiff = departureTarget - now;
+      const departureEl = document.getElementById("departure-countdown");
+      if (departureEl) {
+        if (departureDiff < 0) {
+          departureEl.innerText = "❄️ 2027 東北冬日雪景之旅進行中！";
+          departureEl.classList.remove("animate-pulse");
+        } else {
+          const days = Math.floor(departureDiff / 86400000);
+          const hours = Math.floor(departureDiff % 86400000 / 3600000);
+          const minutes = Math.floor(departureDiff % 3600000 / 60000);
+          const seconds = Math.floor(departureDiff % 60000 / 1000);
+          departureEl.innerText = `${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+        }
+      }
+      const ginzanDiff = ginzanTarget - now;
+      const ginzanEl = document.getElementById("ginzan-countdown");
+      if (ginzanEl) {
+        if (ginzanDiff < 0) {
+          ginzanEl.innerText = "🎟️ 搶票時段已開始或結束！";
+          ginzanEl.classList.remove("animate-pulse", "text-purple-700");
+          ginzanEl.classList.add("text-rose-600");
+        } else {
+          const days = Math.floor(ginzanDiff / 86400000);
+          const hours = Math.floor(ginzanDiff % 86400000 / 3600000);
+          const minutes = Math.floor(ginzanDiff % 3600000 / 60000);
+          const seconds = Math.floor(ginzanDiff % 60000 / 1000);
+          ginzanEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+        }
+      }
+      const zaoDiff = zaoTarget - now;
+      const zaoEl = document.getElementById("zao-countdown");
+      if (zaoEl) {
+        if (zaoDiff < 0) {
+          zaoEl.innerText = "🎟️ 搶票時段已開始或結束！";
+          zaoEl.classList.remove("animate-pulse", "text-sky-700");
+          zaoEl.classList.add("text-rose-600");
+        } else {
+          const days = Math.floor(zaoDiff / 86400000);
+          const hours = Math.floor(zaoDiff % 86400000 / 3600000);
+          const minutes = Math.floor(zaoDiff % 3600000 / 60000);
+          const seconds = Math.floor(zaoDiff % 60000 / 1000);
+          zaoEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+        }
+      }
+    }
+    // ==================== 歡迎導覽 ====================
+  function closeWelcomeModal(skipForever = false) {
+    const modal = document.getElementById("welcome-modal");
+    if (modal) {
+      modal.style.opacity = "0";
+      setTimeout(() => { modal.style.display = "none"; }, 300);
+    }
+    if (skipForever) {
+      localStorage.setItem("tohoku_welcome_dismissed", "true");
+    }
+  }
+  function checkWelcomeModal() {
+    const dismissed = localStorage.getItem("tohoku_welcome_dismissed");
+    const modal = document.getElementById("welcome-modal");
+    if (dismissed === "true" && modal) {
+      modal.style.display = "none";
+    }
+  }
+  
+  // ==================== 動態角色（每次只出現一個，隨機位置） ====================
+  let characterTimeout = null;
+  let bubbleTimeout = null;
+  
+  function spawnCharacters() {
+    clearTimeout(characterTimeout);
+    clearTimeout(bubbleTimeout);
+    
+    const snowman = document.getElementById('snowman');
+    const fox = document.getElementById('fox');
+    if (!snowman || !fox) return;
+  
+    snowman.classList.remove('show', 'greet');
+    fox.classList.remove('show', 'greet');
+    snowman.classList.add('hide');
+    fox.classList.add('hide');
+  
+    if (Math.random() < 0.5) {
+      characterTimeout = setTimeout(spawnCharacters, Math.random() * 5000 + 4000);
+      return;
+    }
+  
+    const showSnowman = Math.random() < 0.5;
+    const character = showSnowman ? snowman : fox;
+    const characterId = showSnowman ? 'snowman' : 'fox';
+  
+    const isLeft = Math.random() < 0.5;
+    const randomX = isLeft ? `${Math.random() * 15}vw` : '';
+    const randomRight = isLeft ? '' : `${Math.random() * 15}vw`;
+    const randomBottom = `${Math.random() * 20 + 5}vh`;
+  
+    if (isLeft) {
+      character.style.left = randomX;
+      character.style.right = 'auto';
+    } else {
+      character.style.right = randomRight;
+      character.style.left = 'auto';
+    }
+    character.style.bottom = randomBottom;
+  
+    character.classList.remove('hide');
+    character.classList.add('show');
+  
+    setTimeout(() => {
+      character.classList.add('greet');
+      showCharacterBubble(character, showSnowman ? '嗨！我是雪人⛄' : '嗨！我是狐狸🦊');
+    }, 600);
+  
+    characterTimeout = setTimeout(() => {
+      character.classList.remove('show', 'greet');
+      character.classList.add('hide');
+      setTimeout(spawnCharacters, Math.random() * 5000 + 3000);
+    }, 4000);
+  }
+  
+  function showCharacterBubble(element, text) {
+    const oldBubble = document.querySelector('.character-bubble');
+    if (oldBubble) oldBubble.remove();
+  
+    const bubble = document.createElement('div');
+    bubble.className = 'character-bubble';
+    bubble.innerText = text;
+    const rect = element.getBoundingClientRect();
+    bubble.style.left = rect.left + rect.width / 2 - 30 + 'px';
+    bubble.style.top = rect.top - 30 + 'px';
+    document.body.appendChild(bubble);
+    bubble.classList.add('show');
+    bubbleTimeout = setTimeout(() => {
+      bubble.classList.remove('show');
+      setTimeout(() => bubble.remove(), 300);
+    }, 2000);
+  }
+  
+  // ==================== 雪人成長任務 ====================
+  function jump(characterId) {
+    const char = document.getElementById(characterId);
+    if (char) {
+      char.classList.add('jumping');
+      setTimeout(() => char.classList.remove('jumping'), 600);
+      if (characterId === 'snowman') {
+        snowmanProgress = Math.min(snowmanProgress + 1, 5);
+        localStorage.setItem("snowman_progress", JSON.stringify(snowmanProgress));
+        updateSnowmanVisual();
+        // 加入雪人成長粒子特效
+        snowParticles();
+        showToast(`雪人成長度：${snowmanProgress}/5！`, "⛄");
+      } else {
+        showToast(`你點了一下狐狸！`, "🦊");
+      }
+    }
+  }
+  
+  function updateSnowmanVisual() {
+    const snowman = document.getElementById("snowman");
+    if (!snowman) return;
+    const progress = snowmanProgress;
+    let hatColor = "#ef4444";
+    let accessory = "";
+    if (progress >= 1) hatColor = "#f97316";
+    if (progress >= 2) hatColor = "#facc15";
+    if (progress >= 3) { hatColor = "#4ade80"; accessory = "圍巾已升級！"; }
+    if (progress >= 4) { hatColor = "#38bdf8"; accessory = "手套已升級！"; }
+    if (progress >= 5) { hatColor = "#a78bfa"; accessory = "終極雪人！"; }
+    
+    // 修改帽子顏色（簡單方式：修改 gradient stop）
+    const hatPath = snowman.querySelector('#hatGrad stop:first-child');
+    if (hatPath) hatPath.setAttribute('stop-color', hatColor);
+    
+    // 顯示成長提示
+    if (accessory) {
+      showToast(`⛄ ${accessory}`, "🎉");
+    }
+  }
+  
+  function initRandomCharacters() {
+    setTimeout(spawnCharacters, 2000);
+  }
+  
+  // ==================== 行前預訂 Check List（完整） ====================
+  const bookingList = [
+    { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
+    { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
+    { id: "car-pickup", category: "租車", label: "1/21 15:30 機場取車", icon: "⏰" },
+    { id: "car-dropoff", category: "租車", label: "1/27 13:45 機場還車", icon: "⏰" },
+    { id: "hotel-akiu", category: "住宿", label: "1/21 秋保溫泉 瑞鳳大飯店 (含自助晚餐)", icon: "🏨" },
+    { id: "hotel-tendo", category: "住宿", label: "1/22-23 微笑之宿 瀧之湯 (含懷石晚餐)", icon: "🏨" },
+    { id: "hotel-sendai", category: "住宿", label: "1/24-26 Hotel Grand Bach 仙台 (連住3晚)", icon: "🏨" },
+    { id: "ticket-ginzan", category: "門票", label: "銀山溫泉 Fast Pass (1/8 23:00搶票)", icon: "🎟️" },
+    { id: "ticket-zao", category: "門票", label: "藏王纜車優先票 (1/15 23:00搶票)", icon: "🎟️" },
+    { id: "ticket-springvalley", category: "門票", label: "Spring Valley 雪之冒險王國 (1/24)", icon: "⛷️" },
+    { id: "ticket-foxvillage", category: "門票", label: "狐狸村入場 (現場購票)", icon: "🦊" },
+    { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/23 16:30)", icon: "♨️" },
+    { id: "other-strawberry", category: "其他", label: "寒河江草莓園 (1/23 14:00)", icon: "🍓" },
+  ];
+  
+  let customBookingItems = [];
+  
+  function renderBookingChecklist() {
+    const container = document.getElementById("booking-checklist-container");
+    if (!container) return;
+  
+    const categories = ["租車", "住宿", "門票", "其他"];
+    let html = "";
+    
+    categories.forEach(cat => {
+      const items = bookingList.filter(item => item.category === cat);
+      const customItems = customBookingItems.filter(item => item.category === cat);
+      const allItems = [...items, ...customItems];
+      if (allItems.length === 0) return;
+      
+      html += `<div class="mb-4">
+        <h4 class="text-sm font-bold text-slate-800 mb-2">${cat}</h4>
+        <div class="space-y-1.5">`;
+      
+      allItems.forEach(item => {
+        const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+        const isChecked = state.checkedItems[key] === true;
+        html += `
+          <div class="flex items-center gap-2">
+            <label class="flex-1 flex items-center gap-2.5 p-2 rounded-lg border ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'} cursor-pointer hover:bg-slate-50 transition">
+              <input type="checkbox" class="w-4 h-4 shrink-0" ${isChecked ? 'checked' : ''} onchange="toggleBookingCheck('${key}')">
+              <span class="text-xs text-slate-700">${item.icon} ${item.label}</span>
+            </label>
+            ${item.isCustom ? `<button onclick="deleteCustomBooking('${item.id}')" class="text-red-400 hover:text-red-600 p-1.5 shrink-0" title="刪除"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ""}
+          </div>`;
+      });
+      
+      html += `</div></div>`;
+    });
+  
+    html += `
+      <div class="mt-4 pt-4 border-t border-slate-200">
+        <h4 class="text-sm font-bold text-slate-800 mb-2">新增項目</h4>
+        <div class="flex gap-2">
+          <input id="new-booking-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+          <select id="new-booking-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white">
+            <option value="租車">租車</option>
+            <option value="住宿">住宿</option>
+            <option value="門票">門票</option>
+            <option value="其他">其他</option>
+          </select>
+          <button onclick="addCustomBooking()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button>
+        </div>
+      </div>`;
+  
+    html += `
+      <div class="flex gap-2 mt-4">
+        <button onclick="checkAllBooking()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button>
+        <button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button>
+        <button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button>
+      </div>`;
+  
+    container.innerHTML = html;
+  }
+  
+  function toggleBookingCheck(key) {
+    state.checkedItems[key] = !state.checkedItems[key];
+    saveLocalCheckedItems();
+    syncDataToCloud();
+    renderBookingChecklist();
+  }
+  
+  function checkAllBooking() {
+    [...bookingList, ...customBookingItems].forEach(item => {
+      const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+      state.checkedItems[key] = true;
+    });
+    saveLocalCheckedItems();
+    syncDataToCloud();
+    renderBookingChecklist();
+    showToast("✅ 已全部勾選！");
+  }
+  
+  function uncheckAllBooking() {
+    [...bookingList, ...customBookingItems].forEach(item => {
+      const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+      state.checkedItems[key] = false;
+    });
+    saveLocalCheckedItems();
+    syncDataToCloud();
+    renderBookingChecklist();
+    showToast("🧹 已清除所有勾選！");
+  }
+  
+  function copyBookingList() {
+    let text = "📌 行前預訂 Check List\n";
+    text += "=====================\n";
+    
+    const categories = ["租車", "住宿", "門票", "其他"];
+    categories.forEach(cat => {
+      const items = bookingList.filter(item => item.category === cat);
+      const customItems = customBookingItems.filter(item => item.category === cat);
+      const allItems = [...items, ...customItems];
+      if (allItems.length === 0) return;
+      text += `\n【${cat}】\n`;
+      allItems.forEach(item => {
+        const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+        const checked = state.checkedItems[key] ? "✅" : "⬜";
+        text += `${checked} ${item.icon} ${item.label}\n`;
+      });
+    });
+    
+    copyText(text);
+    showToast("📋 行前預訂清單已複製！");
+  }
+  
+  function addCustomBooking() {
+    const labelInput = document.getElementById("new-booking-label");
+    const categorySelect = document.getElementById("new-booking-category");
+    const label = labelInput.value.trim();
+    if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
+    const newItem = {
+      id: "custom-" + Date.now(),
+      category: categorySelect.value,
+      label: label,
+      icon: "📌",
+      isCustom: true
+    };
+    customBookingItems.push(newItem);
+    saveCustomItems();
+    syncDataToCloud();
+    renderBookingChecklist();
+    labelInput.value = "";
+    showToast("已新增項目！");
+  }
+  
+  function deleteCustomBooking(id) {
+    customBookingItems = customBookingItems.filter(item => item.id !== id);
+    saveCustomItems();
+    syncDataToCloud();
+    renderBookingChecklist();
+    showToast("已刪除項目");
+  }
+  
+  // ==================== 裝備清單 Check List（完整更新版） ====================
+  const equipmentList = [
+    // 重要證件與金錢
+    { id: "passport", category: "重要證件", label: "身份證 / 護照（效期需剩餘6個月以上）", icon: "🪪" },
+    { id: "license", category: "重要證件", label: "國際車牌 / 駕駛執照", icon: "🚗" },
+    { id: "tickets", category: "重要證件", label: "機票 / 住宿憑證 / Visit Japan Web QR Code", icon: "✈️" },
+    { id: "money", category: "重要證件", label: "日幣現金與信用卡（部分小店只收現金）", icon: "💴" },
+    { id: "car-mount", category: "重要證件", label: "車用手機架", icon: "📱" },
+  
+    // 保暖衣物
+    { id: "thermal", category: "保暖衣物", label: "發熱衣 / 保暖內衣（3-4件，貼身排汗）", icon: "👕" },
+    { id: "mid-layer", category: "保暖衣物", label: "中層保暖衣物（毛衣或刷毛絨，2-3件）", icon: "🧶" },
+    { id: "outer-coat", category: "保暖衣物", label: "防風防水厚外套 / 羽絨服（1-2件）", icon: "🧥" },
+    { id: "pants", category: "保暖衣物", label: "長褲與發熱內搭褲（2-3條）", icon: "👖" },
+    { id: "scarf", category: "保暖衣物", label: "圍巾、毛帽或耳罩", icon: "🧣" },
+    { id: "gloves", category: "保暖衣物", label: "觸控手套", icon: "🧤" },
+    { id: "boots", category: "保暖衣物", label: "舒適好走且防水防滑的雪靴或厚底運動鞋", icon: "👢" },
+    { id: "socks", category: "保暖衣物", label: "厚羊毛襪（3-5雙）", icon: "🧦" },
+  
+    // 電子與隨身用品
+    { id: "sim", category: "電子與隨身", label: "日本上網卡（SIM卡 / eSIM / 漫遊）", icon: "📶" },
+    { id: "powerbank", category: "電子與隨身", label: "行動電源（僅限手提，不可託運）", icon: "🔋" },
+    { id: "thermos", category: "電子與隨身", label: "保溫瓶（隨時補充熱飲）", icon: "🍶" },
+    { id: "skincare", category: "電子與隨身", label: "保濕護膚品與潤唇膏", icon: "🧴" },
+    { id: "medicine", category: "電子與隨身", label: "常備藥品（感冒藥、腸胃藥、個人處方箋）", icon: "💊" },
+    { id: "warmpack", category: "電子與隨身", label: "暖暖包（注意不可貼在皮膚或薄內衣上）", icon: "🔥" },
+  
+    // 原有項目
+    { id: "adult-crampons", category: "其他", label: "簡易冰爪", icon: "⛸️" },
+    { id: "kid-hat", category: "小孩", label: "小孩毛帽 (蓋耳)", icon: "🧢" },
+    { id: "kid-gloves", category: "小孩", label: "小孩手套 (備2雙)", icon: "🧤" },
+    { id: "kid-scarf", category: "小孩", label: "小孩圍脖", icon: "🧣" },
+    { id: "kid-snowpants", category: "小孩", label: "小孩防水雪褲", icon: "👖" },
+    { id: "kid-boots", category: "小孩", label: "小孩雪靴 (防水)", icon: "👢" },
+    { id: "swimwear", category: "其他", label: "泳衣 (溫泉泳池用)", icon: "🩱" },
+    { id: "safetybelt", category: "其他", label: "便攜式兒童安全帶", icon: "🪑" },
+    { id: "firstaid", category: "其他", label: "簡易急救包", icon: "🩹" },
+  ];
+  
+  let customEquipItems = [];
+  
+  function renderEquipChecklist() {
+    const container = document.getElementById("equip-checklist-container");
+    if (!container) return;
+  
+    const categories = ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"];
+    let html = "";
+    
+    categories.forEach(cat => {
+      const items = equipmentList.filter(item => item.category === cat);
+      const customItems = customEquipItems.filter(item => item.category === cat);
+      const allItems = [...items, ...customItems];
+      if (allItems.length === 0) return;
+      
+      html += `<div class="mb-4">
+        <h4 class="text-sm font-bold text-slate-800 mb-2">${cat}</h4>
+        <div class="space-y-1.5">`;
+      
+      allItems.forEach(item => {
+        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
+        const isChecked = state.checkedItems[key] === true;
+        html += `
+          <div class="flex items-center gap-2">
+            <label class="flex-1 flex items-center gap-2.5 p-2 rounded-lg border ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'} cursor-pointer hover:bg-slate-50 transition">
+              <input type="checkbox" class="w-4 h-4 shrink-0" ${isChecked ? 'checked' : ''} onchange="toggleEquipCheck('${key}')">
+              <span class="text-xs text-slate-700">${item.icon} ${item.label}</span>
+            </label>
+            ${item.isCustom ? `<button onclick="deleteCustomEquip('${item.id}')" class="text-red-400 hover:text-red-600 p-1.5 shrink-0" title="刪除"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ""}
+          </div>`;
+      });
+      
+      html += `</div></div>`;
+    });
+  
+    html += `
+      <div class="mt-4 pt-4 border-t border-slate-200">
+        <h4 class="text-sm font-bold text-slate-800 mb-2">新增項目</h4>
+        <div class="flex gap-2">
+          <input id="new-equip-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+          <select id="new-equip-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white">
+            <option value="重要證件">重要證件</option>
+            <option value="保暖衣物">保暖衣物</option>
+            <option value="電子與隨身">電子與隨身</option>
+            <option value="小孩">小孩</option>
+            <option value="其他">其他</option>
+          </select>
+          <button onclick="addCustomEquip()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button>
+        </div>
+      </div>`;
+  
+    html += `
+      <div class="flex gap-2 mt-4">
+        <button onclick="checkAllEquipment()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button>
+        <button onclick="uncheckAllEquipment()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button>
+        <button onclick="copyEquipmentList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button>
+      </div>`;
+  
+    container.innerHTML = html;
+  }
+  
+  function toggleEquipCheck(key) {
+    state.checkedItems[key] = !state.checkedItems[key];
+    saveLocalCheckedItems();
+    syncDataToCloud();
+    renderEquipChecklist();
+  }
+  
+  function checkAllEquipment() {
+    [...equipmentList, ...customEquipItems].forEach(item => {
+      const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
+      state.checkedItems[key] = true;
+    });
+    saveLocalCheckedItems();
+    syncDataToCloud();
+    renderEquipChecklist();
+    showToast("✅ 已全部勾選！");
+  }
+  
+  function uncheckAllEquipment() {
+    [...equipmentList, ...customEquipItems].forEach(item => {
+      const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
+      state.checkedItems[key] = false;
+    });
+    saveLocalCheckedItems();
+    syncDataToCloud();
+    renderEquipChecklist();
+    showToast("🧹 已清除所有勾選！");
+  }
+  
+  function copyEquipmentList() {
+    let text = "🎒 裝備清單 Check List\n";
+    text += "=====================\n";
+    
+    const categories = ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"];
+    categories.forEach(cat => {
+      const items = equipmentList.filter(item => item.category === cat);
+      const customItems = customEquipItems.filter(item => item.category === cat);
+      const allItems = [...items, ...customItems];
+      if (allItems.length === 0) return;
+      text += `\n【${cat}】\n`;
+      allItems.forEach(item => {
+        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
+        const checked = state.checkedItems[key] ? "✅" : "⬜";
+        text += `${checked} ${item.icon} ${item.label}\n`;
+      });
+    });
+    
+    copyText(text);
+    showToast("📋 裝備清單已複製！");
+  }
+  
+  function addCustomEquip() {
+    const labelInput = document.getElementById("new-equip-label");
+    const categorySelect = document.getElementById("new-equip-category");
+    const label = labelInput.value.trim();
+    if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
+    const newItem = {
+      id: "custom-" + Date.now(),
+      category: categorySelect.value,
+      label: label,
+      icon: "📦",
+      isCustom: true
+    };
+    customEquipItems.push(newItem);
+    saveCustomItems();
+    syncDataToCloud();
+    renderEquipChecklist();
+    labelInput.value = "";
+    showToast("已新增項目！");
+  }
+  
+  function deleteCustomEquip(id) {
+    customEquipItems = customEquipItems.filter(item => item.id !== id);
+    saveCustomItems();
+    syncDataToCloud();
+    renderEquipChecklist();
+    showToast("已刪除項目");
+  }
+  
+  function saveLocalCheckedItems() {
+    localStorage.setItem("tohoku_checked_items", JSON.stringify(state.checkedItems));
+    localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
+    localStorage.setItem("custom_equip_items", JSON.stringify(customEquipItems));
+  }
+  
+  function saveCustomItems() {
+    localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
+    localStorage.setItem("custom_equip_items", JSON.stringify(customEquipItems));
+  }
+  
+  function loadCustomItems() {
+    const savedBooking = localStorage.getItem("custom_booking_items");
+    if (savedBooking) { try { customBookingItems = JSON.parse(savedBooking); } catch(e) {} }
+    const savedEquip = localStorage.getItem("custom_equip_items");
+    if (savedEquip) { try { customEquipItems = JSON.parse(savedEquip); } catch(e) {} }
+  }
+  
+  function restoreChecklistUI() {
+    renderBookingChecklist();
+    renderEquipChecklist();
+  }
+  
+  // ==================== 旅行日記 ====================
+  function saveDiary(day) {
+    const input = document.getElementById(`diary-input-${day}`);
+    if (input) {
+      localStorage.setItem(`diary_day_${day}`, input.value);
+      showToast("📖 日記已儲存！", "✅");
+    }
+  }
+  
+      // ==================== 雪花 ====================
+      function initSnowEffect() {
+        const snowContainer = document.getElementById("snow-fall");
+        if (!snowContainer) return;
+        snowContainer.innerHTML = "";
+        const snowflakeCount = window.innerWidth < 768 ? 20 : 40;
+        const animations = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"];
+        const colors = ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#ffffff"];
+        for (let i = 0; i < snowflakeCount; i++) {
+          const snowflake = document.createElement("div");
+          snowflake.className = "snowflake";
+          const size = Math.random() * 7 + 3;
+          snowflake.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; animation: ${animations[Math.floor(Math.random() * animations.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%;`;
+          snowContainer.appendChild(snowflake);
+        }
+        for (let i = 0; i < 2; i++) {
+          const flake = document.createElement("div");
+          flake.className = "snowflake";
+          flake.style.cssText = `left: ${Math.random() * 100}%; width: 12px; height: 12px; animation: snowfall-medium ${Math.random() * 15 + 10}s linear infinite; animation-delay: ${Math.random() * -10}s;`;
+          flake.innerHTML = '❄';
+          flake.style.fontSize = `${Math.random() * 10 + 8}px`;
+          flake.style.color = "rgba(255,255,255,0.7)";
+          flake.style.textShadow = "0 0 5px rgba(255,255,255,0.5)";
+          snowContainer.appendChild(flake);
+        }
+      }
+      
+      // ==================== copyText 通用函數 ====================
+      function copyText(text) {
+        try {
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+        } catch(e) {
+          navigator.clipboard.writeText(text).catch(() => {});
+        }
+      }
+  
+      window.addEventListener("scroll", () => {
+        const btn = document.getElementById("fab-collapse-all");
+        const schedule = document.getElementById("schedule-container");
+        if (!btn || !schedule) return;
+        const rect = schedule.getBoundingClientRect();
+        const isScheduleVisible = rect.top < window.innerHeight && rect.bottom > 0;
+        const activeSection = document.querySelector(".day-section:not(.hidden)");
+        
+        const anyOpen = activeSection ? Array.from(activeSection.querySelectorAll("details")).some(d => d.open) : false;
+        btn.innerHTML = anyOpen
+          ? '<span class="text-lg font-black">⬆️</span><span class="font-bold text-sm hidden md:inline">收合行程</span>'
+          : '<span class="text-lg font-black">⬇️</span><span class="font-bold text-sm hidden md:inline">展開行程</span>';
+  
+        if (state.currentMainTab === "itinerary" && isScheduleVisible) {
+          btn.classList.remove("opacity-0", "translate-y-8", "pointer-events-none");
+          btn.classList.add("opacity-100", "translate-y-0", "pointer-events-auto");
+        } else {
+          btn.classList.remove("opacity-100", "translate-y-0", "pointer-events-auto");
+          btn.classList.add("opacity-0", "translate-y-8", "pointer-events-none");
+        }
+      });
+  
+      document.addEventListener("click", (e) => {
+        if (e.target.closest('.day-tab')) {
+          setTimeout(() => window.dispatchEvent(new Event("scroll")), 100);
+        }
+      });
+  
+      window.addEventListener("resize", () => {
+        clearTimeout(window.snowResizeTimeout);
+        window.snowResizeTimeout = setTimeout(() => {
+          const snowContainer = document.getElementById("snow-fall");
+          if (snowContainer && snowContainer.children.length > 0) initSnowEffect();
+        }, 300);
+      });
+  
+      window.addEventListener("DOMContentLoaded", () => {
+        loadCustomItems();
+        const savedChecked = localStorage.getItem("tohoku_checked_items");
+        if (savedChecked) {
+          try { state.checkedItems = JSON.parse(savedChecked); } catch(e) {}
+        }
+        
+        fetchLiveRates();
+        
+        initSnowEffect();
+        winterItineraries.forEach((dayData, index) => {
+          renderDayItinerary(`day-section-${index + 1}`, dayData);
+        });
+        switchMainTab("itinerary");
+        updateCountdowns();
+        setInterval(updateCountdowns, 1000);
+        updateCurrentEventHighlight();
+        setInterval(updateCurrentEventHighlight, 60000);
+        checkWelcomeModal();
+        fetchWeatherData();
+        initRandomCharacters();
+        renderBookingChecklist();
+        renderEquipChecklist();
+        updateSnowmanVisual(); // 初始化雪人視覺
+      });
+    </script>
+  </body>
+  </html>

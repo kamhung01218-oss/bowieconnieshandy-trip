@@ -735,7 +735,7 @@ const winterItineraries = [
       {
         time: "17:30 - 20:00",
         title: "晚餐 ➔ 伊達の牛たん本舗 本店",
-        img: "https://odekake.life/wp-content/uploads/2022/03/dategyu_001-1536x1024.jpg",
+        img: "https://tohoku365.com/desk_jp/wp/wp-content/uploads/2016/06/dateno.jpg",
         tag: { text: "🥩 必吃名店", class: "tag-amber" },
         navUrl: "https://maps.app.goo.gl/3pwjdGMZZeGCRq1MA",
         navName: "伊達牛舌本舗 本店",
