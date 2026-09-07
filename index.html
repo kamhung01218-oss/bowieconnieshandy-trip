@@ -1195,6 +1195,7 @@ async function syncDataToCloud() {
     }
   
     function switchDay(day) {
+  window._lastActiveDay = day; 
       document.querySelectorAll("#day-tabs-container button").forEach(btn => {
         btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
       });
@@ -1940,6 +1941,7 @@ const shootBtnHtml = `
         renderDayItinerary(`day-section-${index + 1}`, dayData);
       });
       switchMainTab("itinerary");
+      window._lastActiveDay = 1;
       updateCountdowns();
       setInterval(updateCountdowns, 1000);
       checkWelcomeModal();
