@@ -1253,43 +1253,75 @@ async function syncDataToCloud() {
       setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300);
     }
   
-    // ==================== 拍攝靈感 Modal 控制 ====================
-    function openShootTipsModal(day, eventIndex) {
-      const dayData = winterItineraries.find(d => d.day === day);
-      if (!dayData) return;
-      const event = dayData.events[eventIndex];
-      if (!event) return;
-      const tips = shootTips[event.title];
-      
-      const content = document.getElementById("shoot-tips-content");
-      let html = "";
-      
-      if (tips) {
-        html = `
-          <div class="space-y-4">
-            <div class="bg-orange-50 border border-orange-200 rounded-xl p-4">
-              <h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3>
-              <p class="text-sm text-slate-700 leading-relaxed">${tips["拍照建議"]}</p>
-            </div>
-            <div class="bg-sky-50 border border-sky-200 rounded-xl p-4">
-              <h3 class="text-sm font-black text-sky-800 mb-2">📸 Pocket 3 參數</h3>
-              <p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 參數"]}</p>
-            </div>
-          </div>`;
-      } else {
-        html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議，你可以自行在 shoot-tips.js 中加入。</div>`;
-      }
-      
-      content.innerHTML = html;
-      showModal('shoot-tips-modal');
-      document.getElementById('shoot-tips-modal').classList.remove('hidden');
+// ==================== 拍攝靈感 Modal 控制 ====================
+function openShootTipsModal(day, eventIndex) {
+  const dayData = winterItineraries.find(d => d.day === day);
+  if (!dayData) return;
+  const event = dayData.events[eventIndex];
+  if (!event) return;
+  const tips = shootTips[event.title];
+  
+  const content = document.getElementById("shoot-tips-content");
+  let html = "";
+  
+  if (tips) {
+    // 1. 拍照建議
+    if (tips["拍照建議"]) {
+      html += `
+        <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3">
+          <h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3>
+          <p class="text-sm text-slate-700 leading-relaxed">${tips["拍照建議"]}</p>
+        </div>`;
     }
     
-    function closeShootTipsModal() {
-      hideModal('shoot-tips-modal');
-      setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300);
+    // 2. Pocket 3 參數
+    if (tips["Pocket 3 參數"]) {
+      html += `
+        <div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3">
+          <h3 class="text-sm font-black text-sky-800 mb-2">📸 Pocket 3 參數</h3>
+          <p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 參數"]}</p>
+        </div>`;
     }
+    
+    // 3. Vlog 必拍鏡頭 (陣列)
+    if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) {
+      const items = tips["Vlog 必拍鏡頭"].map(item => `<li class="text-slate-700 text-sm mb-1">${item}</li>`).join("");
+      html += `
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-3">
+          <h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3>
+          <ul class="list-disc pl-4 space-y-1">${items}</ul>
+        </div>`;
+    }
+    
+    // 4. Pocket 3 技巧
+    if (tips["Pocket 3 技巧"]) {
+      html += `
+        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-3">
+          <h3 class="text-sm font-black text-purple-800 mb-2">💡 Pocket 3 技巧</h3>
+          <p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 技巧"]}</p>
+        </div>`;
+    }
+    
+    // 5. 最佳拍攝時間 & 拍攝時長
+    if (tips["最佳拍攝時間"] || tips["拍攝時長"]) {
+      let timeInfo = "";
+      if (tips["最佳拍攝時間"]) timeInfo += `<span class="block mb-1">⏰ ${tips["最佳拍攝時間"]}</span>`;
+      if (tips["拍攝時長"]) timeInfo += `<span class="block">⏳ ${tips["拍攝時長"]}</span>`;
+      html += `
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3">
+          <h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3>
+          <p class="text-sm text-slate-700 leading-relaxed">${timeInfo}</p>
+        </div>`;
+    }
+    
+  } else {
+    html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議，你可以自行在 shoot-tips.js 中加入。</div>`;
+  }
   
+  content.innerHTML = html;
+  showModal('shoot-tips-modal');
+  document.getElementById('shoot-tips-modal').classList.remove('hidden');
+}
     // ==================== 天氣 ====================
     const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
     async function fetchWeatherData() {
