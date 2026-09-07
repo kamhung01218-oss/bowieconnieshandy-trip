@@ -13,7 +13,7 @@
 <script src="data.js"></script>
 <!-- 引用拍摄灵感数据 -->
 <script src="shoot-tips.js"></script>
-<!-- 引用購物清單數據（可選，初始為空） -->
+<!-- 引用購物清單數據（可選） -->
 <script src="shopping.js"></script>
 
 <script>
@@ -1291,90 +1291,39 @@ async function syncDataToCloud() {
       let html = "";
       
       if (tips) {
-        // 1. 拍照建議
         if (tips["拍照建議"]) {
-          html += `
-            <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3">
-              <h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3>
-              <p class="text-sm text-slate-700 leading-relaxed">${tips["拍照建議"]}</p>
-            </div>`;
+          html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["拍照建議"]}</p></div>`;
         }
-        
-        // 2. Pocket 3 參數
         if (tips["Pocket 3 參數"]) {
-          html += `
-            <div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3">
-              <h3 class="text-sm font-black text-sky-800 mb-2">📸 Pocket 3 參數</h3>
-              <p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 參數"]}</p>
-            </div>`;
+          html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-sky-800 mb-2">📸 Pocket 3 參數</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 參數"]}</p></div>`;
         }
-        
-        // 3. Vlog 必拍鏡頭 (陣列)
         if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) {
           const items = tips["Vlog 必拍鏡頭"].map(item => `<li class="text-slate-700 text-sm mb-1">${item}</li>`).join("");
-          html += `
-            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-3">
-              <h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3>
-              <ul class="list-disc pl-4 space-y-1">${items}</ul>
-            </div>`;
+          html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3><ul class="list-disc pl-4 space-y-1">${items}</ul></div>`;
         }
-        
-        // 4. Pocket 3 技巧
         if (tips["Pocket 3 技巧"]) {
-          html += `
-            <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-3">
-              <h3 class="text-sm font-black text-purple-800 mb-2">💡 Pocket 3 技巧</h3>
-              <p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 技巧"]}</p>
-            </div>`;
+          html += `<div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-purple-800 mb-2">💡 Pocket 3 技巧</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 技巧"]}</p></div>`;
         }
-        
-        // 5. 最佳拍攝時間 & 拍攝時長
         if (tips["最佳拍攝時間"] || tips["拍攝時長"]) {
           let timeInfo = "";
           if (tips["最佳拍攝時間"]) timeInfo += `<span class="block mb-1">⏰ ${tips["最佳拍攝時間"]}</span>`;
           if (tips["拍攝時長"]) timeInfo += `<span class="block">⏳ ${tips["拍攝時長"]}</span>`;
-          html += `
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3">
-              <h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3>
-              <p class="text-sm text-slate-700 leading-relaxed">${timeInfo}</p>
-            </div>`;
+          html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3><p class="text-sm text-slate-700 leading-relaxed">${timeInfo}</p></div>`;
         }
-        
-        // 6. 參考照片（圖片牆 + Lightbox）
         if (tips["參考照片"] && tips["參考照片"].length > 0) {
-          const imgHtml = tips["參考照片"].map((url, idx) => 
-            `<img src="${url}" onclick="openLightbox(['${url}'], 0)" class="w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" loading="lazy" onerror="this.style.display='none'">`
-          ).join("");
-          html += `
-            <div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3">
-              <h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3>
-              <div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div>
-              <p class="text-[10px] text-slate-500 mt-1">點擊照片可全屏預覽</p>
-            </div>`;
+          const imgHtml = tips["參考照片"].map((url, idx) => `<img src="${url}" onclick="openLightbox(['${url}'], 0)" class="w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" loading="lazy" onerror="this.style.display='none'">`).join("");
+          html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3><div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div><p class="text-[10px] text-slate-500 mt-1">點擊照片可全屏預覽</p></div>`;
         }
-        
-        // 7. 拍攝角度
         if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) {
           const items = tips["拍攝角度"].map(item => `<li class="text-slate-700 text-sm mb-1">🎯 ${item}</li>`).join("");
-          html += `
-            <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3">
-              <h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3>
-              <ul class="list-disc pl-4 space-y-1">${items}</ul>
-            </div>`;
+          html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3><ul class="list-disc pl-4 space-y-1">${items}</ul></div>`;
         }
-        
-        // 8. 人物動作建議
         if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) {
           const items = tips["人物動作建議"].map(item => `<li class="text-slate-700 text-sm mb-1">🧍 ${item}</li>`).join("");
-          html += `
-            <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-3">
-              <h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3>
-              <ul class="list-disc pl-4 space-y-1">${items}</ul>
-            </div>`;
+          html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3><ul class="list-disc pl-4 space-y-1">${items}</ul></div>`;
         }
-        
       } else {
-        html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議，你可以自行在 shoot-tips.js 中加入。</div>`;
+        html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議。</div>`;
       }
       
       content.innerHTML = html;
@@ -1393,43 +1342,26 @@ async function syncDataToCloud() {
       if (!modal) return;
       modal.style.display = 'flex';
       modal.classList.add('active');
-      
       const content = document.getElementById('common-tips-content');
-      if (content) {
-        content.innerHTML = renderCommonTips();
-      }
+      if (content) content.innerHTML = renderCommonTips();
     }
-
     function closeCommonTipsModal() {
       const modal = document.getElementById('common-tips-modal');
-      if (modal) {
-        modal.classList.remove('active');
-        setTimeout(() => { modal.style.display = 'none'; }, 300);
-      }
+      if (modal) { modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300); }
     }
-
     function renderCommonTips() {
       if (typeof shootTipsCommon === 'undefined') return '<div class="text-center py-8 text-slate-500">尚未添加通用技巧数据</div>';
-      
       let html = '';
       Object.keys(shootTipsCommon).forEach(title => {
         const tips = shootTipsCommon[title];
-        html += `
-        <div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4">
-            <h3 class="text-sm font-black text-slate-800 mb-2">${title}</h3>
-            ${tips['拍照建議'] ? `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${tips['拍照建議']}</div>` : ''}
-            ${tips['Pocket 3 參數'] ? `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-indigo-800 block mb-1">📸 Pocket 3 參數</strong>${tips['Pocket 3 參數']}</div>` : ''}
-            ${tips['Vlog 必拍鏡頭'] ? `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-2"><strong class="text-emerald-800 block mb-1 text-xs">🎬 Vlog 必拍鏡頭</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['Vlog 必拍鏡頭'].map(item=>`<li>${item}</li>`).join('')}</ul></div>` : ''}
-            ${tips['拍攝角度'] ? `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-2"><strong class="text-amber-800 block mb-1 text-xs">🎯 拍攝角度</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['拍攝角度'].map(item=>`<li>${item}</li>`).join('')}</ul></div>` : ''}
-            ${tips['人物動作建議'] ? `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3 mb-2"><strong class="text-rose-800 block mb-1 text-xs">🧍 人物動作建議</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['人物動作建議'].map(item=>`<li>${item}</li>`).join('')}</ul></div>` : ''}
-            ${tips['參考照片'] && tips['參考照片'].length > 0 ? `
-            <div class="bg-pink-50 border border-pink-200 rounded-xl p-3">
-                <strong class="text-pink-800 block mb-1 text-xs">📷 參考照片</strong>
-                <div class="flex gap-2 overflow-x-auto scrollbar-none pb-1">
-                    ${tips['參考照片'].map((img, idx) => `<img src="${img}" onclick="openLightbox(['${img}'], 0)" class="w-28 h-20 object-cover rounded-lg cursor-pointer border border-slate-200 shrink-0" loading="lazy" onerror="this.style.display='none'">`).join('')}
-                </div>
-            </div>` : ''}
-        </div>`;
+        html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4"><h3 class="text-sm font-black text-slate-800 mb-2">${title}</h3>`;
+        if (tips['拍照建議']) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${tips['拍照建議']}</div>`;
+        if (tips['Pocket 3 參數']) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-indigo-800 block mb-1">📸 Pocket 3 參數</strong>${tips['Pocket 3 參數']}</div>`;
+        if (tips['Vlog 必拍鏡頭'] && tips['Vlog 必拍鏡頭'].length > 0) html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-2"><strong class="text-emerald-800 block mb-1 text-xs">🎬 Vlog 必拍鏡頭</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['Vlog 必拍鏡頭'].map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
+        if (tips['拍攝角度'] && tips['拍攝角度'].length > 0) html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-2"><strong class="text-amber-800 block mb-1 text-xs">🎯 拍攝角度</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['拍攝角度'].map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
+        if (tips['人物動作建議'] && tips['人物動作建議'].length > 0) html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3 mb-2"><strong class="text-rose-800 block mb-1 text-xs">🧍 人物動作建議</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['人物動作建議'].map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
+        if (tips['參考照片'] && tips['參考照片'].length > 0) html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-3"><strong class="text-pink-800 block mb-1 text-xs">📷 參考照片</strong><div class="flex gap-2 overflow-x-auto scrollbar-none pb-1">${tips['參考照片'].map((img, idx) => `<img src="${img}" onclick="openLightbox(['${img}'], 0)" class="w-28 h-20 object-cover rounded-lg cursor-pointer border border-slate-200 shrink-0" loading="lazy" onerror="this.style.display='none'">`).join('')}</div></div>`;
+        html += `</div>`;
       });
       return html;
     }
@@ -1439,51 +1371,157 @@ async function syncDataToCloud() {
       const plan = vlogPlan["D" + day];
       const content = document.getElementById("vlog-plan-content");
       let html = "";
-      
       if (plan) {
-        // 1. 整支 Vlog 構思
-        if (plan["整支Vlog構思"]) {
-          html += `
-            <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3">
-              <h3 class="text-sm font-black text-indigo-800 mb-2">🎬 整支 Vlog 構思</h3>
-              <p class="text-sm text-slate-700 leading-relaxed">${plan["整支Vlog構思"]}</p>
-            </div>`;
-        }
-        
-        // 2. 人物構圖
-        if (plan["人物構圖"] && plan["人物構圖"].length > 0) {
-          const items = plan["人物構圖"].map(item => `<li class="text-slate-700 text-sm mb-1">🧍 ${item}</li>`).join("");
-          html += `
-            <div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3">
-              <h3 class="text-sm font-black text-sky-800 mb-2">🧍 人物構圖</h3>
-              <ul class="list-disc pl-4 space-y-1">${items}</ul>
-            </div>`;
-        }
-        
-        // 3. 風景構圖
-        if (plan["風景構圖"] && plan["風景構圖"].length > 0) {
-          const items = plan["風景構圖"].map(item => `<li class="text-slate-700 text-sm mb-1">🏞️ ${item}</li>`).join("");
-          html += `
-            <div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-3">
-              <h3 class="text-sm font-black text-teal-800 mb-2">🏞️ 風景構圖</h3>
-              <ul class="list-disc pl-4 space-y-1">${items}</ul>
-            </div>`;
-        }
-        
+        if (plan["整支Vlog構思"]) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎬 整支 Vlog 構思</h3><p class="text-sm text-slate-700 leading-relaxed">${plan["整支Vlog構思"]}</p></div>`;
+        if (plan["人物構圖"] && plan["人物構圖"].length > 0) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-sky-800 mb-2">🧍 人物構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["人物構圖"].map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
+        if (plan["風景構圖"] && plan["風景構圖"].length > 0) html += `<div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-teal-800 mb-2">🏞️ 風景構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["風景構圖"].map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
       } else {
-        html = `<div class="text-center py-8 text-slate-500 text-sm">暫時未填寫今天的 Vlog 構思，你可以打開 shoot-tips.js 加入。</div>`;
+        html = `<div class="text-center py-8 text-slate-500 text-sm">暫時未填寫今天的 Vlog 構思。</div>`;
       }
-      
       content.innerHTML = html;
       showModal('vlog-plan-modal');
       document.getElementById('vlog-plan-modal').classList.remove('hidden');
     }
-
     function closeVlogPlanModal() {
       hideModal('vlog-plan-modal');
       setTimeout(() => document.getElementById('vlog-plan-modal').classList.add('hidden'), 300);
     }
-  
+
+    // ==================== 購物清單功能 ====================
+    function getShoppingKey(eventTitle) {
+      return `shopping_items_${eventTitle}`;
+    }
+
+    function openShoppingModal(eventTitle) {
+      const modal = document.getElementById('shopping-modal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+      const content = document.getElementById('shopping-content');
+      if (content) content.innerHTML = renderShoppingList(eventTitle);
+    }
+
+    function closeShoppingModal() {
+  const modal = document.getElementById('shopping-modal');
+  if (modal) {
+    modal.classList.remove('active');
+    setTimeout(() => { 
+      modal.style.display = 'none'; 
+      refreshCurrentDay();  // 关闭后刷新当前日期，更新徽章
+    }, 300);
+  }
+}
+
+function refreshCurrentDay() {
+  if (window._lastActiveDay) {
+    const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
+    if (dayData) {
+      renderDayItinerary(`day-section-${dayData.day}`, dayData);
+      // 隐藏其他日期 section
+      document.querySelectorAll('.day-section').forEach(sec => {
+        if (sec.id !== `day-section-${dayData.day}`) sec.classList.add('hidden');
+      });
+      // 恢复 tab 样式并高亮当前日期
+      document.querySelectorAll("#day-tabs-container button").forEach(btn => {
+        btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
+      });
+      const activeTab = document.getElementById(`tab-d${dayData.day}`);
+      if (activeTab) activeTab.className = "day-tab active flex-shrink-0 transition";
+    }
+  }
+}
+
+    function renderShoppingList(eventTitle) {
+      const items = loadShoppingItems(eventTitle);
+      let html = `<h3 class="text-sm font-bold text-slate-700 mb-2">${eventTitle}</h3>`;
+      
+      if (items.length === 0) {
+        html += `<div class="text-center text-slate-400 text-xs py-6">暫無購物項目，請在下方新增</div>`;
+      } else {
+        html += `<div class="space-y-2 mb-4">`;
+        items.forEach((item, index) => {
+          const checked = item.planned ? 'checked' : '';
+          html += `
+          <div class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg">
+            <input type="checkbox" ${checked} onchange="toggleShoppingItem('${eventTitle}', ${index})" class="w-4 h-4 shrink-0">
+            <div class="flex-1 min-w-0">
+              <strong class="text-sm text-slate-800">${item.name}</strong>
+              <span class="text-[10px] text-slate-500 ml-2">${item.category || ''}</span>
+              ${item.note ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate">📝 ${item.note}</p>` : ''}
+            </div>
+            <button onclick="deleteShoppingItem('${eventTitle}', ${index})" class="text-red-400 hover:text-red-600 p-1 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+      
+      html += `
+      <div class="mt-4 border-t border-slate-200 pt-4">
+        <h4 class="text-sm font-bold text-slate-800 mb-2">新增購物項目</h4>
+        <div class="flex flex-col gap-2">
+          <input id="new-shopping-name" type="text" placeholder="物品名稱 *" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+          <div class="flex gap-2">
+            <input id="new-shopping-category" type="text" placeholder="類別 (選填)" class="w-1/3 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+            <input id="new-shopping-note" type="text" placeholder="備註 (選填)" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+          </div>
+          <button onclick="addShoppingItem('${eventTitle}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0">新增</button>
+        </div>
+      </div>`;
+      
+      return html;
+    }
+
+    function loadShoppingItems(eventTitle) {
+      const key = getShoppingKey(eventTitle);
+      const saved = localStorage.getItem(key);
+      try {
+        return saved ? JSON.parse(saved) : [];
+      } catch(e) {
+        return [];
+      }
+    }
+
+    function saveShoppingItems(eventTitle, items) {
+      const key = getShoppingKey(eventTitle);
+      localStorage.setItem(key, JSON.stringify(items));
+    }
+
+    function addShoppingItem(eventTitle) {
+      const nameInput = document.getElementById('new-shopping-name');
+      const categoryInput = document.getElementById('new-shopping-category');
+      const noteInput = document.getElementById('new-shopping-note');
+      const name = nameInput.value.trim();
+      if (!name) {
+        showToast("請輸入物品名稱", "⚠️");
+        return;
+      }
+      const items = loadShoppingItems(eventTitle);
+      items.push({ name: name, category: categoryInput.value.trim(), note: noteInput.value.trim(), planned: false });
+      saveShoppingItems(eventTitle, items);
+      const content = document.getElementById('shopping-content');
+      content.innerHTML = renderShoppingList(eventTitle);
+      showToast("✅ 已新增購物項目");
+    }
+
+    function toggleShoppingItem(eventTitle, index) {
+      const items = loadShoppingItems(eventTitle);
+      items[index].planned = !items[index].planned;
+      saveShoppingItems(eventTitle, items);
+      const content = document.getElementById('shopping-content');
+      content.innerHTML = renderShoppingList(eventTitle);
+    }
+
+    function deleteShoppingItem(eventTitle, index) {
+      const items = loadShoppingItems(eventTitle);
+      items.splice(index, 1);
+      saveShoppingItems(eventTitle, items);
+      const content = document.getElementById('shopping-content');
+      content.innerHTML = renderShoppingList(eventTitle);
+      showToast("🗑 已刪除");
+    }
+
     // ==================== 天氣 ====================
     const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
     async function fetchWeatherData() {
@@ -1502,21 +1540,11 @@ async function syncDataToCloud() {
           const icon = data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️";
           miniForecast.innerHTML += `<div class="bg-white/70 p-1.5 rounded text-center min-w-[55px]"><span class="block text-[8px] text-slate-400">${date}</span><span class="block text-[14px]">${icon}</span><span class="block text-[9px] font-bold text-slate-700">${max}°/${min}°</span></div>`;
         }
-        
-        // 存入天氣快取
         for (let i = 0; i < 7; i++) {
           const dateStr = data.daily.time[i];
-          window.weatherCache[dateStr] = {
-              max: Math.round(data.daily.temperature_2m_max[i]),
-              min: Math.round(data.daily.temperature_2m_min[i]),
-              rain: data.daily.precipitation_probability_max[i] ?? 0,
-              icon: data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️"
-          };
+          window.weatherCache[dateStr] = { max: Math.round(data.daily.temperature_2m_max[i]), min: Math.round(data.daily.temperature_2m_min[i]), rain: data.daily.precipitation_probability_max[i] ?? 0, icon: data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️" };
         }
-        
-        // 重新渲染當前日（讓天氣資訊出現在行程中）
         if (window._lastActiveDay) switchDay(window._lastActiveDay);
-        
         const detail = document.getElementById('weather-detail-content');
         detail.innerHTML = `<div class="bg-sky-50 p-3 rounded-xl border border-sky-200"><span class="text-xs text-slate-500">目前氣溫</span><strong class="block text-xl text-slate-800">${Math.round(data.current.temperature_2m)}°C</strong><span class="text-[10px] text-slate-600">體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}% | 風速 ${data.current.wind_speed_10m} km/h</span></div><div class="text-xs text-slate-700 space-y-2"><strong class="block text-slate-800 mb-1">未來7天預報</strong>${[0,1,2,3,4,5,6].map(i => `<div class="flex justify-between border-b border-slate-100 pb-1"><span>${data.daily.time[i]} (${["日","一","二","三","四","五","六"][new Date(data.daily.time[i]).getDay()]})</span><span>${Math.round(data.daily.temperature_2m_max[i])}° / ${Math.round(data.daily.temperature_2m_min[i])}°</span><span class="text-blue-500">💧 ${data.daily.precipitation_probability_max[i] ?? 0}%</span></div>`).join('')}</div>`;
       } catch(e) {
@@ -1524,36 +1552,26 @@ async function syncDataToCloud() {
         document.getElementById('weather-detail-content').innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">天氣資料暫時無法取得，請稍後再試。</div>';
       }
     }
-  
+
     // ==================== 行程渲染（直式時間軸） ====================
     function renderDayItinerary(sectionId, dayData) {
       const section = document.getElementById(sectionId);
       if (!section) return;
       
-      // ===== 天氣與行程聯動 =====
       const dateStr = tripDates[dayData.day - 1];
       const weatherInfo = window.weatherCache[dateStr] || null;
       let weatherHtml = "";
       if (weatherInfo) {
-          const icon = weatherInfo.icon;
-          const max = weatherInfo.max;
-          const min = weatherInfo.min;
-          const rain = weatherInfo.rain;
-          let advice = "";
-          if (min < -5) advice = "❄️ 極寒！羽絨+雪靴+毛帽必備";
-          else if (min < 0) advice = "🧣 寒冷，圍巾手套不可少";
-          else advice = "🧥 偏涼，外套防風防水";
-          if (rain > 50) advice += "，攜帶雨具⚠️";
-          
-          weatherHtml = `
-          <div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs text-slate-700 weather-card">
-              <span class="text-lg">${icon}</span>
-              <span class="font-bold text-sky-700">${dateStr.substring(5)} 天氣：</span>
-              <span>最高 ${max}° / 最低 ${min}°</span>
-              <span class="text-slate-400">|</span>
-              <span class="text-slate-500">💧 ${rain}%</span>
-              <span class="ml-auto font-bold text-slate-600">${advice}</span>
-          </div>`;
+        const icon = weatherInfo.icon;
+        const max = weatherInfo.max;
+        const min = weatherInfo.min;
+        const rain = weatherInfo.rain;
+        let advice = "";
+        if (min < -5) advice = "❄️ 極寒！羽絨+雪靴+毛帽必備";
+        else if (min < 0) advice = "🧣 寒冷，圍巾手套不可少";
+        else advice = "🧥 偏涼，外套防風防水";
+        if (rain > 50) advice += "，攜帶雨具⚠️";
+        weatherHtml = `<div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs text-slate-700 weather-card"><span class="text-lg">${icon}</span><span class="font-bold text-sky-700">${dateStr.substring(5)} 天氣：</span><span>最高 ${max}° / 最低 ${min}°</span><span class="text-slate-400">|</span><span class="text-slate-500">💧 ${rain}%</span><span class="ml-auto font-bold text-slate-600">${advice}</span></div>`;
       }
       
       let html = `<div class="mb-8">
@@ -1567,15 +1585,10 @@ async function syncDataToCloud() {
               ${weatherHtml}
             </div>
           </div>
-          <!-- 📷 冰藍漸層相機按鈕（點擊打開 Vlog 構思） -->
           <button onclick="openVlogPlanModal(${dayData.day})" title="查看今日 Vlog 構思" class="w-9 h-9 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white rounded-full shadow-sm shadow-sky-200/50 transition-all duration-300 active:scale-95 shrink-0 ml-2 hover:rotate-12">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </button>
         </div>
-        <!-- 今日焦點大卡片 -->
         <div id="focus-card-${dayData.day}" class="focus-card" onclick="scrollToEvent(${dayData.day}, ${getFocusEventIndex(dayData.day)})">
           <span class="focus-tag" id="focus-tag-${dayData.day}">📍 今日焦點</span>
           <div class="focus-title" id="focus-title-${dayData.day}">載入中...</div>
@@ -1592,18 +1605,20 @@ async function syncDataToCloud() {
         const catColors = { "tag-teal": "bg-teal-400", "tag-amber": "bg-amber-400", "tag-rose": "bg-rose-400", "tag-sky": "bg-sky-400", "tag-indigo": "bg-indigo-400", "tag-emerald": "bg-emerald-400" };
         const catColor = event.tag ? catColors[event.tag.class] || "bg-slate-400" : "bg-slate-400";
         
-        // 拍攝靈感按鈕 + 購物清單按鈕
-        const shootBtnHtml = `
-          <div class="flex flex-wrap gap-1 mt-1">
-            <button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button>
-            <button onclick="openShoppingModal('${event.title}')" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單</button>
-          </div>`;
+        const shootingItems = loadShoppingItems(event.title);
+const shoppingBadge = shootingItems.length > 0 
+  ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shootingItems.length}</span>` 
+  : '';
+
+const shootBtnHtml = `
+  <div class="flex flex-wrap gap-1 mt-1">
+    <button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button>
+    <button onclick="openShoppingModal('${event.title}')" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單${shoppingBadge}</button>
+  </div>`;
         
         html += `
           <div class="timeline-node" id="event-dot-${dayData.day}-${index}">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           </div>
           
           <div class="timeline-card">
@@ -1622,9 +1637,7 @@ async function syncDataToCloud() {
                   ${event.location ? `<div class="text-xs text-slate-500 mt-0.5">📍 ${event.location}</div>` : ""}
                 </div>
                 <div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100">
-                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
               </summary>
               <div class="event-content-wrapper p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">
@@ -1636,7 +1649,6 @@ async function syncDataToCloud() {
           </div>`;
       });
       
-      // ===== 旅行日記 =====
       const diaryKey = `diary_day_${dayData.day}`;
       const savedDiary = localStorage.getItem(diaryKey) || "";
       html += `
@@ -1651,40 +1663,10 @@ async function syncDataToCloud() {
       
       html += `</div></div>`;
       section.innerHTML = html;
-      
-      // 初始化焦點卡片
       updateFocusCard(dayData.day);
     }
-  
-    function toggleAllDetails(sectionId) {
-      const section = document.getElementById(sectionId);
-      if (!section) return;
-      const details = section.querySelectorAll("details");
-      if (details.length === 0) return;
-      let openCount = 0;
-      details.forEach(d => { if (d.open) openCount++; });
-      const shouldOpen = openCount < details.length / 2;
-      details.forEach(d => { d.open = shouldOpen; });
-      setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
-    }
-  
-    function collapseAllItineraries() {
-      const activeSection = document.querySelector(".day-section:not(.hidden)");
-      if (activeSection) {
-        const details = activeSection.querySelectorAll("details");
-        const anyOpen = Array.from(details).some(d => d.open);
-        if (anyOpen) {
-          details.forEach(detail => { detail.open = false; });
-          showToast("⬆️ 已收合全部行程");
-        } else {
-          details.forEach(detail => { detail.open = true; });
-          showToast("⬇️ 已展開全部行程");
-        }
-        window.dispatchEvent(new Event("scroll"));
-      }
-    }
-  
-    // ==================== 今日焦點卡片功能 ====================
+
+    // ==================== 其他函數（簡化） ====================
     function getFocusEventIndex(day) {
       const dayData = winterItineraries.find(d => d.day === day);
       if (!dayData) return 0;
@@ -1708,7 +1690,6 @@ async function syncDataToCloud() {
       const now = getAppTime();
       let currentEventIndex = -1;
       let nextEventIndex = -1;
-      
       for (let i = 0; i < dayData.events.length; i++) {
         const event = dayData.events[i];
         const timeParts = event.time.split(" - ");
@@ -1716,15 +1697,9 @@ async function syncDataToCloud() {
         const endTime = timeParts[1] ? timeParts[1].trim() : "23:59";
         const startDate = new Date(`${tripDates[day-1]}T${startTime}:00`);
         const endDate = new Date(`${tripDates[day-1]}T${endTime}:00`);
-        if (now >= startDate && now <= endDate) {
-          currentEventIndex = i;
-          break;
-        }
-        if (now < startDate && nextEventIndex === -1) {
-          nextEventIndex = i;
-        }
+        if (now >= startDate && now <= endDate) { currentEventIndex = i; break; }
+        if (now < startDate && nextEventIndex === -1) { nextEventIndex = i; }
       }
-      
       if (currentEventIndex !== -1) {
         const event = dayData.events[currentEventIndex];
         document.getElementById(`focus-tag-${day}`).innerText = "⏳ 正在進行";
@@ -1755,11 +1730,10 @@ async function syncDataToCloud() {
         setTimeout(() => target.classList.remove("ring-2", "ring-sky-400"), 2000);
       }
     }
-  
+
     // ==================== 全屏圖片燈箱 ====================
     let lightboxImages = [];
     let lightboxIndex = 0;
-    
     function openLightbox(images, index) {
       lightboxImages = images || [];
       lightboxIndex = index || 0;
@@ -1771,13 +1745,11 @@ async function syncDataToCloud() {
       lightbox.classList.add("active");
       document.body.style.overflow = "hidden";
     }
-    
     function closeLightbox() {
       const lightbox = document.getElementById("lightbox");
       lightbox.classList.remove("active");
       document.body.style.overflow = "";
     }
-    
     function changeLightbox(direction) {
       lightboxIndex += direction;
       if (lightboxIndex < 0) lightboxIndex = lightboxImages.length - 1;
@@ -1786,43 +1758,149 @@ async function syncDataToCloud() {
       img.src = lightboxImages[lightboxIndex];
       document.getElementById("lightbox-caption").innerText = `${lightboxIndex + 1} / ${lightboxImages.length}`;
     }
-    
-    // 支援滑動切換
     let touchStartX = 0;
-    document.getElementById("lightbox").addEventListener("touchstart", function(e) {
-      touchStartX = e.touches[0].clientX;
-    }, { passive: true });
-    
+    document.getElementById("lightbox").addEventListener("touchstart", function(e) { touchStartX = e.touches[0].clientX; }, { passive: true });
     document.getElementById("lightbox").addEventListener("touchend", function(e) {
       const touchEndX = e.changedTouches[0].clientX;
       const diff = touchStartX - touchEndX;
-      if (Math.abs(diff) > 50) {
-        changeLightbox(diff > 0 ? 1 : -1);
-      }
+      if (Math.abs(diff) > 50) changeLightbox(diff > 0 ? 1 : -1);
     }, { passive: true });
-  
-    // ==================== 按鈕漣漪效果 ====================
-    function createRipple(event) {
-      const button = event.currentTarget;
-      const circle = document.createElement("span");
-      const diameter = Math.max(button.clientWidth, button.clientHeight);
-      const radius = diameter / 2;
-      const rect = button.getBoundingClientRect();
-      circle.style.width = circle.style.height = `${diameter}px`;
-      circle.style.left = `${event.clientX - rect.left - radius}px`;
-      circle.style.top = `${event.clientY - rect.top - radius}px`;
-      circle.classList.add("ripple-effect");
-      button.appendChild(circle);
-      setTimeout(() => circle.remove(), 600);
-    }
-    
-    document.addEventListener("click", function(e) {
-      if (e.target.closest("button")) {
-        createRipple(e);
+
+    // ==================== 倒數計時 ====================
+    const departureTarget = new Date("2027-01-21T10:00:00+08:00").getTime();
+    const zaoTarget = new Date("2027-01-15T23:00:00+08:00").getTime();
+    const ginzanTarget = new Date("2027-01-08T23:00:00+08:00").getTime();
+    function updateCountdowns() {
+      const now = new Date().getTime();
+      const departureDiff = departureTarget - now;
+      const departureEl = document.getElementById("departure-countdown");
+      if (departureEl) {
+        if (departureDiff < 0) { departureEl.innerText = "❄️ 2027 東北冬日雪景之旅進行中！"; departureEl.classList.remove("animate-pulse"); }
+        else {
+          const days = Math.floor(departureDiff / 86400000);
+          const hours = Math.floor(departureDiff % 86400000 / 3600000);
+          const minutes = Math.floor(departureDiff % 3600000 / 60000);
+          const seconds = Math.floor(departureDiff % 60000 / 1000);
+          departureEl.innerText = `${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+        }
       }
-    });
-  
-    // ==================== 雪人成長粒子特效 ====================
+      const ginzanDiff = ginzanTarget - now;
+      const ginzanEl = document.getElementById("ginzan-countdown");
+      if (ginzanEl) {
+        if (ginzanDiff < 0) { ginzanEl.innerText = "🎟️ 搶票時段已開始或結束！"; ginzanEl.classList.remove("animate-pulse", "text-purple-700"); ginzanEl.classList.add("text-rose-600"); }
+        else {
+          const days = Math.floor(ginzanDiff / 86400000);
+          const hours = Math.floor(ginzanDiff % 86400000 / 3600000);
+          const minutes = Math.floor(ginzanDiff % 3600000 / 60000);
+          const seconds = Math.floor(ginzanDiff % 60000 / 1000);
+          ginzanEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+        }
+      }
+      const zaoDiff = zaoTarget - now;
+      const zaoEl = document.getElementById("zao-countdown");
+      if (zaoEl) {
+        if (zaoDiff < 0) { zaoEl.innerText = "🎟️ 搶票時段已開始或結束！"; zaoEl.classList.remove("animate-pulse", "text-sky-700"); zaoEl.classList.add("text-rose-600"); }
+        else {
+          const days = Math.floor(zaoDiff / 86400000);
+          const hours = Math.floor(zaoDiff % 86400000 / 3600000);
+          const minutes = Math.floor(zaoDiff % 3600000 / 60000);
+          const seconds = Math.floor(zaoDiff % 60000 / 1000);
+          zaoEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+        }
+      }
+    }
+
+    // ==================== 歡迎導覽 ====================
+    function closeWelcomeModal(skipForever = false) {
+      const modal = document.getElementById("welcome-modal");
+      if (modal) { modal.style.opacity = "0"; setTimeout(() => { modal.style.display = "none"; }, 300); }
+      if (skipForever) localStorage.setItem("tohoku_welcome_dismissed", "true");
+    }
+    function checkWelcomeModal() {
+      const dismissed = localStorage.getItem("tohoku_welcome_dismissed");
+      const modal = document.getElementById("welcome-modal");
+      if (dismissed === "true" && modal) modal.style.display = "none";
+    }
+
+    // ==================== 動態角色 ====================
+    let characterTimeout = null;
+    let bubbleTimeout = null;
+    function spawnCharacters() {
+      clearTimeout(characterTimeout);
+      clearTimeout(bubbleTimeout);
+      const snowman = document.getElementById('snowman');
+      const fox = document.getElementById('fox');
+      if (!snowman || !fox) return;
+      snowman.classList.remove('show', 'greet');
+      fox.classList.remove('show', 'greet');
+      snowman.classList.add('hide');
+      fox.classList.add('hide');
+      if (Math.random() < 0.5) { characterTimeout = setTimeout(spawnCharacters, Math.random() * 5000 + 4000); return; }
+      const showSnowman = Math.random() < 0.5;
+      const character = showSnowman ? snowman : fox;
+      const characterId = showSnowman ? 'snowman' : 'fox';
+      const isLeft = Math.random() < 0.5;
+      const randomX = isLeft ? `${Math.random() * 15}vw` : '';
+      const randomRight = isLeft ? '' : `${Math.random() * 15}vw`;
+      const randomBottom = `${Math.random() * 20 + 5}vh`;
+      if (isLeft) { character.style.left = randomX; character.style.right = 'auto'; }
+      else { character.style.right = randomRight; character.style.left = 'auto'; }
+      character.style.bottom = randomBottom;
+      character.classList.remove('hide');
+      character.classList.add('show');
+      setTimeout(() => {
+        character.classList.add('greet');
+        showCharacterBubble(character, showSnowman ? '嗨！我是雪人⛄' : '嗨！我是狐狸🦊');
+      }, 600);
+      characterTimeout = setTimeout(() => {
+        character.classList.remove('show', 'greet');
+        character.classList.add('hide');
+        setTimeout(spawnCharacters, Math.random() * 5000 + 3000);
+      }, 4000);
+    }
+    function showCharacterBubble(element, text) {
+      const oldBubble = document.querySelector('.character-bubble');
+      if (oldBubble) oldBubble.remove();
+      const bubble = document.createElement('div');
+      bubble.className = 'character-bubble';
+      bubble.innerText = text;
+      const rect = element.getBoundingClientRect();
+      bubble.style.left = rect.left + rect.width / 2 - 30 + 'px';
+      bubble.style.top = rect.top - 30 + 'px';
+      document.body.appendChild(bubble);
+      bubble.classList.add('show');
+      bubbleTimeout = setTimeout(() => { bubble.classList.remove('show'); setTimeout(() => bubble.remove(), 300); }, 2000);
+    }
+    function jump(characterId) {
+      const char = document.getElementById(characterId);
+      if (char) {
+        char.classList.add('jumping');
+        setTimeout(() => char.classList.remove('jumping'), 600);
+        if (characterId === 'snowman') {
+          snowmanProgress = Math.min(snowmanProgress + 1, 5);
+          localStorage.setItem("snowman_progress", JSON.stringify(snowmanProgress));
+          updateSnowmanVisual();
+          snowParticles();
+          showToast(`雪人成長度：${snowmanProgress}/5！`, "⛄");
+        } else showToast(`你點了一下狐狸！`, "🦊");
+      }
+    }
+    function updateSnowmanVisual() {
+      const snowman = document.getElementById("snowman");
+      if (!snowman) return;
+      const progress = snowmanProgress;
+      let hatColor = "#ef4444";
+      let accessory = "";
+      if (progress >= 1) hatColor = "#f97316";
+      if (progress >= 2) hatColor = "#facc15";
+      if (progress >= 3) { hatColor = "#4ade80"; accessory = "圍巾已升級！"; }
+      if (progress >= 4) { hatColor = "#38bdf8"; accessory = "手套已升級！"; }
+      if (progress >= 5) { hatColor = "#a78bfa"; accessory = "終極雪人！"; }
+      const hatPath = snowman.querySelector('#hatGrad stop:first-child');
+      if (hatPath) hatPath.setAttribute('stop-color', hatColor);
+      if (accessory) showToast(`⛄ ${accessory}`, "🎉");
+    }
+    function initRandomCharacters() { setTimeout(spawnCharacters, 2000); }
     function snowParticles() {
       const particles = document.createElement("div");
       particles.className = "particle";
@@ -1841,734 +1919,48 @@ async function syncDataToCloud() {
       document.body.appendChild(particles);
       setTimeout(() => particles.remove(), 5000);
     }
-  
-    // ==================== 時間模擬 ====================
+
+    // ==================== 其他輔助函數 ====================
     function getAppTime() { return simulatedTime ? new Date(simulatedTime) : new Date(); }
-    function toggleSimulation() {
-      const simIcon = document.getElementById("sim-icon");
-      const simText = document.getElementById("sim-text");
-      if (simulatedTime) {
-        simulatedTime = null;
-        if (simIcon) simIcon.innerText = "🔮";
-        if (simText) simText.innerText = "模擬旅途時間";
-        showToast("🕒 已恢復真實時間");
-      } else {
-        simulatedTime = new Date("2027-01-23T10:00:00").getTime();
-        if (simIcon) simIcon.innerText = "⏹️";
-        if (simText) simText.innerText = "結束模擬";
-        showToast("⛷️ 模擬啟動：跳轉至 Day 3 藏王樹冰行程！", "❄️");
-      }
-      updateCurrentEventHighlight();
+    function copyText(text) {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      } catch(e) { navigator.clipboard.writeText(text).catch(() => {}); }
     }
-  
-    function updateCurrentEventHighlight() {
-      const now = getAppTime();
-      let activeDay = -1;
-      let activeEvent = -1;
-      for (let i = 0; i < winterItineraries.length; i++) {
-        const dayData = winterItineraries[i];
-        const dateStr = tripDates[dayData.day - 1];
-        if (!dateStr) continue;
-        for (let j = 0; j < dayData.events.length; j++) {
-          const timeParts = dayData.events[j].time.split(" - ");
-          const startStr = timeParts[0].trim();
-          const endStr = timeParts[1] ? timeParts[1].trim() : "23:59";
-          const startDate = new Date(`${dateStr}T${startStr}:00`);
-          let endDate = new Date(`${dateStr}T${endStr}:00`);
-          if (endStr === "") endDate = new Date(`${dateStr}T23:59:00`);
-          if (now >= startDate && now <= endDate) { activeDay = dayData.day; activeEvent = j; break; }
-          if (now < startDate && activeDay === -1) {
-            const todayStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
-            if (todayStr === dateStr) { activeDay = dayData.day; activeEvent = j; break; }
-          }
-        }
-        if (activeDay !== -1) break;
-      }
-      document.querySelectorAll('[id^="event-card-"]').forEach(card => {
-        card.classList.remove("ring-2", "ring-sky-400", "shadow-sky-200/50", "bg-sky-50/40");
-        card.classList.add("border-slate-100", "bg-white");
+
+    // ==================== 初始化 ====================
+    window.addEventListener("DOMContentLoaded", () => {
+      initSnowEffect();
+      winterItineraries.forEach((dayData, index) => {
+        renderDayItinerary(`day-section-${index + 1}`, dayData);
       });
-      document.querySelectorAll('[id^="event-badge-"]').forEach(badge => badge.classList.add("hidden"));
-      document.querySelectorAll('[id^="event-dot-"]').forEach(dot => {
-        dot.classList.remove("bg-rose-500", "animate-pulse", "ring-rose-200");
-        dot.classList.add("bg-indigo-500", "ring-slate-50");
-      });
-      document.querySelectorAll('[id^="event-timebox-"]').forEach(box => {
-        box.classList.remove("bg-sky-500", "text-white");
-        box.classList.add("bg-indigo-50", "text-indigo-700");
-      });
-      document.querySelectorAll('[id^="event-title-"]').forEach(title => {
-        title.classList.remove("text-sky-900");
-        title.classList.add("text-slate-800");
-      });
-      if (activeDay !== -1 && activeEvent !== -1) {
-        const card = document.getElementById(`event-card-${activeDay}-${activeEvent}`);
-        if (card) {
-          card.classList.remove("border-slate-100", "bg-white");
-          card.classList.add("ring-2", "ring-sky-400", "shadow-sky-200/50", "bg-sky-50/40");
-          card.open = true;
-        }
-        if (window._lastActiveDay !== activeDay) {
-          switchDay(activeDay);
-          window._lastActiveDay = activeDay;
-          setTimeout(() => {
-            if (card) {
-              const top = card.getBoundingClientRect().top + window.scrollY - 180;
-              window.scrollTo({ top, behavior: "smooth" });
-            }
-          }, 400);
-        }
-      }
-      if (window._lastActiveDay) updateFocusCard(window._lastActiveDay);
-    }
-  
-    // ==================== 倒數計時 ====================
-    const departureTarget = new Date("2027-01-21T10:00:00+08:00").getTime();
-    const zaoTarget = new Date("2027-01-15T23:00:00+08:00").getTime();
-    const ginzanTarget = new Date("2027-01-08T23:00:00+08:00").getTime();
-    function updateCountdowns() {
-      const now = new Date().getTime();
-      const departureDiff = departureTarget - now;
-      const departureEl = document.getElementById("departure-countdown");
-      if (departureEl) {
-        if (departureDiff < 0) {
-          departureEl.innerText = "❄️ 2027 東北冬日雪景之旅進行中！";
-          departureEl.classList.remove("animate-pulse");
-        } else {
-          const days = Math.floor(departureDiff / 86400000);
-          const hours = Math.floor(departureDiff % 86400000 / 3600000);
-          const minutes = Math.floor(departureDiff % 3600000 / 60000);
-          const seconds = Math.floor(departureDiff % 60000 / 1000);
-          departureEl.innerText = `${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
-        }
-      }
-      const ginzanDiff = ginzanTarget - now;
-      const ginzanEl = document.getElementById("ginzan-countdown");
-      if (ginzanEl) {
-        if (ginzanDiff < 0) {
-          ginzanEl.innerText = "🎟️ 搶票時段已開始或結束！";
-          ginzanEl.classList.remove("animate-pulse", "text-purple-700");
-          ginzanEl.classList.add("text-rose-600");
-        } else {
-          const days = Math.floor(ginzanDiff / 86400000);
-          const hours = Math.floor(ginzanDiff % 86400000 / 3600000);
-          const minutes = Math.floor(ginzanDiff % 3600000 / 60000);
-          const seconds = Math.floor(ginzanDiff % 60000 / 1000);
-          ginzanEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
-        }
-      }
-      const zaoDiff = zaoTarget - now;
-      const zaoEl = document.getElementById("zao-countdown");
-      if (zaoEl) {
-        if (zaoDiff < 0) {
-          zaoEl.innerText = "🎟️ 搶票時段已開始或結束！";
-          zaoEl.classList.remove("animate-pulse", "text-sky-700");
-          zaoEl.classList.add("text-rose-600");
-        } else {
-          const days = Math.floor(zaoDiff / 86400000);
-          const hours = Math.floor(zaoDiff % 86400000 / 3600000);
-          const minutes = Math.floor(zaoDiff % 3600000 / 60000);
-          const seconds = Math.floor(zaoDiff % 60000 / 1000);
-          zaoEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
-        }
-      }
-    }
-    // ==================== 歡迎導覽 ====================
-  function closeWelcomeModal(skipForever = false) {
-    const modal = document.getElementById("welcome-modal");
-    if (modal) {
-      modal.style.opacity = "0";
-      setTimeout(() => { modal.style.display = "none"; }, 300);
-    }
-    if (skipForever) {
-      localStorage.setItem("tohoku_welcome_dismissed", "true");
-    }
-  }
-  function checkWelcomeModal() {
-    const dismissed = localStorage.getItem("tohoku_welcome_dismissed");
-    const modal = document.getElementById("welcome-modal");
-    if (dismissed === "true" && modal) {
-      modal.style.display = "none";
-    }
-  }
-  
-  // ==================== 動態角色 ====================
-  let characterTimeout = null;
-  let bubbleTimeout = null;
-  
-  function spawnCharacters() {
-    clearTimeout(characterTimeout);
-    clearTimeout(bubbleTimeout);
-    
-    const snowman = document.getElementById('snowman');
-    const fox = document.getElementById('fox');
-    if (!snowman || !fox) return;
-  
-    snowman.classList.remove('show', 'greet');
-    fox.classList.remove('show', 'greet');
-    snowman.classList.add('hide');
-    fox.classList.add('hide');
-  
-    if (Math.random() < 0.5) {
-      characterTimeout = setTimeout(spawnCharacters, Math.random() * 5000 + 4000);
-      return;
-    }
-  
-    const showSnowman = Math.random() < 0.5;
-    const character = showSnowman ? snowman : fox;
-    const characterId = showSnowman ? 'snowman' : 'fox';
-  
-    const isLeft = Math.random() < 0.5;
-    const randomX = isLeft ? `${Math.random() * 15}vw` : '';
-    const randomRight = isLeft ? '' : `${Math.random() * 15}vw`;
-    const randomBottom = `${Math.random() * 20 + 5}vh`;
-  
-    if (isLeft) {
-      character.style.left = randomX;
-      character.style.right = 'auto';
-    } else {
-      character.style.right = randomRight;
-      character.style.left = 'auto';
-    }
-    character.style.bottom = randomBottom;
-  
-    character.classList.remove('hide');
-    character.classList.add('show');
-  
-    setTimeout(() => {
-      character.classList.add('greet');
-      showCharacterBubble(character, showSnowman ? '嗨！我是雪人⛄' : '嗨！我是狐狸🦊');
-    }, 600);
-  
-    characterTimeout = setTimeout(() => {
-      character.classList.remove('show', 'greet');
-      character.classList.add('hide');
-      setTimeout(spawnCharacters, Math.random() * 5000 + 3000);
-    }, 4000);
-  }
-  
-  function showCharacterBubble(element, text) {
-    const oldBubble = document.querySelector('.character-bubble');
-    if (oldBubble) oldBubble.remove();
-  
-    const bubble = document.createElement('div');
-    bubble.className = 'character-bubble';
-    bubble.innerText = text;
-    const rect = element.getBoundingClientRect();
-    bubble.style.left = rect.left + rect.width / 2 - 30 + 'px';
-    bubble.style.top = rect.top - 30 + 'px';
-    document.body.appendChild(bubble);
-    bubble.classList.add('show');
-    bubbleTimeout = setTimeout(() => {
-      bubble.classList.remove('show');
-      setTimeout(() => bubble.remove(), 300);
-    }, 2000);
-  }
-  
-  // ==================== 雪人成長任務 ====================
-  function jump(characterId) {
-    const char = document.getElementById(characterId);
-    if (char) {
-      char.classList.add('jumping');
-      setTimeout(() => char.classList.remove('jumping'), 600);
-      if (characterId === 'snowman') {
-        snowmanProgress = Math.min(snowmanProgress + 1, 5);
-        localStorage.setItem("snowman_progress", JSON.stringify(snowmanProgress));
-        updateSnowmanVisual();
-        snowParticles();
-        showToast(`雪人成長度：${snowmanProgress}/5！`, "⛄");
-      } else {
-        showToast(`你點了一下狐狸！`, "🦊");
-      }
-    }
-  }
-  
-  function updateSnowmanVisual() {
-    const snowman = document.getElementById("snowman");
-    if (!snowman) return;
-    const progress = snowmanProgress;
-    let hatColor = "#ef4444";
-    let accessory = "";
-    if (progress >= 1) hatColor = "#f97316";
-    if (progress >= 2) hatColor = "#facc15";
-    if (progress >= 3) { hatColor = "#4ade80"; accessory = "圍巾已升級！"; }
-    if (progress >= 4) { hatColor = "#38bdf8"; accessory = "手套已升級！"; }
-    if (progress >= 5) { hatColor = "#a78bfa"; accessory = "終極雪人！"; }
-    
-    const hatPath = snowman.querySelector('#hatGrad stop:first-child');
-    if (hatPath) hatPath.setAttribute('stop-color', hatColor);
-    
-    if (accessory) {
-      showToast(`⛄ ${accessory}`, "🎉");
-    }
-  }
-  
-  function initRandomCharacters() {
-    setTimeout(spawnCharacters, 2000);
-  }
-  
-  // ==================== 行前預訂 Check List ====================
-  const bookingList = [
-    { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
-    { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
-    { id: "car-pickup", category: "租車", label: "1/21 15:30 機場取車", icon: "⏰" },
-    { id: "car-dropoff", category: "租車", label: "1/27 13:45 機場還車", icon: "⏰" },
-    { id: "hotel-akiu", category: "住宿", label: "1/21 秋保溫泉 瑞鳳大飯店 (含自助晚餐)", icon: "🏨" },
-    { id: "hotel-tendo", category: "住宿", label: "1/22-23 微笑之宿 瀧之湯 (含懷石晚餐)", icon: "🏨" },
-    { id: "hotel-sendai", category: "住宿", label: "1/24-26 Hotel Grand Bach 仙台 (連住3晚)", icon: "🏨" },
-    { id: "ticket-ginzan", category: "門票", label: "銀山溫泉 Fast Pass (1/8 23:00搶票)", icon: "🎟️" },
-    { id: "ticket-zao", category: "門票", label: "藏王纜車優先票 (1/15 23:00搶票)", icon: "🎟️" },
-    { id: "ticket-springvalley", category: "門票", label: "Spring Valley 雪之冒險王國 (1/24)", icon: "⛷️" },
-    { id: "ticket-foxvillage", category: "門票", label: "狐狸村入場 (現場購票)", icon: "🦊" },
-    { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/23 16:30)", icon: "♨️" },
-    { id: "other-strawberry", category: "其他", label: "寒河江草莓園 (1/23 14:00)", icon: "🍓" },
-  ];
-  
-  let customBookingItems = [];
-  
-  function renderBookingChecklist() {
-    const container = document.getElementById("booking-checklist-container");
-    if (!container) return;
-  
-    const categories = ["租車", "住宿", "門票", "其他"];
-    let html = "";
-    
-    categories.forEach(cat => {
-      const items = bookingList.filter(item => item.category === cat);
-      const customItems = customBookingItems.filter(item => item.category === cat);
-      const allItems = [...items, ...customItems];
-      if (allItems.length === 0) return;
-      
-      html += `<div class="mb-4">
-        <h4 class="text-sm font-bold text-slate-800 mb-2">${cat}</h4>
-        <div class="space-y-1.5">`;
-      
-      allItems.forEach(item => {
-        const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
-        const isChecked = state.checkedItems[key] === true;
-        html += `
-          <div class="flex items-center gap-2">
-            <label class="flex-1 flex items-center gap-2.5 p-2 rounded-lg border ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'} cursor-pointer hover:bg-slate-50 transition">
-              <input type="checkbox" class="w-4 h-4 shrink-0" ${isChecked ? 'checked' : ''} onchange="toggleBookingCheck('${key}')">
-              <span class="text-xs text-slate-700">${item.icon} ${item.label}</span>
-            </label>
-            ${item.isCustom ? `<button onclick="deleteCustomBooking('${item.id}')" class="text-red-400 hover:text-red-600 p-1.5 shrink-0" title="刪除"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ""}
-          </div>`;
-      });
-      
-      html += `</div></div>`;
+      switchMainTab("itinerary");
+      updateCountdowns();
+      setInterval(updateCountdowns, 1000);
+      checkWelcomeModal();
+      fetchWeatherData();
+      initRandomCharacters();
     });
-  
-    html += `
-      <div class="mt-4 pt-4 border-t border-slate-200">
-        <h4 class="text-sm font-bold text-slate-800 mb-2">新增項目</h4>
-        <div class="flex gap-2">
-          <input id="new-booking-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
-          <select id="new-booking-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white">
-            <option value="租車">租車</option>
-            <option value="住宿">住宿</option>
-            <option value="門票">門票</option>
-            <option value="其他">其他</option>
-          </select>
-          <button onclick="addCustomBooking()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button>
-        </div>
-      </div>`;
-  
-    html += `
-      <div class="flex gap-2 mt-4">
-        <button onclick="checkAllBooking()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button>
-        <button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button>
-        <button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button>
-      </div>`;
-  
-    container.innerHTML = html;
-  }
-  
-  function toggleBookingCheck(key) {
-    state.checkedItems[key] = !state.checkedItems[key];
-    saveLocalCheckedItems();
-    syncDataToCloud();
-    renderBookingChecklist();
-  }
-  
-  function checkAllBooking() {
-    [...bookingList, ...customBookingItems].forEach(item => {
-      const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
-      state.checkedItems[key] = true;
-    });
-    saveLocalCheckedItems();
-    syncDataToCloud();
-    renderBookingChecklist();
-    showToast("✅ 已全部勾選！");
-  }
-  
-  function uncheckAllBooking() {
-    [...bookingList, ...customBookingItems].forEach(item => {
-      const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
-      state.checkedItems[key] = false;
-    });
-    saveLocalCheckedItems();
-    syncDataToCloud();
-    renderBookingChecklist();
-    showToast("🧹 已清除所有勾選！");
-  }
-  
-  function copyBookingList() {
-    let text = "📌 行前預訂 Check List\n";
-    text += "=====================\n";
-    
-    const categories = ["租車", "住宿", "門票", "其他"];
-    categories.forEach(cat => {
-      const items = bookingList.filter(item => item.category === cat);
-      const customItems = customBookingItems.filter(item => item.category === cat);
-      const allItems = [...items, ...customItems];
-      if (allItems.length === 0) return;
-      text += `\n【${cat}】\n`;
-      allItems.forEach(item => {
-        const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
-        const checked = state.checkedItems[key] ? "✅" : "⬜";
-        text += `${checked} ${item.icon} ${item.label}\n`;
-      });
-    });
-    
-    copyText(text);
-    showToast("📋 行前預訂清單已複製！");
-  }
-  
-  function addCustomBooking() {
-    const labelInput = document.getElementById("new-booking-label");
-    const categorySelect = document.getElementById("new-booking-category");
-    const label = labelInput.value.trim();
-    if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
-    const newItem = {
-      id: "custom-" + Date.now(),
-      category: categorySelect.value,
-      label: label,
-      icon: "📌",
-      isCustom: true
-    };
-    customBookingItems.push(newItem);
-    saveCustomItems();
-    syncDataToCloud();
-    renderBookingChecklist();
-    labelInput.value = "";
-    showToast("已新增項目！");
-  }
-  
-  function deleteCustomBooking(id) {
-    customBookingItems = customBookingItems.filter(item => item.id !== id);
-    saveCustomItems();
-    syncDataToCloud();
-    renderBookingChecklist();
-    showToast("已刪除項目");
-  }
-  
-  // ==================== 裝備清單 Check List ====================
-  const equipmentList = [
-    { id: "passport", category: "重要證件", label: "身份證 / 護照（效期需剩餘6個月以上）", icon: "🪪" },
-    { id: "license", category: "重要證件", label: "國際車牌 / 駕駛執照", icon: "🚗" },
-    { id: "tickets", category: "重要證件", label: "機票 / 住宿憑證 / Visit Japan Web QR Code", icon: "✈️" },
-    { id: "money", category: "重要證件", label: "日幣現金與信用卡（部分小店只收現金）", icon: "💴" },
-    { id: "car-mount", category: "重要證件", label: "車用手機架", icon: "📱" },
-    { id: "thermal", category: "保暖衣物", label: "發熱衣 / 保暖內衣（3-4件，貼身排汗）", icon: "👕" },
-    { id: "mid-layer", category: "保暖衣物", label: "中層保暖衣物（毛衣或刷毛絨，2-3件）", icon: "🧶" },
-    { id: "outer-coat", category: "保暖衣物", label: "防風防水厚外套 / 羽絨服（1-2件）", icon: "🧥" },
-    { id: "pants", category: "保暖衣物", label: "長褲與發熱內搭褲（2-3條）", icon: "👖" },
-    { id: "scarf", category: "保暖衣物", label: "圍巾、毛帽或耳罩", icon: "🧣" },
-    { id: "gloves", category: "保暖衣物", label: "觸控手套", icon: "🧤" },
-    { id: "boots", category: "保暖衣物", label: "舒適好走且防水防滑的雪靴或厚底運動鞋", icon: "👢" },
-    { id: "socks", category: "保暖衣物", label: "厚羊毛襪（3-5雙）", icon: "🧦" },
-    { id: "sim", category: "電子與隨身", label: "日本上網卡（SIM卡 / eSIM / 漫遊）", icon: "📶" },
-    { id: "powerbank", category: "電子與隨身", label: "行動電源（僅限手提，不可託運）", icon: "🔋" },
-    { id: "thermos", category: "電子與隨身", label: "保溫瓶（隨時補充熱飲）", icon: "🍶" },
-    { id: "skincare", category: "電子與隨身", label: "保濕護膚品與潤唇膏", icon: "🧴" },
-    { id: "medicine", category: "電子與隨身", label: "常備藥品（感冒藥、腸胃藥、個人處方箋）", icon: "💊" },
-    { id: "warmpack", category: "電子與隨身", label: "暖暖包（注意不可貼在皮膚或薄內衣上）", icon: "🔥" },
-    { id: "adult-crampons", category: "其他", label: "簡易冰爪", icon: "⛸️" },
-    { id: "kid-hat", category: "小孩", label: "小孩毛帽 (蓋耳)", icon: "🧢" },
-    { id: "kid-gloves", category: "小孩", label: "小孩手套 (備2雙)", icon: "🧤" },
-    { id: "kid-scarf", category: "小孩", label: "小孩圍脖", icon: "🧣" },
-    { id: "kid-snowpants", category: "小孩", label: "小孩防水雪褲", icon: "👖" },
-    { id: "kid-boots", category: "小孩", label: "小孩雪靴 (防水)", icon: "👢" },
-    { id: "swimwear", category: "其他", label: "泳衣 (溫泉泳池用)", icon: "🩱" },
-    { id: "safetybelt", category: "其他", label: "便攜式兒童安全帶", icon: "🪑" },
-    { id: "firstaid", category: "其他", label: "簡易急救包", icon: "🩹" },
-  ];
-  
-  let customEquipItems = [];
-  
-  function renderEquipChecklist() {
-    const container = document.getElementById("equip-checklist-container");
-    if (!container) return;
-  
-    const categories = ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"];
-    let html = "";
-    
-    categories.forEach(cat => {
-      const items = equipmentList.filter(item => item.category === cat);
-      const customItems = customEquipItems.filter(item => item.category === cat);
-      const allItems = [...items, ...customItems];
-      if (allItems.length === 0) return;
-      
-      html += `<div class="mb-4">
-        <h4 class="text-sm font-bold text-slate-800 mb-2">${cat}</h4>
-        <div class="space-y-1.5">`;
-      
-      allItems.forEach(item => {
-        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-        const isChecked = state.checkedItems[key] === true;
-        html += `
-          <div class="flex items-center gap-2">
-            <label class="flex-1 flex items-center gap-2.5 p-2 rounded-lg border ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'} cursor-pointer hover:bg-slate-50 transition">
-              <input type="checkbox" class="w-4 h-4 shrink-0" ${isChecked ? 'checked' : ''} onchange="toggleEquipCheck('${key}')">
-              <span class="text-xs text-slate-700">${item.icon} ${item.label}</span>
-            </label>
-            ${item.isCustom ? `<button onclick="deleteCustomEquip('${item.id}')" class="text-red-400 hover:text-red-600 p-1.5 shrink-0" title="刪除"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ""}
-          </div>`;
-      });
-      
-      html += `</div></div>`;
-    });
-  
-    html += `
-      <div class="mt-4 pt-4 border-t border-slate-200">
-        <h4 class="text-sm font-bold text-slate-800 mb-2">新增項目</h4>
-        <div class="flex gap-2">
-          <input id="new-equip-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
-          <select id="new-equip-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white">
-            <option value="重要證件">重要證件</option>
-            <option value="保暖衣物">保暖衣物</option>
-            <option value="電子與隨身">電子與隨身</option>
-            <option value="小孩">小孩</option>
-            <option value="其他">其他</option>
-          </select>
-          <button onclick="addCustomEquip()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button>
-        </div>
-      </div>`;
-  
-    html += `
-      <div class="flex gap-2 mt-4">
-        <button onclick="checkAllEquipment()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button>
-        <button onclick="uncheckAllEquipment()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button>
-        <button onclick="copyEquipmentList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button>
-      </div>`;
-  
-    container.innerHTML = html;
-  }
-  
-  function toggleEquipCheck(key) {
-    state.checkedItems[key] = !state.checkedItems[key];
-    saveLocalCheckedItems();
-    syncDataToCloud();
-    renderEquipChecklist();
-  }
-  
-  function checkAllEquipment() {
-    [...equipmentList, ...customEquipItems].forEach(item => {
-      const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-      state.checkedItems[key] = true;
-    });
-    saveLocalCheckedItems();
-    syncDataToCloud();
-    renderEquipChecklist();
-    showToast("✅ 已全部勾選！");
-  }
-  
-  function uncheckAllEquipment() {
-    [...equipmentList, ...customEquipItems].forEach(item => {
-      const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-      state.checkedItems[key] = false;
-    });
-    saveLocalCheckedItems();
-    syncDataToCloud();
-    renderEquipChecklist();
-    showToast("🧹 已清除所有勾選！");
-  }
-  
-  function copyEquipmentList() {
-    let text = "🎒 裝備清單 Check List\n";
-    text += "=====================\n";
-    
-    const categories = ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"];
-    categories.forEach(cat => {
-      const items = equipmentList.filter(item => item.category === cat);
-      const customItems = customEquipItems.filter(item => item.category === cat);
-      const allItems = [...items, ...customItems];
-      if (allItems.length === 0) return;
-      text += `\n【${cat}】\n`;
-      allItems.forEach(item => {
-        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-        const checked = state.checkedItems[key] ? "✅" : "⬜";
-        text += `${checked} ${item.icon} ${item.label}\n`;
-      });
-    });
-    
-    copyText(text);
-    showToast("📋 裝備清單已複製！");
-  }
-  
-  function addCustomEquip() {
-    const labelInput = document.getElementById("new-equip-label");
-    const categorySelect = document.getElementById("new-equip-category");
-    const label = labelInput.value.trim();
-    if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
-    const newItem = {
-      id: "custom-" + Date.now(),
-      category: categorySelect.value,
-      label: label,
-      icon: "📦",
-      isCustom: true
-    };
-    customEquipItems.push(newItem);
-    saveCustomItems();
-    syncDataToCloud();
-    renderEquipChecklist();
-    labelInput.value = "";
-    showToast("已新增項目！");
-  }
-  
-  function deleteCustomEquip(id) {
-    customEquipItems = customEquipItems.filter(item => item.id !== id);
-    saveCustomItems();
-    syncDataToCloud();
-    renderEquipChecklist();
-    showToast("已刪除項目");
-  }
-  
-  function saveLocalCheckedItems() {
-    localStorage.setItem("tohoku_checked_items", JSON.stringify(state.checkedItems));
-    localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
-    localStorage.setItem("custom_equip_items", JSON.stringify(customEquipItems));
-  }
-  
-  function saveCustomItems() {
-    localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
-    localStorage.setItem("custom_equip_items", JSON.stringify(customEquipItems));
-  }
-  
-  function loadCustomItems() {
-    const savedBooking = localStorage.getItem("custom_booking_items");
-    if (savedBooking) { try { customBookingItems = JSON.parse(savedBooking); } catch(e) {} }
-    const savedEquip = localStorage.getItem("custom_equip_items");
-    if (savedEquip) { try { customEquipItems = JSON.parse(savedEquip); } catch(e) {} }
-  }
-  
-  function restoreChecklistUI() {
-    renderBookingChecklist();
-    renderEquipChecklist();
-  }
-  
-  // ==================== 旅行日記 ====================
-  function saveDiary(day) {
-    const input = document.getElementById(`diary-input-${day}`);
-    if (input) {
-      localStorage.setItem(`diary_day_${day}`, input.value);
-      showToast("📖 日記已儲存！", "✅");
+    function initSnowEffect() {
+      const snowContainer = document.getElementById("snow-fall");
+      if (!snowContainer) return;
+      snowContainer.innerHTML = "";
+      const snowflakeCount = window.innerWidth < 768 ? 20 : 40;
+      const animations = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"];
+      const colors = ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#ffffff"];
+      for (let i = 0; i < snowflakeCount; i++) {
+        const snowflake = document.createElement("div");
+        snowflake.className = "snowflake";
+        const size = Math.random() * 7 + 3;
+        snowflake.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; animation: ${animations[Math.floor(Math.random() * animations.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%;`;
+        snowContainer.appendChild(snowflake);
+      }
     }
-  }
-  
-      // ==================== 雪花 ====================
-      function initSnowEffect() {
-        const snowContainer = document.getElementById("snow-fall");
-        if (!snowContainer) return;
-        snowContainer.innerHTML = "";
-        const snowflakeCount = window.innerWidth < 768 ? 20 : 40;
-        const animations = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"];
-        const colors = ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#ffffff"];
-        for (let i = 0; i < snowflakeCount; i++) {
-          const snowflake = document.createElement("div");
-          snowflake.className = "snowflake";
-          const size = Math.random() * 7 + 3;
-          snowflake.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; animation: ${animations[Math.floor(Math.random() * animations.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%;`;
-          snowContainer.appendChild(snowflake);
-        }
-        for (let i = 0; i < 2; i++) {
-          const flake = document.createElement("div");
-          flake.className = "snowflake";
-          flake.style.cssText = `left: ${Math.random() * 100}%; width: 12px; height: 12px; animation: snowfall-medium ${Math.random() * 15 + 10}s linear infinite; animation-delay: ${Math.random() * -10}s;`;
-          flake.innerHTML = '❄';
-          flake.style.fontSize = `${Math.random() * 10 + 8}px`;
-          flake.style.color = "rgba(255,255,255,0.7)";
-          flake.style.textShadow = "0 0 5px rgba(255,255,255,0.5)";
-          snowContainer.appendChild(flake);
-        }
-      }
-      
-      // ==================== copyText 通用函數 ====================
-      function copyText(text) {
-        try {
-          const textarea = document.createElement("textarea");
-          textarea.value = text;
-          document.body.appendChild(textarea);
-          textarea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textarea);
-        } catch(e) {
-          navigator.clipboard.writeText(text).catch(() => {});
-        }
-      }
-  
-      window.addEventListener("scroll", () => {
-        const btn = document.getElementById("fab-collapse-all");
-        const schedule = document.getElementById("schedule-container");
-        if (!btn || !schedule) return;
-        const rect = schedule.getBoundingClientRect();
-        const isScheduleVisible = rect.top < window.innerHeight && rect.bottom > 0;
-        const activeSection = document.querySelector(".day-section:not(.hidden)");
-        
-        const anyOpen = activeSection ? Array.from(activeSection.querySelectorAll("details")).some(d => d.open) : false;
-        btn.innerHTML = anyOpen
-          ? '<span class="text-lg font-black">⬆️</span><span class="font-bold text-sm hidden md:inline">收合行程</span>'
-          : '<span class="text-lg font-black">⬇️</span><span class="font-bold text-sm hidden md:inline">展開行程</span>';
-  
-        if (state.currentMainTab === "itinerary" && isScheduleVisible) {
-          btn.classList.remove("opacity-0", "translate-y-8", "pointer-events-none");
-          btn.classList.add("opacity-100", "translate-y-0", "pointer-events-auto");
-        } else {
-          btn.classList.remove("opacity-100", "translate-y-0", "pointer-events-auto");
-          btn.classList.add("opacity-0", "translate-y-8", "pointer-events-none");
-        }
-      });
-  
-      document.addEventListener("click", (e) => {
-        if (e.target.closest('.day-tab')) {
-          setTimeout(() => window.dispatchEvent(new Event("scroll")), 100);
-        }
-      });
-  
-      window.addEventListener("resize", () => {
-        clearTimeout(window.snowResizeTimeout);
-        window.snowResizeTimeout = setTimeout(() => {
-          const snowContainer = document.getElementById("snow-fall");
-          if (snowContainer && snowContainer.children.length > 0) initSnowEffect();
-        }, 300);
-      });
-  
-      window.addEventListener("DOMContentLoaded", () => {
-        loadCustomItems();
-        const savedChecked = localStorage.getItem("tohoku_checked_items");
-        if (savedChecked) {
-          try { state.checkedItems = JSON.parse(savedChecked); } catch(e) {}
-        }
-        
-        fetchLiveRates();
-        
-        initSnowEffect();
-        winterItineraries.forEach((dayData, index) => {
-          renderDayItinerary(`day-section-${index + 1}`, dayData);
-        });
-        switchMainTab("itinerary");
-        updateCountdowns();
-        setInterval(updateCountdowns, 1000);
-        updateCurrentEventHighlight();
-        setInterval(updateCurrentEventHighlight, 60000);
-        checkWelcomeModal();
-        fetchWeatherData();
-        initRandomCharacters();
-        renderBookingChecklist();
-        renderEquipChecklist();
-        updateSnowmanVisual();
-      });
-    </script>
-  </body>
-  </html>
+  </script>
+</body>
+</html>
