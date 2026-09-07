@@ -13,6 +13,8 @@
 <script src="data.js"></script>
 <!-- 引用拍摄灵感数据 -->
 <script src="shoot-tips.js"></script>
+<!-- 引用購物清單數據（可選，初始為空） -->
+<script src="shopping.js"></script>
 
 <script>
 tailwind.config = {
@@ -577,25 +579,6 @@ async function syncDataToCloud() {
     pointer-events: none;
     z-index: 9999;
   }
-  
-  /* 拍攝靈感 Modal 樣式 */
-  #shoot-tips-modal .photo-tips-bg {
-    background: linear-gradient(135deg, #f97316, #f59e0b);
-  }
-  
-  .shoot-tips-content {
-    font-size: 0.875rem;
-    line-height: 1.7;
-  }
-  
-  .shoot-tips-pill {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 9999px;
-    padding: 2px 10px;
-    font-size: 0.7rem;
-    letter-spacing: 0.05em;
-  }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-16 relative">
@@ -1062,7 +1045,7 @@ async function syncDataToCloud() {
     </div>
   </div>
   
-  <!-- 通用拍攝技巧 Modal（新增） -->
+  <!-- 通用拍攝技巧 Modal -->
   <div id="common-tips-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeCommonTipsModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeCommonTipsModal()" class="modal-close">✕</button>
@@ -1070,6 +1053,17 @@ async function syncDataToCloud() {
         <span class="text-2xl">📷</span> 通用人像拍攝技巧
       </h2>
       <div id="common-tips-content"></div>
+    </div>
+  </div>
+  
+  <!-- 購物清單 Modal（新增） -->
+  <div id="shopping-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeShoppingModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeShoppingModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-4 flex items-center gap-2">
+        <span class="text-2xl">🛍️</span> 購物清單
+      </h2>
+      <div id="shopping-content"></div>
     </div>
   </div>
   
@@ -1393,7 +1387,7 @@ async function syncDataToCloud() {
       setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300);
     }
 
-    // ==================== 通用拍攝技巧 Modal（新增） ====================
+    // ==================== 通用拍攝技巧 Modal ====================
     function openCommonTipsModal() {
       const modal = document.getElementById('common-tips-modal');
       if (!modal) return;
@@ -1598,8 +1592,12 @@ async function syncDataToCloud() {
         const catColors = { "tag-teal": "bg-teal-400", "tag-amber": "bg-amber-400", "tag-rose": "bg-rose-400", "tag-sky": "bg-sky-400", "tag-indigo": "bg-indigo-400", "tag-emerald": "bg-emerald-400" };
         const catColor = event.tag ? catColors[event.tag.class] || "bg-slate-400" : "bg-slate-400";
         
-        // 拍攝靈感按鈕
-        const shootBtnHtml = `<button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition mt-1">🎬 拍攝靈感</button>`;
+        // 拍攝靈感按鈕 + 購物清單按鈕
+        const shootBtnHtml = `
+          <div class="flex flex-wrap gap-1 mt-1">
+            <button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button>
+            <button onclick="openShoppingModal('${event.title}')" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單</button>
+          </div>`;
         
         html += `
           <div class="timeline-node" id="event-dot-${dayData.day}-${index}">
