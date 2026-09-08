@@ -135,7 +135,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
 }
 </style>
 </head>
-<body class="bg-gradient-to-b from-sky-50 to-cyan-50 text-slate-800 min-h-screen pb-16 relative">
+<body class="bg-gradient-to-b from-sky-50 to-cyan-50 text-slate-800 min-h-screen pb-24 relative">
 
   <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
@@ -233,7 +233,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         </h4>
         <p class="text-xs text-slate-500">記錄旅途中每一筆花銷，輕鬆平分。</p>
       </div>
-      <!-- 優化後的記帳按鈕（柔和色） -->
+      <!-- 頂部記帳按鈕（保留） -->
       <button onclick="openExpenseModal()" class="w-full sm:w-auto py-2.5 px-6 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
         <span class="text-lg leading-none">＋</span> 記帳
       </button>
@@ -440,7 +440,10 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
     <span id="toast-icon">✅</span><span id="toast-message">操作成功</span>
   </div>
 
-  <!-- 已移除 FAB 按鈕 -->
+  <!-- 新增：固定「＋記帳」FAB 按鈕（位於右下角，避開狐狸角色） -->
+  <button id="fab-add" onclick="openExpenseModal()" class="fixed bottom-20 right-4 z-[100] bg-sky-600 hover:bg-sky-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+  </button>
 
   <script>
     // ==================== Firebase 初始化 ====================
@@ -460,7 +463,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
     window.db = db;
     window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 
-    // ==================== 匯率設定（增加重試機制） ====================
+    // ==================== 匯率設定 ====================
     const DEFAULT_RATES = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
     let exchangeRates = { ...DEFAULT_RATES };
     const RATES_UPDATE_INTERVAL = 24 * 60 * 60 * 1000;
@@ -478,25 +481,15 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
           exchangeRates.CNY = 1 / data.rates.JPY * data.rates.CNY;
           localStorage.setItem('tohoku_exchange_rates', JSON.stringify({ rates: exchangeRates, updatedAt: Date.now() }));
           rateFetchAttempts = 0;
-          console.log("匯率已更新:", exchangeRates);
         }
       } catch(e) {
-        console.warn("取得即時匯率失敗，嘗試重試或使用快取:", e);
         const cached = localStorage.getItem('tohoku_exchange_rates');
         if (cached) {
-          try {
-            const cachedData = JSON.parse(cached);
-            if (cachedData.rates && Date.now() - cachedData.updatedAt < 7 * 24 * 60 * 60 * 1000) {
-              exchangeRates = cachedData.rates;
-            }
-          } catch(e2) {}
+          try { const cachedData = JSON.parse(cached); if (cachedData.rates) exchangeRates = cachedData.rates; } catch(e2) {}
         }
         if (rateFetchAttempts < 3) {
           rateFetchAttempts++;
-          console.log(`將在 ${rateFetchAttempts * 2} 秒後重試匯率...`);
           setTimeout(fetchLiveRates, rateFetchAttempts * 2000);
-        } else {
-          showToast("⚠️ 匯率更新失敗，使用預設值", "⚠️");
         }
       }
     }
@@ -504,10 +497,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
     function initExchangeRates() {
       const cached = localStorage.getItem('tohoku_exchange_rates');
       if (cached) {
-        try {
-          const cachedData = JSON.parse(cached);
-          if (cachedData.rates) exchangeRates = cachedData.rates;
-        } catch(e) {}
+        try { const cachedData = JSON.parse(cached); if (cachedData.rates) exchangeRates = cachedData.rates; } catch(e) {}
       }
       fetchLiveRates();
       setInterval(fetchLiveRates, RATES_UPDATE_INTERVAL);
@@ -532,22 +522,13 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
     }
 
     const initAuth = async () => {
-      try {
-        await auth.signInAnonymously();
-        console.log("Firebase 匿名登入成功");
-        updateCloudBadge(true);
-      } catch(err) {
-        console.warn("匿名登入失敗:", err);
-        updateCloudBadge(false);
-      }
+      try { await auth.signInAnonymously(); updateCloudBadge(true); }
+      catch(err) { console.warn("匿名登入失敗:", err); updateCloudBadge(false); }
     };
     initAuth();
 
     auth.onAuthStateChanged(user => {
-      if (!user) {
-        auth.signInAnonymously().catch(err => console.warn("重新登入失敗:", err));
-        return;
-      }
+      if (!user) { auth.signInAnonymously().catch(() => {}); return; }
       updateCloudBadge(true);
       window.dbRef.onSnapshot(docSnap => {
         if (docSnap.exists) {
@@ -571,10 +552,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             updateLedgerUI();
           }
         }
-      }, err => {
-        console.warn("Firestore 監聽失敗:", err);
-        updateCloudBadge(false);
-      });
+      }, err => updateCloudBadge(false));
     });
 
     async function syncDataToCloud() {
@@ -582,13 +560,8 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         if (!auth.currentUser) return;
         await window.dbRef.set({ expenses: state.expenses, checkedItems: state.checkedItems, history: state.history, updatedAt: Date.now() }, { merge: true });
         updateCloudBadge(true);
-      } catch(e) {
-        console.warn("同步失敗:", e);
-        updateCloudBadge(false);
-      }
+      } catch(e) { updateCloudBadge(false); }
     }
-
-    // 已移除 forceSync 函數
 
     // ==================== 成員資料 ====================
     const members = ["余生", "bowie", "shandy", "connie"];
@@ -600,15 +573,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       "connie": { badge: "bg-purple-100 text-purple-800 border-purple-200", solid: "bg-purple-500 text-white border-purple-600", soft: "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100", text: "text-purple-600", avatar: "bg-purple-400" }
     };
 
-    let state = {
-      currentMainTab: "ledger",
-      viewingAs: members[0],
-      activePayer: members[0],
-      activeSplitWith: [...members],
-      expenses: [],
-      checkedItems: {},
-      history: []
-    };
+    let state = { viewingAs: members[0], activePayer: members[0], activeSplitWith: [...members], expenses: [], checkedItems: {}, history: [] };
     let editingExpenseId = null;
     let lastExpense = null;
     let settlementStatus = JSON.parse(localStorage.getItem("settlement_status")) || {};
@@ -628,23 +593,18 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       if (input === ACCESS_CODE) {
         localStorage.setItem('tohoku_write_access_ok', 'true');
         closeWriteAccessModal();
-        showToast('✅ 權限驗證成功');
-        if (window.pendingWriteAction) {
-          const action = window.pendingWriteAction;
-          window.pendingWriteAction = null;
-          action();
-        }
+        if (window.pendingWriteAction) { const action = window.pendingWriteAction; window.pendingWriteAction = null; action(); }
       } else {
         document.getElementById('write-access-error').classList.remove('hidden');
         document.getElementById('write-access-input').value = '';
-        showToast('❌ 密碼錯誤', '❌');
       }
     }
     function ensureWriteAccess(actionFn) {
       if (isWriteAccessGranted()) actionFn();
       else { window.pendingWriteAction = actionFn; openWriteAccessModal(); }
     }
-    // ==================== 可折疊區塊 ====================
+
+    // ==================== 可折疊 ====================
     function toggleCollapsible(sectionId) {
       const section = document.getElementById(sectionId);
       const arrow = document.getElementById(sectionId + '-arrow');
@@ -690,14 +650,9 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       document.getElementById(`subview-${tabName}`).classList.remove('hidden');
       const map = { records: 'tab-records-btn', balances: 'tab-balances-btn', suggested: 'tab-suggested-btn', history: 'tab-history-btn' };
       document.getElementById(map[tabName]).className = activeClass;
-      if (tabName === 'suggested') {
-        document.getElementById(map[tabName]).innerHTML = `<span class="text-lg">💡</span><span>建議還款 <span id="debt-count-badge" class="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full hidden">0</span></span>`;
-        renderSuggestedSettlements();
-      } else if (tabName === 'history') {
-        renderHistoryList();
-      } else if (tabName === 'balances') {
-        renderBalancesTable();
-      }
+      if (tabName === 'suggested') renderSuggestedSettlements();
+      else if (tabName === 'history') renderHistoryList();
+      else if (tabName === 'balances') renderBalancesTable();
     }
 
     // ==================== Toast ====================
@@ -729,7 +684,6 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         navigator.clipboard.writeText(text).then(() => showToast("✅ 已複製"));
       }
     }
-    // 已移除 copyCurrentUrl 函數
 
     // ==================== 記帳彈窗 ====================
     function openExpenseModal() {
@@ -743,12 +697,8 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       modal.classList.add("opacity-100");
       modal.classList.remove("translate-y-full", "md:translate-y-8", "md:scale-95", "opacity-0");
       modal.classList.add("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
-      
       const daySelect = document.getElementById("ledger-day");
-      if (activeFilters.day !== 0) {
-        daySelect.value = activeFilters.day;
-      }
-      
+      if (activeFilters.day !== 0) daySelect.value = activeFilters.day;
       renderLedgerSelectors();
       updateEstimatedHKD();
     }
@@ -868,6 +818,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       const rate = exchangeRates[currencySelect.value] || 0.052;
       estText.innerText = `約合 ${(amount * rate).toFixed(2)} HKD`;
     }
+
     // ==================== 儲存支出 ====================
     function saveExpense() {
       const day = document.getElementById("ledger-day");
@@ -878,35 +829,21 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       const remark = document.getElementById("ledger-remark").value.trim();
       const descValue = desc.value.trim();
       const amountValue = parseFloat(amount.value.replace(/,/g, ""));
-      if (!descValue || isNaN(amountValue) || amountValue <= 0) {
-        showToast("請輸入說明與金額", "⚠️");
-        return;
-      }
+      if (!descValue || isNaN(amountValue) || amountValue <= 0) { showToast("請輸入說明與金額", "⚠️"); return; }
       ensureWriteAccess(() => {
         const rate = exchangeRates[currency.value] || 0.052;
         const now = Date.now();
-        const currentTime = new Date(now).toLocaleString("zh-HK", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+        const currentTime = new Date(now).toLocaleString("zh-HK");
         const expenseData = {
-          day: parseInt(day.value),
-          category: category.value,
-          desc: descValue,
-          remark: remark,
-          amount: amountValue,
-          currency: currency.value,
-          amountInHKD: parseFloat((amountValue * rate).toFixed(2)),
-          payer: state.activePayer,
-          splitWith: [...state.activeSplitWith],
-          createdAt: now,
-          updatedAt: now,
-          createdBy: state.activePayer,
-          createdTime: currentTime,
-          updatedBy: state.activePayer
+          day: parseInt(day.value), category: category.value, desc: descValue, remark, amount: amountValue,
+          currency: currency.value, amountInHKD: parseFloat((amountValue * rate).toFixed(2)),
+          payer: state.activePayer, splitWith: [...state.activeSplitWith],
+          createdAt: now, updatedAt: now, createdBy: state.activePayer, createdTime: currentTime, updatedBy: state.activePayer
         };
         if (editingExpenseId) {
           const index = state.expenses.findIndex(e => e.id === editingExpenseId);
           if (index > -1) {
-            const oldExpense = state.expenses[index];
-            state.history.unshift({ type: "edit", expenseId: editingExpenseId, expenseDesc: oldExpense.desc, actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer], actionTime: new Date().toLocaleString("zh-HK"), details: `修改了「${oldExpense.desc}」` });
+            state.history.unshift({ type: "edit", expenseId: editingExpenseId, expenseDesc: state.expenses[index].desc, actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer], actionTime: new Date().toLocaleString("zh-HK"), details: `修改了「${state.expenses[index].desc}」` });
             state.expenses[index] = { ...state.expenses[index], ...expenseData };
             showToast("✅ 已更新支出");
           }
@@ -917,7 +854,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
           lastExpense = expense;
           state.history.unshift({ type: "add", expenseId: expense.id, expenseDesc: expense.desc, actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer], actionTime: new Date().toLocaleString("zh-HK"), details: `新增了「${expense.desc}」(${expense.amount} ${expense.currency})` });
           showToast("✅ 已新增支出");
-          showConfetti(); // 觸發彩帶動畫
+          showConfetti();
         }
         saveLocalExpenses();
         syncDataToCloud();
@@ -934,12 +871,9 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       ensureWriteAccess(() => {
         const expense = state.expenses.find(e => e.id === expenseId);
         if (!expense) return;
-        state.history.unshift({ type: "delete", expenseId: expenseId, expenseDesc: expense.desc, actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer], actionTime: new Date().toLocaleString("zh-HK"), details: `刪除了「${expense.desc}」(${expense.amount} ${expense.currency})` });
+        state.history.unshift({ type: "delete", expenseId, expenseDesc: expense.desc, actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer], actionTime: new Date().toLocaleString("zh-HK"), details: `刪除了「${expense.desc}」(${expense.amount} ${expense.currency})` });
         state.expenses = state.expenses.filter(e => e.id !== expenseId);
-        saveLocalExpenses();
-        syncDataToCloud();
-        updateLedgerUI();
-        showToast("🗑 已刪除記錄");
+        saveLocalExpenses(); syncDataToCloud(); updateLedgerUI(); showToast("🗑 已刪除記錄");
       });
     }
 
@@ -949,8 +883,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       container.className = 'confetti-container';
       document.body.appendChild(container);
       const colors = ['#f43f5e', '#f97316', '#facc15', '#4ade80', '#38bdf8', '#a78bfa', '#fb7185'];
-      const count = 50;
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < 50; i++) {
         const piece = document.createElement('div');
         piece.className = 'confetti-piece';
         piece.style.left = Math.random() * 100 + '%';
@@ -970,24 +903,13 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       const container = document.getElementById("history-list-container");
       if (!container) return;
       container.innerHTML = "";
-      if (!state.history || state.history.length === 0) {
-        container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-12">尚無變更記錄</div>';
-        return;
-      }
+      if (!state.history || state.history.length === 0) { container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-12">尚無變更記錄</div>'; return; }
       state.history.slice(0, 50).forEach(item => {
         const typeColor = item.type === "add" ? "bg-emerald-100 text-emerald-800" : item.type === "edit" ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800";
         const typeText = item.type === "add" ? "新增" : item.type === "edit" ? "修改" : "刪除";
         const card = document.createElement("div");
         card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start gap-2";
-        card.innerHTML = `<span class="text-xl">${item.actionSymbol || "📝"}</span>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="text-[10px] font-black px-2 py-0.5 rounded-full ${typeColor}">${typeText}</span>
-              <span class="text-[10px] font-bold text-slate-700">${item.actionBy}</span>
-              <span class="text-[9px] text-slate-400">${item.actionTime}</span>
-            </div>
-            <p class="text-[11px] text-slate-600">${item.details}</p>
-          </div>`;
+        card.innerHTML = `<span class="text-xl">${item.actionSymbol || "📝"}</span><div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1"><span class="text-[10px] font-black px-2 py-0.5 rounded-full ${typeColor}">${typeText}</span><span class="text-[10px] font-bold text-slate-700">${item.actionBy}</span><span class="text-[9px] text-slate-400">${item.actionTime}</span></div><p class="text-[11px] text-slate-600">${item.details}</p></div>`;
         container.appendChild(card);
       });
     }
@@ -996,27 +918,21 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
     function updateLedgerUI() {
       let total = 0;
       state.expenses.forEach(e => total += e.amountInHKD);
-      const statTotal = document.getElementById("stat-total");
-      const statAverage = document.getElementById("stat-average");
-      const statCount = document.getElementById("stat-count");
-      if (statTotal) statTotal.innerText = `${total.toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
-      if (statAverage) statAverage.innerText = `${(total / members.length).toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
-      if (statCount) statCount.innerText = `${state.expenses.length} 筆`;
+      document.getElementById("stat-total").innerText = `${total.toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
+      document.getElementById("stat-average").innerText = `${(total / members.length).toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
+      document.getElementById("stat-count").innerText = `${state.expenses.length} 筆`;
       renderExpensesList();
       renderBalancesTable();
       renderSuggestedSettlements();
       renderHistoryList();
     }
 
-    // ==================== 優化列表渲染（使用 DocumentFragment 減少重繪） ====================
+    // ==================== 優化列表渲染 ====================
     function renderExpensesList() {
       const container = document.getElementById("records-list-container");
       if (!container) return;
       container.innerHTML = "";
-      if (state.expenses.length === 0) {
-        container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-12">尚無記錄</div>';
-        return;
-      }
+      if (state.expenses.length === 0) { container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-12">尚無記錄</div>'; return; }
       let filtered = [...state.expenses];
       const search = document.getElementById("search-input").value.trim().toLowerCase();
       if (search) filtered = filtered.filter(e => e.desc.toLowerCase().includes(search) || e.category.toLowerCase().includes(search) || e.payer.toLowerCase().includes(search) || (e.remark && e.remark.toLowerCase().includes(search)));
@@ -1024,12 +940,10 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       if (activeFilters.category !== 'all') filtered = filtered.filter(e => e.category === activeFilters.category);
       const sort = document.getElementById("sort-select").value;
       filtered.sort((a, b) => {
-        switch (sort) {
-          case "oldest": return a.createdAt - b.createdAt;
-          case "amountHigh": return b.amountInHKD - a.amountInHKD;
-          case "amountLow": return a.amountInHKD - b.amountInHKD;
-          default: return b.createdAt - a.createdAt;
-        }
+        if (sort === "oldest") return a.createdAt - b.createdAt;
+        if (sort === "amountHigh") return b.amountInHKD - a.amountInHKD;
+        if (sort === "amountLow") return a.amountInHKD - b.amountInHKD;
+        return b.createdAt - a.createdAt;
       });
       const viewSelect = document.getElementById("ledger-view-as");
       if (viewSelect && viewSelect.value !== state.viewingAs) viewSelect.value = state.viewingAs;
@@ -1045,15 +959,8 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         let cardBorder = "border-slate-200";
         let cardBg = "bg-slate-50 hover:bg-slate-100";
         if (Math.abs(balance) > 0.01) {
-          if (balance > 0) {
-            balanceHtml = `<span class="text-emerald-700 font-black text-sm">+$${balance.toFixed(2)}</span>`;
-            cardBorder = "border-emerald-200";
-            cardBg = "bg-emerald-50/40 hover:bg-emerald-50/80";
-          } else {
-            balanceHtml = `<span class="text-red-600 font-black text-sm">-$${Math.abs(balance).toFixed(2)}</span>`;
-            cardBorder = "border-rose-100";
-            cardBg = "bg-rose-50/40 hover:bg-rose-50/80";
-          }
+          if (balance > 0) { balanceHtml = `<span class="text-emerald-700 font-black text-sm">+$${balance.toFixed(2)}</span>`; cardBorder = "border-emerald-200"; cardBg = "bg-emerald-50/40 hover:bg-emerald-50/80"; }
+          else { balanceHtml = `<span class="text-red-600 font-black text-sm">-$${Math.abs(balance).toFixed(2)}</span>`; cardBorder = "border-rose-100"; cardBg = "bg-rose-50/40 hover:bg-rose-50/80"; }
         } else {
           balanceHtml = '<span class="text-slate-400 font-medium text-[11px]">收支 / 平衡</span>';
         }
@@ -1083,10 +990,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
             </div>
           </div>
           <div class="text-right flex items-center gap-2 shrink-0 pl-2">
-            <div class="flex flex-col items-end justify-center h-full">
-              ${balanceHtml}
-              <span class="text-[9px] text-slate-400 font-medium mt-0.5" title="原幣 ${expense.amount} ${expense.currency}">合: $${expense.amountInHKD.toFixed(1)}</span>
-            </div>
+            <div class="flex flex-col items-end justify-center h-full">${balanceHtml}<span class="text-[9px] text-slate-400 font-medium mt-0.5" title="原幣 ${expense.amount} ${expense.currency}">合: $${expense.amountInHKD.toFixed(1)}</span></div>
             <div class="flex flex-col gap-1">
               <button onclick="openEditExpenseModal('${expense.id}')" class="text-slate-300 hover:text-sky-500 p-1.5 transition bg-white/50 hover:bg-white rounded-lg border border-slate-100 shadow-sm" title="編輯">✏️</button>
               <button onclick="deleteExpense('${expense.id}')" class="text-slate-300 hover:text-red-500 p-1.5 transition bg-white/50 hover:bg-white rounded-lg border border-slate-100 shadow-sm" title="刪除">🗑</button>
@@ -1098,8 +1002,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
     }
 
     function calculateBalances() {
-      let paidMap = {};
-      let owedMap = {};
+      let paidMap = {}; let owedMap = {};
       members.forEach(m => { paidMap[m] = 0; owedMap[m] = 0; });
       state.expenses.forEach(expense => {
         const totalHKD = expense.amountInHKD;
@@ -1107,9 +1010,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         const splitCount = expense.splitWith.length;
         if (splitCount > 0) {
           const sharePerPerson = totalHKD / splitCount;
-          expense.splitWith.forEach(member => {
-            if (owedMap[member] !== undefined) owedMap[member] += sharePerPerson;
-          });
+          expense.splitWith.forEach(member => { if (owedMap[member] !== undefined) owedMap[member] += sharePerPerson; });
         }
       });
       let balances = {};
@@ -1130,18 +1031,10 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         const balanceClass = balance > 0 ? "text-emerald-600 font-bold" : balance < 0 ? "text-red-500 font-bold" : "text-slate-400";
         const style = memberStyle[member] || memberStyle["余生"];
         const symbol = memberSymbols[member] || "";
-        tbody.innerHTML += `
-          <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="py-3 font-bold text-slate-800 flex items-center gap-2">
-              <div class="w-6 h-6 rounded-full ${style.avatar} text-white font-black flex items-center justify-center text-[10px] border border-white shadow-sm">${member[0].toUpperCase()}</div>
-              ${member} ${symbol}
-            </td>
-            <td class="py-3 text-right text-slate-600 font-medium">$${paid}</td>
-            <td class="py-3 text-right text-slate-600 font-medium">$${owed}</td>
-            <td class="py-3 text-right ${balanceClass}">$${balanceText}</td>
-          </tr>`;
+        tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="py-3 font-bold text-slate-800 flex items-center gap-2"><div class="w-6 h-6 rounded-full ${style.avatar} text-white font-black flex items-center justify-center text-[10px] border border-white shadow-sm">${member[0].toUpperCase()}</div>${member} ${symbol}</td><td class="py-3 text-right text-slate-600 font-medium">$${paid}</td><td class="py-3 text-right text-slate-600 font-medium">$${owed}</td><td class="py-3 text-right ${balanceClass}">$${balanceText}</td></tr>`;
       });
     }
+
     // ==================== 建議還款 ====================
     function renderSuggestedSettlements() {
       const container = document.getElementById("suggested-settle-container");
@@ -1149,8 +1042,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       if (!container) return;
       container.innerHTML = "";
       const { balances } = calculateBalances();
-      let debtors = [];
-      let creditors = [];
+      let debtors = [], creditors = [];
       Object.keys(balances).forEach(name => {
         let amount = Math.round(100 * balances[name]) / 100;
         if (amount < -0.01) debtors.push({ name, amount: -amount });
@@ -1161,12 +1053,10 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       let settlements = [];
       let d = 0, c = 0;
       while (d < debtors.length && c < creditors.length) {
-        let debtor = debtors[d];
-        let creditor = creditors[c];
+        let debtor = debtors[d], creditor = creditors[c];
         let transfer = Math.min(debtor.amount, creditor.amount);
         settlements.push({ from: debtor.name, to: creditor.name, amount: transfer.toFixed(2) });
-        debtor.amount -= transfer;
-        creditor.amount -= transfer;
+        debtor.amount -= transfer; creditor.amount -= transfer;
         if (debtor.amount < 0.01) d++;
         if (creditor.amount < 0.01) c++;
       }
@@ -1178,17 +1068,10 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       document.getElementById("credit-total").innerText = `$${totalCredit}`;
       document.getElementById("settled-total").innerText = `${settledPercent}%`;
       if (badge) {
-        if (settlements.length > 0) {
-          badge.innerText = settlements.length;
-          badge.classList.remove("hidden");
-        } else {
-          badge.classList.add("hidden");
-        }
+        if (settlements.length > 0) { badge.innerText = settlements.length; badge.classList.remove("hidden"); }
+        else badge.classList.add("hidden");
       }
-      if (settlements.length === 0) {
-        container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-8">🎉 所有帳目都已平衡！</div>';
-        return;
-      }
+      if (settlements.length === 0) { container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-8">🎉 所有帳目都已平衡！</div>'; return; }
       settlements.forEach(s => {
         const fromStyle = memberStyle[s.from] || memberStyle["余生"];
         const toStyle = memberStyle[s.to] || memberStyle["余生"];
@@ -1196,30 +1079,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         const toSymbol = memberSymbols[s.to] || "";
         const key = `${s.from}_${s.to}_${s.amount}`;
         const isDone = settlementStatus[key] || false;
-        container.innerHTML += `
-          <div class="bg-slate-50 border ${isDone ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200'} p-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm hover:shadow-md transition">
-            <div class="flex items-center gap-1.5 md:gap-2">
-              <div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-                <div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${s.from[0].toUpperCase()}</div>
-                <span class="font-bold text-slate-700 hidden sm:inline">${s.from} ${fromSymbol}</span>
-              </div>
-              <span class="text-slate-400 text-[10px] font-bold flex flex-col items-center px-1">
-                <span>轉帳</span>
-                <span class="text-[8px] mt-0.5 text-slate-300">→</span>
-              </span>
-              <div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-                <div class="w-5 h-5 rounded-full ${toStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${s.to[0].toUpperCase()}</div>
-                <span class="font-bold text-slate-700 hidden sm:inline">${s.to} ${toSymbol}</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="text-right">
-                <span class="block text-[9px] text-slate-400 mb-0.5 font-medium">金額</span>
-                <strong class="text-sm md:text-base font-black ${isDone ? 'text-emerald-600 line-through' : 'text-rose-600'}">$${s.amount}</strong>
-              </div>
-              <button onclick="toggleSettlementDone('${s.from}','${s.to}','${s.amount}')" class="px-2 py-1 rounded-lg font-bold text-[10px] ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600 hover:bg-emerald-100 hover:text-emerald-700'} transition">${isDone ? '✓ 已還' : '標記已還'}</button>
-            </div>
-          </div>`;
+        container.innerHTML += `<div class="bg-slate-50 border ${isDone ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200'} p-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm hover:shadow-md transition"><div class="flex items-center gap-1.5 md:gap-2"><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${s.from[0].toUpperCase()}</div><span class="font-bold text-slate-700 hidden sm:inline">${s.from} ${fromSymbol}</span></div><span class="text-slate-400 text-[10px] font-bold flex flex-col items-center px-1"><span>轉帳</span><span class="text-[8px] mt-0.5 text-slate-300">→</span></span><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${toStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${s.to[0].toUpperCase()}</div><span class="font-bold text-slate-700 hidden sm:inline">${s.to} ${toSymbol}</span></div></div><div class="flex items-center gap-2"><div class="text-right"><span class="block text-[9px] text-slate-400 mb-0.5 font-medium">金額</span><strong class="text-sm md:text-base font-black ${isDone ? 'text-emerald-600 line-through' : 'text-rose-600'}">$${s.amount}</strong></div><button onclick="toggleSettlementDone('${s.from}','${s.to}','${s.amount}')" class="px-2 py-1 rounded-lg font-bold text-[10px] ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600 hover:bg-emerald-100 hover:text-emerald-700'} transition">${isDone ? '✓ 已還' : '標記已還'}</button></div></div>`;
       });
     }
 
@@ -1230,7 +1090,6 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       renderSuggestedSettlements();
       showToast(settlementStatus[key] ? "✅ 已標記為已還款" : "🔁 已取消已還款");
     }
-
     function resetSettlementStatus() {
       if (!confirm("確定要重置所有清償狀態？")) return;
       settlementStatus = {};
@@ -1238,31 +1097,24 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       renderSuggestedSettlements();
       showToast("🔄 已重置清償狀態");
     }
-
     function copySettlementPlan() {
       const container = document.getElementById("suggested-settle-container");
       const texts = container.innerText.split('\n').filter(t => t.trim() !== '' && !t.includes('標記已還') && !t.includes('已還') && !t.includes('轉帳'));
       if (texts.length === 0) { showToast("目前沒有待還款計畫", "⚠️"); return; }
       let plan = "📋 建議還款 (HKD)\n";
-      texts.forEach(t => {
-        const parts = t.split(' ');
-        if (parts.length >= 5) plan += `${parts[0]} 付 ${parts[1]} : $${parts[2]}\n`;
-      });
+      texts.forEach(t => { const parts = t.split(' '); if (parts.length >= 5) plan += `${parts[0]} 付 ${parts[1]} : $${parts[2]}\n`; });
       copyText(plan);
       showToast("📋 已複製還款計畫");
     }
-
     function changeViewAs(member) {
       state.viewingAs = member;
       renderExpensesList();
     }
-
     function exportLedgerText() {
       if (state.expenses.length === 0) { showToast("尚無記帳資料", "⚠️"); return; }
       let text = "🧾 記帳資料匯出\n";
       text += "=".repeat(30) + "\n\n";
       const { paidMap, owedMap, balances } = calculateBalances();
-      text += "總計統計\n";
       let totalHKD = 0;
       state.expenses.forEach(e => totalHKD += e.amountInHKD);
       text += `總支出: $${totalHKD.toFixed(2)} HKD\n`;
@@ -1279,42 +1131,29 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       copyText(text);
       showToast("✅ 已匯出文字格式");
     }
-
     function openConfirmModal() {
       const backdrop = document.getElementById("confirm-modal-backdrop");
       const modal = document.getElementById("confirm-modal");
-      backdrop.classList.remove("hidden");
-      modal.classList.remove("hidden");
-      modal.offsetWidth;
-      backdrop.classList.remove("opacity-0");
-      modal.classList.remove("opacity-0", "scale-95");
+      backdrop.classList.remove("hidden"); modal.classList.remove("hidden"); modal.offsetWidth;
+      backdrop.classList.remove("opacity-0"); modal.classList.remove("opacity-0", "scale-95");
       modal.classList.add("opacity-100", "scale-100");
     }
     function closeConfirmModal() {
       const backdrop = document.getElementById("confirm-modal-backdrop");
       const modal = document.getElementById("confirm-modal");
-      backdrop.classList.add("opacity-0");
-      modal.classList.remove("opacity-100", "scale-100");
+      backdrop.classList.add("opacity-0"); modal.classList.remove("opacity-100", "scale-100");
       modal.classList.add("opacity-0", "scale-95");
-      setTimeout(() => {
-        backdrop.classList.add("hidden");
-        modal.classList.add("hidden");
-      }, 300);
+      setTimeout(() => { backdrop.classList.add("hidden"); modal.classList.add("hidden"); }, 300);
     }
     function executeClearExpenses() {
       ensureWriteAccess(() => {
-        state.expenses = [];
-        lastExpense = null;
-        settlementStatus = {};
-        saveLocalExpenses();
-        syncDataToCloud();
-        updateLedgerUI();
-        showToast("🗑 已清空所有記帳");
-        closeConfirmModal();
+        state.expenses = []; lastExpense = null; settlementStatus = {};
+        saveLocalExpenses(); syncDataToCloud(); updateLedgerUI();
+        showToast("🗑 已清空所有記帳"); closeConfirmModal();
       });
     }
 
-    // ==================== 動態角色（固定底部兩側，不顯示氣泡） ====================
+    // ==================== 動態角色 ====================
     let characterTimeout = null;
     function spawnCharacters() {
       clearTimeout(characterTimeout);
@@ -1323,17 +1162,14 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       if (!snowman || !fox) return;
       snowman.classList.remove('show', 'greet');
       fox.classList.remove('show', 'greet');
-      snowman.classList.add('hide');
-      fox.classList.add('hide');
+      snowman.classList.add('hide'); fox.classList.add('hide');
       if (Math.random() < 0.5) { characterTimeout = setTimeout(spawnCharacters, Math.random() * 5000 + 4000); return; }
       const showSnowman = Math.random() < 0.5;
       const character = showSnowman ? snowman : fox;
-      character.classList.remove('hide');
-      character.classList.add('show');
+      character.classList.remove('hide'); character.classList.add('show');
       setTimeout(() => { character.classList.add('greet'); }, 600);
       characterTimeout = setTimeout(() => {
-        character.classList.remove('show', 'greet');
-        character.classList.add('hide');
+        character.classList.remove('show', 'greet'); character.classList.add('hide');
         setTimeout(spawnCharacters, Math.random() * 5000 + 3000);
       }, 4000);
     }
@@ -1347,7 +1183,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
     }
     function initRandomCharacters() { setTimeout(spawnCharacters, 2000); }
 
-    // ==================== 雪花效果（移動端減少數量） ====================
+    // ==================== 雪花效果 ====================
     function initSnowEffect() {
       const snowContainer = document.getElementById("snow-fall");
       if (!snowContainer) return;
@@ -1365,35 +1201,6 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         snowContainer.appendChild(snowflake);
       }
     }
-    window.addEventListener("resize", () => {
-      clearTimeout(window.snowResizeTimeout);
-      window.snowResizeTimeout = setTimeout(() => {
-        const snowContainer = document.getElementById("snow-fall");
-        if (snowContainer && snowContainer.children.length > 0) initSnowEffect();
-      }, 300);
-    });
-
-    // ==================== 監聽父頁面訊息（行程→記帳快速串聯） ====================
-    window.addEventListener('message', function(event) {
-      if (event.origin !== window.location.origin) return;
-      const data = event.data;
-      if (data && data.type === 'prefillExpense') {
-        openExpenseModal();
-        document.getElementById('ledger-desc').value = data.desc || '';
-        if (data.day) document.getElementById('ledger-day').value = data.day;
-        const desc = data.desc || '';
-        let category = '其他';
-        if (/餐|食|午|晚|早餐|壽司|拉麵|燒肉|牛舌/.test(desc)) category = '餐飲';
-        else if (/交通|車|高速|停車|的士|地鐵/.test(desc)) category = '交通';
-        else if (/住宿|酒店|旅館|溫泉旅館/.test(desc)) category = '住宿';
-        else if (/購物|outlet|藥妝|超市|商場/.test(desc)) category = '購物';
-        else if (/門票|纜車|入場|活動/.test(desc)) category = '門票/活動';
-        document.getElementById('ledger-category').value = category;
-        renderLedgerSelectors();
-        updateEstimatedHKD();
-        showToast('📋 已預填記帳資料', '✏️');
-      }
-    });
 
     // ==================== 初始化 ====================
     window.addEventListener("DOMContentLoaded", () => {
