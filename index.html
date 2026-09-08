@@ -335,7 +335,7 @@ async function syncDataToCloud() {
     100% { transform: translateY(80vh) rotate(360deg); opacity: 0.2; }
   }
   
-  /* ==================== 動態角色（優化：固定在底部，不出現在中間） ==================== */
+  /* ==================== 動態角色（固定在底部兩側，不擋內容） ==================== */
   .walking-character {
     position: fixed;
     z-index: 9998;
@@ -385,20 +385,7 @@ async function syncDataToCloud() {
   }
   
   .character-bubble {
-    position: fixed;
-    background: white;
-    border: 2px solid #0284c7;
-    border-radius: 20px;
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: bold;
-    color: #0369a1;
-    z-index: 9997;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.3s, transform 0.3s;
-    display: none !important; /* 不再顯示氣泡，避免遮擋 */
+    display: none !important;
   }
   
   #mini-forecast {
@@ -435,7 +422,6 @@ async function syncDataToCloud() {
     background: #0284c7;
   }
   
-  /* 天氣聯動卡片 */
   .weather-card {
     animation: fadeIn 0.3s ease;
   }
@@ -444,7 +430,6 @@ async function syncDataToCloud() {
     to { opacity: 1; transform: translateY(0); }
   }
   
-  /* 平滑卡片展開動畫 */
   details.event-card[open] .event-content-wrapper {
     animation: slideDown 0.3s ease;
   }
@@ -454,7 +439,6 @@ async function syncDataToCloud() {
     to { opacity: 1; transform: translateY(0); }
   }
   
-  /* 全屏圖片燈箱 */
   #lightbox {
     position: fixed;
     inset: 0;
@@ -502,7 +486,7 @@ async function syncDataToCloud() {
   <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
   
-  <!-- 動態角色：雪人 + 狐狸（固定在底部，不彈氣泡） -->
+  <!-- 動態角色：雪人 + 狐狸（固定在底部兩側，不彈氣泡） -->
   <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！" style="left: 15px;">
     <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -596,7 +580,7 @@ async function syncDataToCloud() {
     </div>
   </div>
   
-  <!-- Header（壓縮版，減少佔用空間） -->
+  <!-- Header（壓縮版） -->
   <header class="relative bg-slate-900 text-white py-3 px-4 shadow-xl overflow-hidden">
     <div class="absolute inset-0 z-0 pointer-events-none bg-gradient-to-r from-slate-900 via-sky-900 to-indigo-950">
       <img src="https://images.unsplash.com/photo-1418985991508-e47386d96a71?q=80&w=2000&auto=format&fit=crop" alt="東北冬季雪景" class="w-full h-full object-cover opacity-70" onerror="this.style.display='none'">
@@ -628,7 +612,7 @@ async function syncDataToCloud() {
       </div>
   </header>
   
-  <!-- 主導航（已固定，使用 CSS 變量控制高度） -->
+  <!-- 主導航 -->
   <nav class="sticky top-0 z-50 max-w-md mx-auto mt-3 px-4 relative bg-slate-50/95 backdrop-blur-md shadow-sm" style="height: var(--nav-height);">
     <div class="bg-white p-1.5 rounded-full shadow-lg shadow-sky-100 border border-slate-200 flex gap-1">
       <button id="nav-itinerary-btn" onclick="switchMainTab('itinerary')" class="flex-1 py-2.5 px-4 rounded-full text-sm font-black flex items-center justify-center gap-1.5 nav-btn active">
@@ -640,24 +624,24 @@ async function syncDataToCloud() {
     </div>
   </nav>
   
-  <!-- 快捷功能（壓縮版：4個橫排小按鈕） -->
+  <!-- 快捷功能（柔和淡色按鈕） -->
   <div id="itinerary-quick-section" class="max-w-6xl mx-auto px-4 mt-3 space-y-3">
     <div class="grid grid-cols-4 gap-2">
-      <button onclick="toggleBookingModal()" class="group bg-gradient-to-r from-amber-500 to-orange-500 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] active:scale-95">
-        <span class="text-base mb-0.5">📌</span>
-        <span class="text-white text-[10px] font-black leading-tight text-center">行前<br>預訂</span>
+      <button onclick="toggleBookingModal()" class="group bg-orange-50 hover:bg-orange-100 border border-orange-200 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] transition active:scale-95">
+        <span class="text-base mb-0.5 text-orange-500">📌</span>
+        <span class="text-orange-700 text-[10px] font-bold leading-tight text-center">行前<br>預訂</span>
       </button>
-      <button onclick="toggleEquipModal()" class="group bg-gradient-to-r from-emerald-500 to-teal-500 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] active:scale-95">
-        <span class="text-base mb-0.5">🎒</span>
-        <span class="text-white text-[10px] font-black leading-tight text-center">裝備<br>清單</span>
+      <button onclick="toggleEquipModal()" class="group bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] transition active:scale-95">
+        <span class="text-base mb-0.5 text-emerald-500">🎒</span>
+        <span class="text-emerald-700 text-[10px] font-bold leading-tight text-center">裝備<br>清單</span>
       </button>
-      <button onclick="toggleDriveModal()" class="group bg-gradient-to-r from-rose-500 to-red-500 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] active:scale-95">
-        <span class="text-base mb-0.5">⚠️</span>
-        <span class="text-white text-[10px] font-black leading-tight text-center">雪地<br>攻略</span>
+      <button onclick="toggleDriveModal()" class="group bg-rose-50 hover:bg-rose-100 border border-rose-200 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] transition active:scale-95">
+        <span class="text-base mb-0.5 text-rose-500">⚠️</span>
+        <span class="text-rose-700 text-[10px] font-bold leading-tight text-center">雪地<br>攻略</span>
       </button>
-      <button onclick="openCommonTipsModal()" class="group bg-gradient-to-r from-purple-500 to-fuchsia-500 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] active:scale-95">
-        <span class="text-base mb-0.5">📷</span>
-        <span class="text-white text-[10px] font-black leading-tight text-center">拍攝<br>技巧</span>
+      <button onclick="openCommonTipsModal()" class="group bg-purple-50 hover:bg-purple-100 border border-purple-200 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] transition active:scale-95">
+        <span class="text-base mb-0.5 text-purple-500">📷</span>
+        <span class="text-purple-700 text-[10px] font-bold leading-tight text-center">拍攝<br>技巧</span>
       </button>
     </div>
   
@@ -699,20 +683,14 @@ async function syncDataToCloud() {
       <div class="space-y-6">
         <!-- 日期標籤（sticky 位置動態調整） -->
         <div class="sticky z-50 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-2.5 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper" style="top: calc(var(--nav-height) + 4px);">
-          <div class="flex items-center gap-2">
-            <div class="flex gap-1.5 overflow-x-auto scrollbar-none flex-1" id="day-tabs-container">
-              <button onclick="switchDay(1)" id="tab-d1" class="day-tab active flex-shrink-0">D1 (1/21)</button>
-              <button onclick="switchDay(2)" id="tab-d2" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D2 (1/22)</button>
-              <button onclick="switchDay(3)" id="tab-d3" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D3 (1/23)</button>
-              <button onclick="switchDay(4)" id="tab-d4" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D4 (1/24)</button>
-              <button onclick="switchDay(5)" id="tab-d5" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D5 (1/25)</button>
-              <button onclick="switchDay(6)" id="tab-d6" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D6 (1/26)</button>
-              <button onclick="switchDay(7)" id="tab-d7" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D7 (1/27)</button>
-            </div>
-            <!-- 收合/展開按鈕（已移入 Day 分頁欄） -->
-            <button id="fab-collapse-all" onclick="collapseAllItineraries()" class="shrink-0 w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-800 text-white flex items-center justify-center transition-all" title="收合/展開">
-              <span class="text-sm">⬆️</span>
-            </button>
+          <div class="flex gap-1.5 overflow-x-auto scrollbar-none" id="day-tabs-container">
+            <button onclick="switchDay(1)" id="tab-d1" class="day-tab active flex-shrink-0">D1 (1/21)</button>
+            <button onclick="switchDay(2)" id="tab-d2" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D2 (1/22)</button>
+            <button onclick="switchDay(3)" id="tab-d3" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D3 (1/23)</button>
+            <button onclick="switchDay(4)" id="tab-d4" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D4 (1/24)</button>
+            <button onclick="switchDay(5)" id="tab-d5" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D5 (1/25)</button>
+            <button onclick="switchDay(6)" id="tab-d6" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D6 (1/26)</button>
+            <button onclick="switchDay(7)" id="tab-d7" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D7 (1/27)</button>
           </div>
           <div class="border-b border-slate-200 mt-1"></div>
         </div>
@@ -736,46 +714,50 @@ async function syncDataToCloud() {
     <iframe src="/ledger.html" class="w-full h-screen border-none rounded-2xl shadow-sm" title="記帳本"></iframe>
   </div>
   
-  <!-- 匯率 FAB（已縮小，避免遮擋） -->
-  <div class="fixed bottom-6 right-4 md:right-6 z-[10001] flex flex-col items-end pointer-events-none">
-    <div id="currency-widget-panel" class="absolute bottom-full right-0 mb-4 bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] border border-slate-200 w-[calc(100vw-2rem)] sm:w-80 overflow-hidden transition-all duration-300 origin-bottom-right pointer-events-none opacity-0 scale-90 translate-y-4 invisible z-[10000]">
-      <div class="bg-gradient-to-r from-sky-900 to-indigo-900 p-4 flex justify-between items-center text-white">
-        <div class="flex items-center gap-2"><span class="text-xl">🪙</span><h3 class="text-sm font-black tracking-wide">即時匯率試算</h3></div>
-        <button onclick="toggleCurrencyWidget()" class="bg-white/20 hover:bg-white/40 text-white rounded-full p-1.5 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+  <!-- 收合/展開按鈕（新位置：右下角，與匯率按鈕垂直排列） -->
+  <div class="fixed bottom-6 right-4 md:right-6 z-[10000] flex flex-col items-end gap-2 pointer-events-none">
+    <button id="fab-collapse-all" onclick="collapseAllItineraries()" class="pointer-events-auto w-11 h-11 rounded-full bg-slate-700 hover:bg-slate-800 text-white flex items-center justify-center shadow-lg border border-slate-600 transition-all hover:scale-105 active:scale-95" title="收合/展開">
+      <span class="text-lg">⬆️</span>
+    </button>
+    <button onclick="toggleCurrencyWidget()" id="currency-fab" class="pointer-events-auto w-11 h-11 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center shadow-lg border border-slate-600 transition-all hover:scale-105 active:scale-95">
+      <span class="text-xl">🪙</span>
+    </button>
+  </div>
+  
+  <!-- 匯率試算面板 -->
+  <div id="currency-widget-panel" class="fixed bottom-24 right-4 md:right-6 z-[10001] bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] border border-slate-200 w-[calc(100vw-2rem)] sm:w-80 overflow-hidden transition-all duration-300 origin-bottom-right opacity-0 scale-90 translate-y-4 invisible pointer-events-none">
+    <div class="bg-gradient-to-r from-sky-900 to-indigo-900 p-4 flex justify-between items-center text-white">
+      <div class="flex items-center gap-2"><span class="text-xl">🪙</span><h3 class="text-sm font-black tracking-wide">即時匯率試算</h3></div>
+      <button onclick="toggleCurrencyWidget()" class="bg-white/20 hover:bg-white/40 text-white rounded-full p-1.5 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+    </div>
+    <div class="p-4 space-y-3">
+      <div class="flex justify-between items-center">
+        <p id="rate-hint-text" class="text-xs text-slate-500 font-semibold">目前匯率：1 JPY ≈ 0.052 HKD</p>
+        <button onclick='convertCurrency("clear")' class="text-[10px] text-slate-400 hover:text-red-500 transition font-bold flex items-center gap-1 bg-slate-100 px-2 py-1 rounded"><span>🧹</span> 清除</button>
       </div>
-      <div class="p-4 space-y-3 pointer-events-auto">
-        <div class="flex justify-between items-center">
-          <p id="rate-hint-text" class="text-xs text-slate-500 font-semibold">目前匯率：1 JPY ≈ 0.052 HKD</p>
-          <button onclick='convertCurrency("clear")' class="text-[10px] text-slate-400 hover:text-red-500 transition font-bold flex items-center gap-1 bg-slate-100 px-2 py-1 rounded"><span>🧹</span> 清除</button>
-        </div>
-        <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none snap-x">
-          <button onclick='quickConvert("jpy",1e3)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 transition">¥1千 JPY</button>
-          <button onclick='quickConvert("jpy",1e4)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 transition">¥1萬 JPY</button>
-          <button onclick='quickConvert("hkd",100)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition">$100 HKD</button>
-        </div>
-        <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 shadow-inner">
-          <div>
-            <label class="block text-xs font-bold text-rose-800 mb-1.5">🇯🇵 日圓 (JPY)</label>
-            <div class="relative rounded-xl shadow-xs">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-rose-600 text-base font-black">¥</span></div>
-              <input type="number" id="calc-jpy" oninput='convertCurrency("jpy")' value="10000" class="block w-full pl-8 pr-12 text-lg font-black text-rose-900 border border-rose-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 transition">
-              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span class="text-rose-400 text-xs font-bold">JPY</span></div>
-            </div>
+      <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none snap-x">
+        <button onclick='quickConvert("jpy",1e3)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 transition">¥1千 JPY</button>
+        <button onclick='quickConvert("jpy",1e4)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 transition">¥1萬 JPY</button>
+        <button onclick='quickConvert("hkd",100)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition">$100 HKD</button>
+      </div>
+      <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 shadow-inner">
+        <div>
+          <label class="block text-xs font-bold text-rose-800 mb-1.5">🇯🇵 日圓 (JPY)</label>
+          <div class="relative rounded-xl shadow-xs">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-rose-600 text-base font-black">¥</span></div>
+            <input type="number" id="calc-jpy" oninput='convertCurrency("jpy")' value="10000" class="block w-full pl-8 pr-12 text-lg font-black text-rose-900 border border-rose-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 transition">
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span class="text-rose-400 text-xs font-bold">JPY</span></div>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-sky-800 mb-1.5">🇭🇰 港幣 (HKD)</label>
-            <div class="relative rounded-xl shadow-xs">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-sky-600 text-base font-black">$</span></div>
-              <input type="number" id="calc-hkd" oninput='convertCurrency("hkd")' class="block w-full pl-8 pr-12 text-lg font-black text-sky-900 border border-sky-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
-            </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-sky-800 mb-1.5">🇭🇰 港幣 (HKD)</label>
+          <div class="relative rounded-xl shadow-xs">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-sky-600 text-base font-black">$</span></div>
+            <input type="number" id="calc-hkd" oninput='convertCurrency("hkd")' class="block w-full pl-8 pr-12 text-lg font-black text-sky-900 border border-sky-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
           </div>
         </div>
       </div>
     </div>
-    <button onclick="toggleCurrencyWidget()" id="currency-fab" class="pointer-events-auto relative bg-slate-800 hover:bg-slate-700 text-white rounded-full h-11 w-11 md:h-auto md:w-auto md:px-4 md:py-2.5 shadow-lg border border-slate-600 flex items-center justify-center gap-1 transition-all hover:scale-105 active:scale-95">
-      <span class="text-xl group-hover:rotate-12 transition-transform">🪙</span>
-      <span class="font-bold text-xs hidden md:inline">匯率</span>
-    </button>
   </div>
   
   <!-- Toast -->
@@ -784,7 +766,7 @@ async function syncDataToCloud() {
     <span id="toast-message">複製成功！</span>
   </div>
   
-  <!-- 彈窗們 -->
+  <!-- 彈窗們（保持原有） -->
   <!-- 行前預訂 -->
   <div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeBookingModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
