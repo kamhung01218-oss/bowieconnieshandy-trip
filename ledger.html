@@ -135,7 +135,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
 }
 </style>
 </head>
-<body class="bg-gradient-to-b from-sky-50 to-cyan-50 text-slate-800 min-h-screen pb-24 relative">
+<body class="bg-gradient-to-b from-sky-50 to-cyan-50 text-slate-800 min-h-screen pb-16 relative">
 
   <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
@@ -220,9 +220,9 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
   </div>
 
   <!-- 主容器 -->
-  <div class="max-w-4xl mx-auto px-4 pt-6 pb-20 space-y-6">
+  <div class="max-w-4xl mx-auto px-4 pt-6 pb-16 space-y-6">
 
-    <!-- 頂部工具列 -->
+    <!-- 頂部工具列（簡化版） -->
     <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
       <div class="flex flex-col gap-1">
         <h4 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
@@ -233,17 +233,10 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         </h4>
         <p class="text-xs text-slate-500">記錄旅途中每一筆花銷，輕鬆平分。</p>
       </div>
-      <div class="flex gap-2 w-full sm:w-auto">
-        <button onclick="openExpenseModal()" class="flex-1 sm:flex-none py-2 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md">
-          <span>＋</span> 記帳
-        </button>
-        <button onclick="copyCurrentUrl()" class="flex-1 sm:flex-none py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
-          <span>🔗</span> 複製連結
-        </button>
-        <button onclick="forceSync()" class="flex-1 sm:flex-none py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
-          <span>🔄</span> 強制同步
-        </button>
-      </div>
+      <!-- 優化後的記帳按鈕（柔和色） -->
+      <button onclick="openExpenseModal()" class="w-full sm:w-auto py-2.5 px-6 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+        <span class="text-lg leading-none">＋</span> 記帳
+      </button>
     </div>
 
     <!-- 統計卡片 -->
@@ -447,10 +440,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
     <span id="toast-icon">✅</span><span id="toast-message">操作成功</span>
   </div>
 
-  <!-- 固定懸浮按鈕（FAB）- 位置調整至 bottom-24，避免與角色重疊 -->
-  <button id="fab-add" onclick="openExpenseModal()" class="fixed bottom-24 right-6 z-[100] bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95">
-    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-  </button>
+  <!-- 已移除 FAB 按鈕 -->
 
   <script>
     // ==================== Firebase 初始化 ====================
@@ -598,14 +588,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       }
     }
 
-    async function forceSync() {
-      try {
-        await syncDataToCloud();
-        showToast("✅ 同步完成");
-      } catch(e) {
-        showToast("❌ 同步失敗", "❌");
-      }
-    }
+    // 已移除 forceSync 函數
 
     // ==================== 成員資料 ====================
     const members = ["余生", "bowie", "shandy", "connie"];
@@ -746,7 +729,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         navigator.clipboard.writeText(text).then(() => showToast("✅ 已複製"));
       }
     }
-    function copyCurrentUrl() { copyText(window.location.href); showToast("🔗 連結已複製"); }
+    // 已移除 copyCurrentUrl 函數
 
     // ==================== 記帳彈窗 ====================
     function openExpenseModal() {
