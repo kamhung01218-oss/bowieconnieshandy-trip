@@ -2,7 +2,7 @@
 <html lang="zh-HK">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>❄️ 東北冬季親子溫泉自駕之旅 (7天6夜)</title>
 <meta name="theme-color" content="#0284c7">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -169,13 +169,54 @@ async function syncDataToCloud() {
     bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 10px) !important;
   }
 
+  .walking-character svg {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .walking-character.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  
+  .walking-character.hide {
+    opacity: 0;
+    transform: translateY(50px) scale(0.8);
+  }
+  
+  .walking-character.greet {
+    animation: greet-bounce 0.8s ease;
+  }
+  @keyframes greet-bounce {
+    0% { transform: translateY(0) scale(1); }
+    30% { transform: translateY(-15px) scale(1.1); }
+    50% { transform: translateY(0) scale(1); }
+    70% { transform: translateY(-10px) scale(0.95); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  
+  .walking-character.jumping {
+    animation: jump 0.6s ease !important;
+  }
+  @keyframes jump {
+    0% { transform: translateY(0) scale(1); }
+    30% { transform: translateY(-35px) scale(1.15); }
+    50% { transform: translateY(-20px) scale(0.95); }
+    70% { transform: translateY(-35px) scale(1.1); }
+    100% { transform: translateY(0) scale(1); }
+  }
+
+  .character-bubble {
+    display: none !important;
+  }
+
   /* 收合/匯率按鈕 FAB（避開安全區） */
   #fab-collapse-all {
     bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 16px);
   }
   
   #currency-fab-container {
-    bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 70px) !important;
+    bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 80px) !important;
   }
 
   .day-tab {
@@ -425,6 +466,39 @@ async function syncDataToCloud() {
     to { opacity: 1; transform: translateY(0); }
   }
   
+  /* ==================== 時間膠囊樣式 ==================== */
+  .timeline-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+  .timeline-time span {
+    display: inline-flex;
+    align-items: center;
+    background: #e0f2fe;
+    color: #0369a1;
+    border-radius: 9999px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1.4;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  
+  /* ==================== 記帳本 iframe 容器 ==================== */
+  #ledger-frame-container {
+    overflow: hidden;
+    padding: 0 !important;
+  }
+  
+  #ledger-iframe {
+    width: 100%;
+    border: none;
+    border-radius: 0;
+  }
+  
   /* 全屏圖片燈箱 */
   #lightbox {
     position: fixed;
@@ -656,8 +730,8 @@ async function syncDataToCloud() {
   <div id="main-itinerary-view">
     <main class="max-w-6xl mx-auto px-4 mt-4">
       <div class="space-y-6">
-        <!-- 日期標籤 -->
-        <div class="sticky top-14 z-40 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-2.5 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
+        <!-- 日期標籤（修改為 sticky top-0） -->
+        <div class="sticky top-0 z-40 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-2.5 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
           <div class="flex gap-1.5 overflow-x-auto scrollbar-none" id="day-tabs-container">
             <button onclick="switchDay(1)" id="tab-d1" class="day-tab active flex-shrink-0">D1 (1/21)</button>
             <button onclick="switchDay(2)" id="tab-d2" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D2 (1/22)</button>
@@ -686,7 +760,7 @@ async function syncDataToCloud() {
   
   <!-- 記帳本 iframe -->
   <div id="ledger-frame-container" class="hidden max-w-4xl mx-auto px-4 mt-6 pb-16 space-y-6">
-    <iframe src="./ledger.html" id="ledger-iframe" class="w-full h-screen border-none rounded-2xl shadow-sm" title="記帳本"></iframe>
+    <iframe src="./ledger.html" id="ledger-iframe" class="w-full" style="height: calc(100dvh - 60px);" title="記帳本"></iframe>
   </div>
   
   <!-- 收合/展開按鈕 -->
@@ -694,8 +768,15 @@ async function syncDataToCloud() {
     <span class="text-lg">⬆️</span>
   </button>
   
-  <!-- 匯率按鈕 -->
-  <div id="currency-fab-container" class="fixed right-4 z-[9999] flex flex-col items-end gap-2 pointer-events-none" style="bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 70px);">
+  <!-- 匯率及＋記帳按鈕容器 -->
+  <div id="currency-fab-container" class="fixed right-4 z-[9999] flex flex-col items-end gap-2 pointer-events-none" style="bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 80px);">
+    <!-- ＋ 記帳按鈕（較大） -->
+    <button onclick="openLedgerAdd()" id="fab-add-ledger" class="pointer-events-auto w-12 h-12 rounded-full bg-sky-600 hover:bg-sky-700 text-white flex items-center justify-center shadow-lg border border-sky-700 transition-all hover:scale-105 active:scale-95">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+    </button>
+    <!-- 匯率按鈕 -->
     <button onclick="toggleCurrencyWidget()" id="currency-fab" class="pointer-events-auto w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center shadow-lg border border-slate-600 transition-all hover:scale-105 active:scale-95">
       <span class="text-lg">🪙</span>
     </button>
@@ -755,7 +836,7 @@ async function syncDataToCloud() {
     </button>
   </nav>
   
-  <!-- 彈窗們 -->
+  <!-- 彈窗們（保持原有） -->
   <!-- 行前預訂 -->
   <div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeBookingModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
@@ -1043,32 +1124,61 @@ async function syncDataToCloud() {
       const itineraryView = document.getElementById("main-itinerary-view");
       const ledgerFrameContainer = document.getElementById("ledger-frame-container");
       const quickSection = document.getElementById("itinerary-quick-section");
+      const header = document.querySelector("header");
       const navItineraryBtn = document.getElementById("nav-itinerary-btn");
       const navLedgerBtn = document.getElementById("nav-ledger-btn");
       const collapseBtn = document.getElementById('fab-collapse-all');
       const currencyBtn = document.getElementById('currency-fab');
       const currencyPanel = document.getElementById('currency-widget-panel');
+      const currencyContainer = document.getElementById('currency-fab-container'); // 新增
 
       if (tab === "itinerary") {
+        // 行程模式
+        if (header) header.style.display = 'block';
         itineraryView.classList.remove("hidden");
         ledgerFrameContainer.classList.add("hidden");
         if (quickSection) quickSection.classList.remove("hidden");
         navItineraryBtn.classList.add("active");
         navLedgerBtn.classList.remove("active");
         if (collapseBtn) collapseBtn.style.display = 'flex';
-        if (currencyBtn) currencyBtn.style.display = 'flex';
+        // 顯示匯率容器（含＋記帳與匯率按鈕）
+        if (currencyContainer) currencyContainer.style.display = 'flex';
         if (currencyPanel) currencyPanel.style.display = 'none';
       } else {
+        // 記帳本模式
+        if (header) header.style.display = 'none';
         itineraryView.classList.add("hidden");
         ledgerFrameContainer.classList.remove("hidden");
         if (quickSection) quickSection.classList.add("hidden");
         navLedgerBtn.classList.add("active");
         navItineraryBtn.classList.remove("active");
         if (collapseBtn) collapseBtn.style.display = 'none';
-        if (currencyBtn) currencyBtn.style.display = 'none';
+        // 顯示匯率容器（含＋記帳與匯率按鈕）
+        if (currencyContainer) currencyContainer.style.display = 'flex';
         if (currencyPanel) currencyPanel.style.display = 'none';
+        // 調整 iframe 高度，避免遮擋底部導航
+        const iframe = document.getElementById("ledger-iframe");
+        if (iframe) {
+          iframe.style.height = "calc(100dvh - 60px)";
+        }
       }
       setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
+    }
+  
+    // 新增：開啟記帳（若未切換則先切換，再打開 iframe 內的記帳彈窗）
+    function openLedgerAdd() {
+      if (state.currentMainTab !== 'ledger') {
+        switchMainTab('ledger');
+      }
+      const iframe = document.getElementById('ledger-iframe');
+      if (iframe && iframe.contentWindow && iframe.contentWindow.openExpenseModal) {
+        iframe.contentWindow.openExpenseModal();
+      } else {
+        setTimeout(() => {
+          if (iframe.contentWindow.openExpenseModal) iframe.contentWindow.openExpenseModal();
+          else showToast("記帳本尚未載入，請稍候", "⚠️");
+        }, 300);
+      }
     }
   
     function switchDay(day) {
@@ -1403,7 +1513,7 @@ async function syncDataToCloud() {
       }
     }
   
-    // ==================== 行程渲染 ====================
+    // ==================== 行程渲染（含美化時間） ====================
     function renderDayItinerary(sectionId, dayData) {
       const section = document.getElementById(sectionId);
       if (!section) return;
@@ -1451,14 +1561,20 @@ async function syncDataToCloud() {
             <button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button>
             <button onclick="openShoppingModal('${event.title}')" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單${shoppingBadge}</button>
           </div>`;
+        // 美化時間顯示（膠囊樣式）
         html += `
           <div class="timeline-node" id="event-dot-${dayData.day}-${index}">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           </div>
           <div class="timeline-card">
             <div class="timeline-time">
-              <strong>${startTime}</strong>
-              ${endTime ? `<span class="timeline-time-end">→ ${endTime}</span>` : ""}
+              <span>
+                <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                ${startTime}
+                ${endTime ? `<span class="mx-1 text-slate-400">–</span>${endTime}` : ""}
+              </span>
             </div>
             <details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl relative overflow-hidden event-card">
               <div class="itinerary-cat-strip"></div>

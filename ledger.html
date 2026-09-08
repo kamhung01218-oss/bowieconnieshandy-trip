@@ -30,6 +30,8 @@ body{
   min-height: 100vh;
   padding-bottom: calc(16px + var(--safe-area-bottom));
   -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
 }
 button, a {
   touch-action: manipulation;
@@ -178,6 +180,12 @@ button:active { transform: scale(0.96); }
   color: white;
   border-color: #0284c7;
 }
+
+/* 防止下拉刷新 */
+body {
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
 </style>
 </head>
 <body class="text-slate-800 relative">
@@ -265,70 +273,65 @@ button:active { transform: scale(0.96); }
   </div>
 
   <!-- 主容器 -->
-  <div class="max-w-4xl mx-auto px-4 pt-6 pb-16 space-y-6">
+  <div class="max-w-4xl mx-auto px-4 pt-4 pb-16 space-y-4">
 
-    <!-- 頂部工具列 -->
-    <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-      <div class="flex flex-col gap-1">
-        <h4 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
-          <span id="cloud-sync-badge" class="text-[10px] bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-sky-200 mr-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span> 雲端連線
-          </span>
-          隨行記帳本
-        </h4>
-        <p class="text-xs text-slate-500">記錄旅途中每一筆花銷，輕鬆平分。</p>
+    <!-- 頂部工具列（縮小版） -->
+    <div class="bg-white border border-slate-200 p-2 rounded-2xl shadow-sm flex items-center justify-between gap-3">
+      <div class="flex items-center gap-1.5">
+        <span id="cloud-sync-badge" class="text-[10px] bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-sky-200">
+          <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span> 雲端連線
+        </span>
+        <span class="text-xs font-black text-slate-800">隨行記帳本</span>
       </div>
-      <button onclick="openExpenseModal()" class="w-full sm:w-auto py-2.5 px-6 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
-        <span class="text-lg leading-none">＋</span> 記帳
-      </button>
+      <button onclick="openExpenseModal()" class="py-1.5 px-4 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition">＋ 記帳</button>
     </div>
 
-    <!-- 統計卡片 -->
-    <div class="grid grid-cols-3 gap-3">
-      <div class="bg-gradient-to-br from-sky-950 to-sky-900 text-white p-4 rounded-2xl shadow-sm text-center">
-        <div class="flex items-center justify-center gap-1 mb-1">
-          <span class="text-sm">💰</span>
-          <span class="text-[10px] text-sky-200 uppercase font-bold tracking-widest">總支出</span>
+    <!-- 統計卡片（縮小版） -->
+    <div class="grid grid-cols-3 gap-2">
+      <div class="bg-gradient-to-br from-sky-950 to-sky-900 text-white p-2 rounded-xl shadow-sm text-center">
+        <div class="flex items-center justify-center gap-1 mb-0.5">
+          <span class="text-xs">💰</span>
+          <span class="text-[9px] text-sky-200 uppercase font-bold tracking-wider">總支出</span>
         </div>
-        <strong id="stat-total" class="block text-xl md:text-2xl font-black drop-shadow-md">0.00 HKD</strong>
+        <strong id="stat-total" class="block text-base md:text-lg font-black drop-shadow-md">0.00 HKD</strong>
       </div>
-      <div class="bg-gradient-to-br from-blue-900 to-indigo-800 text-white p-4 rounded-2xl shadow-sm text-center">
-        <div class="flex items-center justify-center gap-1 mb-1">
-          <span class="text-sm">📊</span>
-          <span class="text-[10px] text-sky-200 uppercase font-bold tracking-widest">人均支出</span>
+      <div class="bg-gradient-to-br from-blue-900 to-indigo-800 text-white p-2 rounded-xl shadow-sm text-center">
+        <div class="flex items-center justify-center gap-1 mb-0.5">
+          <span class="text-xs">📊</span>
+          <span class="text-[9px] text-sky-200 uppercase font-bold tracking-wider">人均</span>
         </div>
-        <strong id="stat-average" class="block text-xl md:text-2xl font-black drop-shadow-md">0.00 HKD</strong>
+        <strong id="stat-average" class="block text-base md:text-lg font-black drop-shadow-md">0.00 HKD</strong>
       </div>
-      <div class="bg-gradient-to-br from-slate-800 to-slate-700 text-white p-4 rounded-2xl shadow-sm text-center">
-        <div class="flex items-center justify-center gap-1 mb-1">
-          <span class="text-sm">🧾</span>
-          <span class="text-[10px] text-slate-300 uppercase font-bold tracking-widest">記帳筆數</span>
+      <div class="bg-gradient-to-br from-slate-800 to-slate-700 text-white p-2 rounded-xl shadow-sm text-center">
+        <div class="flex items-center justify-center gap-1 mb-0.5">
+          <span class="text-xs">🧾</span>
+          <span class="text-[9px] text-slate-300 uppercase font-bold tracking-wider">筆數</span>
         </div>
-        <strong id="stat-count" class="block text-xl md:text-2xl font-black drop-shadow-md">0 筆</strong>
+        <strong id="stat-count" class="block text-base md:text-lg font-black drop-shadow-md">0 筆</strong>
       </div>
     </div>
 
     <!-- 主內容區 -->
     <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden min-h-[500px]">
-      <!-- 子分頁 -->
-      <div class="border-b border-slate-200 bg-slate-50 p-2 flex gap-2 overflow-x-auto scrollbar-none">
-        <button id="tab-records-btn" onclick='switchLedgerSubTab("records")' class="whitespace-nowrap flex-1 py-2 px-3 rounded-xl text-xs font-black bg-white text-sky-900 shadow-sm transition flex flex-col items-center justify-center">
-          <span class="text-lg">📝</span><span>記帳明細</span>
+      <!-- 子分頁（縮小版） -->
+      <div class="border-b border-slate-200 bg-slate-50 p-1.5 flex gap-1.5 overflow-x-auto scrollbar-none">
+        <button id="tab-records-btn" onclick='switchLedgerSubTab("records")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black bg-white text-sky-900 shadow-sm transition flex flex-col items-center justify-center">
+          <span class="text-base">📝</span><span>明細</span>
         </button>
-        <button id="tab-balances-btn" onclick='switchLedgerSubTab("balances")' class="whitespace-nowrap flex-1 py-2 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center">
-          <span class="text-lg">⚖️</span><span>個人結算</span>
+        <button id="tab-balances-btn" onclick='switchLedgerSubTab("balances")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center">
+          <span class="text-base">⚖️</span><span>結算</span>
         </button>
-        <button id="tab-suggested-btn" onclick='switchLedgerSubTab("suggested")' class="whitespace-nowrap flex-1 py-2 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center">
-          <span class="text-lg">💡</span><span>建議還款 <span id="debt-count-badge" class="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full hidden">0</span></span>
+        <button id="tab-suggested-btn" onclick='switchLedgerSubTab("suggested")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center">
+          <span class="text-base">💡</span><span>還款 <span id="debt-count-badge" class="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full hidden">0</span></span>
         </button>
-        <button id="tab-history-btn" onclick='switchLedgerSubTab("history")' class="whitespace-nowrap flex-1 py-2 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center">
-          <span class="text-lg">🕘</span><span>變更紀錄</span>
+        <button id="tab-history-btn" onclick='switchLedgerSubTab("history")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center">
+          <span class="text-base">🕘</span><span>紀錄</span>
         </button>
       </div>
       
       <!-- 記帳明細 -->
-      <div id="subview-records" class="p-4 space-y-3">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3">
+      <div id="subview-records" class="p-3 space-y-3">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
           <h4 class="text-sm font-bold text-slate-800">記錄清單</h4>
           <div class="flex flex-wrap items-center gap-2">
             <input id="search-input" oninput="renderExpensesList()" placeholder="🔍 搜尋說明/類別" class="text-xs border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500/50 w-40">
@@ -370,7 +373,7 @@ button:active { transform: scale(0.96); }
         </div>
 
         <!-- 記錄列表 -->
-        <div class="space-y-3" id="records-list-container">
+        <div class="space-y-2" id="records-list-container">
           <div class="text-slate-400 text-xs italic text-center py-12">尚無記錄</div>
         </div>
       </div>
@@ -530,10 +533,7 @@ button:active { transform: scale(0.96); }
     <span id="toast-icon">✅</span><span id="toast-message">操作成功</span>
   </div>
 
-  <!-- 固定「＋記帳」FAB 按鈕（避開安全區） -->
-  <button id="fab-add" onclick="openExpenseModal()" class="fixed right-4 z-[100] bg-sky-600 hover:bg-sky-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95" style="bottom: calc(20px + var(--safe-area-bottom));">
-    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-  </button>
+  <!-- 移除原有 FAB 按鈕（避免與父頁面重複） -->
 
   <script>
     // ==================== Firebase 初始化 ====================
@@ -733,11 +733,11 @@ button:active { transform: scale(0.96); }
     // ==================== 子分頁切換 ====================
     function switchLedgerSubTab(tabName) {
       ['records','balances','suggested','history'].forEach(t => document.getElementById(`subview-${t}`).classList.add('hidden'));
-      const inactiveClass = "whitespace-nowrap flex-1 py-2 px-3 rounded-xl text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center";
+      const inactiveClass = "whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center";
       ['tab-records-btn','tab-balances-btn','tab-suggested-btn','tab-history-btn'].forEach(id => {
         document.getElementById(id).className = inactiveClass;
       });
-      const activeClass = "whitespace-nowrap flex-1 py-2 px-3 rounded-xl text-xs font-black bg-white text-sky-900 shadow-sm transition flex flex-col items-center justify-center";
+      const activeClass = "whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black bg-white text-sky-900 shadow-sm transition flex flex-col items-center justify-center";
       document.getElementById(`subview-${tabName}`).classList.remove('hidden');
       const map = { records: 'tab-records-btn', balances: 'tab-balances-btn', suggested: 'tab-suggested-btn', history: 'tab-history-btn' };
       document.getElementById(map[tabName]).className = activeClass;
@@ -904,7 +904,7 @@ button:active { transform: scale(0.96); }
       showToast("📋 已沿用上次記錄");
     }
 
-    // 新增：貨幣快速切換按鈕
+    // 貨幣快速切換按鈕
     function setCurrency(code) {
       const currencySelect = document.getElementById("ledger-currency");
       if (currencySelect) {
@@ -930,12 +930,6 @@ button:active { transform: scale(0.96); }
       const amount = parseFloat(amountInput.value.replace(/,/g, "")) || 0;
       const rate = exchangeRates[currencySelect.value] || 0.052;
       estText.innerText = `約合 ${(amount * rate).toFixed(2)} HKD`;
-    }
-
-    // 新增：打開時同步按鈕狀態
-    function syncCurrencyButtons() {
-      const currencySelect = document.getElementById("ledger-currency");
-      if (currencySelect) updateCurrencyButtons();
     }
 
     // ==================== 儲存支出 ====================
@@ -1046,7 +1040,7 @@ button:active { transform: scale(0.96); }
       renderHistoryList();
     }
 
-    // ==================== 優化列表渲染 ====================
+    // ==================== 優化列表渲染（縮小卡片） ====================
     function renderExpensesList() {
       const container = document.getElementById("records-list-container");
       if (!container) return;
@@ -1089,12 +1083,12 @@ button:active { transform: scale(0.96); }
         const catColor = categoryColors[expense.category] || 'bg-slate-400';
         const remarkHtml = expense.remark ? `<div class="flex items-center gap-1 mt-1 text-[10px] text-slate-500 bg-slate-100 rounded px-1.5 py-0.5"><span>📌</span><span class="truncate">${expense.remark}</span></div>` : "";
         const card = document.createElement("div");
-        card.className = `relative ${cardBg} p-3 pl-5 rounded-2xl border ${cardBorder} flex justify-between items-center text-xs group transition shadow-sm hover:shadow`;
+        card.className = `relative ${cardBg} p-2 pl-4 rounded-xl border ${cardBorder} flex justify-between items-center text-xs group transition shadow-sm hover:shadow`;
         card.innerHTML = `
           <div class="cat-strip ${catColor}"></div>
-          <div class="flex items-center gap-3 flex-1 min-w-0 pr-2">
-            <div class="w-10 h-10 rounded-full ${payerStyle.avatar} text-white font-black flex items-center justify-center shrink-0 border-2 border-white shadow-sm text-sm">${expense.payer[0].toUpperCase()}</div>
-            <div class="space-y-1 flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
+            <div class="w-8 h-8 rounded-full ${payerStyle.avatar} text-white font-black flex items-center justify-center shrink-0 border-2 border-white shadow-sm text-sm">${expense.payer[0].toUpperCase()}</div>
+            <div class="space-y-0.5 flex-1 min-w-0">
               <div class="flex items-center gap-2">
                 <span class="bg-sky-100 text-sky-800 font-bold px-1.5 py-0.5 rounded text-[9px] shrink-0 border border-sky-200">D${expense.day}</span>
                 <strong class="text-slate-900 text-[13px] truncate">${expense.desc}</strong>
@@ -1150,7 +1144,7 @@ button:active { transform: scale(0.96); }
         const balanceClass = balance > 0 ? "text-emerald-600 font-bold" : balance < 0 ? "text-red-500 font-bold" : "text-slate-400";
         const style = memberStyle[member] || memberStyle["余生"];
         const symbol = memberSymbols[member] || "";
-        tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="py-3 font-bold text-slate-800 flex items-center gap-2"><div class="w-6 h-6 rounded-full ${style.avatar} text-white font-black flex items-center justify-center text-[10px] border border-white shadow-sm">${member[0].toUpperCase()}</div>${member} ${symbol}</td><td class="py-3 text-right text-slate-600 font-medium">$${paid}</td><td class="py-3 text-right text-slate-600 font-medium">$${owed}</td><td class="py-3 text-right ${balanceClass}">$${balanceText}</td></tr>`;
+        tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="py-2 font-bold text-slate-800 flex items-center gap-2"><div class="w-5 h-5 rounded-full ${style.avatar} text-white font-black flex items-center justify-center text-[9px] border border-white shadow-sm">${member[0].toUpperCase()}</div>${member} ${symbol}</td><td class="py-2 text-right text-slate-600 font-medium">$${paid}</td><td class="py-2 text-right text-slate-600 font-medium">$${owed}</td><td class="py-2 text-right ${balanceClass}">$${balanceText}</td></tr>`;
       });
     }
 
