@@ -1066,21 +1066,22 @@ async function syncDataToCloud() {
     }
   
     function toggleCurrencyWidget() {
-      const panel = document.getElementById("currency-widget-panel");
-      if (panel) {
-        if (panel.classList.contains("opacity-0")) {
-          panel.classList.remove("invisible");
-          setTimeout(() => {
-            panel.classList.remove("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
-            panel.classList.add("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
-          }, 10);
-        } else {
-          panel.classList.add("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
-          panel.classList.remove("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
-          setTimeout(() => { if (panel.classList.contains("opacity-0")) panel.classList.add("invisible"); }, 300);
-        }
-      }
+  const panel = document.getElementById("currency-widget-panel");
+  if (panel) {
+    if (panel.classList.contains("opacity-0")) {
+      panel.style.display = 'block';  // 新增這行
+      panel.classList.remove("invisible");
+      setTimeout(() => {
+        panel.classList.remove("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
+        panel.classList.add("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
+      }, 10);
+    } else {
+      panel.classList.add("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
+      panel.classList.remove("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
+      setTimeout(() => { if (panel.classList.contains("opacity-0")) panel.classList.add("invisible"); }, 300);
     }
+  }
+}
   
     function convertCurrency(type) {
       const hkdInput = document.getElementById("calc-hkd");
@@ -1143,7 +1144,7 @@ async function syncDataToCloud() {
         if (collapseBtn) collapseBtn.style.display = 'flex';
         // 顯示匯率容器（含＋記帳與匯率按鈕）
         if (currencyContainer) currencyContainer.style.display = 'flex';
-        if (currencyPanel) currencyPanel.style.display = 'none';
+        
       } else {
         // 記帳本模式
         if (header) header.style.display = 'none';
@@ -1155,7 +1156,7 @@ async function syncDataToCloud() {
         if (collapseBtn) collapseBtn.style.display = 'none';
         // 顯示匯率容器（含＋記帳與匯率按鈕）
         if (currencyContainer) currencyContainer.style.display = 'flex';
-        if (currencyPanel) currencyPanel.style.display = 'none';
+        
         // 調整 iframe 高度，避免遮擋底部導航
         const iframe = document.getElementById("ledger-iframe");
         if (iframe) {
