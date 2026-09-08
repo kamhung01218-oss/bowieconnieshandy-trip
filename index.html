@@ -756,18 +756,6 @@ async function syncDataToCloud() {
       </button>
     </div>
   
-    <!-- 新增備份按鈕 -->
-    <div class="grid grid-cols-2 gap-2.5">
-      <button onclick="backupToCloud()" class="group bg-gradient-to-r from-blue-500 to-indigo-500 p-3 rounded-xl border border-blue-400/50 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] active:scale-95 hover:from-blue-400 hover:to-indigo-400">
-        <span class="text-xl mb-1 transition-transform group-hover:scale-110 group-hover:rotate-6">☁️</span>
-        <span class="text-white text-xs font-black">雲端備份</span>
-      </button>
-      <button onclick="restoreFromCloud()" class="group bg-gradient-to-r from-teal-500 to-cyan-500 p-3 rounded-xl border border-teal-400/50 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] active:scale-95 hover:from-teal-400 hover:to-cyan-400">
-        <span class="text-xl mb-1 transition-transform group-hover:scale-110 group-hover:rotate-6">📥</span>
-        <span class="text-white text-xs font-black">匯入備份</span>
-      </button>
-    </div>
-  
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="bg-gradient-to-r from-sky-100 via-blue-100 to-indigo-100 border-2 border-sky-300 p-4 rounded-2xl shadow-lg">
         <div class="flex items-center justify-between flex-wrap gap-3">
@@ -2179,70 +2167,6 @@ async function syncDataToCloud() {
   
     // ==================== getAppTime ====================
     function getAppTime() { return simulatedTime ? new Date(simulatedTime) : new Date(); }
-  
-    // ==================== 備份與還原 ====================
-    async function backupToCloud() {
-      try {
-        const diary = {};
-        for (let day = 1; day <= 7; day++) {
-          const input = document.getElementById(`diary-input-${day}`);
-          if (input) diary[`day_${day}`] = input.value;
-        }
-        const backupData = {
-          checkedItems: state.checkedItems,
-          customBookingItems: customBookingItems,
-          customEquipItems: customEquipItems,
-          diary: diary,
-          shoppingLists: window.shoppingLists || {},
-          updatedAt: Date.now()
-        };
-        await window.dbRef.set({ backup: backupData }, { merge: true });
-        showToast('✅ 已備份到雲端', '☁️');
-      } catch(e) {
-        console.warn('備份失敗:', e);
-        showToast('❌ 備份失敗，請檢查網絡', '⚠️');
-      }
-    }
-  
-    async function restoreFromCloud() {
-      try {
-        const doc = await window.dbRef.get();
-        if (doc.exists && doc.data().backup) {
-          const data = doc.data().backup;
-          if (data.checkedItems) {
-            state.checkedItems = data.checkedItems;
-            saveLocalCheckedItems();
-            restoreChecklistUI();
-          }
-          if (data.customBookingItems) {
-            customBookingItems = data.customBookingItems;
-            saveCustomItems();
-          }
-          if (data.customEquipItems) {
-            customEquipItems = data.customEquipItems;
-            saveCustomItems();
-          }
-          if (data.diary) {
-            for (let day = 1; day <= 7; day++) {
-              const input = document.getElementById(`diary-input-${day}`);
-              if (input && data.diary[`day_${day}`]) input.value = data.diary[`day_${day}`];
-            }
-          }
-          if (data.shoppingLists) {
-            Object.keys(data.shoppingLists).forEach(key => {
-              localStorage.setItem(getShoppingKey(key), JSON.stringify(data.shoppingLists[key].items || []));
-            });
-          }
-          showToast('✅ 已還原備份', '📥');
-          refreshCurrentDay();
-        } else {
-          showToast('❌ 無備份資料', '⚠️');
-        }
-      } catch(e) {
-        console.warn('還原失敗:', e);
-        showToast('❌ 還原失敗，請檢查網絡', '⚠️');
-      }
-    }
   
     // ==================== 初始化 ====================
     window.addEventListener("DOMContentLoaded", () => {
