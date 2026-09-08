@@ -70,6 +70,10 @@ async function syncDataToCloud() {
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
   
+  :root {
+    --nav-height: 60px;
+  }
+  
   body {
     font-family: 'Noto Sans TC', sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -207,20 +211,7 @@ async function syncDataToCloud() {
     margin-left: 0.25rem;
   }
   
-  /* 其他樣式 */
-  .event-time-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    background: #e0f2fe;
-    color: #0369a1;
-    font-size: 0.75rem;
-    font-weight: 800;
-    padding: 0.2rem 0.6rem;
-    border-radius: 9999px;
-    line-height: 1.2;
-  }
-  
+  /* 統一標籤色調（藍色系） */
   .tag {
     display: inline-flex;
     align-items: center;
@@ -231,13 +222,10 @@ async function syncDataToCloud() {
     font-weight: 800;
     line-height: 1.4;
     white-space: nowrap;
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
   }
-  .tag-teal { background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; }
-  .tag-amber { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-  .tag-rose { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
-  .tag-sky { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-  .tag-indigo { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
-  .tag-emerald { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
   
   .modal-close {
     position: absolute;
@@ -347,7 +335,7 @@ async function syncDataToCloud() {
     100% { transform: translateY(80vh) rotate(360deg); opacity: 0.2; }
   }
   
-  /* ==================== 動態角色 ==================== */
+  /* ==================== 動態角色（優化：固定在底部，不出現在中間） ==================== */
   .walking-character {
     position: fixed;
     z-index: 9998;
@@ -356,11 +344,12 @@ async function syncDataToCloud() {
     transform: translateY(50px) scale(0.8);
     transition: all 0.5s ease;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    bottom: 10px !important;
   }
   
   .walking-character svg {
-    width: 55px;
-    height: 55px;
+    width: 45px;
+    height: 45px;
   }
   
   .walking-character.show {
@@ -409,19 +398,7 @@ async function syncDataToCloud() {
     opacity: 0;
     transform: translateY(10px);
     transition: opacity 0.3s, transform 0.3s;
-  }
-  .character-bubble.show {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .character-bubble::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 20px;
-    border-width: 8px;
-    border-style: solid;
-    border-color: #0284c7 transparent transparent transparent;
+    display: none !important; /* 不再顯示氣泡，避免遮擋 */
   }
   
   #mini-forecast {
@@ -431,8 +408,8 @@ async function syncDataToCloud() {
   #mini-forecast > div {
     scroll-snap-align: start;
     flex-shrink: 0;
-    min-width: 52px;
-    padding: 4px 6px;
+    min-width: 45px;
+    padding: 3px 5px;
     border-radius: 8px;
     background: rgba(255,255,255,0.7);
     text-align: center;
@@ -455,6 +432,7 @@ async function syncDataToCloud() {
     bottom: 0;
     width: 4px;
     border-radius: 4px 0 0 4px;
+    background: #0284c7;
   }
   
   /* 天氣聯動卡片 */
@@ -524,9 +502,9 @@ async function syncDataToCloud() {
   <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
   
-  <!-- 動態角色：雪人 + 狐狸 -->
-  <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！">
-    <svg width="55" height="55" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- 動態角色：雪人 + 狐狸（固定在底部，不彈氣泡） -->
+  <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！" style="left: 15px;">
+    <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <radialGradient id="snowGrad" cx="50%" cy="30%" r="60%">
           <stop offset="0%" stop-color="#ffffff"/>
@@ -553,8 +531,8 @@ async function syncDataToCloud() {
       <ellipse cx="28" cy="45" rx="3" ry="1.5" fill="white" opacity="0.8"/>
     </svg>
   </div>
-  <div id="fox" class="walking-character" onclick="jump('fox')" title="點我！">
-    <svg width="55" height="55" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <div id="fox" class="walking-character" onclick="jump('fox')" title="點我！" style="right: 15px;">
+    <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="foxBody" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stop-color="#fdba74"/>
@@ -618,129 +596,123 @@ async function syncDataToCloud() {
     </div>
   </div>
   
-  <!-- Header -->
-  <header class="relative bg-slate-900 text-white py-6 px-4 shadow-xl overflow-hidden">
+  <!-- Header（壓縮版，減少佔用空間） -->
+  <header class="relative bg-slate-900 text-white py-3 px-4 shadow-xl overflow-hidden">
     <div class="absolute inset-0 z-0 pointer-events-none bg-gradient-to-r from-slate-900 via-sky-900 to-indigo-950">
       <img src="https://images.unsplash.com/photo-1418985991508-e47386d96a71?q=80&w=2000&auto=format&fit=crop" alt="東北冬季雪景" class="w-full h-full object-cover opacity-70" onerror="this.style.display='none'">
       <div class="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-sky-900/70 to-indigo-950/90"></div>
     </div>
   
     <div class="max-w-6xl mx-auto relative z-10 text-center">
-      <div class="flex items-center justify-center gap-2 mb-2">
-        <span class="inline-block bg-sky-500/30 text-sky-200 text-[11px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-sky-400/30">❄️ Tohoku Winter Family Tour 2027</span>
-        <span id="cloud-status-tag" class="inline-flex items-center gap-1 bg-sky-500/30 text-sky-200 text-[11px] font-bold px-3 py-1.5 rounded-full border border-sky-400/30"><span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span> 雲端連線中</span>
+      <div class="flex items-center justify-center gap-2 mb-1">
+        <span class="inline-block bg-sky-500/30 text-sky-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest border border-sky-400/30">❄️ Tohoku Winter Family Tour 2027</span>
+        <span id="cloud-status-tag" class="inline-flex items-center gap-1 bg-sky-500/30 text-sky-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-sky-400/30"><span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span> 雲端連線中</span>
       </div>
-      <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight mb-2" style="text-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 60px rgba(255,255,255,0.2);">日本東北冬日雪景親子<br class="block md:hidden">樹冰溫泉自駕之旅 ♨️❄️</h1>
-      <p class="text-sm md:text-base text-sky-100 max-w-2xl mx-auto font-light">📅 2027年1月21日 ➔ 1月27日（7天6夜雪國探索行程）</p>
+      <h1 class="text-xl md:text-4xl font-black tracking-tight leading-tight mb-1" style="text-shadow: 0 4px 20px rgba(0,0,0,0.4);">日本東北冬日雪景親子<br class="block md:hidden">樹冰溫泉自駕之旅 ♨️❄️</h1>
+      <p class="text-xs md:text-base text-sky-100 max-w-2xl mx-auto font-light">📅 2027年1月21日 ➔ 1月27日（7天6夜雪國探索行程）</p>
   
-      <div class="mt-4 max-w-4xl mx-auto bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-4 text-left">
-        <div class="flex items-center justify-between mb-2">
-          <h4 class="text-sm text-white font-bold flex items-center gap-2">
-            <span>📋</span> 行程概要
-          </h4>
-          <button onclick="openTripOverview()" class="text-[10px] font-bold bg-sky-500 hover:bg-sky-600 text-white px-3 py-1.5 rounded-full transition shadow-sm flex items-center gap-1.5 active:scale-95">
-            <span>📋</span>
-            <span class="hidden sm:inline">行程速覽</span>
-          </button>
+      <div class="mt-2 max-w-4xl mx-auto bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-3 text-left">
+        <div class="flex items-center justify-between mb-1.5">
+          <h4 class="text-xs text-white font-bold flex items-center gap-1"><span>📋</span> 行程概要</h4>
+          <button onclick="openTripOverview()" class="text-[10px] font-bold bg-sky-500 hover:bg-sky-600 text-white px-2 py-1 rounded-full">📋 行程速覽</button>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-left text-xs md:text-sm">
-          <div><span class="text-sky-300 block text-[9px]">行程天數</span><strong class="text-white">冬季 7天6夜</strong></div>
-          <div><span class="text-sky-300 block text-[9px]">團隊陣容</span><strong class="text-white">4大2小 (Alphard)</strong></div>
-          <div><span class="text-sky-300 block text-[9px]">✈️ 航班</span><strong class="text-white text-[11px]">去 1/21 14:05<br>回 1/27 16:05</strong></div>
+        <div class="flex items-center justify-between text-[11px] text-sky-100">
+          <span><strong>冬季 7天6夜</strong></span>
+          <span><strong>4大2小</strong></span>
+          <span>✈️ 1/21去 / 1/27回</span>
         </div>
-        <div class="mt-3 pt-2 border-t border-white/10 text-center">
-          <span class="text-sky-200 block text-[9px] mb-1">距離出發還有</span>
-          <div id="departure-countdown" class="text-2xl font-black text-amber-300 tracking-wide animate-pulse">計算中...</div>
+        <div class="mt-1.5 pt-1.5 border-t border-white/10 flex items-center justify-between">
+          <span class="text-[10px] text-sky-200">距離出發還有</span>
+          <span id="departure-countdown" class="text-sm font-black text-amber-300">計算中...</span>
         </div>
       </div>
   </header>
   
-  <!-- 主導航（已固定） -->
-  <nav class="sticky top-0 z-50 max-w-md mx-auto mt-4 px-4 relative bg-slate-50/95 backdrop-blur-md shadow-sm">
+  <!-- 主導航（已固定，使用 CSS 變量控制高度） -->
+  <nav class="sticky top-0 z-50 max-w-md mx-auto mt-3 px-4 relative bg-slate-50/95 backdrop-blur-md shadow-sm" style="height: var(--nav-height);">
     <div class="bg-white p-1.5 rounded-full shadow-lg shadow-sky-100 border border-slate-200 flex gap-1">
-      <button id="nav-itinerary-btn" onclick="switchMainTab('itinerary')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active">
+      <button id="nav-itinerary-btn" onclick="switchMainTab('itinerary')" class="flex-1 py-2.5 px-4 rounded-full text-sm font-black flex items-center justify-center gap-1.5 nav-btn active">
         <span>🗺️</span> 行程指南
       </button>
-      <button id="nav-ledger-btn" onclick="switchMainTab('ledger')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition">
+      <button id="nav-ledger-btn" onclick="switchMainTab('ledger')" class="flex-1 py-2.5 px-4 rounded-full text-sm font-black flex items-center justify-center gap-1.5 nav-btn text-slate-600 hover:bg-slate-100 transition">
         <span>💰</span> 隨行記帳本
       </button>
     </div>
   </nav>
   
-  <!-- 快捷功能 -->
-  <div id="itinerary-quick-section" class="max-w-6xl mx-auto px-4 mt-4 space-y-4">
-    <div class="grid grid-cols-2 gap-2.5">
-      <!-- 行前預訂 -->
-      <button onclick="toggleBookingModal()" class="group bg-gradient-to-r from-amber-500 to-orange-500 p-3 rounded-xl border border-amber-400/50 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] active:scale-95 hover:from-amber-400 hover:to-orange-400">
-        <span class="text-xl mb-1 transition-transform group-hover:scale-110 group-hover:rotate-6">📌</span>
-        <span class="text-white text-xs font-black">行前預訂</span>
+  <!-- 快捷功能（壓縮版：4個橫排小按鈕） -->
+  <div id="itinerary-quick-section" class="max-w-6xl mx-auto px-4 mt-3 space-y-3">
+    <div class="grid grid-cols-4 gap-2">
+      <button onclick="toggleBookingModal()" class="group bg-gradient-to-r from-amber-500 to-orange-500 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] active:scale-95">
+        <span class="text-base mb-0.5">📌</span>
+        <span class="text-white text-[10px] font-black leading-tight text-center">行前<br>預訂</span>
       </button>
-      
-      <!-- 裝備清單 -->
-      <button onclick="toggleEquipModal()" class="group bg-gradient-to-r from-emerald-500 to-teal-500 p-3 rounded-xl border border-emerald-400/50 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] active:scale-95 hover:from-emerald-400 hover:to-teal-400">
-        <span class="text-xl mb-1 transition-transform group-hover:scale-110 group-hover:rotate-6">🎒</span>
-        <span class="text-white text-xs font-black">裝備清單</span>
+      <button onclick="toggleEquipModal()" class="group bg-gradient-to-r from-emerald-500 to-teal-500 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] active:scale-95">
+        <span class="text-base mb-0.5">🎒</span>
+        <span class="text-white text-[10px] font-black leading-tight text-center">裝備<br>清單</span>
       </button>
-      
-      <!-- 雪地攻略 -->
-      <button onclick="toggleDriveModal()" class="group bg-gradient-to-r from-rose-500 to-red-500 p-3 rounded-xl border border-rose-400/50 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] active:scale-95 hover:from-rose-400 hover:to-red-400">
-        <span class="text-xl mb-1 transition-transform group-hover:scale-110 group-hover:rotate-6">⚠️</span>
-        <span class="text-white text-xs font-black">雪地攻略</span>
+      <button onclick="toggleDriveModal()" class="group bg-gradient-to-r from-rose-500 to-red-500 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] active:scale-95">
+        <span class="text-base mb-0.5">⚠️</span>
+        <span class="text-white text-[10px] font-black leading-tight text-center">雪地<br>攻略</span>
       </button>
-      
-      <!-- 拍攝技巧 -->
-      <button onclick="openCommonTipsModal()" class="group bg-gradient-to-r from-purple-500 to-fuchsia-500 p-3 rounded-xl border border-purple-400/50 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] active:scale-95 hover:from-purple-400 hover:to-fuchsia-400">
-        <span class="text-xl mb-1 transition-transform group-hover:scale-110 group-hover:rotate-6">📷</span>
-        <span class="text-white text-xs font-black">拍攝技巧</span>
+      <button onclick="openCommonTipsModal()" class="group bg-gradient-to-r from-purple-500 to-fuchsia-500 p-2 rounded-xl flex flex-col items-center justify-center min-h-[60px] active:scale-95">
+        <span class="text-base mb-0.5">📷</span>
+        <span class="text-white text-[10px] font-black leading-tight text-center">拍攝<br>技巧</span>
       </button>
     </div>
   
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="bg-gradient-to-r from-sky-100 via-blue-100 to-indigo-100 border-2 border-sky-300 p-4 rounded-2xl shadow-lg">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-          <div class="flex items-center gap-3">
-            <span class="text-5xl">⛅</span>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="bg-gradient-to-r from-sky-100 via-blue-100 to-indigo-100 border-2 border-sky-300 p-2 rounded-2xl shadow-lg">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">⛅</span>
             <div>
-              <div class="flex items-center gap-2">
-                <span class="text-[12px] font-bold text-slate-600">仙台</span>
-                <span id="mini-temp" class="text-4xl font-black text-slate-900">--°C</span>
+              <div class="flex items-center gap-1">
+                <span class="text-[10px] font-bold text-slate-600">仙台</span>
+                <span id="mini-temp" class="text-lg font-black text-slate-900">--°C</span>
               </div>
-              <div id="mini-feels" class="text-xs text-slate-500 mt-1">體感 --°C | 濕度 --% | 風速 -- km/h</div>
+              <div id="mini-feels" class="text-[10px] text-slate-500">體感 --°C | 濕度 --%</div>
             </div>
           </div>
-          <button onclick="openWeatherModal()" class="shrink-0 text-xs font-bold text-sky-700 hover:text-sky-900 underline transition">📊 詳細天氣</button>
+          <button onclick="openWeatherModal()" class="text-[10px] font-bold text-sky-700 underline">詳細天氣</button>
         </div>
-        <div class="flex gap-2 text-center overflow-x-auto scrollbar-none snap-x flex-1 mt-3" id="mini-forecast"></div>
+        <div class="flex gap-1.5 text-center overflow-x-auto scrollbar-none mt-1.5" id="mini-forecast"></div>
       </div>
   
-      <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 p-3 rounded-2xl shadow-sm flex flex-col justify-center">
-        <div class="flex justify-between items-center text-xs mb-2">
+      <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 p-2 rounded-2xl shadow-sm flex flex-col justify-center">
+        <div class="flex justify-between items-center text-[11px] mb-1">
           <span class="font-black text-indigo-900">🎟️ 銀山Fast Pass</span>
-          <span id="ginzan-countdown" class="font-black text-purple-700 text-sm animate-pulse">計算中...</span>
+          <span id="ginzan-countdown" class="font-black text-purple-700 animate-pulse">計算中...</span>
         </div>
-        <div class="flex justify-between items-center text-xs mb-2">
+        <div class="flex justify-between items-center text-[11px] mb-1">
           <span class="font-black text-sky-900">🎟️ 藏王纜車</span>
-          <span id="zao-countdown" class="font-black text-sky-700 text-sm animate-pulse">計算中...</span>
+          <span id="zao-countdown" class="font-black text-sky-700 animate-pulse">計算中...</span>
         </div>
-        <button onclick="toggleTicketModal()" class="w-full text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg transition">⚔️ 搶票作戰攻略</button>
+        <button onclick="toggleTicketModal()" class="w-full text-[11px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white py-1 rounded-lg transition">⚔️ 搶票作戰攻略</button>
       </div>
     </div>
   </div>
   
   <!-- 主內容區 -->
   <div id="main-itinerary-view">
-    <main class="max-w-6xl mx-auto px-4 mt-6">
+    <main class="max-w-6xl mx-auto px-4 mt-4">
       <div class="space-y-6">
-        <!-- 日期標籤（sticky 位置已調整，避免與主導航重疊） -->
-        <div class="sticky top-14 z-50 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-3 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
-          <div class="flex gap-1.5 overflow-x-auto scrollbar-none" id="day-tabs-container">
-            <button onclick="switchDay(1)" id="tab-d1" class="day-tab active flex-shrink-0">D1 (1/21)</button>
-            <button onclick="switchDay(2)" id="tab-d2" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D2 (1/22)</button>
-            <button onclick="switchDay(3)" id="tab-d3" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D3 (1/23)</button>
-            <button onclick="switchDay(4)" id="tab-d4" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D4 (1/24)</button>
-            <button onclick="switchDay(5)" id="tab-d5" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D5 (1/25)</button>
-            <button onclick="switchDay(6)" id="tab-d6" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D6 (1/26)</button>
-            <button onclick="switchDay(7)" id="tab-d7" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D7 (1/27)</button>
+        <!-- 日期標籤（sticky 位置動態調整） -->
+        <div class="sticky z-50 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-2.5 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper" style="top: calc(var(--nav-height) + 4px);">
+          <div class="flex items-center gap-2">
+            <div class="flex gap-1.5 overflow-x-auto scrollbar-none flex-1" id="day-tabs-container">
+              <button onclick="switchDay(1)" id="tab-d1" class="day-tab active flex-shrink-0">D1 (1/21)</button>
+              <button onclick="switchDay(2)" id="tab-d2" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D2 (1/22)</button>
+              <button onclick="switchDay(3)" id="tab-d3" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D3 (1/23)</button>
+              <button onclick="switchDay(4)" id="tab-d4" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D4 (1/24)</button>
+              <button onclick="switchDay(5)" id="tab-d5" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D5 (1/25)</button>
+              <button onclick="switchDay(6)" id="tab-d6" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D6 (1/26)</button>
+              <button onclick="switchDay(7)" id="tab-d7" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D7 (1/27)</button>
+            </div>
+            <!-- 收合/展開按鈕（已移入 Day 分頁欄） -->
+            <button id="fab-collapse-all" onclick="collapseAllItineraries()" class="shrink-0 w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-800 text-white flex items-center justify-center transition-all" title="收合/展開">
+              <span class="text-sm">⬆️</span>
+            </button>
           </div>
           <div class="border-b border-slate-200 mt-1"></div>
         </div>
@@ -764,14 +736,8 @@ async function syncDataToCloud() {
     <iframe src="/ledger.html" class="w-full h-screen border-none rounded-2xl shadow-sm" title="記帳本"></iframe>
   </div>
   
-  <!-- 收合/展開按鈕（已修復為固定顯示） -->
-  <button id="fab-collapse-all" onclick="collapseAllItineraries()" class="fixed bottom-28 left-4 md:left-6 z-[9998] bg-slate-700 hover:bg-slate-800 text-white rounded-full h-10 px-5 shadow-lg border border-slate-600 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group">
-    <span class="text-lg font-black">⬆️</span>
-    <span class="font-bold text-sm hidden md:inline">收合行程</span>
-  </button>
-  
-  <!-- 匯率 FAB -->
-  <div class="fixed bottom-20 right-4 md:right-6 z-[10001] flex flex-col items-end pointer-events-none">
+  <!-- 匯率 FAB（已縮小，避免遮擋） -->
+  <div class="fixed bottom-6 right-4 md:right-6 z-[10001] flex flex-col items-end pointer-events-none">
     <div id="currency-widget-panel" class="absolute bottom-full right-0 mb-4 bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] border border-slate-200 w-[calc(100vw-2rem)] sm:w-80 overflow-hidden transition-all duration-300 origin-bottom-right pointer-events-none opacity-0 scale-90 translate-y-4 invisible z-[10000]">
       <div class="bg-gradient-to-r from-sky-900 to-indigo-900 p-4 flex justify-between items-center text-white">
         <div class="flex items-center gap-2"><span class="text-xl">🪙</span><h3 class="text-sm font-black tracking-wide">即時匯率試算</h3></div>
@@ -806,9 +772,9 @@ async function syncDataToCloud() {
         </div>
       </div>
     </div>
-    <button onclick="toggleCurrencyWidget()" id="currency-fab" class="pointer-events-auto relative bg-slate-800 hover:bg-slate-700 text-white rounded-full h-14 w-14 md:h-auto md:w-auto md:px-5 md:py-3.5 shadow-[0_8px_25px_rgb(0,0,0,0.2)] border border-slate-600 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group">
-      <span class="text-2xl group-hover:rotate-12 transition-transform drop-shadow-sm">🪙</span>
-      <span class="font-bold text-sm hidden md:inline tracking-wide drop-shadow-sm">匯率換算</span>
+    <button onclick="toggleCurrencyWidget()" id="currency-fab" class="pointer-events-auto relative bg-slate-800 hover:bg-slate-700 text-white rounded-full h-11 w-11 md:h-auto md:w-auto md:px-4 md:py-2.5 shadow-lg border border-slate-600 flex items-center justify-center gap-1 transition-all hover:scale-105 active:scale-95">
+      <span class="text-xl group-hover:rotate-12 transition-transform">🪙</span>
+      <span class="font-bold text-xs hidden md:inline">匯率</span>
     </button>
   </div>
   
@@ -1122,14 +1088,14 @@ async function syncDataToCloud() {
         itineraryView.classList.remove("hidden");
         ledgerFrameContainer.classList.add("hidden");
         if (quickSection) quickSection.classList.remove("hidden");
-        navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
-        navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
+        navItineraryBtn.className = "flex-1 py-2.5 px-4 rounded-full text-sm font-black flex items-center justify-center gap-1.5 nav-btn active";
+        navLedgerBtn.className = "flex-1 py-2.5 px-4 rounded-full text-sm font-black flex items-center justify-center gap-1.5 nav-btn text-slate-600 hover:bg-slate-100 transition";
       } else {
         itineraryView.classList.add("hidden");
         ledgerFrameContainer.classList.remove("hidden");
         if (quickSection) quickSection.classList.add("hidden");
-        navLedgerBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active";
-        navItineraryBtn.className = "flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn text-slate-600 hover:bg-slate-100 transition";
+        navLedgerBtn.className = "flex-1 py-2.5 px-4 rounded-full text-sm font-black flex items-center justify-center gap-1.5 nav-btn active";
+        navItineraryBtn.className = "flex-1 py-2.5 px-4 rounded-full text-sm font-black flex items-center justify-center gap-1.5 nav-btn text-slate-600 hover:bg-slate-100 transition";
       }
       setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
     }
@@ -1443,7 +1409,7 @@ async function syncDataToCloud() {
         const response = await fetch(url);
         const data = await response.json();
         document.getElementById('mini-temp').innerText = `${Math.round(data.current.temperature_2m)}°C`;
-        document.getElementById('mini-feels').innerText = `體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}% | 風速 ${data.current.wind_speed_10m} km/h`;
+        document.getElementById('mini-feels').innerText = `體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}%`;
         const miniForecast = document.getElementById('mini-forecast');
         miniForecast.innerHTML = "";
         for(let i=0; i<7; i++) {
@@ -1451,7 +1417,7 @@ async function syncDataToCloud() {
           const max = Math.round(data.daily.temperature_2m_max[i]);
           const min = Math.round(data.daily.temperature_2m_min[i]);
           const icon = data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️";
-          miniForecast.innerHTML += `<div class="bg-white/70 p-1.5 rounded text-center min-w-[55px]"><span class="block text-[8px] text-slate-400">${date}</span><span class="block text-[14px]">${icon}</span><span class="block text-[9px] font-bold text-slate-700">${max}°/${min}°</span></div>`;
+          miniForecast.innerHTML += `<div class="bg-white/70 p-1 rounded text-center min-w-[45px]"><span class="block text-[8px] text-slate-400">${date}</span><span class="block text-[12px]">${icon}</span><span class="block text-[8px] font-bold text-slate-700">${max}°/${min}°</span></div>`;
         }
         for (let i = 0; i < 7; i++) {
           const dateStr = data.daily.time[i];
@@ -1459,7 +1425,7 @@ async function syncDataToCloud() {
         }
         if (window._lastActiveDay) switchDay(window._lastActiveDay);
         const detail = document.getElementById('weather-detail-content');
-        detail.innerHTML = `<div class="bg-sky-50 p-3 rounded-xl border border-sky-200"><span class="text-xs text-slate-500">目前氣溫</span><strong class="block text-xl text-slate-800">${Math.round(data.current.temperature_2m)}°C</strong><span class="text-[10px] text-slate-600">體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}% | 風速 ${data.current.wind_speed_10m} km/h</span></div><div class="text-xs text-slate-700 space-y-2"><strong class="block text-slate-800 mb-1">未來7天預報</strong>${[0,1,2,3,4,5,6].map(i => `<div class="flex justify-between border-b border-slate-100 pb-1"><span>${data.daily.time[i]} (${["日","一","二","三","四","五","六"][new Date(data.daily.time[i]).getDay()]})</span><span>${Math.round(data.daily.temperature_2m_max[i])}° / ${Math.round(data.daily.temperature_2m_min[i])}°</span><span class="text-blue-500">💧 ${data.daily.precipitation_probability_max[i] ?? 0}%</span></div>`).join('')}</div>`;
+        detail.innerHTML = `<div class="bg-sky-50 p-3 rounded-xl border border-sky-200"><span class="text-xs text-slate-500">目前氣溫</span><strong class="block text-xl text-slate-800">${Math.round(data.current.temperature_2m)}°C</strong><span class="text-[10px] text-slate-600">體感 ${Math.round(data.current.apparent_temperature)}°C | 濕度 ${data.current.relative_humidity_2m}%</span></div><div class="text-xs text-slate-700 space-y-2"><strong class="block text-slate-800 mb-1">未來7天預報</strong>${[0,1,2,3,4,5,6].map(i => `<div class="flex justify-between border-b border-slate-100 pb-1"><span>${data.daily.time[i]} (${["日","一","二","三","四","五","六"][new Date(data.daily.time[i]).getDay()]})</span><span>${Math.round(data.daily.temperature_2m_max[i])}° / ${Math.round(data.daily.temperature_2m_min[i])}°</span><span class="text-blue-500">💧 ${data.daily.precipitation_probability_max[i] ?? 0}%</span></div>`).join('')}</div>`;
       } catch(e) {
         console.warn("天氣讀取失敗", e);
         document.getElementById('weather-detail-content').innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">天氣資料暫時無法取得，請稍後再試。</div>';
@@ -1483,32 +1449,30 @@ async function syncDataToCloud() {
         else if (min < 0) advice = "🧣 寒冷，圍巾手套不可少";
         else advice = "🧥 偏涼，外套防風防水";
         if (rain > 50) advice += "，攜帶雨具⚠️";
-        weatherHtml = `<div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs text-slate-700 weather-card"><span class="text-lg">${icon}</span><span class="font-bold text-sky-700">${dateStr.substring(5)} 天氣：</span><span>最高 ${max}° / 最低 ${min}°</span><span class="text-slate-400">|</span><span class="text-slate-500">💧 ${rain}%</span><span class="ml-auto font-bold text-slate-600">${advice}</span></div>`;
+        weatherHtml = `<div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card"><span class="text-base">${icon}</span><span class="font-bold text-sky-700">${dateStr.substring(5)} 天氣：</span><span>最高 ${max}° / 最低 ${min}°</span><span class="text-slate-400">|</span><span class="text-slate-500">💧 ${rain}%</span><span class="ml-auto font-bold text-slate-600">${advice}</span></div>`;
       }
       let html = `<div class="mb-8">
-        <div class="bg-slate-50/95 py-3 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">${dayData.emoji}</div>
+        <div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-lg shadow-md shrink-0">${dayData.emoji}</div>
             <div class="flex-1">
-              <span class="text-xs font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span>
-              <h2 class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>
-              ${dayData.subtitle ? `<p class="text-xs text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}
+              <span class="text-[11px] font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span>
+              <h2 class="text-sm md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>
+              ${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}
               ${weatherHtml}
             </div>
           </div>
-          <button onclick="openVlogPlanModal(${dayData.day})" title="查看今日 Vlog 構思" class="w-9 h-9 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white rounded-full shadow-sm shadow-sky-200/50 transition-all duration-300 active:scale-95 shrink-0 ml-2 hover:rotate-12">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <button onclick="openVlogPlanModal(${dayData.day})" title="查看今日 Vlog 構思" class="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white rounded-full shadow-sm shrink-0 ml-2">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </button>
         </div>
         <div class="relative mt-4 timeline pb-6">`;
       dayData.events.forEach((event, index) => {
         const isOpen = event.open ? "open" : "";
-        const tagHtml = event.tag ? `<span class="tag ${event.tag.class}">${event.tag.text}</span>` : "";
+        const tagHtml = event.tag ? `<span class="tag">${event.tag.text}</span>` : "";
         const timeParts = event.time.split(" - ");
         const startTime = timeParts[0].trim();
         const endTime = timeParts[1] ? timeParts[1].trim() : "";
-        const catColors = { "tag-teal": "bg-teal-400", "tag-amber": "bg-amber-400", "tag-rose": "bg-rose-400", "tag-sky": "bg-sky-400", "tag-indigo": "bg-indigo-400", "tag-emerald": "bg-emerald-400" };
-        const catColor = event.tag ? catColors[event.tag.class] || "bg-slate-400" : "bg-slate-400";
         const shootingItems = loadShoppingItems(event.title);
         const shoppingBadge = shootingItems.length > 0 ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shootingItems.length}</span>` : '';
         const shootBtnHtml = `
@@ -1516,12 +1480,6 @@ async function syncDataToCloud() {
             <button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button>
             <button onclick="openShoppingModal('${event.title}')" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單${shoppingBadge}</button>
           </div>`;
-        // 天氣提醒（僅保留特定事件提醒，避免重複）
-        const now = getAppTime();
-        let weatherAdviceHtml = '';
-        if (event.title.includes('溫泉') && now.getHours() >= 18) {
-            weatherAdviceHtml += '<div class="bg-blue-50 border border-blue-200 text-blue-800 text-[10px] p-1.5 rounded-lg mb-1">♨️ 晚上泡湯最佳時段</div>';
-        }
         html += `
           <div class="timeline-node" id="event-dot-${dayData.day}-${index}">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -1532,22 +1490,21 @@ async function syncDataToCloud() {
               ${endTime ? `<span class="timeline-time-end">→ ${endTime}</span>` : ""}
             </div>
             <details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl relative overflow-hidden event-card">
-              <div class="itinerary-cat-strip ${catColor}"></div>
-              <summary class="flex items-start gap-3 p-3 md:p-4 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none pl-5">
+              <div class="itinerary-cat-strip"></div>
+              <summary class="flex items-start gap-3 p-3 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none pl-5">
                 <div class="flex-1 min-w-0 pr-8">
                   <div class="flex flex-wrap items-center gap-2 mb-1">${tagHtml}</div>
-                  <h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>
+                  <h3 class="text-[13px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>
                   ${shootBtnHtml}
-                  ${event.location ? `<div class="text-xs text-slate-500 mt-0.5">📍 ${event.location}</div>` : ""}
+                  ${event.location ? `<div class="text-[11px] text-slate-500 mt-0.5">📍 ${event.location}</div>` : ""}
                 </div>
                 <div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100">
                   <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
               </summary>
-              <div class="event-content-wrapper p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">
-                ${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm cursor-pointer" onclick="openLightbox(['${event.img}'], 0)"><img src="${event.img}" alt="${event.title}" class="w-full h-40 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}
-                ${event.navUrl || event.title ? `<a href="${event.navUrl || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(event.title)}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700 border border-sky-300 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}</a>` : '<div class="h-3"></div>'}
-                ${weatherAdviceHtml}
+              <div class="event-content-wrapper p-3 pt-0 pb-4 border-t border-slate-50/80 bg-slate-50/30">
+                ${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm cursor-pointer" onclick="openLightbox(['${event.img}'], 0)"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}
+                ${event.navUrl || event.title ? `<a href="${event.navUrl || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(event.title)}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700 border border-sky-300 text-xs font-bold py-2 rounded-xl transition active:scale-95 shadow-sm mt-2 mb-2"><span>📍</span> 導航前往 ${event.navName || "景點"}</a>` : '<div class="h-2"></div>'}
                 ${event.content}
               </div>
             </details>
@@ -1556,13 +1513,13 @@ async function syncDataToCloud() {
       const diaryKey = `diary_day_${dayData.day}`;
       const savedDiary = localStorage.getItem(diaryKey) || "";
       html += `
-      <div class="mt-4 mb-6 bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 rounded-2xl p-4">
-          <div class="flex items-center gap-2 mb-2">
-              <span class="text-lg">📖</span>
-              <strong class="text-sm text-slate-800">今日旅行日記</strong>
-              <button onclick="saveDiary(${dayData.day})" class="ml-auto text-[10px] bg-sky-500 hover:bg-sky-600 text-white px-2 py-1 rounded font-bold transition">儲存</button>
+      <div class="mt-4 mb-6 bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 rounded-2xl p-3">
+          <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-base">📖</span>
+              <strong class="text-xs text-slate-800">今日旅行日記</strong>
+              <button onclick="saveDiary(${dayData.day})" class="ml-auto text-[10px] bg-sky-500 hover:bg-sky-600 text-white px-2 py-0.5 rounded font-bold transition">儲存</button>
           </div>
-          <textarea id="diary-input-${dayData.day}" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none">${savedDiary}</textarea>
+          <textarea id="diary-input-${dayData.day}" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-1.5 px-2.5 text-[11px] focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none">${savedDiary}</textarea>
       </div>`;
       html += `</div></div>`;
       section.innerHTML = html;
@@ -1574,11 +1531,11 @@ async function syncDataToCloud() {
         const btn = document.getElementById('fab-collapse-all');
         if (details.length > 0) {
             details.forEach(detail => detail.open = false);
-            btn.innerHTML = '<span class="text-lg font-black">⬇️</span><span class="font-bold text-sm hidden md:inline">展開行程</span>';
+            btn.innerHTML = '⬇️';
             showToast("✅ 已收合所有行程", "⬆️");
         } else {
             document.querySelectorAll('details.event-card').forEach(detail => detail.open = true);
-            btn.innerHTML = '<span class="text-lg font-black">⬆️</span><span class="font-bold text-sm hidden md:inline">收合行程</span>';
+            btn.innerHTML = '⬆️';
             showToast("✅ 已展開所有行程", "⬇️");
         }
     }
@@ -1633,7 +1590,7 @@ async function syncDataToCloud() {
           const hours = Math.floor(departureDiff % 86400000 / 3600000);
           const minutes = Math.floor(departureDiff % 3600000 / 60000);
           const seconds = Math.floor(departureDiff % 60000 / 1000);
-          departureEl.innerText = `${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+          departureEl.innerText = `${days}天 ${hours}時 ${minutes}分 ${seconds}秒`;
         }
       }
       const ginzanDiff = ginzanTarget - now;
@@ -1645,7 +1602,7 @@ async function syncDataToCloud() {
           const hours = Math.floor(ginzanDiff % 86400000 / 3600000);
           const minutes = Math.floor(ginzanDiff % 3600000 / 60000);
           const seconds = Math.floor(ginzanDiff % 60000 / 1000);
-          ginzanEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+          ginzanEl.innerText = `⏳ ${days}天 ${hours}時 ${minutes}分 ${seconds}秒`;
         }
       }
       const zaoDiff = zaoTarget - now;
@@ -1657,7 +1614,7 @@ async function syncDataToCloud() {
           const hours = Math.floor(zaoDiff % 86400000 / 3600000);
           const minutes = Math.floor(zaoDiff % 3600000 / 60000);
           const seconds = Math.floor(zaoDiff % 60000 / 1000);
-          zaoEl.innerText = `⏳ 剩餘：${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`;
+          zaoEl.innerText = `⏳ ${days}天 ${hours}時 ${minutes}分 ${seconds}秒`;
         }
       }
     }
@@ -1676,10 +1633,8 @@ async function syncDataToCloud() {
   
     // ==================== 動態角色 ====================
     let characterTimeout = null;
-    let bubbleTimeout = null;
     function spawnCharacters() {
       clearTimeout(characterTimeout);
-      clearTimeout(bubbleTimeout);
       const snowman = document.getElementById('snowman');
       const fox = document.getElementById('fox');
       if (!snowman || !fox) return;
@@ -1690,38 +1645,16 @@ async function syncDataToCloud() {
       if (Math.random() < 0.5) { characterTimeout = setTimeout(spawnCharacters, Math.random() * 5000 + 4000); return; }
       const showSnowman = Math.random() < 0.5;
       const character = showSnowman ? snowman : fox;
-      const characterId = showSnowman ? 'snowman' : 'fox';
-      const isLeft = Math.random() < 0.5;
-      const randomX = isLeft ? `${Math.random() * 15}vw` : '';
-      const randomRight = isLeft ? '' : `${Math.random() * 15}vw`;
-      const randomBottom = `${Math.random() * 20 + 5}vh`;
-      if (isLeft) { character.style.left = randomX; character.style.right = 'auto'; }
-      else { character.style.right = randomRight; character.style.left = 'auto'; }
-      character.style.bottom = randomBottom;
       character.classList.remove('hide');
       character.classList.add('show');
       setTimeout(() => {
         character.classList.add('greet');
-        showCharacterBubble(character, showSnowman ? '嗨！我是雪人⛄' : '嗨！我是狐狸🦊');
       }, 600);
       characterTimeout = setTimeout(() => {
         character.classList.remove('show', 'greet');
         character.classList.add('hide');
         setTimeout(spawnCharacters, Math.random() * 5000 + 3000);
       }, 4000);
-    }
-    function showCharacterBubble(element, text) {
-      const oldBubble = document.querySelector('.character-bubble');
-      if (oldBubble) oldBubble.remove();
-      const bubble = document.createElement('div');
-      bubble.className = 'character-bubble';
-      bubble.innerText = text;
-      const rect = element.getBoundingClientRect();
-      bubble.style.left = rect.left + rect.width / 2 - 30 + 'px';
-      bubble.style.top = rect.top - 30 + 'px';
-      document.body.appendChild(bubble);
-      bubble.classList.add('show');
-      bubbleTimeout = setTimeout(() => { bubble.classList.remove('show'); setTimeout(() => bubble.remove(), 300); }, 2000);
     }
     function jump(characterId) {
       const char = document.getElementById(characterId);
@@ -2083,11 +2016,7 @@ async function syncDataToCloud() {
       const anyOpen = document.querySelector('details.event-card[open]');
       const btn = document.getElementById('fab-collapse-all');
       if (btn) {
-        if (anyOpen) {
-          btn.innerHTML = '<span class="text-lg font-black">⬆️</span><span class="font-bold text-sm hidden md:inline">收合行程</span>';
-        } else {
-          btn.innerHTML = '<span class="text-lg font-black">⬇️</span><span class="font-bold text-sm hidden md:inline">展開行程</span>';
-        }
+        btn.innerHTML = anyOpen ? '⬆️' : '⬇️';
       }
     });
   </script>
