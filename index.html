@@ -9,11 +9,11 @@
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
 
-<!-- 引用行程数据 -->
+<!-- 引用行程數據 -->
 <script src="data.js"></script>
-<!-- 引用拍摄灵感数据 -->
+<!-- 引用拍攝靈感數據 -->
 <script src="shoot-tips.js"></script>
-<!-- 引用購物清單數據（可選） -->
+<!-- 引用購物清單數據 -->
 <script src="shopping.js"></script>
 
 <script>
@@ -716,8 +716,8 @@ async function syncDataToCloud() {
       </div>
   </header>
   
-  <!-- 主導航 -->
-  <nav class="max-w-md mx-auto mt-4 px-4 relative z-10">
+  <!-- 主導航（已固定） -->
+  <nav class="sticky top-0 z-50 max-w-md mx-auto mt-4 px-4 relative bg-slate-50/95 backdrop-blur-md shadow-sm">
     <div class="bg-white p-1.5 rounded-full shadow-lg shadow-sky-100 border border-slate-200 flex gap-1">
       <button id="nav-itinerary-btn" onclick="switchMainTab('itinerary')" class="flex-1 py-3 px-4 rounded-full text-sm font-black flex items-center justify-center gap-2 nav-btn active">
         <span>🗺️</span> 行程指南
@@ -753,6 +753,18 @@ async function syncDataToCloud() {
       <button onclick="openCommonTipsModal()" class="group bg-gradient-to-r from-purple-500 to-fuchsia-500 p-3 rounded-xl border border-purple-400/50 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] active:scale-95 hover:from-purple-400 hover:to-fuchsia-400">
         <span class="text-xl mb-1 transition-transform group-hover:scale-110 group-hover:rotate-6">📷</span>
         <span class="text-white text-xs font-black">拍攝技巧</span>
+      </button>
+    </div>
+  
+    <!-- 新增備份按鈕 -->
+    <div class="grid grid-cols-2 gap-2.5">
+      <button onclick="backupToCloud()" class="group bg-gradient-to-r from-blue-500 to-indigo-500 p-3 rounded-xl border border-blue-400/50 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] active:scale-95 hover:from-blue-400 hover:to-indigo-400">
+        <span class="text-xl mb-1 transition-transform group-hover:scale-110 group-hover:rotate-6">☁️</span>
+        <span class="text-white text-xs font-black">雲端備份</span>
+      </button>
+      <button onclick="restoreFromCloud()" class="group bg-gradient-to-r from-teal-500 to-cyan-500 p-3 rounded-xl border border-teal-400/50 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] active:scale-95 hover:from-teal-400 hover:to-cyan-400">
+        <span class="text-xl mb-1 transition-transform group-hover:scale-110 group-hover:rotate-6">📥</span>
+        <span class="text-white text-xs font-black">匯入備份</span>
       </button>
     </div>
   
@@ -792,8 +804,8 @@ async function syncDataToCloud() {
   <div id="main-itinerary-view">
     <main class="max-w-6xl mx-auto px-4 mt-6">
       <div class="space-y-6">
-        <!-- 日期標籤 -->
-        <div class="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-3 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
+        <!-- 日期標籤（sticky 位置已調整） -->
+        <div class="sticky top-16 z-50 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-3 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
           <div class="flex gap-1.5 overflow-x-auto scrollbar-none" id="day-tabs-container">
             <button onclick="switchDay(1)" id="tab-d1" class="day-tab active flex-shrink-0">D1 (1/21)</button>
             <button onclick="switchDay(2)" id="tab-d2" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D2 (1/22)</button>
@@ -1056,7 +1068,7 @@ async function syncDataToCloud() {
     </div>
   </div>
   
-  <!-- 購物清單 Modal（新增） -->
+  <!-- 購物清單 Modal -->
   <div id="shopping-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeShoppingModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <button onclick="closeShoppingModal()" class="modal-close">✕</button>
@@ -1082,6 +1094,7 @@ async function syncDataToCloud() {
     // ==================== 匯率 ====================
     let exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
   
+    // ==================== 匯率 ====================
     async function fetchLiveRates() {
       try {
         const response = await fetch('https://open.er-api.com/v6/latest/JPY');
@@ -1195,7 +1208,7 @@ async function syncDataToCloud() {
     }
   
     function switchDay(day) {
-  window._lastActiveDay = day; 
+      window._lastActiveDay = day;
       document.querySelectorAll("#day-tabs-container button").forEach(btn => {
         btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
       });
@@ -1280,31 +1293,20 @@ async function syncDataToCloud() {
       setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300);
     }
   
-    // ==================== 拍攝靈感 Modal 控制 ====================
+    // ==================== 拍攝靈感 Modal ====================
     function openShootTipsModal(day, eventIndex) {
       const dayData = winterItineraries.find(d => d.day === day);
       if (!dayData) return;
       const event = dayData.events[eventIndex];
       if (!event) return;
       const tips = shootTips[event.title];
-      
       const content = document.getElementById("shoot-tips-content");
       let html = "";
-      
       if (tips) {
-        if (tips["拍照建議"]) {
-          html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["拍照建議"]}</p></div>`;
-        }
-        if (tips["Pocket 3 參數"]) {
-          html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-sky-800 mb-2">📸 Pocket 3 參數</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 參數"]}</p></div>`;
-        }
-        if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) {
-          const items = tips["Vlog 必拍鏡頭"].map(item => `<li class="text-slate-700 text-sm mb-1">${item}</li>`).join("");
-          html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3><ul class="list-disc pl-4 space-y-1">${items}</ul></div>`;
-        }
-        if (tips["Pocket 3 技巧"]) {
-          html += `<div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-purple-800 mb-2">💡 Pocket 3 技巧</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 技巧"]}</p></div>`;
-        }
+        if (tips["拍照建議"]) html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["拍照建議"]}</p></div>`;
+        if (tips["Pocket 3 參數"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-sky-800 mb-2">📸 Pocket 3 參數</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 參數"]}</p></div>`;
+        if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3><ul class="list-disc pl-4 space-y-1">${tips["Vlog 必拍鏡頭"].map(item => `<li>${item}</li>`).join('')}</ul></div>`;
+        if (tips["Pocket 3 技巧"]) html += `<div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-purple-800 mb-2">💡 Pocket 3 技巧</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 技巧"]}</p></div>`;
         if (tips["最佳拍攝時間"] || tips["拍攝時長"]) {
           let timeInfo = "";
           if (tips["最佳拍攝時間"]) timeInfo += `<span class="block mb-1">⏰ ${tips["最佳拍攝時間"]}</span>`;
@@ -1315,29 +1317,21 @@ async function syncDataToCloud() {
           const imgHtml = tips["參考照片"].map((url, idx) => `<img src="${url}" onclick="openLightbox(['${url}'], 0)" class="w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" loading="lazy" onerror="this.style.display='none'">`).join("");
           html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3><div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div><p class="text-[10px] text-slate-500 mt-1">點擊照片可全屏預覽</p></div>`;
         }
-        if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) {
-          const items = tips["拍攝角度"].map(item => `<li class="text-slate-700 text-sm mb-1">🎯 ${item}</li>`).join("");
-          html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3><ul class="list-disc pl-4 space-y-1">${items}</ul></div>`;
-        }
-        if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) {
-          const items = tips["人物動作建議"].map(item => `<li class="text-slate-700 text-sm mb-1">🧍 ${item}</li>`).join("");
-          html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3><ul class="list-disc pl-4 space-y-1">${items}</ul></div>`;
-        }
+        if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3><ul class="list-disc pl-4 space-y-1">${tips["拍攝角度"].map(item => `<li>${item}</li>`).join('')}</ul></div>`;
+        if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3><ul class="list-disc pl-4 space-y-1">${tips["人物動作建議"].map(item => `<li>${item}</li>`).join('')}</ul></div>`;
       } else {
         html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議。</div>`;
       }
-      
       content.innerHTML = html;
       showModal('shoot-tips-modal');
       document.getElementById('shoot-tips-modal').classList.remove('hidden');
     }
-
     function closeShootTipsModal() {
       hideModal('shoot-tips-modal');
       setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300);
     }
-
-    // ==================== 通用拍攝技巧 Modal ====================
+  
+    // ==================== 通用拍攝技巧 ====================
     function openCommonTipsModal() {
       const modal = document.getElementById('common-tips-modal');
       if (!modal) return;
@@ -1366,8 +1360,8 @@ async function syncDataToCloud() {
       });
       return html;
     }
-
-    // ==================== Vlog 構思 Modal 控制 ====================
+  
+    // ==================== Vlog 構思 ====================
     function openVlogPlanModal(day) {
       const plan = vlogPlan["D" + day];
       const content = document.getElementById("vlog-plan-content");
@@ -1387,12 +1381,12 @@ async function syncDataToCloud() {
       hideModal('vlog-plan-modal');
       setTimeout(() => document.getElementById('vlog-plan-modal').classList.add('hidden'), 300);
     }
-
+  
     // ==================== 購物清單功能 ====================
     function getShoppingKey(eventTitle) {
       return `shopping_items_${eventTitle}`;
     }
-
+  
     function openShoppingModal(eventTitle) {
       const modal = document.getElementById('shopping-modal');
       if (!modal) return;
@@ -1401,41 +1395,38 @@ async function syncDataToCloud() {
       const content = document.getElementById('shopping-content');
       if (content) content.innerHTML = renderShoppingList(eventTitle);
     }
-
+  
     function closeShoppingModal() {
-  const modal = document.getElementById('shopping-modal');
-  if (modal) {
-    modal.classList.remove('active');
-    setTimeout(() => { 
-      modal.style.display = 'none'; 
-      refreshCurrentDay();  // 关闭后刷新当前日期，更新徽章
-    }, 300);
-  }
-}
-
-function refreshCurrentDay() {
-  if (window._lastActiveDay) {
-    const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
-    if (dayData) {
-      renderDayItinerary(`day-section-${dayData.day}`, dayData);
-      // 隐藏其他日期 section
-      document.querySelectorAll('.day-section').forEach(sec => {
-        if (sec.id !== `day-section-${dayData.day}`) sec.classList.add('hidden');
-      });
-      // 恢复 tab 样式并高亮当前日期
-      document.querySelectorAll("#day-tabs-container button").forEach(btn => {
-        btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
-      });
-      const activeTab = document.getElementById(`tab-d${dayData.day}`);
-      if (activeTab) activeTab.className = "day-tab active flex-shrink-0 transition";
+      const modal = document.getElementById('shopping-modal');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => { 
+          modal.style.display = 'none'; 
+          refreshCurrentDay();
+        }, 300);
+      }
     }
-  }
-}
-
+  
+    function refreshCurrentDay() {
+      if (window._lastActiveDay) {
+        const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
+        if (dayData) {
+          renderDayItinerary(`day-section-${dayData.day}`, dayData);
+          document.querySelectorAll('.day-section').forEach(sec => {
+            if (sec.id !== `day-section-${dayData.day}`) sec.classList.add('hidden');
+          });
+          document.querySelectorAll("#day-tabs-container button").forEach(btn => {
+            btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
+          });
+          const activeTab = document.getElementById(`tab-d${dayData.day}`);
+          if (activeTab) activeTab.className = "day-tab active flex-shrink-0 transition";
+        }
+      }
+    }
+  
     function renderShoppingList(eventTitle) {
       const items = loadShoppingItems(eventTitle);
       let html = `<h3 class="text-sm font-bold text-slate-700 mb-2">${eventTitle}</h3>`;
-      
       if (items.length === 0) {
         html += `<div class="text-center text-slate-400 text-xs py-6">暫無購物項目，請在下方新增</div>`;
       } else {
@@ -1457,7 +1448,6 @@ function refreshCurrentDay() {
         });
         html += `</div>`;
       }
-      
       html += `
       <div class="mt-4 border-t border-slate-200 pt-4">
         <h4 class="text-sm font-bold text-slate-800 mb-2">新增購物項目</h4>
@@ -1470,10 +1460,9 @@ function refreshCurrentDay() {
           <button onclick="addShoppingItem('${eventTitle}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0">新增</button>
         </div>
       </div>`;
-      
       return html;
     }
-
+  
     function loadShoppingItems(eventTitle) {
       const key = getShoppingKey(eventTitle);
       const saved = localStorage.getItem(key);
@@ -1483,21 +1472,18 @@ function refreshCurrentDay() {
         return [];
       }
     }
-
+  
     function saveShoppingItems(eventTitle, items) {
       const key = getShoppingKey(eventTitle);
       localStorage.setItem(key, JSON.stringify(items));
     }
-
+  
     function addShoppingItem(eventTitle) {
       const nameInput = document.getElementById('new-shopping-name');
       const categoryInput = document.getElementById('new-shopping-category');
       const noteInput = document.getElementById('new-shopping-note');
       const name = nameInput.value.trim();
-      if (!name) {
-        showToast("請輸入物品名稱", "⚠️");
-        return;
-      }
+      if (!name) { showToast("請輸入物品名稱", "⚠️"); return; }
       const items = loadShoppingItems(eventTitle);
       items.push({ name: name, category: categoryInput.value.trim(), note: noteInput.value.trim(), planned: false });
       saveShoppingItems(eventTitle, items);
@@ -1505,7 +1491,7 @@ function refreshCurrentDay() {
       content.innerHTML = renderShoppingList(eventTitle);
       showToast("✅ 已新增購物項目");
     }
-
+  
     function toggleShoppingItem(eventTitle, index) {
       const items = loadShoppingItems(eventTitle);
       items[index].planned = !items[index].planned;
@@ -1513,7 +1499,7 @@ function refreshCurrentDay() {
       const content = document.getElementById('shopping-content');
       content.innerHTML = renderShoppingList(eventTitle);
     }
-
+  
     function deleteShoppingItem(eventTitle, index) {
       const items = loadShoppingItems(eventTitle);
       items.splice(index, 1);
@@ -1522,7 +1508,7 @@ function refreshCurrentDay() {
       content.innerHTML = renderShoppingList(eventTitle);
       showToast("🗑 已刪除");
     }
-
+  
     // ==================== 天氣 ====================
     const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
     async function fetchWeatherData() {
@@ -1553,12 +1539,11 @@ function refreshCurrentDay() {
         document.getElementById('weather-detail-content').innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">天氣資料暫時無法取得，請稍後再試。</div>';
       }
     }
-
-    // ==================== 行程渲染（直式時間軸） ====================
+  
+    // ==================== 行程渲染 ====================
     function renderDayItinerary(sectionId, dayData) {
       const section = document.getElementById(sectionId);
       if (!section) return;
-      
       const dateStr = tripDates[dayData.day - 1];
       const weatherInfo = window.weatherCache[dateStr] || null;
       let weatherHtml = "";
@@ -1574,7 +1559,6 @@ function refreshCurrentDay() {
         if (rain > 50) advice += "，攜帶雨具⚠️";
         weatherHtml = `<div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs text-slate-700 weather-card"><span class="text-lg">${icon}</span><span class="font-bold text-sky-700">${dateStr.substring(5)} 天氣：</span><span>最高 ${max}° / 最低 ${min}°</span><span class="text-slate-400">|</span><span class="text-slate-500">💧 ${rain}%</span><span class="ml-auto font-bold text-slate-600">${advice}</span></div>`;
       }
-      
       let html = `<div class="mb-8">
         <div class="bg-slate-50/95 py-3 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center">
           <div class="flex items-center gap-3">
@@ -1596,7 +1580,6 @@ function refreshCurrentDay() {
           <div class="focus-time" id="focus-time-${dayData.day}"></div>
         </div>
         <div class="relative mt-4 timeline pb-6">`;
-        
       dayData.events.forEach((event, index) => {
         const isOpen = event.open ? "open" : "";
         const tagHtml = event.tag ? `<span class="tag ${event.tag.class}">${event.tag.text}</span>` : "";
@@ -1605,34 +1588,27 @@ function refreshCurrentDay() {
         const endTime = timeParts[1] ? timeParts[1].trim() : "";
         const catColors = { "tag-teal": "bg-teal-400", "tag-amber": "bg-amber-400", "tag-rose": "bg-rose-400", "tag-sky": "bg-sky-400", "tag-indigo": "bg-indigo-400", "tag-emerald": "bg-emerald-400" };
         const catColor = event.tag ? catColors[event.tag.class] || "bg-slate-400" : "bg-slate-400";
-        
         const shootingItems = loadShoppingItems(event.title);
-const shoppingBadge = shootingItems.length > 0 
-  ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shootingItems.length}</span>` 
-  : '';
-
-const shootBtnHtml = `
-  <div class="flex flex-wrap gap-1 mt-1">
-    <button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button>
-    <button onclick="openShoppingModal('${event.title}')" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單${shoppingBadge}</button>
-  </div>`;
-        
+        const shoppingBadge = shootingItems.length > 0 ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shootingItems.length}</span>` : '';
+        const shootBtnHtml = `
+          <div class="flex flex-wrap gap-1 mt-1">
+            <button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button>
+            <button onclick="openShoppingModal('${event.title}')" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單${shoppingBadge}</button>
+          </div>`;
         html += `
           <div class="timeline-node" id="event-dot-${dayData.day}-${index}">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           </div>
-          
           <div class="timeline-card">
             <div class="timeline-time">
               <strong>${startTime}</strong>
               ${endTime ? `<span class="timeline-time-end">→ ${endTime}</span>` : ""}
             </div>
-            
             <details ${isOpen} id="event-card-${dayData.day}-${index}" class="group glass-card rounded-2xl relative overflow-hidden event-card">
               <div class="itinerary-cat-strip ${catColor}"></div>
               <summary class="flex items-start gap-3 p-3 md:p-4 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none pl-5">
                 <div class="flex-1 min-w-0 pr-8">
-                  <div class="flex flex-wrap items-center gap-2 mb-1">${tagHtml}</div>
+                  <div class="flex flex-wrap items-center gap-2 mb-1">${tagHtml} ${event.priority === 'must' ? '<span class="bg-green-100 text-green-700 text-[9px] px-2 py-0.5 rounded-full font-bold border border-green-200">必去</span>' : ''} ${event.priority === 'optional' ? '<span class="bg-gray-100 text-gray-500 text-[9px] px-2 py-0.5 rounded-full font-bold border border-gray-200">可跳過</span>' : ''}</div>
                   <h3 class="text-[14px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>
                   ${shootBtnHtml}
                   ${event.location ? `<div class="text-xs text-slate-500 mt-0.5">📍 ${event.location}</div>` : ""}
@@ -1643,13 +1619,12 @@ const shootBtnHtml = `
               </summary>
               <div class="event-content-wrapper p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">
                 ${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm cursor-pointer" onclick="openLightbox(['${event.img}'], 0)"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}
-                ${event.navUrl ? `<a href="${event.navUrl}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700 border border-sky-300 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}</a>` : '<div class="h-3"></div>'}
+                ${event.navUrl || event.title ? `<a href="${event.navUrl || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(event.title)}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700 border border-sky-300 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}</a>` : '<div class="h-3"></div>'}
                 ${event.content}
               </div>
             </details>
           </div>`;
       });
-      
       const diaryKey = `diary_day_${dayData.day}`;
       const savedDiary = localStorage.getItem(diaryKey) || "";
       html += `
@@ -1661,13 +1636,12 @@ const shootBtnHtml = `
           </div>
           <textarea id="diary-input-${dayData.day}" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none">${savedDiary}</textarea>
       </div>`;
-      
       html += `</div></div>`;
       section.innerHTML = html;
       updateFocusCard(dayData.day);
     }
-
-    // ==================== 其他函數（簡化） ====================
+  
+    // ==================== 今日焦點 ====================
     function getFocusEventIndex(day) {
       const dayData = winterItineraries.find(d => d.day === day);
       if (!dayData) return 0;
@@ -1684,7 +1658,6 @@ const shootBtnHtml = `
       }
       return dayData.events.length - 1;
     }
-    
     function updateFocusCard(day) {
       const dayData = winterItineraries.find(d => d.day === day);
       if (!dayData) return;
@@ -1720,7 +1693,6 @@ const shootBtnHtml = `
         document.getElementById(`focus-card-${day}`).classList.add("bg-gradient-to-r", "from-slate-500", "to-slate-700");
       }
     }
-    
     function scrollToEvent(day, eventIndex) {
       const target = document.getElementById(`event-card-${day}-${eventIndex}`);
       if (target) {
@@ -1731,7 +1703,7 @@ const shootBtnHtml = `
         setTimeout(() => target.classList.remove("ring-2", "ring-sky-400"), 2000);
       }
     }
-
+  
     // ==================== 全屏圖片燈箱 ====================
     let lightboxImages = [];
     let lightboxIndex = 0;
@@ -1766,7 +1738,7 @@ const shootBtnHtml = `
       const diff = touchStartX - touchEndX;
       if (Math.abs(diff) > 50) changeLightbox(diff > 0 ? 1 : -1);
     }, { passive: true });
-
+  
     // ==================== 倒數計時 ====================
     const departureTarget = new Date("2027-01-21T10:00:00+08:00").getTime();
     const zaoTarget = new Date("2027-01-15T23:00:00+08:00").getTime();
@@ -1810,7 +1782,7 @@ const shootBtnHtml = `
         }
       }
     }
-
+  
     // ==================== 歡迎導覽 ====================
     function closeWelcomeModal(skipForever = false) {
       const modal = document.getElementById("welcome-modal");
@@ -1822,7 +1794,7 @@ const shootBtnHtml = `
       const modal = document.getElementById("welcome-modal");
       if (dismissed === "true" && modal) modal.style.display = "none";
     }
-
+  
     // ==================== 動態角色 ====================
     let characterTimeout = null;
     let bubbleTimeout = null;
@@ -1920,34 +1892,263 @@ const shootBtnHtml = `
       document.body.appendChild(particles);
       setTimeout(() => particles.remove(), 5000);
     }
-
-    // ==================== 其他輔助函數 ====================
-    function getAppTime() { return simulatedTime ? new Date(simulatedTime) : new Date(); }
-    function copyText(text) {
-      try {
-        const textarea = document.createElement("textarea");
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-      } catch(e) { navigator.clipboard.writeText(text).catch(() => {}); }
+  
+    // ==================== 旅行日記 ====================
+    function saveDiary(day) {
+      const input = document.getElementById(`diary-input-${day}`);
+      if (input) {
+        localStorage.setItem(`diary_day_${day}`, input.value);
+        showToast("📖 日記已儲存！", "✅");
+      }
     }
-
-    // ==================== 初始化 ====================
-    window.addEventListener("DOMContentLoaded", () => {
-      initSnowEffect();
-      winterItineraries.forEach((dayData, index) => {
-        renderDayItinerary(`day-section-${index + 1}`, dayData);
+  
+    // ==================== 行前預訂清單 ====================
+    const bookingList = [
+      { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
+      { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
+      { id: "car-pickup", category: "租車", label: "1/21 15:30 機場取車", icon: "⏰" },
+      { id: "car-dropoff", category: "租車", label: "1/27 13:45 機場還車", icon: "⏰" },
+      { id: "hotel-akiu", category: "住宿", label: "1/21 秋保溫泉 瑞鳳大飯店 (含自助晚餐)", icon: "🏨" },
+      { id: "hotel-tendo", category: "住宿", label: "1/22-23 微笑之宿 瀧之湯 (含懷石晚餐)", icon: "🏨" },
+      { id: "hotel-sendai", category: "住宿", label: "1/24-26 Hotel Grand Bach 仙台 (連住3晚)", icon: "🏨" },
+      { id: "ticket-ginzan", category: "門票", label: "銀山溫泉 Fast Pass (1/8 23:00搶票)", icon: "🎟️" },
+      { id: "ticket-zao", category: "門票", label: "藏王纜車優先票 (1/15 23:00搶票)", icon: "🎟️" },
+      { id: "ticket-springvalley", category: "門票", label: "Spring Valley 雪之冒險王國 (1/24)", icon: "⛷️" },
+      { id: "ticket-foxvillage", category: "門票", label: "狐狸村入場 (現場購票)", icon: "🦊" },
+      { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/23 16:30)", icon: "♨️" },
+      { id: "other-strawberry", category: "其他", label: "寒河江草莓園 (1/23 14:00)", icon: "🍓" },
+    ];
+    let customBookingItems = [];
+  
+    function renderBookingChecklist() {
+      const container = document.getElementById("booking-checklist-container");
+      if (!container) return;
+      const categories = ["租車", "住宿", "門票", "其他"];
+      let html = "";
+      categories.forEach(cat => {
+        const items = bookingList.filter(item => item.category === cat);
+        const customItems = customBookingItems.filter(item => item.category === cat);
+        const allItems = [...items, ...customItems];
+        if (allItems.length === 0) return;
+        html += `<div class="mb-4"><h4 class="text-sm font-bold text-slate-800 mb-2">${cat}</h4><div class="space-y-1.5">`;
+        allItems.forEach(item => {
+          const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+          const isChecked = state.checkedItems[key] === true;
+          html += `<div class="flex items-center gap-2"><label class="flex-1 flex items-center gap-2.5 p-2 rounded-lg border ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'} cursor-pointer hover:bg-slate-50 transition"><input type="checkbox" class="w-4 h-4 shrink-0" ${isChecked ? 'checked' : ''} onchange="toggleBookingCheck('${key}')"><span class="text-xs text-slate-700">${item.icon} ${item.label}</span></label>${item.isCustom ? `<button onclick="deleteCustomBooking('${item.id}')" class="text-red-400 hover:text-red-600 p-1.5 shrink-0" title="刪除"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ""}</div>`;
+        });
+        html += `</div></div>`;
       });
-      switchMainTab("itinerary");
-      window._lastActiveDay = 1;
-      updateCountdowns();
-      setInterval(updateCountdowns, 1000);
-      checkWelcomeModal();
-      fetchWeatherData();
-      initRandomCharacters();
-    });
+      html += `<div class="mt-4 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2">新增項目</h4><div class="flex gap-2"><input id="new-booking-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50"><select id="new-booking-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="租車">租車</option><option value="住宿">住宿</option><option value="門票">門票</option><option value="其他">其他</option></select><button onclick="addCustomBooking()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div>`;
+      html += `<div class="flex gap-2 mt-4"><button onclick="checkAllBooking()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button><button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button><button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button></div>`;
+      container.innerHTML = html;
+    }
+    function toggleBookingCheck(key) {
+      state.checkedItems[key] = !state.checkedItems[key];
+      saveLocalCheckedItems();
+      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      renderBookingChecklist();
+    }
+    function checkAllBooking() {
+      [...bookingList, ...customBookingItems].forEach(item => {
+        const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+        state.checkedItems[key] = true;
+      });
+      saveLocalCheckedItems();
+      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      renderBookingChecklist();
+      showToast("✅ 已全部勾選！");
+    }
+    function uncheckAllBooking() {
+      [...bookingList, ...customBookingItems].forEach(item => {
+        const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+        state.checkedItems[key] = false;
+      });
+      saveLocalCheckedItems();
+      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      renderBookingChecklist();
+      showToast("🧹 已清除所有勾選！");
+    }
+    function copyBookingList() {
+      let text = "📌 行前預訂 Check List\n=====================\n";
+      const categories = ["租車", "住宿", "門票", "其他"];
+      categories.forEach(cat => {
+        const items = bookingList.filter(item => item.category === cat);
+        const customItems = customBookingItems.filter(item => item.category === cat);
+        const allItems = [...items, ...customItems];
+        if (allItems.length === 0) return;
+        text += `\n【${cat}】\n`;
+        allItems.forEach(item => {
+          const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+          const checked = state.checkedItems[key] ? "✅" : "⬜";
+          text += `${checked} ${item.icon} ${item.label}\n`;
+        });
+      });
+      copyText(text);
+      showToast("📋 行前預訂清單已複製！");
+    }
+    function addCustomBooking() {
+      const labelInput = document.getElementById("new-booking-label");
+      const categorySelect = document.getElementById("new-booking-category");
+      const label = labelInput.value.trim();
+      if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
+      const newItem = { id: "custom-" + Date.now(), category: categorySelect.value, label: label, icon: "📌", isCustom: true };
+      customBookingItems.push(newItem);
+      saveCustomItems();
+      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      renderBookingChecklist();
+      labelInput.value = "";
+      showToast("已新增項目！");
+    }
+    function deleteCustomBooking(id) {
+      customBookingItems = customBookingItems.filter(item => item.id !== id);
+      saveCustomItems();
+      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      renderBookingChecklist();
+      showToast("已刪除項目");
+    }
+  
+    // ==================== 裝備清單 ====================
+    const equipmentList = [
+      { id: "passport", category: "重要證件", label: "身份證 / 護照（效期需剩餘6個月以上）", icon: "🪪" },
+      { id: "license", category: "重要證件", label: "國際車牌 / 駕駛執照", icon: "🚗" },
+      { id: "tickets", category: "重要證件", label: "機票 / 住宿憑證 / Visit Japan Web QR Code", icon: "✈️" },
+      { id: "money", category: "重要證件", label: "日幣現金與信用卡（部分小店只收現金）", icon: "💴" },
+      { id: "car-mount", category: "重要證件", label: "車用手機架", icon: "📱" },
+      { id: "thermal", category: "保暖衣物", label: "發熱衣 / 保暖內衣（3-4件，貼身排汗）", icon: "👕" },
+      { id: "mid-layer", category: "保暖衣物", label: "中層保暖衣物（毛衣或刷毛絨，2-3件）", icon: "🧶" },
+      { id: "outer-coat", category: "保暖衣物", label: "防風防水厚外套 / 羽絨服（1-2件）", icon: "🧥" },
+      { id: "pants", category: "保暖衣物", label: "長褲與發熱內搭褲（2-3條）", icon: "👖" },
+      { id: "scarf", category: "保暖衣物", label: "圍巾、毛帽或耳罩", icon: "🧣" },
+      { id: "gloves", category: "保暖衣物", label: "觸控手套", icon: "🧤" },
+      { id: "boots", category: "保暖衣物", label: "舒適好走且防水防滑的雪靴或厚底運動鞋", icon: "👢" },
+      { id: "socks", category: "保暖衣物", label: "厚羊毛襪（3-5雙）", icon: "🧦" },
+      { id: "sim", category: "電子與隨身", label: "日本上網卡（SIM卡 / eSIM / 漫遊）", icon: "📶" },
+      { id: "powerbank", category: "電子與隨身", label: "行動電源（僅限手提，不可託運）", icon: "🔋" },
+      { id: "thermos", category: "電子與隨身", label: "保溫瓶（隨時補充熱飲）", icon: "🍶" },
+      { id: "skincare", category: "電子與隨身", label: "保濕護膚品與潤唇膏", icon: "🧴" },
+      { id: "medicine", category: "電子與隨身", label: "常備藥品（感冒藥、腸胃藥、個人處方箋）", icon: "💊" },
+      { id: "warmpack", category: "電子與隨身", label: "暖暖包（注意不可貼在皮膚或薄內衣上）", icon: "🔥" },
+      { id: "adult-crampons", category: "其他", label: "簡易冰爪", icon: "⛸️" },
+      { id: "kid-hat", category: "小孩", label: "小孩毛帽 (蓋耳)", icon: "🧢" },
+      { id: "kid-gloves", category: "小孩", label: "小孩手套 (備2雙)", icon: "🧤" },
+      { id: "kid-scarf", category: "小孩", label: "小孩圍脖", icon: "🧣" },
+      { id: "kid-snowpants", category: "小孩", label: "小孩防水雪褲", icon: "👖" },
+      { id: "kid-boots", category: "小孩", label: "小孩雪靴 (防水)", icon: "👢" },
+      { id: "swimwear", category: "其他", label: "泳衣 (溫泉泳池用)", icon: "🩱" },
+      { id: "safetybelt", category: "其他", label: "便攜式兒童安全帶", icon: "🪑" },
+      { id: "firstaid", category: "其他", label: "簡易急救包", icon: "🩹" },
+    ];
+    let customEquipItems = [];
+  
+    function renderEquipChecklist() {
+      const container = document.getElementById("equip-checklist-container");
+      if (!container) return;
+      const categories = ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"];
+      let html = "";
+      categories.forEach(cat => {
+        const items = equipmentList.filter(item => item.category === cat);
+        const customItems = customEquipItems.filter(item => item.category === cat);
+        const allItems = [...items, ...customItems];
+        if (allItems.length === 0) return;
+        html += `<div class="mb-4"><h4 class="text-sm font-bold text-slate-800 mb-2">${cat}</h4><div class="space-y-1.5">`;
+        allItems.forEach(item => {
+          const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
+          const isChecked = state.checkedItems[key] === true;
+          html += `<div class="flex items-center gap-2"><label class="flex-1 flex items-center gap-2.5 p-2 rounded-lg border ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'} cursor-pointer hover:bg-slate-50 transition"><input type="checkbox" class="w-4 h-4 shrink-0" ${isChecked ? 'checked' : ''} onchange="toggleEquipCheck('${key}')"><span class="text-xs text-slate-700">${item.icon} ${item.label}</span></label>${item.isCustom ? `<button onclick="deleteCustomEquip('${item.id}')" class="text-red-400 hover:text-red-600 p-1.5 shrink-0" title="刪除"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ""}</div>`;
+        });
+        html += `</div></div>`;
+      });
+      html += `<div class="mt-4 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2">新增項目</h4><div class="flex gap-2"><input id="new-equip-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50"><select id="new-equip-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="重要證件">重要證件</option><option value="保暖衣物">保暖衣物</option><option value="電子與隨身">電子與隨身</option><option value="小孩">小孩</option><option value="其他">其他</option></select><button onclick="addCustomEquip()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div>`;
+      html += `<div class="flex gap-2 mt-4"><button onclick="checkAllEquipment()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button><button onclick="uncheckAllEquipment()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button><button onclick="copyEquipmentList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button></div>`;
+      container.innerHTML = html;
+    }
+    function toggleEquipCheck(key) {
+      state.checkedItems[key] = !state.checkedItems[key];
+      saveLocalCheckedItems();
+      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      renderEquipChecklist();
+    }
+    function checkAllEquipment() {
+      [...equipmentList, ...customEquipItems].forEach(item => {
+        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
+        state.checkedItems[key] = true;
+      });
+      saveLocalCheckedItems();
+      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      renderEquipChecklist();
+      showToast("✅ 已全部勾選！");
+    }
+    function uncheckAllEquipment() {
+      [...equipmentList, ...customEquipItems].forEach(item => {
+        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
+        state.checkedItems[key] = false;
+      });
+      saveLocalCheckedItems();
+      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      renderEquipChecklist();
+      showToast("🧹 已清除所有勾選！");
+    }
+    function copyEquipmentList() {
+      let text = "🎒 裝備清單 Check List\n=====================\n";
+      const categories = ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"];
+      categories.forEach(cat => {
+        const items = equipmentList.filter(item => item.category === cat);
+        const customItems = customEquipItems.filter(item => item.category === cat);
+        const allItems = [...items, ...customItems];
+        if (allItems.length === 0) return;
+        text += `\n【${cat}】\n`;
+        allItems.forEach(item => {
+          const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
+          const checked = state.checkedItems[key] ? "✅" : "⬜";
+          text += `${checked} ${item.icon} ${item.label}\n`;
+        });
+      });
+      copyText(text);
+      showToast("📋 裝備清單已複製！");
+    }
+    function addCustomEquip() {
+      const labelInput = document.getElementById("new-equip-label");
+      const categorySelect = document.getElementById("new-equip-category");
+      const label = labelInput.value.trim();
+      if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
+      const newItem = { id: "custom-" + Date.now(), category: categorySelect.value, label: label, icon: "📦", isCustom: true };
+      customEquipItems.push(newItem);
+      saveCustomItems();
+      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      renderEquipChecklist();
+      labelInput.value = "";
+      showToast("已新增項目！");
+    }
+    function deleteCustomEquip(id) {
+      customEquipItems = customEquipItems.filter(item => item.id !== id);
+      saveCustomItems();
+      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      renderEquipChecklist();
+      showToast("已刪除項目");
+    }
+  
+    // ==================== 存儲 ====================
+    function saveLocalCheckedItems() {
+      localStorage.setItem("tohoku_checked_items", JSON.stringify(state.checkedItems));
+      localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
+      localStorage.setItem("custom_equip_items", JSON.stringify(customEquipItems));
+    }
+    function saveCustomItems() {
+      localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
+      localStorage.setItem("custom_equip_items", JSON.stringify(customEquipItems));
+    }
+    function loadCustomItems() {
+      const savedBooking = localStorage.getItem("custom_booking_items");
+      if (savedBooking) { try { customBookingItems = JSON.parse(savedBooking); } catch(e) {} }
+      const savedEquip = localStorage.getItem("custom_equip_items");
+      if (savedEquip) { try { customEquipItems = JSON.parse(savedEquip); } catch(e) {} }
+    }
+    function restoreChecklistUI() {
+      renderBookingChecklist();
+      renderEquipChecklist();
+    }
+  
+    // ==================== 雪花 ====================
     function initSnowEffect() {
       const snowContainer = document.getElementById("snow-fall");
       if (!snowContainer) return;
@@ -1963,6 +2164,107 @@ const shootBtnHtml = `
         snowContainer.appendChild(snowflake);
       }
     }
+  
+    // ==================== copyText ====================
+    function copyText(text) {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      } catch(e) { navigator.clipboard.writeText(text).catch(() => {}); }
+    }
+  
+    // ==================== getAppTime ====================
+    function getAppTime() { return simulatedTime ? new Date(simulatedTime) : new Date(); }
+  
+    // ==================== 備份與還原 ====================
+    async function backupToCloud() {
+      try {
+        const diary = {};
+        for (let day = 1; day <= 7; day++) {
+          const input = document.getElementById(`diary-input-${day}`);
+          if (input) diary[`day_${day}`] = input.value;
+        }
+        const backupData = {
+          checkedItems: state.checkedItems,
+          customBookingItems: customBookingItems,
+          customEquipItems: customEquipItems,
+          diary: diary,
+          shoppingLists: window.shoppingLists || {},
+          updatedAt: Date.now()
+        };
+        await window.dbRef.set({ backup: backupData }, { merge: true });
+        showToast('✅ 已備份到雲端', '☁️');
+      } catch(e) {
+        console.warn('備份失敗:', e);
+        showToast('❌ 備份失敗，請檢查網絡', '⚠️');
+      }
+    }
+  
+    async function restoreFromCloud() {
+      try {
+        const doc = await window.dbRef.get();
+        if (doc.exists && doc.data().backup) {
+          const data = doc.data().backup;
+          if (data.checkedItems) {
+            state.checkedItems = data.checkedItems;
+            saveLocalCheckedItems();
+            restoreChecklistUI();
+          }
+          if (data.customBookingItems) {
+            customBookingItems = data.customBookingItems;
+            saveCustomItems();
+          }
+          if (data.customEquipItems) {
+            customEquipItems = data.customEquipItems;
+            saveCustomItems();
+          }
+          if (data.diary) {
+            for (let day = 1; day <= 7; day++) {
+              const input = document.getElementById(`diary-input-${day}`);
+              if (input && data.diary[`day_${day}`]) input.value = data.diary[`day_${day}`];
+            }
+          }
+          if (data.shoppingLists) {
+            Object.keys(data.shoppingLists).forEach(key => {
+              localStorage.setItem(getShoppingKey(key), JSON.stringify(data.shoppingLists[key].items || []));
+            });
+          }
+          showToast('✅ 已還原備份', '📥');
+          refreshCurrentDay();
+        } else {
+          showToast('❌ 無備份資料', '⚠️');
+        }
+      } catch(e) {
+        console.warn('還原失敗:', e);
+        showToast('❌ 還原失敗，請檢查網絡', '⚠️');
+      }
+    }
+  
+    // ==================== 初始化 ====================
+    window.addEventListener("DOMContentLoaded", () => {
+      loadCustomItems();
+      const savedChecked = localStorage.getItem("tohoku_checked_items");
+      if (savedChecked) { try { state.checkedItems = JSON.parse(savedChecked); } catch(e) {} }
+      fetchLiveRates();
+      initSnowEffect();
+      winterItineraries.forEach((dayData, index) => {
+        renderDayItinerary(`day-section-${index + 1}`, dayData);
+      });
+      switchMainTab("itinerary");
+      window._lastActiveDay = 1;
+      updateCountdowns();
+      setInterval(updateCountdowns, 1000);
+      checkWelcomeModal();
+      fetchWeatherData();
+      initRandomCharacters();
+      renderBookingChecklist();
+      renderEquipChecklist();
+      updateSnowmanVisual();
+    });
   </script>
 </body>
 </html>

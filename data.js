@@ -1,8 +1,8 @@
 /**
  * ============================================================
- *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 1.0.0 (加入 Day 6 圖片)
- *  最後更新: 2026-09-06
+ *  2027 東北冬季親子溫泉自駕之旅 - 行程數據（升級版）
+ *  版本: 1.1.0
+ *  最後更新: 2026-09-08
  * ============================================================
  */
 
@@ -25,6 +25,7 @@ const winterItineraries = [
         tag: { text: "🛬 抵達雪國", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Airport",
         navName: "仙台機場",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -37,6 +38,7 @@ const winterItineraries = [
         title: "仙台機場美食充電 ➔ 出發前補充體力",
         tag: { text: "🍽️ 機場美食", class: "tag-amber" },
         navUrl: "",
+        priority: "optional",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -92,6 +94,7 @@ const winterItineraries = [
         img: "https://rimage.gnst.jp/livejapan.com/public/img/spot/lj/01/45/lj0145539/lj0145539_6a39f0b20dd93_main.jpg",
         tag: { text: "🚗 冬季自駕", class: "tag-teal" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -112,6 +115,7 @@ const winterItineraries = [
         tag: { text: "🛣️ 零風險路線", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Hotel+Zuiho+Akiu",
         navName: "秋保溫泉瑞鳳",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -128,6 +132,7 @@ const winterItineraries = [
         img: "https://rimage.gnst.jp/livejapan.com/public/article/detail/a/30/00/a3000138/img/zh-tw/a3000138_parts_5f717fd1acf77.jpg?20210210161203&q=80&rw=686&rh=490",
         tag: { text: "🏨 溫泉名宿", class: "tag-indigo" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -154,6 +159,7 @@ const winterItineraries = [
         img: "https://rimage.gnst.jp/livejapan.com/public/article/detail/a/30/00/a3000138/img/zh-tw/a3000138_parts_5f717fbc08a88.jpg?20210210161203&q=80&rw=686&rh=490",
         tag: { text: "🏊 寶寶放電", class: "tag-sky" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-3 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -183,6 +189,7 @@ const winterItineraries = [
         img: "https://img.kenalice.tw/2025/04/20250420231941_0_5dbb05.jpg",
         tag: { text: "🦀 痛快美食", class: "tag-amber" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -208,6 +215,7 @@ const winterItineraries = [
         title: "客房榻榻米休息，養精蓄銳準備 Day 2",
         tag: { text: "🌙 舒服入住", class: "tag-indigo" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `<p class='text-xs md:text-sm text-slate-700'>漫步回日式榻榻米客房（或和洋室），鋪好被褥後享受雪國第一夜的舒適好眠。</p>`
       }
@@ -229,6 +237,7 @@ const winterItineraries = [
         title: "退房出發，跨縣前往山形天童",
         tag: { text: "🚗 雪地幹線", class: "tag-teal" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -246,6 +255,7 @@ const winterItineraries = [
         tag: { text: "🛍️ 裝備補給", class: "tag-rose" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Aeon+Mall+Tendo",
         navName: "AEON天童",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -307,6 +317,7 @@ const winterItineraries = [
         tag: { text: "☕ 咖啡小憩", class: "tag-amber" },
         navUrl: "https://maps.app.goo.gl/PLAjJVoyuemACVNC8?g_st=ac",
         navName: "YUKIHIRA COFFEE",
+        priority: "optional",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -321,6 +332,7 @@ const winterItineraries = [
         tag: { text: "🏨 溫泉名宿", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
         navName: "微笑の宿 瀧之湯",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -334,6 +346,7 @@ const winterItineraries = [
         img: "https://mimigo.tw/wp-content/uploads/20230105083619_51.jpg",
         tag: { text: "🏮 大正浪漫", class: "tag-sky" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-3 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -372,6 +385,7 @@ const winterItineraries = [
         tag: { text: "🥩 彈性晚餐", class: "tag-amber" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
         navName: "微笑の宿 瀧之湯",
+        priority: "optional",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -446,6 +460,7 @@ const winterItineraries = [
         img: "https://cclalice.com/wp-content/uploads/2024/12/DSC09203-1170x780.jpg",
         tag: { text: "🚗 週末早鳥", class: "tag-teal" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -465,6 +480,7 @@ const winterItineraries = [
         tag: { text: "❄️ 樹冰奇景", class: "tag-sky" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Zao+Ropeway",
         navName: "藏王索道",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -560,6 +576,7 @@ const winterItineraries = [
         tag: { text: "🍣 人氣壽司", class: "tag-amber" },
         navUrl: "https://maps.app.goo.gl/eSMkZD1m3vimNytv7",
         navName: "うまい鮨勘 山形南支店",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -586,6 +603,7 @@ const winterItineraries = [
         tag: { text: "🍓 溫室採果", class: "tag-sky" },
         navUrl: "https://maps.app.goo.gl/ZNG1U3GgY6Hfdptz8",
         navName: "寒河江草莓園",
+        priority: "optional",
         open: true,
         content: `
           <div class="space-y-3 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -614,6 +632,7 @@ const winterItineraries = [
         tag: { text: "☕ 悠閒午後", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
         navName: "微笑の宿 瀧之湯",
+        priority: "optional",
         open: false,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -629,6 +648,7 @@ const winterItineraries = [
         tag: { text: "♨️ 私人包廂", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
         navName: "微笑の宿 瀧之湯",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -657,6 +677,7 @@ const winterItineraries = [
         tag: { text: "🚗 雪地自駕", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Spring+Valley+Izumi+Kogen",
         navName: "Spring Valley 仙台泉",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -671,6 +692,7 @@ const winterItineraries = [
         img: "https://lovetogo.tw/201802-tohoku/spring-valley/photo/20180204-1310-0344.jpg",
         tag: { text: "☃️ 玩雪放電", class: "tag-sky" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -725,6 +747,7 @@ const winterItineraries = [
         tag: { text: "🏨 舒適連住", class: "tag-indigo" },
         navUrl: "https://maps.app.goo.gl/tumoctSbhRFgQkx89?g_st=ac",
         navName: "Hotel Grand Bach 仙台",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -739,6 +762,7 @@ const winterItineraries = [
         tag: { text: "🥩 必吃名店", class: "tag-amber" },
         navUrl: "https://maps.app.goo.gl/3pwjdGMZZeGCRq1MA",
         navName: "伊達牛舌本舗 本店",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -787,6 +811,7 @@ const winterItineraries = [
         tag: { text: "☕ 悠閒晨活", class: "tag-amber" },
         navUrl: "https://maps.app.goo.gl/SYGcfygAcH7gamz2A",
         navName: "客美多咖啡",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -803,6 +828,7 @@ const winterItineraries = [
         tag: { text: "🦊 萌寵互動", class: "tag-sky" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Miyagi+Zao+Fox+Village",
         navName: "狐狸村",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -865,6 +891,7 @@ const winterItineraries = [
         title: "白石午餐 ➔ 傳統名物「白石溫麵」三選一",
         tag: { text: "🍜 在地名物", class: "tag-amber" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -922,6 +949,7 @@ const winterItineraries = [
         title: "驅車返回仙台市區",
         tag: { text: "🚗 輕鬆車程", class: "tag-teal" },
         navUrl: "",
+        priority: "must",
         open: false,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -934,6 +962,7 @@ const winterItineraries = [
         title: "仙台市區購物 (PARCO、3COINS、Daiso、唐吉訶德)",
         tag: { text: "🛍️ 市區血拼", class: "tag-rose" },
         navUrl: "",
+        priority: "optional",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -993,6 +1022,7 @@ const winterItineraries = [
         title: "晚餐：仙台特色美食與返家放鬆",
         tag: { text: "🥩 燒肉牛舌", class: "tag-amber" },
         navUrl: "",
+        priority: "optional",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -1017,10 +1047,11 @@ const winterItineraries = [
       {
         time: "08:00 - 09:15",
         title: "☕ THE MOST BAKERY ＆ COFFEE 東口店 早餐",
-        img: "https://sendaiminami-tusin.com/wp-content/uploads/2023/08/img_7984.jpg",  // ✅ 新增圖片
+        img: "https://sendaiminami-tusin.com/wp-content/uploads/2023/08/img_7984.jpg",
         tag: { text: "🥐 人氣麵包", class: "tag-amber" },
         navUrl: "https://maps.app.goo.gl/FmsKLHRKk3g3z6UDA",
         navName: "THE MOST BAKERY",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -1041,6 +1072,7 @@ const winterItineraries = [
         title: "輕鬆出發前往仙台郊區 (水族館或草莓園)",
         tag: { text: "🚗 輕鬆車程", class: "tag-teal" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -1055,6 +1087,7 @@ const winterItineraries = [
         title: "晨間二選一：海洋水族館 🐧 OR 溫室採草莓 🍓",
         tag: { text: "🎯 彈性早晨", class: "tag-sky" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -1118,10 +1151,11 @@ const winterItineraries = [
       {
         time: "12:45 - 14:15",
         title: "極致和牛燒肉午餐 ➔ 【仔虎 利府店】(最推薦✨)",
-        img: "https://matipura.com/CORE/wp-content/uploads/2021/03/DSC00724.jpg",  // ✅ 新增圖片
+        img: "https://matipura.com/CORE/wp-content/uploads/2021/03/DSC00724.jpg",
         tag: { text: "🥩 頂級和牛", class: "tag-amber" },
         navUrl: "https://maps.app.goo.gl/n8F39N1Zq9q57g769",
         navName: "仔虎 利府店",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -1161,10 +1195,11 @@ const winterItineraries = [
       {
         time: "14:30 - 17:30",
         title: "【Mitsui Outlet Park 仙台港】大血拚",
-        img: "https://resources.matcha-jp.com/resize/720x2000/2025/08/24-242139.webp",  // ✅ 新增圖片
+        img: "https://resources.matcha-jp.com/resize/720x2000/2025/08/24-242139.webp",
         tag: { text: "🛍️ 狂買免提", class: "tag-rose" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Mitsui+Outlet+Park+Sendai+Port",
         navName: "三井Outlet",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -1182,6 +1217,7 @@ const winterItineraries = [
         title: "返抵飯店，從容打包行李",
         tag: { text: "🧳 零壓力打包", class: "tag-indigo" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -1209,6 +1245,7 @@ const winterItineraries = [
         title: "飯店退房與裝車",
         tag: { text: "🏡 悠閒早晨", class: "tag-indigo" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -1223,6 +1260,7 @@ const winterItineraries = [
         tag: { text: "🛍️ 一站買齊", class: "tag-rose" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Station",
         navName: "仙台車站",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -1250,6 +1288,7 @@ const winterItineraries = [
         title: "全平地開車直達仙台機場",
         tag: { text: "🚗 順暢平地", class: "tag-teal" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -1263,6 +1302,7 @@ const winterItineraries = [
         title: "加滿油 ➔ Nippon Rent-A-Car 還車",
         tag: { text: "⛽ 輕鬆還車", class: "tag-teal" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
@@ -1276,6 +1316,7 @@ const winterItineraries = [
         title: "辦理登機 ➔ 順利返港",
         tag: { text: "✈️ 完美句點", class: "tag-teal" },
         navUrl: "",
+        priority: "must",
         open: true,
         content: `
           <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
