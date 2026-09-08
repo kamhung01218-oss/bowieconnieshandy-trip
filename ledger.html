@@ -2,8 +2,13 @@
 <html lang="zh-HK">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>隨行記帳本</title>
+<meta name="theme-color" content="#0284c7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.json">
+
 <script src="https://cdn.tailwindcss.com"></script>
 
 <!-- Firebase SDK (Compat 模式) -->
@@ -13,7 +18,24 @@
 
 <style>
 @import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap);
-body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+:root {
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+body{
+  font-family:'Noto Sans TC',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  background: linear-gradient(180deg, #f0f9ff 0%, #ecfeff 40%, #f8fafc 100%);
+  color: #1e293b;
+  min-height: 100vh;
+  padding-bottom: calc(16px + var(--safe-area-bottom));
+  -webkit-tap-highlight-color: transparent;
+}
+button, a {
+  touch-action: manipulation;
+  user-select: none;
+}
+button:active { transform: scale(0.96); }
 .scrollbar-none::-webkit-scrollbar{display:none}
 .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
 
@@ -135,7 +157,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
 }
 </style>
 </head>
-<body class="bg-gradient-to-b from-sky-50 to-cyan-50 text-slate-800 min-h-screen pb-24 relative">
+<body class="text-slate-800 relative">
 
   <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
@@ -222,7 +244,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
   <!-- 主容器 -->
   <div class="max-w-4xl mx-auto px-4 pt-6 pb-16 space-y-6">
 
-    <!-- 頂部工具列（簡化版） -->
+    <!-- 頂部工具列 -->
     <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
       <div class="flex flex-col gap-1">
         <h4 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
@@ -233,7 +255,6 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         </h4>
         <p class="text-xs text-slate-500">記錄旅途中每一筆花銷，輕鬆平分。</p>
       </div>
-      <!-- 頂部記帳按鈕（保留） -->
       <button onclick="openExpenseModal()" class="w-full sm:w-auto py-2.5 px-6 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
         <span class="text-lg leading-none">＋</span> 記帳
       </button>
@@ -440,8 +461,8 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
     <span id="toast-icon">✅</span><span id="toast-message">操作成功</span>
   </div>
 
-  <!-- 新增：固定「＋記帳」FAB 按鈕（位於右下角，避開狐狸角色） -->
-  <button id="fab-add" onclick="openExpenseModal()" class="fixed bottom-20 right-4 z-[100] bg-sky-600 hover:bg-sky-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95">
+  <!-- 固定「＋記帳」FAB 按鈕（避開安全區） -->
+  <button id="fab-add" onclick="openExpenseModal()" class="fixed right-4 z-[100] bg-sky-600 hover:bg-sky-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95" style="bottom: calc(20px + var(--safe-area-bottom));">
     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
   </button>
 
@@ -593,6 +614,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
       if (input === ACCESS_CODE) {
         localStorage.setItem('tohoku_write_access_ok', 'true');
         closeWriteAccessModal();
+        showToast('✅ 權限驗證成功');
         if (window.pendingWriteAction) { const action = window.pendingWriteAction; window.pendingWriteAction = null; action(); }
       } else {
         document.getElementById('write-access-error').classList.remove('hidden');
@@ -1200,6 +1222,15 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         if (Math.random() > 0.7) snowflake.classList.add("snowflake-shine");
         snowContainer.appendChild(snowflake);
       }
+    }
+
+    // ==================== Service Worker 註冊 ====================
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          console.log('Service Worker registered:', reg.scope);
+        }).catch(err => console.log('SW registration failed:', err));
+      });
     }
 
     // ==================== 初始化 ====================
