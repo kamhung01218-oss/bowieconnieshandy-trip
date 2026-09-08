@@ -17,7 +17,7 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
 .scrollbar-none::-webkit-scrollbar{display:none}
 .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
 
-/* 雪花效果（已減少數量） */
+/* 雪花效果（移動端 15 個，桌面 30 個） */
 .snowflake {
   position: absolute;
   top: -10px;
@@ -1371,6 +1371,28 @@ body{font-family:'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased;-m
         const snowContainer = document.getElementById("snow-fall");
         if (snowContainer && snowContainer.children.length > 0) initSnowEffect();
       }, 300);
+    });
+
+    // ==================== 監聽父頁面訊息（行程→記帳快速串聯） ====================
+    window.addEventListener('message', function(event) {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data;
+      if (data && data.type === 'prefillExpense') {
+        openExpenseModal();
+        document.getElementById('ledger-desc').value = data.desc || '';
+        if (data.day) document.getElementById('ledger-day').value = data.day;
+        const desc = data.desc || '';
+        let category = '其他';
+        if (/餐|食|午|晚|早餐|壽司|拉麵|燒肉|牛舌/.test(desc)) category = '餐飲';
+        else if (/交通|車|高速|停車|的士|地鐵/.test(desc)) category = '交通';
+        else if (/住宿|酒店|旅館|溫泉旅館/.test(desc)) category = '住宿';
+        else if (/購物|outlet|藥妝|超市|商場/.test(desc)) category = '購物';
+        else if (/門票|纜車|入場|活動/.test(desc)) category = '門票/活動';
+        document.getElementById('ledger-category').value = category;
+        renderLedgerSelectors();
+        updateEstimatedHKD();
+        showToast('📋 已預填記帳資料', '✏️');
+      }
     });
 
     // ==================== 初始化 ====================
