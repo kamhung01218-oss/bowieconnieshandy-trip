@@ -481,6 +481,13 @@ body {
           <button type="button" onclick="setCurrency('USD')" class="currency-btn" data-currency="USD">$ USD</button>
         </div>
       </div>
+      <!-- 隱藏的貨幣選擇（供 JS 讀取，UI 由上方按鈕控制） -->
+<select id="ledger-currency" class="hidden">
+  <option value="JPY">JPY</option>
+  <option value="HKD">HKD</option>
+  <option value="TWD">TWD</option>
+  <option value="USD">USD</option>
+</select>
 
       <!-- 備註欄位 -->
       <div>
