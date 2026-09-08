@@ -825,8 +825,8 @@ async function syncDataToCloud() {
     <iframe src="/ledger.html" class="w-full h-screen border-none rounded-2xl shadow-sm" title="記帳本"></iframe>
   </div>
   
-  <!-- 收合/展開按鈕 -->
-  <button id="fab-collapse-all" onclick="collapseAllItineraries()" class="fixed bottom-28 left-4 md:left-6 z-[9998] bg-slate-700 hover:bg-slate-800 text-white rounded-full h-10 px-5 shadow-lg border border-slate-600 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group opacity-0 translate-y-8 pointer-events-none">
+  <!-- 收合/展開按鈕（已修復為固定顯示） -->
+  <button id="fab-collapse-all" onclick="collapseAllItineraries()" class="fixed bottom-28 left-4 md:left-6 z-[9998] bg-slate-700 hover:bg-slate-800 text-white rounded-full h-10 px-5 shadow-lg border border-slate-600 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group">
     <span class="text-lg font-black">⬆️</span>
     <span class="font-bold text-sm hidden md:inline">收合行程</span>
   </button>
@@ -1583,6 +1583,21 @@ async function syncDataToCloud() {
             <button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button>
             <button onclick="openShoppingModal('${event.title}')" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單${shoppingBadge}</button>
           </div>`;
+        // 天氣提醒
+        const weather = window.weatherCache[dateStr];
+        let weatherAdviceHtml = '';
+        if (weather) {
+            if (weather.rain > 50) {
+                weatherAdviceHtml += '<div class="bg-yellow-50 border border-yellow-200 text-yellow-800 text-[10px] p-1.5 rounded-lg mb-1">🌧️ 降雨機率高，請攜帶雨具</div>';
+            }
+            if (weather.min < -5) {
+                weatherAdviceHtml += '<div class="bg-red-50 border border-red-200 text-red-800 text-[10px] p-1.5 rounded-lg mb-1">❄️ 極寒，請加穿羽絨與雪靴</div>';
+            }
+        }
+        const now = getAppTime();
+        if (event.title.includes('溫泉') && now.getHours() >= 18) {
+            weatherAdviceHtml += '<div class="bg-blue-50 border border-blue-200 text-blue-800 text-[10px] p-1.5 rounded-lg mb-1">♨️ 晚上泡湯最佳時段</div>';
+        }
         html += `
           <div class="timeline-node" id="event-dot-${dayData.day}-${index}">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -1608,6 +1623,7 @@ async function syncDataToCloud() {
               <div class="event-content-wrapper p-4 pt-0 pb-5 border-t border-slate-50/80 bg-slate-50/30">
                 ${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm cursor-pointer" onclick="openLightbox(['${event.img}'], 0)"><img src="${event.img}" alt="${event.title}" class="w-full h-32 object-cover" loading="lazy" onerror="this.style.display='none'"></div>` : ''}
                 ${event.navUrl || event.title ? `<a href="${event.navUrl || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(event.title)}" target="_blank" class="group/nav w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700 border border-sky-300 text-[13px] font-bold py-2.5 rounded-xl transition active:scale-95 shadow-sm mt-3 mb-3"><span>📍</span> 導航前往 ${event.navName || "景點"}</a>` : '<div class="h-3"></div>'}
+                ${weatherAdviceHtml}
                 ${event.content}
               </div>
             </details>
@@ -1628,6 +1644,23 @@ async function syncDataToCloud() {
       section.innerHTML = html;
       updateFocusCard(dayData.day);
     }
+  
+    // ==================== 收合/展開所有行程 ====================
+function collapseAllItineraries() {
+    const details = document.querySelectorAll('details.event-card[open]');
+    const btn = document.getElementById('fab-collapse-all');
+    if (details.length > 0) {
+        // 有打開的 → 全部收合
+        details.forEach(detail => detail.open = false);
+        btn.innerHTML = '<span class="text-lg font-black">⬇️</span><span class="font-bold text-sm hidden md:inline">展開行程</span>';
+        showToast("✅ 已收合所有行程", "⬆️");
+    } else {
+        // 沒有打開的 → 全部展開
+        document.querySelectorAll('details.event-card').forEach(detail => detail.open = true);
+        btn.innerHTML = '<span class="text-lg font-black">⬆️</span><span class="font-bold text-sm hidden md:inline">收合行程</span>';
+        showToast("✅ 已展開所有行程", "⬇️");
+    }
+}
   
     // ==================== 今日焦點 ====================
     function getFocusEventIndex(day) {
@@ -2170,6 +2203,14 @@ async function syncDataToCloud() {
   
     // ==================== 初始化 ====================
     window.addEventListener("DOMContentLoaded", () => {
+    // 初始化按鈕文字
+const anyOpen = document.querySelector('details.event-card[open]');
+const btn = document.getElementById('fab-collapse-all');
+if (anyOpen) {
+    btn.innerHTML = '<span class="text-lg font-black">⬆️</span><span class="font-bold text-sm hidden md:inline">收合行程</span>';
+} else {
+    btn.innerHTML = '<span class="text-lg font-black">⬇️</span><span class="font-bold text-sm hidden md:inline">展開行程</span>';
+}
       loadCustomItems();
       const savedChecked = localStorage.getItem("tohoku_checked_items");
       if (savedChecked) { try { state.checkedItems = JSON.parse(savedChecked); } catch(e) {} }
