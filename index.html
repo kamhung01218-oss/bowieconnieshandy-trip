@@ -144,7 +144,7 @@ async function syncDataToCloud() {
     align-items: center;
     justify-content: center;
     gap: 2px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     color: #64748b;
     border-radius: 12px;
@@ -228,7 +228,7 @@ async function syncDataToCloud() {
     justify-content: center;
     padding: 8px 16px;
     font-weight: 700;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     min-width: 64px;
   }
   
@@ -1152,22 +1152,22 @@ button:active::after {
     }
   
     function toggleCurrencyWidget() {
-  const panel = document.getElementById("currency-widget-panel");
-  if (panel) {
-    if (panel.classList.contains("opacity-0")) {
-      panel.style.display = 'block';  // 新增這行
-      panel.classList.remove("invisible");
-      setTimeout(() => {
-        panel.classList.remove("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
-        panel.classList.add("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
-      }, 10);
-    } else {
-      panel.classList.add("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
-      panel.classList.remove("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
-      setTimeout(() => { if (panel.classList.contains("opacity-0")) panel.classList.add("invisible"); }, 300);
+      const panel = document.getElementById("currency-widget-panel");
+      if (panel) {
+        if (panel.classList.contains("opacity-0")) {
+          panel.style.display = 'block';
+          panel.classList.remove("invisible");
+          setTimeout(() => {
+            panel.classList.remove("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
+            panel.classList.add("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
+          }, 10);
+        } else {
+          panel.classList.add("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
+          panel.classList.remove("opacity-100", "scale-100", "translate-y-0", "pointer-events-auto");
+          setTimeout(() => { if (panel.classList.contains("opacity-0")) panel.classList.add("invisible"); }, 300);
+        }
+      }
     }
-  }
-}
   
     function convertCurrency(type) {
       const hkdInput = document.getElementById("calc-hkd");
@@ -1207,68 +1207,94 @@ button:active::after {
     }
   
     function switchMainTab(tab) {
-  state.currentMainTab = tab;
-  const itineraryView = document.getElementById("main-itinerary-view");
-  const ledgerFrameContainer = document.getElementById("ledger-frame-container");
-  const quickSection = document.getElementById("itinerary-quick-section");
-  const header = document.querySelector("header");
-  const navItineraryBtn = document.getElementById("nav-itinerary-btn");
-  const navLedgerBtn = document.getElementById("nav-ledger-btn");
-  const collapseBtn = document.getElementById('fab-collapse-all');
-  const currencyPanel = document.getElementById('currency-widget-panel');
-  const currencyContainer = document.getElementById('currency-fab-container');
-
-  let showView, hideView;
-
-  if (tab === "itinerary") {
-    showView = itineraryView;
-    hideView = ledgerFrameContainer;
-    if (header) header.style.display = 'block';
-    if (quickSection) quickSection.classList.remove("hidden");
-    navItineraryBtn.classList.add("active");
-    navLedgerBtn.classList.remove("active");
-    if (collapseBtn) collapseBtn.style.display = 'flex';
-    if (currencyContainer) currencyContainer.style.display = 'flex';
-    if (currencyPanel) currencyPanel.style.display = 'none';
-  } else {
-    showView = ledgerFrameContainer;
-    hideView = itineraryView;
-    if (header) header.style.display = 'none';
-    if (quickSection) quickSection.classList.add("hidden");
-    navLedgerBtn.classList.add("active");
-    navItineraryBtn.classList.remove("active");
-    if (collapseBtn) collapseBtn.style.display = 'none';
-    if (currencyContainer) currencyContainer.style.display = 'flex';
-    if (currencyPanel) currencyPanel.style.display = 'none';
-    const iframe = document.getElementById("ledger-iframe");
-    if (iframe) {
-      iframe.style.height = "calc(100dvh - 60px)";
+      state.currentMainTab = tab;
+      const itineraryView = document.getElementById("main-itinerary-view");
+      const ledgerFrameContainer = document.getElementById("ledger-frame-container");
+      const quickSection = document.getElementById("itinerary-quick-section");
+      const header = document.querySelector("header");
+      const navItineraryBtn = document.getElementById("nav-itinerary-btn");
+      const navLedgerBtn = document.getElementById("nav-ledger-btn");
+      const collapseBtn = document.getElementById('fab-collapse-all');
+      const currencyPanel = document.getElementById('currency-widget-panel');
+      const currencyContainer = document.getElementById('currency-fab-container');
+    
+      let showView, hideView;
+    
+      if (tab === "itinerary") {
+        showView = itineraryView;
+        hideView = ledgerFrameContainer;
+        if (header) header.style.display = 'block';
+        if (quickSection) quickSection.classList.remove("hidden");
+        navItineraryBtn.classList.add("active");
+        navLedgerBtn.classList.remove("active");
+        if (collapseBtn) collapseBtn.style.display = 'flex';
+        if (currencyContainer) currencyContainer.style.display = 'flex';
+        if (currencyPanel) currencyPanel.style.display = 'none';
+      } else {
+        showView = ledgerFrameContainer;
+        hideView = itineraryView;
+        if (header) header.style.display = 'none';
+        if (quickSection) quickSection.classList.add("hidden");
+        navLedgerBtn.classList.add("active");
+        navItineraryBtn.classList.remove("active");
+        if (collapseBtn) collapseBtn.style.display = 'none';
+        if (currencyContainer) currencyContainer.style.display = 'flex';
+        if (currencyPanel) currencyPanel.style.display = 'none';
+        const iframe = document.getElementById("ledger-iframe");
+        if (iframe) {
+          iframe.style.height = "calc(100dvh - 60px)";
+        }
+      }
+    
+      // -------- 過渡動畫開始 --------
+      if (hideView) {
+        hideView.classList.add("fade-out");
+        setTimeout(() => {
+          hideView.classList.add("hidden");
+          hideView.classList.remove("fade-out");
+        }, 300);
+      }
+    
+      if (showView) {
+        showView.classList.remove("hidden");
+        showView.classList.add("fade-in");
+        void showView.offsetWidth; // 強制重繪
+        showView.classList.remove("fade-in");
+        showView.classList.add("fade-in-active");
+        setTimeout(() => {
+          showView.classList.remove("fade-in-active");
+        }, 300);
+      }
+      // -------- 過渡動畫結束 --------
+    
+      setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
     }
-  }
-
-  // -------- 過渡動畫開始 --------
-  if (hideView) {
-    hideView.classList.add("fade-out");
-    setTimeout(() => {
-      hideView.classList.add("hidden");
-      hideView.classList.remove("fade-out");
-    }, 300);
-  }
-
-  if (showView) {
-    showView.classList.remove("hidden");
-    showView.classList.add("fade-in");
-    void showView.offsetWidth; // 強制重繪
-    showView.classList.remove("fade-in");
-    showView.classList.add("fade-in-active");
-    setTimeout(() => {
-      showView.classList.remove("fade-in-active");
-    }, 300);
-  }
-  // -------- 過渡動畫結束 --------
-
-  setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
-}
+  
+    // 新增：開啟記帳（不切換分頁，全屏覆蓋 iframe）
+    function openLedgerAdd() {
+      const ledgerContainer = document.getElementById('ledger-frame-container');
+      const iframe = document.getElementById('ledger-iframe');
+    
+      if (ledgerContainer && iframe) {
+        // 顯示 iframe 覆蓋層
+        ledgerContainer.classList.remove('hidden');
+        ledgerContainer.style.cssText = 'position: fixed; inset: 0; z-index: 9990; background: #f8fafc; overflow: auto;';
+    
+        // 持續嘗試開啟彈窗，直到 iframe 準備好（最多重試 10 次）
+        let attempts = 0;
+        const tryOpen = () => {
+          if (iframe.contentWindow && iframe.contentWindow.openExpenseModal) {
+            iframe.contentWindow.openExpenseModal();
+          } else if (attempts < 10) {
+            attempts++;
+            setTimeout(tryOpen, 200);
+          } else {
+            showToast('記帳本載入失敗，請重新整理頁面', '⚠️');
+          }
+        };
+        tryOpen();
+      }
+    }
   
     function switchDay(day) {
       window._lastActiveDay = day;
@@ -2175,15 +2201,16 @@ button:active::after {
       });
     }
   // 監聽 iframe 關閉彈窗的訊息，隱藏覆蓋層
-window.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'closeExpenseModal') {
-    const ledgerContainer = document.getElementById('ledger-frame-container');
-    if (ledgerContainer) {
-      ledgerContainer.classList.add('hidden');
-      ledgerContainer.style.cssText = ''; // 清除臨時樣式
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'closeExpenseModal') {
+      const ledgerContainer = document.getElementById('ledger-frame-container');
+      if (ledgerContainer) {
+        ledgerContainer.classList.add('hidden');
+        ledgerContainer.style.cssText = ''; // 清除臨時樣式
+      }
     }
-  }
-});
+  });
+  
     // ==================== 初始化 ====================
     window.addEventListener("DOMContentLoaded", () => {
       loadCustomItems();
