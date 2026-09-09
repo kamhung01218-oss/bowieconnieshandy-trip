@@ -802,18 +802,23 @@ body {
       updateEstimatedHKD();
     }
     function closeExpenseModal() {
-      const backdrop = document.getElementById("expense-modal-backdrop");
-      const modal = document.getElementById("expense-modal");
-      backdrop.classList.remove("opacity-100");
-      backdrop.classList.add("opacity-0");
-      modal.classList.remove("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
-      modal.classList.add("translate-y-full", "md:translate-y-8", "md:scale-95", "opacity-0");
-      setTimeout(() => {
-        backdrop.classList.add("hidden");
-        modal.classList.add("hidden");
-        cancelEdit();
-      }, 300);
-    }
+  const backdrop = document.getElementById("expense-modal-backdrop");
+  const modal = document.getElementById("expense-modal");
+  backdrop.classList.remove("opacity-100");
+  backdrop.classList.add("opacity-0");
+  modal.classList.remove("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
+  modal.classList.add("translate-y-full", "md:translate-y-8", "md:scale-95", "opacity-0");
+  setTimeout(() => {
+    backdrop.classList.add("hidden");
+    modal.classList.add("hidden");
+    cancelEdit();
+  }, 300);
+  
+  // 通知父頁面關閉彈窗
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'closeExpenseModal' }, '*');
+  }
+}
     function cancelEdit() {
       document.getElementById("ledger-desc").value = "";
       document.getElementById("ledger-amount").value = "";

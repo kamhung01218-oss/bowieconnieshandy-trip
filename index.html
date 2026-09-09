@@ -1170,19 +1170,26 @@ async function syncDataToCloud() {
   
     // 新增：開啟記帳（若未切換則先切換，再打開 iframe 內的記帳彈窗）
     function openLedgerAdd() {
-      if (state.currentMainTab !== 'ledger') {
-        switchMainTab('ledger');
-      }
-      const iframe = document.getElementById('ledger-iframe');
-      if (iframe && iframe.contentWindow && iframe.contentWindow.openExpenseModal) {
+  // 不切換底部導航，直接顯示 iframe 覆蓋層
+  const ledgerContainer = document.getElementById('ledger-frame-container');
+  const iframe = document.getElementById('ledger-iframe');
+  
+  if (ledgerContainer && iframe) {
+    // 顯示 iframe 並設定為全屏覆蓋
+    ledgerContainer.classList.remove('hidden');
+    ledgerContainer.style.cssText = 'position: fixed; inset: 0; z-index: 9990; background: #f8fafc; overflow: auto;';
+    
+    // 如果 iframe 尚未加載完，等待加載後再開啟彈窗
+    const tryOpen = () => {
+      if (iframe.contentWindow && iframe.contentWindow.openExpenseModal) {
         iframe.contentWindow.openExpenseModal();
       } else {
-        setTimeout(() => {
-          if (iframe.contentWindow.openExpenseModal) iframe.contentWindow.openExpenseModal();
-          else showToast("記帳本尚未載入，請稍候", "⚠️");
-        }, 300);
+        setTimeout(tryOpen, 200);
       }
-    }
+    };
+    tryOpen();
+  }
+}
   
     function switchDay(day) {
       window._lastActiveDay = day;
@@ -2088,7 +2095,16 @@ async function syncDataToCloud() {
         }).catch(err => console.log('SW registration failed:', err));
       });
     }
-  
+  // 監聽 iframe 關閉彈窗的訊息，隱藏覆蓋層
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'closeExpenseModal') {
+    const ledgerContainer = document.getElementById('ledger-frame-container');
+    if (ledgerContainer) {
+      ledgerContainer.classList.add('hidden');
+      ledgerContainer.style.cssText = ''; // 清除臨時樣式
+    }
+  }
+});
     // ==================== 初始化 ====================
     window.addEventListener("DOMContentLoaded", () => {
       loadCustomItems();
