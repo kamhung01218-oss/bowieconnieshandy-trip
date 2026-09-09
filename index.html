@@ -541,6 +541,90 @@ async function syncDataToCloud() {
     pointer-events: none;
     z-index: 9999;
   }
+/* 頁面切換過渡 */
+.page-transition {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.page-enter {
+  opacity: 0;
+  transform: translateX(20px);
+}
+.page-active {
+  opacity: 1;
+  transform: translateX(0);
+}
+.page-exit {
+  opacity: 0;
+  transform: translateX(-20px);
+}  
+/* ==================== 字體優化 ==================== */
+.bottom-nav button { font-size: 12px; }
+.day-tab { font-size: 0.9rem; }
+.event-card summary h3 { font-size: 14px; }
+.event-card .text-[11px] { font-size: 12px; }
+
+/* ==================== 動畫細節 ==================== */
+/* 1. 卡片展開平滑動畫 */
+details.event-card .event-content-wrapper {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+details.event-card[open] .event-content-wrapper {
+  max-height: 1000px;
+  opacity: 1;
+  padding-top: 12px;
+  padding-bottom: 16px;
+}
+
+/* 2. 箭頭旋轉過渡 */
+.event-card summary svg {
+  transition: transform 0.3s ease;
+}
+.event-card[open] summary svg {
+  transform: rotate(180deg);
+}
+
+/* 3. 按鈕漣漪效果 */
+button {
+  position: relative;
+  overflow: hidden;
+}
+button::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+button:active::after {
+  animation: ripple 0.4s ease-out;
+  transform: scale(2);
+  opacity: 1;
+}
+@keyframes ripple {
+  from { transform: scale(0); opacity: 1; }
+  to { transform: scale(2); opacity: 0; }
+}
+
+/* 4. FAB 按鈕懸浮動畫 */
+#fab-add-ledger, #currency-fab, #fab-collapse-all {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+#fab-add-ledger:hover, #currency-fab:hover, #fab-collapse-all:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  transform: translateY(-2px);
+}
 </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
@@ -727,7 +811,7 @@ async function syncDataToCloud() {
   </div>
   
   <!-- 主內容區 -->
-  <div id="main-itinerary-view">
+  <div id="main-itinerary-view" class="fade-slide">
     <main class="max-w-6xl mx-auto px-4 mt-4">
       <div class="space-y-6">
         <!-- 日期標籤（修改為 sticky top-0） -->
@@ -759,7 +843,7 @@ async function syncDataToCloud() {
   </div>
   
   <!-- 記帳本 iframe -->
-  <div id="ledger-frame-container" class="hidden max-w-4xl mx-auto px-4 mt-6 pb-16 space-y-6">
+  <div id="ledger-frame-container" class="hidden fade-slide max-w-4xl mx-auto px-4 mt-6 pb-16 space-y-6">
     <iframe src="./ledger.html" id="ledger-iframe" class="w-full" style="height: calc(100dvh - 60px);" title="記帳本"></iframe>
   </div>
   
@@ -1123,72 +1207,67 @@ async function syncDataToCloud() {
     }
   
     function switchMainTab(tab) {
-      state.currentMainTab = tab;
-      const itineraryView = document.getElementById("main-itinerary-view");
-      const ledgerFrameContainer = document.getElementById("ledger-frame-container");
-      const quickSection = document.getElementById("itinerary-quick-section");
-      const header = document.querySelector("header");
-      const navItineraryBtn = document.getElementById("nav-itinerary-btn");
-      const navLedgerBtn = document.getElementById("nav-ledger-btn");
-      const collapseBtn = document.getElementById('fab-collapse-all');
-      const currencyBtn = document.getElementById('currency-fab');
-      const currencyPanel = document.getElementById('currency-widget-panel');
-      const currencyContainer = document.getElementById('currency-fab-container'); // 新增
+  state.currentMainTab = tab;
+  const itineraryView = document.getElementById("main-itinerary-view");
+  const ledgerFrameContainer = document.getElementById("ledger-frame-container");
+  const quickSection = document.getElementById("itinerary-quick-section");
+  const header = document.querySelector("header");
+  const navItineraryBtn = document.getElementById("nav-itinerary-btn");
+  const navLedgerBtn = document.getElementById("nav-ledger-btn");
+  const collapseBtn = document.getElementById('fab-collapse-all');
+  const currencyPanel = document.getElementById('currency-widget-panel');
+  const currencyContainer = document.getElementById('currency-fab-container');
 
-      if (tab === "itinerary") {
-        // 行程模式
-        if (header) header.style.display = 'block';
-        itineraryView.classList.remove("hidden");
-        ledgerFrameContainer.classList.add("hidden");
-        if (quickSection) quickSection.classList.remove("hidden");
-        navItineraryBtn.classList.add("active");
-        navLedgerBtn.classList.remove("active");
-        if (collapseBtn) collapseBtn.style.display = 'flex';
-        // 顯示匯率容器（含＋記帳與匯率按鈕）
-        if (currencyContainer) currencyContainer.style.display = 'flex';
-        
-      } else {
-        // 記帳本模式
-        if (header) header.style.display = 'none';
-        itineraryView.classList.add("hidden");
-        ledgerFrameContainer.classList.remove("hidden");
-        if (quickSection) quickSection.classList.add("hidden");
-        navLedgerBtn.classList.add("active");
-        navItineraryBtn.classList.remove("active");
-        if (collapseBtn) collapseBtn.style.display = 'none';
-        // 顯示匯率容器（含＋記帳與匯率按鈕）
-        if (currencyContainer) currencyContainer.style.display = 'flex';
-        
-        // 調整 iframe 高度，避免遮擋底部導航
-        const iframe = document.getElementById("ledger-iframe");
-        if (iframe) {
-          iframe.style.height = "calc(100dvh - 60px)";
-        }
-      }
-      setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
+  let showView, hideView;
+
+  if (tab === "itinerary") {
+    showView = itineraryView;
+    hideView = ledgerFrameContainer;
+    if (header) header.style.display = 'block';
+    if (quickSection) quickSection.classList.remove("hidden");
+    navItineraryBtn.classList.add("active");
+    navLedgerBtn.classList.remove("active");
+    if (collapseBtn) collapseBtn.style.display = 'flex';
+    if (currencyContainer) currencyContainer.style.display = 'flex';
+    if (currencyPanel) currencyPanel.style.display = 'none';
+  } else {
+    showView = ledgerFrameContainer;
+    hideView = itineraryView;
+    if (header) header.style.display = 'none';
+    if (quickSection) quickSection.classList.add("hidden");
+    navLedgerBtn.classList.add("active");
+    navItineraryBtn.classList.remove("active");
+    if (collapseBtn) collapseBtn.style.display = 'none';
+    if (currencyContainer) currencyContainer.style.display = 'flex';
+    if (currencyPanel) currencyPanel.style.display = 'none';
+    const iframe = document.getElementById("ledger-iframe");
+    if (iframe) {
+      iframe.style.height = "calc(100dvh - 60px)";
     }
-  
-    // 新增：開啟記帳（若未切換則先切換，再打開 iframe 內的記帳彈窗）
-    function openLedgerAdd() {
-  // 不切換底部導航，直接顯示 iframe 覆蓋層
-  const ledgerContainer = document.getElementById('ledger-frame-container');
-  const iframe = document.getElementById('ledger-iframe');
-  
-  if (ledgerContainer && iframe) {
-    // 顯示 iframe 並設定為全屏覆蓋
-    ledgerContainer.classList.remove('hidden');
-    ledgerContainer.style.cssText = 'position: fixed; inset: 0; z-index: 9990; background: #f8fafc; overflow: auto;';
-    
-    // 如果 iframe 尚未加載完，等待加載後再開啟彈窗
-    const tryOpen = () => {
-      if (iframe.contentWindow && iframe.contentWindow.openExpenseModal) {
-        iframe.contentWindow.openExpenseModal();
-      } else {
-        setTimeout(tryOpen, 200);
-      }
-    };
-    tryOpen();
   }
+
+  // -------- 過渡動畫開始 --------
+  if (hideView) {
+    hideView.classList.add("fade-out");
+    setTimeout(() => {
+      hideView.classList.add("hidden");
+      hideView.classList.remove("fade-out");
+    }, 300);
+  }
+
+  if (showView) {
+    showView.classList.remove("hidden");
+    showView.classList.add("fade-in");
+    void showView.offsetWidth; // 強制重繪
+    showView.classList.remove("fade-in");
+    showView.classList.add("fade-in-active");
+    setTimeout(() => {
+      showView.classList.remove("fade-in-active");
+    }, 300);
+  }
+  // -------- 過渡動畫結束 --------
+
+  setTimeout(() => window.dispatchEvent(new Event("scroll")), 50);
 }
   
     function switchDay(day) {
@@ -2131,6 +2210,7 @@ window.addEventListener('message', (event) => {
         btn.innerHTML = anyOpen ? '⬆️' : '⬇️';
       }
     });
+    
   </script>
 </body>
 </html>
