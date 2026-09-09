@@ -62,12 +62,21 @@ window.dbRef.onSnapshot(docSnap => {
       state.checkedItems = cloudData.checkedItems;
       restoreChecklistUI();
     }
+    if (cloudData.customBookingItems) {
+      customBookingItems = cloudData.customBookingItems;
+      localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
+    }
+    renderBookingChecklist();
   }
 }, err => console.warn("Firestore Sync Warning:", err));
 
 async function syncDataToCloud() {
   try {
-    await window.dbRef.set({ checkedItems: state.checkedItems, updatedAt: Date.now() }, { merge: true });
+    await window.dbRef.set({ 
+      checkedItems: state.checkedItems, 
+      customBookingItems: customBookingItems,
+      updatedAt: Date.now() 
+    }, { merge: true });
   } catch (e) {
     console.warn("Cloud save fallback to local:", e);
   }
@@ -1110,6 +1119,21 @@ button:active::after {
     </div>
   </div>
   
+  <!-- 密碼鎖 Modal -->
+  <div id="password-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closePasswordModal()">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative" onclick="event.stopPropagation()">
+      <button onclick="closePasswordModal()" class="modal-close">✕</button>
+      <h2 class="text-xl font-black mb-2 flex items-center gap-2">🔒 輸入管理密碼</h2>
+      <p class="text-xs text-slate-500 mb-4">輸入密碼以解鎖「行前預訂」編輯權限</p>
+      <input id="password-input" type="password" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 mb-3" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')verifyPassword()">
+      <div class="flex gap-2">
+        <button onclick="verifyPassword()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl transition">確認</button>
+        <button onclick="closePasswordModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition">取消</button>
+      </div>
+      <p id="password-error" class="text-xs text-red-500 font-bold mt-2 hidden">⚠️ 密碼錯誤，請重試</p>
+    </div>
+  </div>
+  
   <script>
     // ==================== 全域變數 ====================
     let state = { currentMainTab: "itinerary", checkedItems: {} };
@@ -1121,6 +1145,46 @@ button:active::after {
     if (!window.weatherCache) window.weatherCache = {};
   
     let exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
+  
+    // 管理密碼
+    const ADMIN_PASSWORD = "2027";
+  
+    // 是否已解鎖
+    function isAdminUnlocked() {
+      return localStorage.getItem("tohoku_admin_unlocked") === "true";
+    }
+  
+    function showPasswordModal() {
+      document.getElementById("password-modal").style.display = 'flex';
+      document.getElementById("password-modal").classList.add('active');
+      document.getElementById("password-error").classList.add('hidden');
+      document.getElementById("password-input").value = '';
+      setTimeout(() => document.getElementById("password-input").focus(), 100);
+    }
+  
+    function closePasswordModal() {
+      document.getElementById("password-modal").classList.remove('active');
+      setTimeout(() => document.getElementById("password-modal").style.display = 'none', 300);
+    }
+  
+    function verifyPassword() {
+      const input = document.getElementById("password-input").value.trim();
+      if (input === ADMIN_PASSWORD) {
+        localStorage.setItem("tohoku_admin_unlocked", "true");
+        closePasswordModal();
+        renderBookingChecklist();
+        showToast("✅ 已解鎖管理權限");
+      } else {
+        document.getElementById("password-error").classList.remove("hidden");
+        document.getElementById("password-input").value = '';
+      }
+    }
+  
+    function lockAdmin() {
+      localStorage.removeItem("tohoku_admin_unlocked");
+      renderBookingChecklist();
+      showToast("🔒 已鎖定管理權限");
+    }
   
     async function fetchLiveRates() {
       try {
@@ -1276,11 +1340,9 @@ button:active::after {
       const iframe = document.getElementById('ledger-iframe');
     
       if (ledgerContainer && iframe) {
-        // 顯示 iframe 覆蓋層
         ledgerContainer.classList.remove('hidden');
         ledgerContainer.style.cssText = 'position: fixed; inset: 0; z-index: 9990; background: #f8fafc; overflow: auto;';
     
-        // 持續嘗試開啟彈窗，直到 iframe 準備好（最多重試 10 次）
         let attempts = 0;
         const tryOpen = () => {
           if (iframe.contentWindow && iframe.contentWindow.openExpenseModal) {
@@ -1670,7 +1732,7 @@ button:active::after {
         const startTime = timeParts[0].trim();
         const endTime = timeParts[1] ? timeParts[1].trim() : "";
         const shootingItems = loadShoppingItems(event.title);
-        const shoppingBadge = shootingItems.length > 0 ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shootingItems.length}</span>` : '';
+        const shoppingBadge = shootingItems.length > 0 ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shoppingItems.length}</span>` : '';
         const shootBtnHtml = `
           <div class="flex flex-wrap gap-1 mt-1">
             <button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button>
@@ -1935,8 +1997,12 @@ button:active::after {
     function renderBookingChecklist() {
       const container = document.getElementById("booking-checklist-container");
       if (!container) return;
+      
+      const isAdmin = isAdminUnlocked();
+      
       const categories = ["租車", "住宿", "門票", "其他"];
       let html = "";
+      
       categories.forEach(cat => {
         const items = bookingList.filter(item => item.category === cat);
         const customItems = customBookingItems.filter(item => item.category === cat);
@@ -1946,21 +2012,39 @@ button:active::after {
         allItems.forEach(item => {
           const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
           const isChecked = state.checkedItems[key] === true;
-          html += `<div class="flex items-center gap-2"><label class="flex-1 flex items-center gap-2.5 p-2 rounded-lg border ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'} cursor-pointer hover:bg-slate-50 transition"><input type="checkbox" class="w-4 h-4 shrink-0" ${isChecked ? 'checked' : ''} onchange="toggleBookingCheck('${key}')"><span class="text-xs text-slate-700">${item.icon} ${item.label}</span></label>${item.isCustom ? `<button onclick="deleteCustomBooking('${item.id}')" class="text-red-400 hover:text-red-600 p-1.5 shrink-0" title="刪除"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ""}</div>`;
+          const disabledAttr = isAdmin ? "" : "disabled";
+          const deleteBtn = isAdmin ? `<button onclick="deleteCustomBooking('${item.id}')" class="text-red-400 hover:text-red-600 p-1.5 shrink-0" title="刪除"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : "";
+          html += `<div class="flex items-center gap-2"><label class="flex-1 flex items-center gap-2.5 p-2 rounded-lg border ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'} cursor-pointer hover:bg-slate-50 transition"><input type="checkbox" class="w-4 h-4 shrink-0" ${disabledAttr} ${isChecked ? 'checked' : ''} onchange="toggleBookingCheck('${key}')"><span class="text-xs text-slate-700">${item.icon} ${item.label}</span></label>${deleteBtn}</div>`;
         });
         html += `</div></div>`;
       });
-      html += `<div class="mt-4 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2">新增項目</h4><div class="flex gap-2"><input id="new-booking-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50"><select id="new-booking-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="租車">租車</option><option value="住宿">住宿</option><option value="門票">門票</option><option value="其他">其他</option></select><button onclick="addCustomBooking()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div>`;
-      html += `<div class="flex gap-2 mt-4"><button onclick="checkAllBooking()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button><button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button><button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button></div>`;
+      
+      if (isAdmin) {
+        html += `<div class="mt-4 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2">新增項目</h4><div class="flex gap-2"><input id="new-booking-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50"><select id="new-booking-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="租車">租車</option><option value="住宿">住宿</option><option value="門票">門票</option><option value="其他">其他</option></select><button onclick="addCustomBooking()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div>`;
+        html += `<div class="flex gap-2 mt-4"><button onclick="checkAllBooking()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button><button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button><button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button></div>`;
+        html += `<div class="mt-2 text-center"><button onclick="lockAdmin()" class="text-[10px] text-red-500 hover:text-red-700 underline">🔒 鎖定管理權限</button></div>`;
+      } else {
+        html += `<div class="mt-4 text-center"><button onclick="showPasswordModal()" class="text-[10px] bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 px-3 py-1.5 rounded-full font-bold transition">🔓 輸入密碼解鎖編輯</button></div>`;
+        html += `<p class="text-[10px] text-slate-400 mt-2 text-center">🔒 目前為唯讀模式</p>`;
+      }
+      
       container.innerHTML = html;
     }
     function toggleBookingCheck(key) {
+      if (!isAdminUnlocked()) {
+        showToast("🔒 請先解鎖管理權限", "⚠️");
+        return;
+      }
       state.checkedItems[key] = !state.checkedItems[key];
       saveLocalCheckedItems();
       if (typeof syncDataToCloud === 'function') syncDataToCloud();
       renderBookingChecklist();
     }
     function checkAllBooking() {
+      if (!isAdminUnlocked()) {
+        showToast("🔒 請先解鎖管理權限", "⚠️");
+        return;
+      }
       [...bookingList, ...customBookingItems].forEach(item => {
         const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
         state.checkedItems[key] = true;
@@ -1971,6 +2055,10 @@ button:active::after {
       showToast("✅ 已全部勾選！");
     }
     function uncheckAllBooking() {
+      if (!isAdminUnlocked()) {
+        showToast("🔒 請先解鎖管理權限", "⚠️");
+        return;
+      }
       [...bookingList, ...customBookingItems].forEach(item => {
         const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
         state.checkedItems[key] = false;
@@ -1999,6 +2087,10 @@ button:active::after {
       showToast("📋 行前預訂清單已複製！");
     }
     function addCustomBooking() {
+      if (!isAdminUnlocked()) {
+        showToast("🔒 請先解鎖管理權限", "⚠️");
+        return;
+      }
       const labelInput = document.getElementById("new-booking-label");
       const categorySelect = document.getElementById("new-booking-category");
       const label = labelInput.value.trim();
@@ -2012,6 +2104,10 @@ button:active::after {
       showToast("已新增項目！");
     }
     function deleteCustomBooking(id) {
+      if (!isAdminUnlocked()) {
+        showToast("🔒 請先解鎖管理權限", "⚠️");
+        return;
+      }
       customBookingItems = customBookingItems.filter(item => item.id !== id);
       saveCustomItems();
       if (typeof syncDataToCloud === 'function') syncDataToCloud();
@@ -2125,16 +2221,14 @@ button:active::after {
       if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
       const newItem = { id: "custom-" + Date.now(), category: categorySelect.value, label: label, icon: "📦", isCustom: true };
       customEquipItems.push(newItem);
-      saveCustomItems();
-      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      saveCustomItems(); // 只存本地，不觸發雲端同步
       renderEquipChecklist();
       labelInput.value = "";
       showToast("已新增項目！");
     }
     function deleteCustomEquip(id) {
       customEquipItems = customEquipItems.filter(item => item.id !== id);
-      saveCustomItems();
-      if (typeof syncDataToCloud === 'function') syncDataToCloud();
+      saveCustomItems(); // 只存本地
       renderEquipChecklist();
       showToast("已刪除項目");
     }
