@@ -768,19 +768,21 @@ async function syncDataToCloud() {
     <span class="text-lg">⬆️</span>
   </button>
   
-  <!-- 匯率及＋記帳按鈕容器 -->
-  <div id="currency-fab-container" class="fixed right-4 z-[9999] flex flex-col items-end gap-2 pointer-events-none" style="bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 80px);">
-    <!-- ＋ 記帳按鈕（較大） -->
+  <!-- 匯率按鈕容器 -->
+<div id="currency-fab-container" class="fixed right-4 z-[9999] flex flex-col items-end gap-2 pointer-events-none" style="bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 80px);">
+    <!-- 匯率按鈕 -->
+    <button onclick="toggleCurrencyWidget()" id="currency-fab" class="pointer-events-auto w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center shadow-lg border border-slate-600 transition-all hover:scale-105 active:scale-95">
+      <span class="text-lg">🪙</span>
+    </button>
+</div>
+<!-- 左側 ＋ 記帳按鈕 -->
+<div id="add-ledger-fab-container" class="fixed left-4 z-[9999]" style="bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 80px);">
     <button onclick="openLedgerAdd()" id="fab-add-ledger" class="pointer-events-auto w-12 h-12 rounded-full bg-sky-600 hover:bg-sky-700 text-white flex items-center justify-center shadow-lg border border-sky-700 transition-all hover:scale-105 active:scale-95">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
       </svg>
     </button>
-    <!-- 匯率按鈕 -->
-    <button onclick="toggleCurrencyWidget()" id="currency-fab" class="pointer-events-auto w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center shadow-lg border border-slate-600 transition-all hover:scale-105 active:scale-95">
-      <span class="text-lg">🪙</span>
-    </button>
-  </div>
+</div>
   
   <!-- 匯率試算面板 -->
   <div id="currency-widget-panel" class="fixed bottom-24 right-4 md:right-6 z-[10000] bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] border border-slate-200 w-[calc(100vw-2rem)] sm:w-80 overflow-hidden transition-all duration-300 origin-bottom-right opacity-0 scale-90 translate-y-4 invisible pointer-events-none">
