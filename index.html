@@ -1444,38 +1444,101 @@ button:active::after {
     }
   
     // ==================== 拍攝靈感 Modal ====================
-    function openShootTipsModal(day, eventIndex) {
-      const dayData = winterItineraries.find(d => d.day === day);
-      if (!dayData) return;
-      const event = dayData.events[eventIndex];
-      if (!event) return;
-      const tips = shootTips[event.title];
-      const content = document.getElementById("shoot-tips-content");
-      let html = "";
-      if (tips) {
-        if (tips["拍照建議"]) html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["拍照建議"]}</p></div>`;
-        if (tips["Pocket 3 參數"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-sky-800 mb-2">📸 Pocket 3 參數</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 參數"]}</p></div>`;
-        if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3><ul class="list-disc pl-4 space-y-1">${tips["Vlog 必拍鏡頭"].map(item => `<li>${item}</li>`).join('')}</ul></div>`;
-        if (tips["Pocket 3 技巧"]) html += `<div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-purple-800 mb-2">💡 Pocket 3 技巧</h3><p class="text-sm text-slate-700 leading-relaxed">${tips["Pocket 3 技巧"]}</p></div>`;
-        if (tips["最佳拍攝時間"] || tips["拍攝時長"]) {
-          let timeInfo = "";
-          if (tips["最佳拍攝時間"]) timeInfo += `<span class="block mb-1">⏰ ${tips["最佳拍攝時間"]}</span>`;
-          if (tips["拍攝時長"]) timeInfo += `<span class="block">⏳ ${tips["拍攝時長"]}</span>`;
-          html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3><p class="text-sm text-slate-700 leading-relaxed">${timeInfo}</p></div>`;
-        }
-        if (tips["參考照片"] && tips["參考照片"].length > 0) {
-          const imgHtml = tips["參考照片"].map((url, idx) => `<img src="${url}" onclick="openLightbox(['${url}'], 0)" class="w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" loading="lazy" onerror="this.style.display='none'">`).join("");
-          html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3><div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div><p class="text-[10px] text-slate-500 mt-1">點擊照片可全屏預覽</p></div>`;
-        }
-        if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3><ul class="list-disc pl-4 space-y-1">${tips["拍攝角度"].map(item => `<li>${item}</li>`).join('')}</ul></div>`;
-        if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3><ul class="list-disc pl-4 space-y-1">${tips["人物動作建議"].map(item => `<li>${item}</li>`).join('')}</ul></div>`;
-      } else {
-        html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議。</div>`;
-      }
-      content.innerHTML = html;
-      showModal('shoot-tips-modal');
-      document.getElementById('shoot-tips-modal').classList.remove('hidden');
+function openShootTipsModal(day, eventIndex) {
+  const dayData = winterItineraries.find(d => d.day === day);
+  if (!dayData) return;
+  const event = dayData.events[eventIndex];
+  if (!event) return;
+  const tips = shootTips[event.title];
+  const content = document.getElementById("shoot-tips-content");
+  
+  let html = "";
+  if (tips) {
+    // 拍照建議（完整顯示）
+    const photoAdvice = tips["拍照建議"] ? tips["拍照建議"] : "";
+    html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3">
+      <h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3>
+      <p class="text-sm text-slate-700 leading-relaxed">${photoAdvice}</p>
+    </div>`;
+
+    // 參考照片（如果有）
+    if (tips["參考照片"] && tips["參考照片"].length > 0) {
+      const imgHtml = tips["參考照片"].map((url, idx) => 
+        `<img src="${url}" onclick="openLightbox(['${url}'], 0)" class="w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" loading="lazy" onerror="this.style.display='none'">`
+      ).join("");
+      html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3">
+        <h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3>
+        <div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div>
+        <p class="text-[10px] text-slate-500 mt-1">點擊照片可全屏預覽</p>
+      </div>`;
     }
+
+    // 詳細內容放在可展開區塊
+    html += `<details class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-3">
+      <summary class="cursor-pointer text-sm font-black text-slate-700 mb-2">📸 展開詳細拍攝建議</summary>
+      <div class="space-y-3 mt-2">`;
+
+    // Pocket 3 參數
+    if (tips["Pocket 3 參數"]) {
+      html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3">
+        <h3 class="text-sm font-black text-sky-800 mb-1">📸 Pocket 3 參數</h3>
+        <p class="text-sm text-slate-700">${tips["Pocket 3 參數"]}</p>
+      </div>`;
+    }
+
+    // Vlog 必拍鏡頭
+    if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) {
+      html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+        <h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3>
+        <ul class="list-disc pl-4 space-y-1">${tips["Vlog 必拍鏡頭"].map(item => `<li>${item}</li>`).join('')}</ul>
+      </div>`;
+    }
+
+    // Pocket 3 技巧
+    if (tips["Pocket 3 技巧"]) {
+      html += `<div class="bg-purple-50 border border-purple-200 rounded-xl p-3">
+        <h3 class="text-sm font-black text-purple-800 mb-1">💡 Pocket 3 技巧</h3>
+        <p class="text-sm text-slate-700">${tips["Pocket 3 技巧"]}</p>
+      </div>`;
+    }
+
+    // 最佳拍攝時間 / 拍攝時長
+    if (tips["最佳拍攝時間"] || tips["拍攝時長"]) {
+      let timeInfo = "";
+      if (tips["最佳拍攝時間"]) timeInfo += `<span class="block mb-1">⏰ ${tips["最佳拍攝時間"]}</span>`;
+      if (tips["拍攝時長"]) timeInfo += `<span class="block">⏳ ${tips["拍攝時長"]}</span>`;
+      html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+        <h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3>
+        <p class="text-sm text-slate-700">${timeInfo}</p>
+      </div>`;
+    }
+
+    // 拍攝角度
+    if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) {
+      html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
+        <h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3>
+        <ul class="list-disc pl-4 space-y-1">${tips["拍攝角度"].map(item => `<li>${item}</li>`).join('')}</ul>
+      </div>`;
+    }
+
+    // 人物動作建議
+    if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) {
+      html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3">
+        <h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3>
+        <ul class="list-disc pl-4 space-y-1">${tips["人物動作建議"].map(item => `<li>${item}</li>`).join('')}</ul>
+      </div>`;
+    }
+
+    html += `</div></details>`;
+    
+  } else {
+    html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議。</div>`;
+  }
+  
+  content.innerHTML = html;
+  showModal('shoot-tips-modal');
+  document.getElementById('shoot-tips-modal').classList.remove('hidden');
+}
     function closeShootTipsModal() {
       hideModal('shoot-tips-modal');
       setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300);
@@ -1495,21 +1558,62 @@ button:active::after {
       if (modal) { modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 300); }
     }
     function renderCommonTips() {
-      if (typeof shootTipsCommon === 'undefined') return '<div class="text-center py-8 text-slate-500">尚未添加通用技巧数据</div>';
-      let html = '';
-      Object.keys(shootTipsCommon).forEach(title => {
-        const tips = shootTipsCommon[title];
-        html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4"><h3 class="text-sm font-black text-slate-800 mb-2">${title}</h3>`;
-        if (tips['拍照建議']) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${tips['拍照建議']}</div>`;
-        if (tips['Pocket 3 參數']) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-indigo-800 block mb-1">📸 Pocket 3 參數</strong>${tips['Pocket 3 參數']}</div>`;
-        if (tips['Vlog 必拍鏡頭'] && tips['Vlog 必拍鏡頭'].length > 0) html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-2"><strong class="text-emerald-800 block mb-1 text-xs">🎬 Vlog 必拍鏡頭</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['Vlog 必拍鏡頭'].map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
-        if (tips['拍攝角度'] && tips['拍攝角度'].length > 0) html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-2"><strong class="text-amber-800 block mb-1 text-xs">🎯 拍攝角度</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['拍攝角度'].map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
-        if (tips['人物動作建議'] && tips['人物動作建議'].length > 0) html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3 mb-2"><strong class="text-rose-800 block mb-1 text-xs">🧍 人物動作建議</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['人物動作建議'].map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
-        if (tips['參考照片'] && tips['參考照片'].length > 0) html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-3"><strong class="text-pink-800 block mb-1 text-xs">📷 參考照片</strong><div class="flex gap-2 overflow-x-auto scrollbar-none pb-1">${tips['參考照片'].map((img, idx) => `<img src="${img}" onclick="openLightbox(['${img}'], 0)" class="w-28 h-20 object-cover rounded-lg cursor-pointer border border-slate-200 shrink-0" loading="lazy" onerror="this.style.display='none'">`).join('')}</div></div>`;
-        html += `</div>`;
-      });
-      return html;
+  if (typeof shootTipsCommon === 'undefined') return '<div class="text-center py-8 text-slate-500">尚未添加通用技巧数据</div>';
+  
+  let html = '';
+  Object.keys(shootTipsCommon).forEach(title => {
+    const tips = shootTipsCommon[title];
+    
+    // 標題
+    html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+      <h3 class="text-sm font-black text-slate-800 mb-2">${title}</h3>`;
+    
+    // 拍照建議（完整顯示，不限制行數）
+    if (tips['拍照建議']) {
+      html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700">
+        <strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${tips['拍照建議']}
+      </div>`;
     }
+    
+    // 參考照片（如果有）
+    if (tips['參考照片'] && tips['參考照片'].length > 0) {
+      html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-3 mb-2">
+        <strong class="text-pink-800 block mb-1 text-xs">📷 參考照片</strong>
+        <div class="flex gap-2 overflow-x-auto scrollbar-none pb-1">${tips['參考照片'].map((img, idx) => `<img src="${img}" onclick="openLightbox(['${img}'], 0)" class="w-28 h-20 object-cover rounded-lg cursor-pointer border border-slate-200 shrink-0" loading="lazy" onerror="this.style.display='none'">`).join('')}</div>
+      </div>`;
+    }
+    
+    // 詳細內容放在可展開區塊
+    html += `<details class="bg-white border border-slate-200 rounded-xl p-3 mb-2">
+      <summary class="cursor-pointer text-xs font-black text-slate-600">📸 展開詳細內容</summary>
+      <div class="space-y-2 mt-2">`;
+    
+    // Pocket 3 參數
+    if (tips['Pocket 3 參數']) {
+      html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-xs text-slate-700"><strong class="text-indigo-800 block mb-1">📸 Pocket 3 參數</strong>${tips['Pocket 3 參數']}</div>`;
+    }
+    
+    // Vlog 必拍鏡頭
+    if (tips['Vlog 必拍鏡頭'] && tips['Vlog 必拍鏡頭'].length > 0) {
+      html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><strong class="text-emerald-800 block mb-1 text-xs">🎬 Vlog 必拍鏡頭</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['Vlog 必拍鏡頭'].map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
+    }
+    
+    // 拍攝角度
+    if (tips['拍攝角度'] && tips['拍攝角度'].length > 0) {
+      html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3"><strong class="text-amber-800 block mb-1 text-xs">🎯 拍攝角度</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['拍攝角度'].map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
+    }
+    
+    // 人物動作建議
+    if (tips['人物動作建議'] && tips['人物動作建議'].length > 0) {
+      html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3"><strong class="text-rose-800 block mb-1 text-xs">🧍 人物動作建議</strong><ul class="list-disc pl-4 text-xs text-slate-700">${tips['人物動作建議'].map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
+    }
+    
+    html += `</div></details>`;
+    html += `</div>`;
+  });
+  
+  return html;
+}
   
     // ==================== Vlog 構思 ====================
     function openVlogPlanModal(day) {
