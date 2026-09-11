@@ -1,6 +1,6 @@
 /* ============================================================
- * AppHeader 獨立元件 v2.3
- * 移除 Chip 列的搶票按鈕（搶票入口統一由焦點卡片提供）
+ * AppHeader 獨立元件 v2.4
+ * Chip 列加入「購物清單」按鈕 + 漸層遮罩（方案 C）
  *
  * 使用方式：
  *   AppHeader.init({
@@ -13,7 +13,7 @@
  *     itineraries: winterItineraries,
  *     weatherCache: () => window.weatherCache,
  *     callbacks: {
- *       onBooking, onEquip, onDrive, onShoot, onTicket,
+ *       onBooking, onEquip, onShopping, onDrive, onShoot, onTicket,
  *       onWeather, onOverview, onScrollToDay, onSwitchTab,
  *       getExpenseCount
  *     }
@@ -330,11 +330,11 @@ window.AppHeader = (function () {
       el.addEventListener("click", () => {
         const action = el.dataset.chipAction;
         const map = {
-          booking: cb.onBooking,
-          equip: cb.onEquip,
-          drive: cb.onDrive,
-          shoot: cb.onShoot
-          // ✅ 已移除 ticket
+          booking:  cb.onBooking,
+          equip:    cb.onEquip,
+          shopping: cb.onShopping,   // ✅ 新增：購物清單
+          drive:    cb.onDrive,
+          shoot:    cb.onShoot
         };
         if (map[action]) map[action]();
       });
@@ -404,11 +404,14 @@ window.AppHeader = (function () {
           </div>
         </div>
 
-        <div class="chip-bar">
-          <button type="button" class="chip" data-chip-action="booking"><span>📌</span> 行前預訂</button>
-          <button type="button" class="chip" data-chip-action="equip"><span>🎒</span> 裝備</button>
-          <button type="button" class="chip" data-chip-action="drive"><span>⚠️</span> 雪地攻略</button>
-          <button type="button" class="chip" data-chip-action="shoot"><span>📷</span> 拍攝</button>
+        <div class="chip-bar-scroll-wrap">
+          <div class="chip-bar">
+            <button type="button" class="chip" data-chip-action="booking"><span>📌</span> 行前預訂</button>
+            <button type="button" class="chip" data-chip-action="equip"><span>🎒</span> 裝備</button>
+            <button type="button" class="chip" data-chip-action="shopping"><span>🛍️</span> 購物清單</button>
+            <button type="button" class="chip" data-chip-action="drive"><span>⚠️</span> 雪地攻略</button>
+            <button type="button" class="chip" data-chip-action="shoot"><span>📷</span> 拍攝</button>
+          </div>
         </div>
       `;
 

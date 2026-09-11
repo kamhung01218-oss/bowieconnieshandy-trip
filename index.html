@@ -12,6 +12,7 @@
 <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2744.png">
 
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- ✅ 已改為 compat 版本，讓 firebase 命名空間可用 -->
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
@@ -58,11 +59,12 @@ const db = firebase.firestore();
 window.db = db;
 window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 
-// ✅ 保留 syncDataToCloud（原本這段就在，不要刪）
+// ✅ 使用點記法，避免淺層合併覆蓋別台裝置的資料
 async function syncDataToCloud() {
   try {
     if (!firebase.auth().currentUser) return;
 
+    // 用點記法只更新有勾選的 key
     const payload = { updatedAt: Date.now() };
     Object.keys(state.checkedItems).forEach(k => {
       if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
@@ -70,12 +72,11 @@ async function syncDataToCloud() {
       }
     });
 
-    // 用點記法只更新有勾選的 key，不會覆蓋別台裝置的資料
     if (Object.keys(payload).length > 1) {
-      await window.dbRef.update(payload);
+      await window.dbRef.set(payload, { merge: true });
     }
 
-    // 2. 自訂項目改用 arrayUnion
+    // 自訂項目用 arrayUnion
     if (customBookingItems.length > 0) {
       await window.dbRef.set({
         customBookingItems: firebase.firestore.FieldValue.arrayUnion(...customBookingItems)
@@ -85,12 +86,14 @@ async function syncDataToCloud() {
     console.warn("Cloud save fallback to local:", e);
   }
 }
+
 // 等 DOM 與 body script 都跑完再註冊
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.dbRef) return;
 
-    window.dbRef.onSnapshot(docSnap => {
+  window.dbRef.onSnapshot(docSnap => {
     try {
+      // ✅ v8 相容 API：exists 是「屬性」不是「方法」
       if (!docSnap.exists) return;
       if (docSnap.metadata?.hasPendingWrites) return;
 
@@ -241,7 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="space-y-6">
           <div class="sticky top-0 z-40 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-2.5 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
             <div class="flex items-center justify-between gap-2">
-              <!-- ✅ 今天按鈕（行程中才顯示） -->
               <button id="btn-today" onclick="scrollToToday()" class="hidden shrink-0 flex items-center gap-1 px-3 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[11px] font-black shadow-md border-0 transition active:scale-95 mr-1">
                 <span>📍</span><span class="hidden sm:inline">今天</span>
               </button>
@@ -254,7 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button onclick="switchDay(6)" id="tab-d6" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D6 (1/26)</button>
                 <button onclick="switchDay(7)" id="tab-d7" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D7 (1/27)</button>
               </div>
-              <!-- ✅ 收合按鈕已移至右下角浮動區 -->
             </div>
             <div class="border-b border-slate-200 mt-1"></div>
           </div>
@@ -290,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <!-- ✅ 右下角浮動按鈕區：上方收合、下方匯率 -->
+  <!-- 右下角浮動按鈕區 -->
   <div id="currency-fab-container" class="fixed right-4 z-[9999] flex flex-col items-end gap-2 fab-wrapper" style="bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 20px);">
     <button id="fab-collapse-all" onclick="collapseAllItineraries()" title="展開／收合全部行程"
       class="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95">
@@ -483,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <!-- 購物清單 -->
+  <!-- 購物清單（單一景點） -->
   <div id="shopping-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeShoppingModal()">
     <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()">
       <div class="modal-handle-area" data-drag-handle="shopping-modal"><div class="modal-handle"></div></div>
@@ -491,6 +492,18 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-scrollable px-6 pb-6">
         <h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🛍️</span> 購物清單</h2>
         <div id="shopping-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ 新增：購物清單總覽 -->
+  <div id="all-shopping-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeAllShoppingModal()">
+    <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()">
+      <div class="modal-handle-area" data-drag-handle="all-shopping-modal"><div class="modal-handle"></div></div>
+      <button onclick="closeAllShoppingModal()" class="modal-close">✕</button>
+      <div class="modal-scrollable px-6 pb-6">
+        <h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🛍️</span> 我的購物清單</h2>
+        <div id="all-shopping-content"></div>
       </div>
     </div>
   </div>
@@ -534,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} }
     }
 
-    // ==================== ✅ 跳今天 ====================
+    // ==================== 跳今天 ====================
     function scrollToToday() {
       const now = Date.now();
       if (now < TRIP_START) {
@@ -614,7 +627,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'drive-modal': closeDriveModal, 'ticket-modal': closeTicketModal,
                 'weather-modal': closeWeatherModal, 'trip-overview-modal': closeTripOverview,
                 'shoot-tips-modal': closeShootTipsModal, 'vlog-plan-modal': closeVlogPlanModal,
-                'common-tips-modal': closeCommonTipsModal, 'shopping-modal': closeShoppingModal
+                'common-tips-modal': closeCommonTipsModal, 'shopping-modal': closeShoppingModal,
+                'all-shopping-modal': closeAllShoppingModal
               };
               if (closers[id]) closers[id]();
               box.style.transform = '';
@@ -795,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (input) { input.value = amount; convertCurrency(currency); }
     }
 
-    // ==================== ✅ Toast（含撤銷） ====================
+    // ==================== Toast ====================
     function showToast(message, icon = "✅") {
       const toast = document.getElementById("toast");
       const m = document.getElementById("toast-message");
@@ -1434,7 +1448,6 @@ document.addEventListener('DOMContentLoaded', () => {
       l.value = ""; showToast("已新增項目！");
     }
 
-    // ==================== ✅ 刪除自訂項目（含撤銷） ====================
     function deleteCustomBooking(id) {
       if (!isAdminUnlocked()) return;
       const originalIndex = customBookingItems.findIndex(i => i.id === id);
@@ -1453,7 +1466,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleEquipCheck(key) {
       state.checkedItems[key] = !state.checkedItems[key];
-      // ✅ 裝備清單不同步雲端（每人不同），只存本地
       saveLocalCheckedItems(); renderEquipChecklist();
       haptic(5);
     }
@@ -1498,7 +1510,6 @@ document.addEventListener('DOMContentLoaded', () => {
       l.value = ""; showToast("已新增項目！");
     }
 
-    // ==================== ✅ 刪除裝備（含撤銷） ====================
     function deleteCustomEquip(id) {
       const originalIndex = customEquipItems.findIndex(i => i.id === id);
       if (originalIndex === -1) return;
@@ -1684,7 +1695,6 @@ document.addEventListener('DOMContentLoaded', () => {
       haptic(5);
     }
 
-    // ==================== ✅ 刪除購物項目（含撤銷） ====================
     function deleteShoppingItem(t, i) {
       const items = loadShoppingItems(t);
       const snapshot = { ...items[i] };
@@ -1699,6 +1709,190 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('shopping-content').innerHTML = renderShoppingList(t);
         showToast("✅ 已還原", "↩️");
       });
+    }
+
+    // ==================== ✅ 購物清單總覽 ====================
+    function openAllShoppingModal() {
+      const m = document.getElementById('all-shopping-modal');
+      if (!m) return;
+      m.style.display = 'flex';
+      m.classList.add('active');
+      document.body.classList.add('modal-open');
+      renderAllShoppingContent();
+      haptic(8);
+    }
+
+    function closeAllShoppingModal() {
+      const m = document.getElementById('all-shopping-modal');
+      if (m) {
+        m.classList.remove('active');
+        setTimeout(() => { m.style.display = 'none'; refreshCurrentDay(); }, 300);
+        const a = document.querySelector('.modal-overlay.active');
+        if (!a) document.body.classList.remove('modal-open');
+      }
+    }
+
+    function getAllShoppingItems() {
+      const groups = [];
+      winterItineraries.forEach(day => {
+        day.events.forEach(event => {
+          const items = loadShoppingItems(event.title);
+          if (items.length > 0) {
+            groups.push({
+              day: day.day,
+              dateLabel: day.dateLabel,
+              eventTitle: event.title,
+              eventTime: event.time,
+              eventIndex: day.events.indexOf(event),
+              items: items
+            });
+          }
+        });
+      });
+      return groups;
+    }
+
+    function escAttr(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/'/g, '&#39;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function renderAllShoppingContent() {
+      const container = document.getElementById('all-shopping-content');
+      if (!container) return;
+
+      const groups = getAllShoppingItems();
+
+      if (groups.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 px-4">
+            <div class="text-6xl mb-3">🛒</div>
+            <p class="text-sm font-bold text-slate-700 mb-1">購物清單還是空的</p>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              在行程卡片的「??️ 購物清單」按鈕中<br>加入你想買的東西吧！
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      let totalItems = 0;
+      let checkedItems = 0;
+      groups.forEach(g => {
+        g.items.forEach(item => {
+          totalItems++;
+          if (item.planned) checkedItems++;
+        });
+      });
+      const percent = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+
+      let html = `
+        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 mb-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-emerald-800">
+              ${percent === 100 ? '🎉 全部買齊！' : '📊 購物進度'}
+            </span>
+            <span class="text-sm font-black text-emerald-700">
+              ${checkedItems} / ${totalItems}
+            </span>
+          </div>
+          <div class="h-2 bg-white/70 rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500"
+                 style="width:${percent}%"></div>
+          </div>
+        </div>
+      `;
+
+      groups.forEach((group, gIdx) => {
+        const groupChecked = group.items.filter(i => i.planned).length;
+        const groupTotal = group.items.length;
+        const allDone = groupChecked === groupTotal;
+        const safeTitle = escAttr(group.eventTitle);
+
+        html += `
+          <details class="mb-3 bg-white border ${allDone ? 'border-emerald-200' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden group" ${gIdx === 0 ? 'open' : ''}>
+            <summary class="cursor-pointer px-4 py-3 hover:bg-slate-50 transition-colors list-none flex items-center gap-3">
+              <div class="shrink-0 w-10 h-10 rounded-full ${allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'} flex items-center justify-center text-xs font-black border-2 border-white shadow-sm">
+                D${group.day}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[10px] font-bold text-sky-600 tracking-wide">${group.dateLabel}</div>
+                <div class="text-sm font-bold text-slate-800 truncate">${group.eventTitle}</div>
+              </div>
+              <div class="shrink-0 flex items-center gap-1.5">
+                <span class="text-[10px] font-black ${allDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">
+                  ${groupChecked}/${groupTotal}
+                </span>
+                <svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </div>
+            </summary>
+            <div class="border-t border-slate-100 bg-slate-50/50 p-3 space-y-1.5">
+        `;
+
+        group.items.forEach((item, idx) => {
+          html += `
+            <label class="flex items-center gap-2.5 p-2.5 bg-white border ${item.planned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} rounded-xl cursor-pointer transition-all hover:shadow-sm active:scale-[0.99]">
+              <input type="checkbox" ${item.planned ? 'checked' : ''}
+                     data-event-title="${safeTitle}"
+                     data-index="${idx}"
+                     onchange="handleAllShoppingToggle(this)"
+                     class="w-4 h-4 shrink-0">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <strong class="text-[13px] ${item.planned ? 'text-slate-500 line-through' : 'text-slate-800'} truncate">${item.name}</strong>
+                  ${item.category ? `<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">${item.category}</span>` : ''}
+                </div>
+                ${item.note ? `<p class="text-[10px] text-slate-500 mt-0.5 truncate">📝 ${item.note}</p>` : ''}
+              </div>
+            </label>
+          `;
+        });
+
+        html += `
+              <button onclick="jumpToEvent(${group.day}, ${group.eventIndex})"
+                      class="mt-2 w-full text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 py-2 rounded-lg transition active:scale-95">
+                📍 前往行程查看
+              </button>
+            </div>
+          </details>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function handleAllShoppingToggle(el) {
+      const eventTitle = el.dataset.eventTitle;
+      const index = parseInt(el.dataset.index);
+      const items = loadShoppingItems(eventTitle);
+      if (!items[index]) return;
+      items[index].planned = !items[index].planned;
+      saveShoppingItems(eventTitle, items);
+      renderAllShoppingContent();
+      haptic(5);
+    }
+
+    function jumpToEvent(day, eventIndex) {
+      closeAllShoppingModal();
+      switchDay(day);
+      setTimeout(() => {
+        const cards = document.querySelectorAll(`#day-section-${day} details.event-card`);
+        const target = cards[eventIndex];
+        if (target) {
+          target.open = true;
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.style.transition = 'box-shadow 0.4s';
+          target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.4)';
+          setTimeout(() => { target.style.boxShadow = ''; }, 1500);
+        }
+      }, 400);
+      haptic(8);
     }
 
     // ==================== 天氣 ====================
@@ -2113,7 +2307,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch(e) { navigator.clipboard.writeText(text).catch(() => {}); }
     }
 
-    // ==================== ✅ Service Worker + 更新提示 ====================
+    // ==================== Service Worker + 更新提示 ====================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then(reg => {
@@ -2172,7 +2366,6 @@ document.addEventListener('DOMContentLoaded', () => {
       toast.classList.add("translate-y-0", "opacity-100");
     }
 
-    // ✅ 條件化隱藏記帳 iframe（修復新增帳單後畫面空白）
     window.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'closeExpenseModal') {
         const lc = document.getElementById('ledger-frame-container');
@@ -2200,7 +2393,8 @@ document.addEventListener('DOMContentLoaded', () => {
       setupModalDrag([
         'booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal',
         'weather-modal', 'trip-overview-modal', 'shoot-tips-modal',
-        'vlog-plan-modal', 'common-tips-modal', 'shopping-modal'
+        'vlog-plan-modal', 'common-tips-modal', 'shopping-modal',
+        'all-shopping-modal'
       ]);
 
       winterItineraries.forEach((dayData, index) => {
@@ -2229,6 +2423,7 @@ document.addEventListener('DOMContentLoaded', () => {
           callbacks: {
             onBooking: () => toggleBookingModal(),
             onEquip: () => toggleEquipModal(),
+            onShopping: () => openAllShoppingModal(),
             onDrive: () => toggleDriveModal(),
             onShoot: () => openCommonTipsModal(),
             onTicket: () => toggleTicketModal(),

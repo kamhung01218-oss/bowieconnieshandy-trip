@@ -1,6 +1,7 @@
 /* ============================================================
- * AppHeader 元件樣式 v2.2
+ * AppHeader 元件樣式 v2.3
  * 品牌列加入天氣/行程速覽 icon 按鈕
+ * Chip 列加入漸層遮罩（方案 C）
  * ============================================================ */
 
 :root {
@@ -483,19 +484,42 @@
   to { transform: rotate(360deg); }
 }
 
-/* ---------- Layer 3: Chip 列 ---------- */
+/* ---------- Layer 3: Chip 列（含漸層遮罩） ---------- */
+
+/* 外層 wrapper：負責定位與遮罩 */
+.app-header .chip-bar-scroll-wrap {
+  position: relative;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+/* 右側漸層遮罩（暗示可滑動） */
+.app-header .chip-bar-scroll-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 12px;
+  width: 36px;
+  background: linear-gradient(90deg, transparent 0%, rgba(12, 25, 41, 0.72) 85%);
+  pointer-events: none;
+  z-index: 2;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* 內層滾動列 */
 .app-header .chip-bar {
   display: flex;
   gap: 6px;
   padding: 0 16px 12px;
   overflow-x: auto;
   scrollbar-width: none;
-  max-width: 72rem;
-  margin: 0 auto;
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
 }
 .app-header .chip-bar::-webkit-scrollbar { display: none; }
+
 .app-header .chip {
   flex-shrink: 0;
   display: inline-flex;
