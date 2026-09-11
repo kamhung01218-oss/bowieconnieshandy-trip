@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!window.dbRef) return;
 
   window.dbRef.onSnapshot(docSnap => {
-    if (!docSnap.exists()) return;
+    if (!docSnap.exists) return;
     if (docSnap.metadata?.hasPendingWrites) return;
 
     const cloudData = docSnap.data();
