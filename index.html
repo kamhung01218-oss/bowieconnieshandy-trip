@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2744.png">
 
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- ✅ 已改為 compat 版本，讓 firebase 命名空間可用 -->
+<!-- ✅ 使用 compat 版本，讓 firebase 命名空間可用 -->
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
@@ -61,10 +61,15 @@ window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 
 // ✅ 使用點記法，避免淺層合併覆蓋別台裝置的資料
 async function syncDataToCloud() {
+  // ✅ 唯讀模式防護：非管理員不允許寫入雲端
+  if (!isAdminUnlocked()) {
+    console.warn("[Sync] 唯讀模式，跳過雲端寫入");
+    return;
+  }
+
   try {
     if (!firebase.auth().currentUser) return;
 
-    // 用點記法只更新有勾選的 key
     const payload = { updatedAt: Date.now() };
     Object.keys(state.checkedItems).forEach(k => {
       if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
@@ -76,7 +81,6 @@ async function syncDataToCloud() {
       await window.dbRef.set(payload, { merge: true });
     }
 
-    // 自訂項目用 arrayUnion
     if (customBookingItems.length > 0) {
       await window.dbRef.set({
         customBookingItems: firebase.firestore.FieldValue.arrayUnion(...customBookingItems)
@@ -496,7 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <!-- ✅ 新增：購物清單總覽 -->
+  <!-- 購物清單總覽 -->
   <div id="all-shopping-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeAllShoppingModal()">
     <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()">
       <div class="modal-handle-area" data-drag-handle="all-shopping-modal"><div class="modal-handle"></div></div>
@@ -535,7 +539,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let snowmanProgress = JSON.parse(localStorage.getItem("snowman_progress")) || 0;
     if (!window.weatherCache) window.weatherCache = {};
     let exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
-    const ADMIN_PASSWORD = "2027";
+
+    // ✅ 管理員密碼（請自訂，只有你知道）
+    const ADMIN_PASSWORD = "tohoku2027admin";
 
     const modalUIState = {
       'booking-modal': { activeTab: 'all', expanded: {} },
@@ -1126,6 +1132,54 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
+    // ==================== 編輯/唯讀模式控制 ====================
+    function forceSyncFromCloud() {
+      if (!window.dbRef) {
+        showToast("⚠️ 雲端未連線", "⚠️");
+        return;
+      }
+      showToast("🔄 同步中...", "☁️");
+      haptic(8);
+
+      window.dbRef.get().then(docSnap => {
+        if (!docSnap.exists) {
+          showToast("📭 雲端尚無資料", "📭");
+          return;
+        }
+        const cloudData = docSnap.data();
+        const localNonBooking = {};
+        Object.keys(state.checkedItems).forEach(k => {
+          if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) {
+            localNonBooking[k] = state.checkedItems[k];
+          }
+        });
+
+        if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
+          state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking };
+        }
+        if (Array.isArray(cloudData.customBookingItems)) {
+          customBookingItems = cloudData.customBookingItems.slice();
+          localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
+        }
+
+        saveLocalCheckedItems();
+        renderBookingChecklist();
+        showToast("✅ 已同步最新資料", "☁️");
+        haptic(10);
+      }).catch(e => {
+        console.warn("Manual sync failed:", e);
+        showToast("❌ 同步失敗，請檢查網路", "⚠️");
+      });
+    }
+
+    function releaseAdminDevice() {
+      if (!confirm("確定要解除這台裝置的管理員身分嗎？\n\n解除後將轉為「唯讀模式」，需要重新輸入密碼才能編輯。")) return;
+      localStorage.removeItem("tohoku_admin_unlocked");
+      renderBookingChecklist();
+      showToast("👁️ 已轉為唯讀模式", "🔒");
+      haptic(15);
+    }
+
     // ==================== 行前預訂 ====================
     const bookingList = [
       { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
@@ -1157,7 +1211,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }).length;
       const percent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
       const activeTab = modalUIState['booking-modal'].activeTab;
-      let html = '';
+
+      // ✅ 模式 Banner
+      const modeBanner = isAdmin
+        ? `<div class="bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl p-3 mb-3 flex items-center gap-2.5">
+             <span class="text-xl shrink-0">✏️</span>
+             <div class="flex-1 min-w-0">
+               <div class="text-xs font-black text-emerald-800">編輯模式（管理員）</div>
+               <div class="text-[10px] text-emerald-600 leading-relaxed">你的修改會自動同步給所有裝置</div>
+             </div>
+           </div>`
+        : `<div class="bg-gradient-to-r from-sky-50 to-blue-50 border-2 border-sky-200 rounded-xl p-3 mb-3 flex items-center gap-2.5">
+             <span class="text-xl shrink-0">👁️</span>
+             <div class="flex-1 min-w-0">
+               <div class="text-xs font-black text-sky-800">唯讀模式</div>
+               <div class="text-[10px] text-sky-600 leading-relaxed">資料由管理員同步，你只能查看</div>
+             </div>
+             <button onclick="forceSyncFromCloud()" class="text-[10px] bg-white hover:bg-sky-50 text-sky-700 border border-sky-300 px-2.5 py-1.5 rounded-lg font-bold shrink-0 transition active:scale-95 shadow-sm">🔄 重新同步</button>
+           </div>`;
+
+      let html = modeBanner;
       html += `
         <div class="modal-progress-wrap">
           <div class="modal-progress-header">
@@ -1213,7 +1286,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const isChecked = state.checkedItems[key] === true;
           const disabled = isAdmin ? "" : "disabled";
           html += `
-            <label class="checklist-item ${isChecked ? 'checked' : ''}">
+            <label class="checklist-item ${isChecked ? 'checked' : ''} ${!isAdmin ? 'opacity-80' : ''}">
               <input type="checkbox" ${disabled} ${isChecked ? 'checked' : ''} onchange="toggleBookingCheck('${key}')">
               <span class="checklist-icon">${item.icon}</span>
               <span class="checklist-label">${item.label}</span>
@@ -1240,13 +1313,17 @@ document.addEventListener('DOMContentLoaded', () => {
             <button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button>
             <button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button>
           </div>
-          <div class="mt-2 text-center"><button onclick="lockAdmin()" class="text-[10px] text-red-500 hover:text-red-700 underline">🔒 鎖定管理權限</button></div>
+          <div class="mt-3 flex items-center justify-center gap-3 text-center flex-wrap">
+            <button onclick="lockAdmin()" class="text-[10px] text-amber-600 hover:text-amber-800 underline">🔒 暫時鎖定</button>
+            <span class="text-[10px] text-slate-300">|</span>
+            <button onclick="releaseAdminDevice()" class="text-[10px] text-red-500 hover:text-red-700 underline">❌ 解除此裝置的管理員身分</button>
+          </div>
         `;
       } else {
         html += `
           <div class="mt-5 text-center">
             <button onclick="showPasswordModal()" class="text-[11px] bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 px-3 py-1.5 rounded-full font-bold transition">🔓 輸入密碼解鎖編輯</button>
-            <p class="text-[10px] text-slate-400 mt-2">🔒 目前為唯讀模式</p>
+            <p class="text-[10px] text-slate-400 mt-2">🔒 目前為唯讀模式，僅管理員可修改</p>
           </div>
         `;
       }
@@ -1399,7 +1476,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleBookingCheck(key) {
-      if (!isAdminUnlocked()) { showToast("🔒 請先解鎖管理權限", "⚠️"); return; }
+      if (!isAdminUnlocked()) { showToast("🔒 唯讀模式，無法修改", "⚠️"); return; }
       state.checkedItems[key] = !state.checkedItems[key];
       saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist();
       haptic(5);
@@ -1711,7 +1788,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // ==================== ✅ 購物清單總覽 ====================
+    // ==================== 購物清單總覽 ====================
     function openAllShoppingModal() {
       const m = document.getElementById('all-shopping-modal');
       if (!m) return;
@@ -1773,7 +1850,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="text-6xl mb-3">🛒</div>
             <p class="text-sm font-bold text-slate-700 mb-1">購物清單還是空的</p>
             <p class="text-xs text-slate-500 leading-relaxed">
-              在行程卡片的「??️ 購物清單」按鈕中<br>加入你想買的東西吧！
+              在行程卡片的「🛍️ 購物清單」按鈕中<br>加入你想買的東西吧！
             </p>
           </div>
         `;
