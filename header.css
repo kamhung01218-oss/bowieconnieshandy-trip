@@ -1,6 +1,6 @@
 /* ============================================================
- * AppHeader 元件樣式 v2.1（完整修正版）
- * 倒計時修正 + 極光背景 + 準備進度條
+ * AppHeader 元件樣式 v2.2
+ * 品牌列加入天氣/行程速覽 icon 按鈕
  * ============================================================ */
 
 :root {
@@ -53,13 +53,46 @@
   height: 44px;
   max-width: 72rem;
   margin: 0 auto;
+  gap: 8px;
 }
 .app-header .brand-title {
   font-size: 13px;
   font-weight: 900;
   letter-spacing: -0.01em;
   text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* 品牌列右側小圖示按鈕 */
+.app-header .brand-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.app-header .brand-icon-btn:active {
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(0.92);
+}
+.app-header .brand-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 同步狀態 badge */
 .app-header .sync-badge {
   display: inline-flex;
   align-items: center;
@@ -74,6 +107,7 @@
   backdrop-filter: blur(8px);
   transition: all 0.2s;
   cursor: pointer;
+  flex-shrink: 0;
 }
 .app-header .sync-badge:active { transform: scale(0.95); }
 .app-header .sync-badge.disconnected {
@@ -125,7 +159,7 @@
   overflow: hidden;
 }
 
-/* 極光氛圍背景（緩慢流動） */
+/* 極光氛圍背景 */
 .app-header .focus-inner::before {
   content: '';
   position: absolute;
@@ -343,7 +377,7 @@
   line-height: 1.4;
 }
 
-/* ========== 天氣網格 ========== */
+/* ========== 天氣網格（行程中） ========== */
 .app-header .focus-weather-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -499,4 +533,7 @@
   .app-header .countdown-value { font-size: 22px; }
   .app-header .countdown-unit { font-size: 10px; }
   .app-header .countdown-cell { padding: 9px 2px; }
+  .app-header .brand-title { font-size: 12px; }
+  .app-header .brand-icon-btn { width: 26px; height: 26px; font-size: 12px; }
+  .app-header .sync-badge { font-size: 9px; padding: 2px 7px; }
 }

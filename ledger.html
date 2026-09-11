@@ -11,7 +11,6 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Firebase SDK (Compat 模式) -->
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
@@ -32,16 +31,27 @@ body{
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: contain;
   touch-action: pan-y;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease;
 }
 button, a {
   touch-action: manipulation;
   user-select: none;
 }
-button:active { transform: scale(0.96); }
+button:active { transform: scale(0.96); transition: transform 0.05s; }
 .scrollbar-none::-webkit-scrollbar{display:none}
 .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
 
-/* 雪花效果（移動端 15 個，桌面 30 個） */
+/* ---------- Modal 開啟時背景縮小 ---------- */
+body.modal-open {
+  overflow: hidden;
+}
+body.modal-open #ledger-root {
+  transform: scale(0.96);
+  border-radius: 16px;
+  filter: brightness(0.95);
+}
+
+/* ---------- 雪花 ---------- */
 .snowflake {
   position: absolute;
   top: -10px;
@@ -56,20 +66,11 @@ button:active { transform: scale(0.96); }
   0% { transform: translateY(0) rotate(0deg); opacity: 1; }
   100% { transform: translateY(110vh) rotate(360deg); opacity: 0.5; }
 }
-@keyframes snowfall-small {
-  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(100vh) rotate(180deg); opacity: 0.3; }
-}
-@keyframes snowfall-medium {
-  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(90vh) rotate(270deg); opacity: 0.5; }
-}
-@keyframes snowfall-large {
-  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(80vh) rotate(360deg); opacity: 0.7; }
-}
+@keyframes snowfall-small { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(100vh) rotate(180deg); opacity: 0.3; } }
+@keyframes snowfall-medium { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(90vh) rotate(270deg); opacity: 0.5; } }
+@keyframes snowfall-large { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(80vh) rotate(360deg); opacity: 0.7; } }
 
-/* 動態角色（固定底部兩側，不顯示氣泡） */
+/* ---------- 動態角色 ---------- */
 .walking-character {
   position: fixed;
   bottom: 10px !important;
@@ -99,7 +100,6 @@ button:active { transform: scale(0.96); }
   70% { transform: translateY(-35px) scale(1.1); }
   100% { transform: translateY(0) scale(1); }
 }
-.character-bubble { display: none !important; }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -108,7 +108,7 @@ button:active { transform: scale(0.96); }
 }
 .shake { animation: shake 0.3s ease; }
 
-/* 可折疊區塊 */
+/* ---------- 可折疊 ---------- */
 .collapsible-section {
   transition: max-height 0.3s ease, opacity 0.3s ease;
 }
@@ -125,7 +125,7 @@ button:active { transform: scale(0.96); }
   opacity: 1;
 }
 
-/* 分類色條 */
+/* ---------- 分類色條 ---------- */
 .cat-strip {
   position: absolute;
   left: 0;
@@ -135,7 +135,7 @@ button:active { transform: scale(0.96); }
   border-radius: 2px 0 0 2px;
 }
 
-/* 彩帶動畫容器 */
+/* ---------- 彩帶 ---------- */
 .confetti-container {
   position: fixed;
   top: 0;
@@ -158,7 +158,7 @@ button:active { transform: scale(0.96); }
   100% { transform: translateY(110vh) rotate(720deg); }
 }
 
-/* 貨幣快速按鈕樣式 */
+/* ---------- 貨幣快速按鈕 ---------- */
 .currency-btn {
   flex: 1;
   padding: 6px 0;
@@ -181,10 +181,72 @@ button:active { transform: scale(0.96); }
   border-color: #0284c7;
 }
 
-/* 防止下拉刷新 */
+/* ---------- Skeleton ---------- */
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(226, 232, 240, 0.5) 0%,
+    rgba(241, 245, 249, 0.85) 50%,
+    rgba(226, 232, 240, 0.5) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: 8px;
+}
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---------- Modal 拖動把手 ---------- */
+.modal-handle-area {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 6px;
+  cursor: grab;
+  touch-action: none;
+  background: linear-gradient(180deg, white 0%, rgba(255,255,255,0.85) 100%);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+}
+.modal-handle-area:active { cursor: grabbing; }
+.modal-handle {
+  width: 40px;
+  height: 5px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: background 0.2s, transform 0.2s;
+}
+.modal-handle-area:active .modal-handle {
+  background: #94a3b8;
+  transform: scaleX(1.15);
+}
+#expense-modal.dragging { transition: none !important; }
+#expense-modal.snapping { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; }
+
+/* ---------- Toast 撤銷按鈕 ---------- */
+#toast-undo-btn {
+  animation: toast-btn-in 0.25s ease;
+}
+@keyframes toast-btn-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ---------- 防止下拉刷新 ---------- */
 body {
   overscroll-behavior-y: contain;
   touch-action: pan-y;
+}
+
+/* ---------- 卡片質感 ---------- */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(186, 230, 253, 0.6);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 </style>
 </head>
@@ -193,7 +255,7 @@ body {
   <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
-  <!-- 動態角色：雪人 + 狐狸（固定底部兩側） -->
+  <!-- 動態角色 -->
   <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！" style="left: 15px;">
     <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -255,7 +317,7 @@ body {
       <ellipse cx="32" cy="40" rx="6" ry="2" fill="white" opacity="0.3"/>
     </svg>
   </div>
-  
+
   <!-- 驗證寫入權限 Modal -->
   <div id="write-access-modal" class="fixed inset-0 z-[200] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
@@ -273,9 +335,9 @@ body {
   </div>
 
   <!-- 主容器 -->
-  <div class="max-w-4xl mx-auto px-4 pt-4 pb-16 space-y-4">
+  <div id="ledger-root" class="max-w-4xl mx-auto px-4 pt-4 pb-16 space-y-4">
 
-    <!-- 頂部工具列（縮小版） -->
+    <!-- 頂部工具列 -->
     <div class="bg-white border border-slate-200 p-2 rounded-2xl shadow-sm flex items-center justify-between gap-3">
       <div class="flex items-center gap-1.5">
         <span id="cloud-sync-badge" class="text-[10px] bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-sky-200">
@@ -286,7 +348,7 @@ body {
       <button onclick="openExpenseModal()" class="py-1.5 px-4 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition">＋ 記帳</button>
     </div>
 
-    <!-- 統計卡片（縮小版） -->
+    <!-- 統計卡片 -->
     <div class="grid grid-cols-3 gap-2">
       <div class="bg-gradient-to-br from-sky-950 to-sky-900 text-white p-2 rounded-xl shadow-sm text-center">
         <div class="flex items-center justify-center gap-1 mb-0.5">
@@ -313,7 +375,7 @@ body {
 
     <!-- 主內容區 -->
     <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden min-h-[500px]">
-      <!-- 子分頁（縮小版） -->
+      <!-- 子分頁 -->
       <div class="border-b border-slate-200 bg-slate-50 p-1.5 flex gap-1.5 overflow-x-auto scrollbar-none">
         <button id="tab-records-btn" onclick='switchLedgerSubTab("records")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black bg-white text-sky-900 shadow-sm transition flex flex-col items-center justify-center">
           <span class="text-base">📝</span><span>明細</span>
@@ -328,7 +390,7 @@ body {
           <span class="text-base">🕘</span><span>紀錄</span>
         </button>
       </div>
-      
+
       <!-- 記帳明細 -->
       <div id="subview-records" class="p-3 space-y-3">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
@@ -372,7 +434,6 @@ body {
           </div>
         </div>
 
-        <!-- 記錄列表 -->
         <div class="space-y-2" id="records-list-container">
           <div class="text-slate-400 text-xs italic text-center py-12">尚無記錄</div>
         </div>
@@ -427,8 +488,9 @@ body {
   <!-- 新增支出 Modal -->
   <div id="expense-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeExpenseModal()"></div>
   <div id="expense-modal" class="fixed bottom-0 left-0 right-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-full md:max-w-lg bg-white rounded-t-3xl md:rounded-3xl shadow-2xl z-[70] transform translate-y-full md:translate-y-8 md:scale-95 opacity-0 hidden transition-all duration-300 flex flex-col max-h-[92vh] md:max-h-[85vh]">
-    <div class="shrink-0 flex justify-center pt-3 pb-1 md:hidden" onclick="closeExpenseModal()">
-      <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
+    <!-- 拖動把手 -->
+    <div class="shrink-0 flex justify-center pt-3 pb-2 md:hidden cursor-grab active:cursor-grabbing" id="expense-modal-handle">
+      <div class="w-12 h-1.5 bg-slate-300 rounded-full transition-all active:scale-x-110"></div>
     </div>
     <div class="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100">
       <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
@@ -440,14 +502,12 @@ body {
       </div>
     </div>
     <div class="flex-1 overflow-y-auto p-6 pb-24 space-y-4 scrollbar-none bg-slate-50/50">
-      
-      <!-- 付款人選擇 -->
+
       <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
         <label class="block text-xs font-bold text-slate-600 mb-2">👤 誰先付款？</label>
         <div class="grid grid-cols-4 gap-1.5" id="payer-grid"></div>
       </div>
 
-      <!-- 日期與類別 -->
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1">📅 日期</label>
@@ -463,17 +523,14 @@ body {
         </div>
       </div>
 
-      <!-- 說明（佔滿寬度） -->
       <div>
         <label class="block text-xs font-bold text-slate-600 mb-1">📝 說明</label>
         <input id="ledger-desc" placeholder="例如：晚餐" class="w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50">
       </div>
 
-      <!-- 金額輸入 + 貨幣快速切換 -->
       <div>
         <label class="block text-xs font-bold text-slate-600 mb-1">💰 金額</label>
         <input id="ledger-amount" inputmode="decimal" oninput="updateEstimatedHKD()" placeholder="0.00" class="w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
-        <!-- 貨幣快速按鈕 -->
         <div class="mt-2 flex gap-1.5" id="currency-buttons">
           <button type="button" onclick="setCurrency('JPY')" class="currency-btn" data-currency="JPY">¥ JPY</button>
           <button type="button" onclick="setCurrency('HKD')" class="currency-btn" data-currency="HKD">$ HKD</button>
@@ -481,21 +538,18 @@ body {
           <button type="button" onclick="setCurrency('USD')" class="currency-btn" data-currency="USD">$ USD</button>
         </div>
       </div>
-      <!-- 隱藏的貨幣選擇（供 JS 讀取，UI 由上方按鈕控制） -->
-<select id="ledger-currency" class="hidden">
-  <option value="JPY">JPY</option>
-  <option value="HKD">HKD</option>
-  <option value="TWD">TWD</option>
-  <option value="USD">USD</option>
-</select>
+      <select id="ledger-currency" class="hidden">
+        <option value="JPY">JPY</option>
+        <option value="HKD">HKD</option>
+        <option value="TWD">TWD</option>
+        <option value="USD">USD</option>
+      </select>
 
-      <!-- 備註欄位 -->
       <div>
         <label class="block text-xs font-bold text-slate-600 mb-1">📌 備註（可留空）</label>
         <textarea id="ledger-remark" rows="2" placeholder="例如：xx餐廳、四人份、使用現金…" class="block w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none"></textarea>
       </div>
 
-      <!-- 估算 HKD -->
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm">
         <div class="flex items-center justify-between px-3 py-2.5 cursor-pointer" onclick="toggleCollapsible('amount-section')">
           <label class="text-xs font-bold text-slate-600">📊 約合 HKD</label>
@@ -506,7 +560,6 @@ body {
         </div>
       </div>
 
-      <!-- 分擔成員 -->
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm">
         <div class="flex items-center justify-between px-3 py-2.5 cursor-pointer" onclick="toggleCollapsible('split-section')">
           <label class="text-xs font-bold text-slate-600">👥 分擔成員</label>
@@ -535,14 +588,17 @@ body {
     </div>
   </div>
 
-  <!-- Toast 提示 -->
+  <!-- Toast -->
   <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none">
     <span id="toast-icon">✅</span><span id="toast-message">操作成功</span>
   </div>
 
-  <!-- 移除原有 FAB 按鈕（避免與父頁面重複） -->
-
   <script>
+    // ==================== 觸覺回饋 ====================
+    function haptic(ms = 10) {
+      if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} }
+    }
+
     // ==================== Firebase 初始化 ====================
     const firebaseConfig = {
       apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
@@ -560,7 +616,7 @@ body {
     window.db = db;
     window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 
-    // ==================== 匯率設定 ====================
+    // ==================== 匯率 ====================
     const DEFAULT_RATES = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
     let exchangeRates = { ...DEFAULT_RATES };
     const RATES_UPDATE_INTERVAL = 24 * 60 * 60 * 1000;
@@ -691,10 +747,12 @@ body {
         localStorage.setItem('tohoku_write_access_ok', 'true');
         closeWriteAccessModal();
         showToast('✅ 權限驗證成功');
+        haptic(15);
         if (window.pendingWriteAction) { const action = window.pendingWriteAction; window.pendingWriteAction = null; action(); }
       } else {
         document.getElementById('write-access-error').classList.remove('hidden');
         document.getElementById('write-access-input').value = '';
+        haptic(50);
       }
     }
     function ensureWriteAccess(actionFn) {
@@ -710,6 +768,7 @@ body {
       section.classList.toggle('collapsed');
       section.classList.toggle('expanded');
       arrow.style.transform = section.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
+      haptic(5);
     }
 
     // ==================== 篩選 ====================
@@ -726,6 +785,7 @@ body {
           btn.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-200');
         }
       });
+      haptic(5);
       renderExpensesList();
     }
     function clearAllFilters() {
@@ -737,7 +797,7 @@ body {
       renderExpensesList();
     }
 
-    // ==================== 子分頁切換 ====================
+    // ==================== 子分頁 ====================
     function switchLedgerSubTab(tabName) {
       ['records','balances','suggested','history'].forEach(t => document.getElementById(`subview-${t}`).classList.add('hidden'));
       const inactiveClass = "whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center";
@@ -748,17 +808,23 @@ body {
       document.getElementById(`subview-${tabName}`).classList.remove('hidden');
       const map = { records: 'tab-records-btn', balances: 'tab-balances-btn', suggested: 'tab-suggested-btn', history: 'tab-history-btn' };
       document.getElementById(map[tabName]).className = activeClass;
+      haptic(6);
       if (tabName === 'suggested') renderSuggestedSettlements();
       else if (tabName === 'history') renderHistoryList();
       else if (tabName === 'balances') renderBalancesTable();
     }
 
-    // ==================== Toast ====================
+    // ==================== Toast（含撤銷） ====================
     function showToast(message, icon = "✅") {
       const toast = document.getElementById("toast");
       const toastMessage = document.getElementById("toast-message");
       const toastIcon = document.getElementById("toast-icon");
       if (!toast) return;
+      // 清掉舊的撤銷按鈕
+      const oldBtn = document.getElementById("toast-undo-btn");
+      if (oldBtn) oldBtn.remove();
+      window._undoCallback = null;
+
       toastMessage.innerText = message;
       toastIcon.innerText = icon;
       toast.classList.remove("-translate-y-24", "opacity-0");
@@ -769,6 +835,55 @@ body {
         toast.classList.add("-translate-y-24", "opacity-0");
       }, 3000);
     }
+
+    function showUndoToast(message, icon, onUndo) {
+      const toast = document.getElementById("toast");
+      const toastMessage = document.getElementById("toast-message");
+      const toastIcon = document.getElementById("toast-icon");
+      if (!toast) return;
+
+      // 移除舊的撤銷按鈕
+      const oldBtn = document.getElementById("toast-undo-btn");
+      if (oldBtn) oldBtn.remove();
+
+      toastMessage.innerText = message;
+      toastIcon.innerText = icon;
+
+      // 建立撤銷按鈕
+      const btn = document.createElement("button");
+      btn.id = "toast-undo-btn";
+      btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto";
+      btn.textContent = "撤銷";
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        if (window._undoCallback) {
+          window._undoCallback();
+          window._undoCallback = null;
+        }
+        // 立即關閉 toast
+        const t = document.getElementById("toast");
+        if (t) {
+          t.classList.remove("translate-y-0", "opacity-100");
+          t.classList.add("-translate-y-24", "opacity-0");
+        }
+        if (window.toastTimeout) clearTimeout(window.toastTimeout);
+        haptic(15);
+      };
+      toast.appendChild(btn);
+
+      window._undoCallback = onUndo;
+      toast.classList.remove("-translate-y-24", "opacity-0");
+      toast.classList.add("translate-y-0", "opacity-100");
+
+      if (window.toastTimeout) clearTimeout(window.toastTimeout);
+      window.toastTimeout = setTimeout(() => {
+        toast.classList.remove("translate-y-0", "opacity-100");
+        toast.classList.add("-translate-y-24", "opacity-0");
+        window._undoCallback = null;
+        setTimeout(() => { const b = document.getElementById("toast-undo-btn"); if (b) b.remove(); }, 300);
+      }, 5000);
+    }
+
     function copyText(text) {
       try {
         const textarea = document.createElement("textarea");
@@ -795,30 +910,32 @@ body {
       modal.classList.add("opacity-100");
       modal.classList.remove("translate-y-full", "md:translate-y-8", "md:scale-95", "opacity-0");
       modal.classList.add("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
+      document.body.classList.add("modal-open");
       const daySelect = document.getElementById("ledger-day");
       if (activeFilters.day !== 0) daySelect.value = activeFilters.day;
       renderLedgerSelectors();
       updateCurrencyButtons();
       updateEstimatedHKD();
+      haptic(8);
     }
     function closeExpenseModal() {
-  const backdrop = document.getElementById("expense-modal-backdrop");
-  const modal = document.getElementById("expense-modal");
-  backdrop.classList.remove("opacity-100");
-  backdrop.classList.add("opacity-0");
-  modal.classList.remove("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
-  modal.classList.add("translate-y-full", "md:translate-y-8", "md:scale-95", "opacity-0");
-  setTimeout(() => {
-    backdrop.classList.add("hidden");
-    modal.classList.add("hidden");
-    cancelEdit();
-  }, 300);
-  
-  // 通知父頁面關閉彈窗
-  if (window.parent !== window) {
-    window.parent.postMessage({ type: 'closeExpenseModal' }, '*');
-  }
-}
+      const backdrop = document.getElementById("expense-modal-backdrop");
+      const modal = document.getElementById("expense-modal");
+      backdrop.classList.remove("opacity-100");
+      backdrop.classList.add("opacity-0");
+      modal.classList.remove("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
+      modal.classList.add("translate-y-full", "md:translate-y-8", "md:scale-95", "opacity-0");
+      setTimeout(() => {
+        backdrop.classList.add("hidden");
+        modal.classList.add("hidden");
+        cancelEdit();
+        document.body.classList.remove("modal-open");
+      }, 300);
+
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'closeExpenseModal' }, '*');
+      }
+    }
     function cancelEdit() {
       document.getElementById("ledger-desc").value = "";
       document.getElementById("ledger-amount").value = "";
@@ -855,6 +972,7 @@ body {
         modal.classList.add("opacity-100");
         modal.classList.remove("translate-y-full", "md:translate-y-8", "md:scale-95", "opacity-0");
         modal.classList.add("translate-y-0", "md:translate-y-0", "md:scale-100", "opacity-100");
+        document.body.classList.add("modal-open");
         document.querySelector("#expense-modal h3").innerHTML = '<span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✏️</span> 編輯支出';
         document.getElementById("btn-save-expense").innerHTML = '<span>更新</span><span class="text-lg">✓</span>';
       });
@@ -868,7 +986,7 @@ body {
           const symbol = memberSymbols[member] || "";
           const btn = document.createElement("button");
           btn.type = "button";
-          btn.onclick = () => { state.activePayer = member; renderLedgerSelectors(); };
+          btn.onclick = () => { state.activePayer = member; renderLedgerSelectors(); haptic(5); };
           btn.className = `py-1.5 px-1 text-xs rounded-xl font-bold transition border text-center min-h-[48px] flex flex-col items-center justify-center gap-0.5 ${state.activePayer === member ? style.solid + " shadow-sm scale-105" : style.soft}`;
           btn.innerHTML = `<div class="w-5 h-5 rounded-full ${state.activePayer === member ? "bg-white/20 text-white" : style.avatar + " text-white"} flex items-center justify-center text-[10px] font-black shadow-sm">${member[0].toUpperCase()}</div><span class="${state.activePayer === member ? "text-white" : style.text} text-[10px]">${member} ${symbol}</span>`;
           payerGrid.appendChild(btn);
@@ -882,7 +1000,7 @@ body {
           const symbol = memberSymbols[member] || "";
           const btn = document.createElement("button");
           btn.type = "button";
-          btn.onclick = () => toggleSplitter(member);
+          btn.onclick = () => { toggleSplitter(member); haptic(5); };
           const isActive = state.activeSplitWith.includes(member);
           btn.className = `py-1.5 px-1 text-xs rounded-lg font-bold transition border text-center min-h-[40px] flex items-center justify-center gap-1.5 ${isActive ? style.solid + " shadow-sm" : style.soft}`;
           btn.innerHTML = `<div class="w-3.5 h-3.5 rounded-full border border-white/60 ${isActive ? "bg-white" : "bg-white/50"} flex items-center justify-center shrink-0 shadow-inner"><div class="w-2 h-2 rounded-full ${isActive ? style.avatar : "bg-transparent"}"></div></div><span>${member} ${symbol}</span>`;
@@ -897,7 +1015,7 @@ body {
       renderLedgerSelectors();
     }
     function setSplitPreset(preset) {
-      state.activeSplitWith = preset === "all" ? [...members] : [...members];
+      state.activeSplitWith = [...members];
       renderLedgerSelectors();
     }
     function useLastExpense() {
@@ -914,9 +1032,9 @@ body {
       updateCurrencyButtons();
       updateEstimatedHKD();
       showToast("📋 已沿用上次記錄");
+      haptic(8);
     }
 
-    // 貨幣快速切換按鈕
     function setCurrency(code) {
       const currencySelect = document.getElementById("ledger-currency");
       if (currencySelect) {
@@ -954,7 +1072,7 @@ body {
       const remark = document.getElementById("ledger-remark").value.trim();
       const descValue = desc.value.trim();
       const amountValue = parseFloat(amount.value.replace(/,/g, ""));
-      if (!descValue || isNaN(amountValue) || amountValue <= 0) { showToast("請輸入說明與金額", "⚠️"); return; }
+      if (!descValue || isNaN(amountValue) || amountValue <= 0) { showToast("請輸入說明與金額", "⚠️"); haptic(50); return; }
       ensureWriteAccess(() => {
         const rate = exchangeRates[currency.value] || 0.052;
         const now = Date.now();
@@ -981,6 +1099,7 @@ body {
           showToast("✅ 已新增支出");
           showConfetti();
         }
+        haptic(10);
         saveLocalExpenses();
         syncDataToCloud();
         updateLedgerUI();
@@ -991,18 +1110,40 @@ body {
         }, 300);
       });
     }
+
+    // ==================== ✅ 刪除（含撤銷） ====================
     function deleteExpense(expenseId) {
-      if (!confirm("確定要刪除這筆記錄？")) return;
       ensureWriteAccess(() => {
         const expense = state.expenses.find(e => e.id === expenseId);
         if (!expense) return;
-        state.history.unshift({ type: "delete", expenseId, expenseDesc: expense.desc, actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer], actionTime: new Date().toLocaleString("zh-HK"), details: `刪除了「${expense.desc}」(${expense.amount} ${expense.currency})` });
+
+        // 保存快照（含原始索引，還原時放回原位）
+        const originalIndex = state.expenses.indexOf(expense);
+        const snapshot = { ...expense };
+        const historyEntry = {
+          type: "delete", expenseId, expenseDesc: expense.desc,
+          actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer],
+          actionTime: new Date().toLocaleString("zh-HK"),
+          details: `刪除了「${expense.desc}」(${expense.amount} ${expense.currency})`
+        };
+
+        // 執行刪除
+        state.history.unshift(historyEntry);
         state.expenses = state.expenses.filter(e => e.id !== expenseId);
-        saveLocalExpenses(); syncDataToCloud(); updateLedgerUI(); showToast("🗑 已刪除記錄");
+        saveLocalExpenses(); syncDataToCloud(); updateLedgerUI();
+
+        // 顯示撤銷 Toast
+        showUndoToast(`已刪除「${expense.desc}」`, "🗑", () => {
+          // 還原：從 history 移除該筆紀錄、把 expense 放回原位
+          state.history = state.history.filter(h => h !== historyEntry);
+          state.expenses.splice(Math.min(originalIndex, state.expenses.length), 0, snapshot);
+          saveLocalExpenses(); syncDataToCloud(); updateLedgerUI();
+          showToast("✅ 已還原", "↩️");
+        });
       });
     }
 
-    // ==================== 彩帶動畫 ====================
+    // ==================== 彩帶 ====================
     function showConfetti() {
       const container = document.createElement('div');
       container.className = 'confetti-container';
@@ -1052,7 +1193,7 @@ body {
       renderHistoryList();
     }
 
-    // ==================== 優化列表渲染（縮小卡片） ====================
+    // ==================== 列表渲染 ====================
     function renderExpensesList() {
       const container = document.getElementById("records-list-container");
       if (!container) return;
@@ -1214,6 +1355,7 @@ body {
       localStorage.setItem("settlement_status", JSON.stringify(settlementStatus));
       renderSuggestedSettlements();
       showToast(settlementStatus[key] ? "✅ 已標記為已還款" : "🔁 已取消已還款");
+      haptic(10);
     }
     function resetSettlementStatus() {
       if (!confirm("確定要重置所有清償狀態？")) return;
@@ -1262,6 +1404,7 @@ body {
       backdrop.classList.remove("hidden"); modal.classList.remove("hidden"); modal.offsetWidth;
       backdrop.classList.remove("opacity-0"); modal.classList.remove("opacity-0", "scale-95");
       modal.classList.add("opacity-100", "scale-100");
+      haptic(8);
     }
     function closeConfirmModal() {
       const backdrop = document.getElementById("confirm-modal-backdrop");
@@ -1303,12 +1446,13 @@ body {
       if (char) {
         char.classList.add('jumping');
         setTimeout(() => char.classList.remove('jumping'), 600);
+        haptic(10);
         showToast(`你點了一下${characterId === 'snowman' ? '雪人' : '狐狸'}！`, "❄️");
       }
     }
     function initRandomCharacters() { setTimeout(spawnCharacters, 2000); }
 
-    // ==================== 雪花效果 ====================
+    // ==================== 雪花 ====================
     function initSnowEffect() {
       const snowContainer = document.getElementById("snow-fall");
       if (!snowContainer) return;
@@ -1322,12 +1466,66 @@ body {
         const size = Math.random() * 7 + 3;
         snowflake.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; opacity: ${Math.random() * 0.4 + 0.1}; animation: ${animations[Math.floor(Math.random() * animations.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%; box-shadow: 0 0 4px rgba(224, 242, 254, 0.8);`;
         if (size > 8) snowflake.style.boxShadow = "0 0 10px 2px rgba(255,255,255,0.4)";
-        if (Math.random() > 0.7) snowflake.classList.add("snowflake-shine");
         snowContainer.appendChild(snowflake);
       }
     }
 
-    // ==================== Service Worker 註冊 ====================
+    // ==================== ✅ Modal 拖動關閉 ====================
+    (function setupExpenseModalDrag() {
+      const modal = document.getElementById('expense-modal');
+      const backdrop = document.getElementById('expense-modal-backdrop');
+      const handle = document.getElementById('expense-modal-handle');
+      if (!modal || !handle) return;
+
+      let startY = 0, currentY = 0, isDragging = false;
+
+      const onStart = (e) => {
+        isDragging = true;
+        startY = e.touches ? e.touches[0].clientY : e.clientY;
+        currentY = startY;
+        modal.classList.add('dragging');
+        modal.classList.remove('snapping');
+        haptic(5);
+      };
+      const onMove = (e) => {
+        if (!isDragging) return;
+        currentY = e.touches ? e.touches[0].clientY : e.clientY;
+        const diff = currentY - startY;
+        if (diff > 0) {
+          modal.style.transform = `translateY(${diff}px)`;
+          backdrop.style.opacity = String(Math.max(0, 1 - diff / 400));
+        }
+      };
+      const onEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        const diff = currentY - startY;
+        modal.classList.remove('dragging');
+        modal.classList.add('snapping');
+        if (diff > 100) {
+          modal.style.transform = '';
+          backdrop.style.opacity = '';
+          setTimeout(() => {
+            modal.classList.remove('snapping');
+            closeExpenseModal();
+          }, 50);
+        } else {
+          modal.style.transform = '';
+          backdrop.style.opacity = '';
+          setTimeout(() => modal.classList.remove('snapping'), 300);
+        }
+      };
+
+      handle.addEventListener('touchstart', onStart, { passive: true });
+      handle.addEventListener('touchmove', onMove, { passive: true });
+      handle.addEventListener('touchend', onEnd);
+      handle.addEventListener('touchcancel', onEnd);
+      handle.addEventListener('mousedown', onStart);
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onEnd);
+    })();
+
+    // ==================== Service Worker ====================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then(reg => {

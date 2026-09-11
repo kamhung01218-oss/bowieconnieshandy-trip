@@ -1,5 +1,6 @@
 /* ============================================================
- * AppHeader 獨立元件 v2.1（完整修正版）
+ * AppHeader 獨立元件 v2.3
+ * 移除 Chip 列的搶票按鈕（搶票入口統一由焦點卡片提供）
  *
  * 使用方式：
  *   AppHeader.init({
@@ -124,12 +125,10 @@ window.AppHeader = (function () {
   }
 
   function updateCell(focusEl, name, newText) {
-    // ✅ 精確選擇：只選 .countdown-value 上帶 data-cell 的
     const el = focusEl.querySelector(`.countdown-value[data-cell="${name}"]`);
     if (!el) return;
     if (el.textContent === newText) return;
     el.textContent = newText;
-    // 觸發跳動動畫
     el.classList.remove("tick");
     void el.offsetWidth;
     el.classList.add("tick");
@@ -144,7 +143,6 @@ window.AppHeader = (function () {
     const phase = getTripPhase();
     const cb = _config.callbacks || {};
 
-    // 只有階段變化或首次渲染時，才重建 DOM
     if (_lastRenderedPhase !== phase) {
       _lastRenderedPhase = phase;
       let innerHTML = "";
@@ -270,7 +268,6 @@ window.AppHeader = (function () {
           </div>
         `;
       } else {
-        // 行程後
         let totalExpenses = 0;
         if (cb.getExpenseCount) {
           try { totalExpenses = cb.getExpenseCount() || 0; } catch (e) {}
@@ -336,10 +333,8 @@ window.AppHeader = (function () {
           booking: cb.onBooking,
           equip: cb.onEquip,
           drive: cb.onDrive,
-          shoot: cb.onShoot,
-          ticket: cb.onTicket,
-          weather: cb.onWeather,
-          overview: cb.onOverview
+          shoot: cb.onShoot
+          // ✅ 已移除 ticket
         };
         if (map[action]) map[action]();
       });
@@ -348,6 +343,8 @@ window.AppHeader = (function () {
 
   function bindBrandActions() {
     if (!_container) return;
+    const cb = _config.callbacks || {};
+
     const syncBtn = _container.querySelector("#app-header-sync");
     if (syncBtn) {
       syncBtn.addEventListener("click", () => {
@@ -356,6 +353,20 @@ window.AppHeader = (function () {
         if (typeof window.showToast === "function") {
           window.showToast(`🔄 雲端已連線 · ${phaseLabel}`, "☁️");
         }
+      });
+    }
+
+    const weatherBtn = _container.querySelector("#app-header-weather");
+    if (weatherBtn) {
+      weatherBtn.addEventListener("click", () => {
+        if (cb.onWeather) cb.onWeather();
+      });
+    }
+
+    const overviewBtn = _container.querySelector("#app-header-overview");
+    if (overviewBtn) {
+      overviewBtn.addEventListener("click", () => {
+        if (cb.onOverview) cb.onOverview();
       });
     }
   }
@@ -373,14 +384,18 @@ window.AppHeader = (function () {
 
       _container.innerHTML = `
         <div class="brand-bar">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:16px">❄️</span>
+          <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">
+            <span style="font-size:16px;flex-shrink:0">❄️</span>
             <span class="brand-title">東北冬季親子自駕 2027</span>
           </div>
-          <button type="button" id="app-header-sync" class="sync-badge">
-            <span class="sync-dot"></span>
-            <span id="app-header-sync-text">已同步</span>
-          </button>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <button type="button" id="app-header-weather" class="brand-icon-btn" title="天氣">⛅</button>
+            <button type="button" id="app-header-overview" class="brand-icon-btn" title="行程速覽">📋</button>
+            <button type="button" id="app-header-sync" class="sync-badge">
+              <span class="sync-dot"></span>
+              <span id="app-header-sync-text">已同步</span>
+            </button>
+          </div>
         </div>
 
         <div class="focus-card">
@@ -394,9 +409,6 @@ window.AppHeader = (function () {
           <button type="button" class="chip" data-chip-action="equip"><span>🎒</span> 裝備</button>
           <button type="button" class="chip" data-chip-action="drive"><span>⚠️</span> 雪地攻略</button>
           <button type="button" class="chip" data-chip-action="shoot"><span>📷</span> 拍攝</button>
-          <button type="button" class="chip" data-chip-action="ticket"><span>🎟️</span> 搶票</button>
-          <button type="button" class="chip" data-chip-action="weather"><span>⛅</span> 天氣</button>
-          <button type="button" class="chip" data-chip-action="overview"><span>📋</span> 行程速覽</button>
         </div>
       `;
 
@@ -404,7 +416,6 @@ window.AppHeader = (function () {
       bindChipActions();
       renderFocusCard();
 
-      // 每秒更新（行程前才需要）
       if (_tickTimer) clearInterval(_tickTimer);
       _tickTimer = setInterval(() => {
         const phase = getTripPhase();
