@@ -36,7 +36,6 @@ tailwind.config = {
   }
 }
 </script>
-
 <script>
 firebase.initializeApp({
   apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
@@ -59,6 +58,28 @@ const db = firebase.firestore();
 window.db = db;
 window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 
+// ✅ 保留 syncDataToCloud（原本這段就在，不要刪）
+async function syncDataToCloud() {
+  try {
+    if (!firebase.auth().currentUser) return;   // ✅ 補上 auth 檢查
+
+    const bookingOnly = {};
+    Object.keys(state.checkedItems).forEach(k => {
+      if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
+        bookingOnly[k] = state.checkedItems[k];
+      }
+    });
+
+    await window.dbRef.set({
+      checkedItems: bookingOnly,
+      customBookingItems: customBookingItems,
+      updatedAt: Date.now()
+    }, { merge: true });
+  } catch (e) {
+    console.warn("Cloud save fallback to local:", e);
+  }
+}
+
 // 等 DOM 與 body script 都跑完再註冊
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.dbRef) return;
@@ -69,9 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cloudData = docSnap.data();
 
-    // 只在「雲端有值」時才覆蓋本地
     if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
-      // 1. 保留本機非 booking 的鍵（例如 equip-）
       const localNonBooking = {};
       Object.keys(state.checkedItems).forEach(k => {
         if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) {
@@ -79,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // 2. 用雲端 booking 鍵覆蓋，但保留本機新勾的（若雲端沒有該 key）
       const mergedBooking = { ...cloudData.checkedItems };
       Object.keys(state.checkedItems).forEach(k => {
         if ((k.startsWith('booking-') || k.startsWith('custom-booking-'))
@@ -92,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
       state.checkedItems = { ...mergedBooking, ...localNonBooking };
     }
 
-    // 3. 自訂項目改用 arrayUnion 就不用怕覆蓋
     if (Array.isArray(cloudData.customBookingItems)) {
       const localIds = new Set(customBookingItems.map(i => i.id));
       cloudData.customBookingItems.forEach(item => {
