@@ -1125,10 +1125,12 @@ state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking };
 
     // ==================== 編輯/唯讀模式控制 ====================
     function forceSyncFromCloud() {
-      if (!window.dbRef) {
-        showToast("⚠️ 雲端未連線", "⚠️");
-        return;
-      }
+  if (!window.dbRef) {
+    // 讓手機畫面直接顯示缺少什麼
+    const debugMsg = `⚠️ 未連線 (firebase: ${typeof firebase}, dbRef: ${typeof window.dbRef})`;
+    showToast(debugMsg, "⚠️");
+    return;
+  }
       showToast("🔄 同步中...", "☁️");
       haptic(8);
 
