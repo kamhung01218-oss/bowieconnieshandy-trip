@@ -1521,11 +1521,22 @@ state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking };
     }
 
     function toggleBookingCheck(key) {
-      if (!isAdminUnlocked()) { showToast("🔒 唯讀模式，無法修改", "⚠️"); return; }
-      state.checkedItems[key] = !state.checkedItems[key];
-      saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist();
-      haptic(5);
-    }
+  if (!isAdminUnlocked()) { showToast("🔒 唯讀模式，無法修改", "⚠️"); return; }
+  
+  // 1. 先切換狀態
+  state.checkedItems[key] = !state.checkedItems[key];
+  
+  // 2. 立刻更新畫面！(這行移到最前面，畫面就會秒變色)
+  renderBookingChecklist();
+  
+  // 3. 再存進手機本地
+  saveLocalCheckedItems();
+  
+  // 4. 最後才嘗試寫入雲端 (就算失敗也不影響畫面)
+  syncDataToCloud();
+  
+  haptic(5);
+}
     function checkAllBooking() {
       if (!isAdminUnlocked()) return;
       [...bookingList, ...customBookingItems].forEach(item => {
