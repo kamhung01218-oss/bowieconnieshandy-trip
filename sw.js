@@ -6,7 +6,7 @@
  *   - 支援 SKIP_WAITING 訊息，讓使用者手動更新
  * ============================================================ */
 
-const CACHE_NAME = 'tohoku-winter-trip-v18';
+const CACHE_NAME = 'tohoku-winter-trip-v12';
 
 const ASSETS = [
   '/',
@@ -103,6 +103,6 @@ self.addEventListener('fetch', (e) => {
 // ---------- message：讓使用者手動 SKIP_WAITING ----------
 self.addEventListener('message', (e) => {
   if (e.data && e.data.type === 'SKIP_WAITING') {
-    e.waitUntil(self.skipWaiting());   // ← 加上 waitUntil
+    self.skipWaiting();
   }
 });

@@ -1,6 +1,6 @@
 /* ============================================================
- * AppHeader 元件樣式 v2.5
- * 新增用戶頭像切換功能
+ * AppHeader 元件樣式 v2.2
+ * 品牌列加入天氣/行程速覽 icon 按鈕
  * ============================================================ */
 
 :root {
@@ -15,6 +15,7 @@
   overflow: hidden;
   padding-top: var(--app-header-safe-top);
   box-shadow: 0 8px 32px rgba(12, 25, 41, 0.25);
+  transition: display 0.2s ease;
 }
 .app-header::before {
   content: '';
@@ -64,7 +65,7 @@
   text-overflow: ellipsis;
 }
 
-/* 品牌列右側圖示按鈕 */
+/* 品牌列右側小圖示按鈕 */
 .app-header .brand-icon-btn {
   display: inline-flex;
   align-items: center;
@@ -89,31 +90,6 @@
 .app-header .brand-icon-btn:hover {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.2);
-}
-
-/* ✅ 用戶頭像按鈕 */
-.app-header .user-avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: white;
-  font-size: 12px;
-  font-weight: 900;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  cursor: pointer;
-  transition: all 0.2s;
-  padding: 0;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
-  font-family: 'Noto Sans TC', sans-serif;
-}
-.app-header .user-avatar:active {
-  transform: scale(0.9);
-  border-color: rgba(255, 255, 255, 0.7);
 }
 
 /* 同步狀態 badge */
@@ -182,6 +158,8 @@
   box-shadow: 0 6px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
   overflow: hidden;
 }
+
+/* 極光氛圍背景 */
 .app-header .focus-inner::before {
   content: '';
   position: absolute;
@@ -247,6 +225,7 @@
   gap: 6px;
   margin-top: 4px;
 }
+
 .app-header .countdown-cell {
   position: relative;
   background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%);
@@ -255,6 +234,7 @@
   padding: 10px 2px;
   text-align: center;
   overflow: hidden;
+  transition: border-color 0.3s;
 }
 .app-header .countdown-cell::before {
   content: '';
@@ -277,6 +257,7 @@
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }
 }
+
 .app-header .countdown-value {
   position: relative;
   z-index: 1;
@@ -292,6 +273,7 @@
   -webkit-text-fill-color: transparent;
   text-shadow: 0 2px 12px rgba(56, 189, 248, 0.35);
 }
+
 .app-header .countdown-unit {
   position: relative;
   z-index: 1;
@@ -304,6 +286,8 @@
   text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
   opacity: 0.9;
 }
+
+/* 秒數格子特別強調 */
 .app-header .countdown-cell[data-cell-block="seconds"] .countdown-value {
   background: linear-gradient(180deg, #ffffff 0%, #a78bfa 100%);
   -webkit-background-clip: text;
@@ -317,6 +301,8 @@
   color: #c4b5fd;
   text-shadow: 0 0 8px rgba(167, 139, 250, 0.5);
 }
+
+/* 秒數變化時的跳動動畫 */
 .app-header .countdown-value.tick {
   animation: countdown-tick 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -534,73 +520,6 @@
   transform: scale(0.95);
 }
 
-/* ✅ 用戶切換選單 */
-.user-switcher {
-  position: fixed;
-  top: calc(var(--app-header-safe-top, 0px) + 52px);
-  right: 16px;
-  background: white;
-  border-radius: 14px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
-  padding: 6px;
-  z-index: 9999;
-  min-width: 160px;
-  animation: user-switcher-in 0.2s ease;
-}
-@keyframes user-switcher-in {
-  from { opacity: 0; transform: translateY(-6px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.user-switcher button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 800;
-  color: #334155;
-  text-align: left;
-  transition: all 0.15s;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-family: inherit;
-}
-.user-switcher button:hover {
-  background: #f1f5f9;
-}
-.user-switcher button:active {
-  transform: scale(0.98);
-}
-.user-switcher button.active {
-  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-  color: #0c4a6e;
-}
-.user-switcher .avatar-mini {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: white;
-  font-size: 10px;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.user-switcher button.active .avatar-mini {
-  background: linear-gradient(135deg, #0369a1, #0c4a6e);
-}
-.user-switcher .check {
-  margin-left: auto;
-  color: #0284c7;
-  font-size: 14px;
-}
-
 /* ---------- 響應式 ---------- */
 @media (min-width: 1024px) {
   .app-header .focus-card { padding: 0 24px; }
@@ -614,8 +533,7 @@
   .app-header .countdown-value { font-size: 22px; }
   .app-header .countdown-unit { font-size: 10px; }
   .app-header .countdown-cell { padding: 9px 2px; }
-  .app-header .brand-title { font-size: 11px; }
+  .app-header .brand-title { font-size: 12px; }
   .app-header .brand-icon-btn { width: 26px; height: 26px; font-size: 12px; }
-  .app-header .user-avatar { width: 26px; height: 26px; font-size: 11px; }
-  .app-header .sync-badge { font-size: 9px; padding: 2px 6px; }
+  .app-header .sync-badge { font-size: 9px; padding: 2px 7px; }
 }
