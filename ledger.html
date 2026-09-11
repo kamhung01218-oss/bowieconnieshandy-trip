@@ -658,6 +658,8 @@ body {
 
     // ==================== 雲端同步 ====================
     let lastSyncNotified = {};
+    // ✅ 防重複註冊 onSnapshot listener
+    let _snapshotUnsub = null;
 
     function updateCloudBadge(isConnected) {
       const badge = document.getElementById("cloud-sync-badge");
@@ -683,12 +685,24 @@ body {
     auth.onAuthStateChanged(user => {
       if (!user) { auth.signInAnonymously().catch(() => {}); return; }
       updateCloudBadge(true);
-      window.dbRef.onSnapshot(docSnap => {
+
+      // ✅ 已註冊過就跳過，避免 listener 累積
+      if (_snapshotUnsub) return;
+
+      _snapshotUnsub = window.dbRef.onSnapshot(docSnap => {
         if (docSnap.exists) {
           const cloudData = docSnap.data();
           if (cloudData && cloudData.expenses) {
             const cloudExpenses = sanitizeExpenses(cloudData.expenses);
             const localExpenses = state.expenses;
+
+            // ✅ 合併而非覆蓋：以 id 為 key，雲端優先但保留本地獨有的
+            const merged = [...cloudExpenses];
+            localExpenses.forEach(le => {
+              if (!merged.some(ce => ce.id === le.id)) merged.push(le);
+            });
+
+            // 提示新增
             if (localExpenses.length > 0 && cloudExpenses.length > localExpenses.length) {
               const newExpenses = cloudExpenses.filter(ce => !localExpenses.some(le => le.id === ce.id));
               if (newExpenses.length > 0) {
@@ -700,7 +714,8 @@ body {
                 }
               }
             }
-            state.expenses = cloudExpenses;
+
+            state.expenses = merged;
             saveLocalExpenses();
             updateLedgerUI();
           }
@@ -708,10 +723,16 @@ body {
       }, err => updateCloudBadge(false));
     });
 
+    // ✅ 記帳本只同步 expenses 和 history，絕不碰 checkedItems
+    // （checkedItems 是 index.html 行前預訂的專屬欄位，若在此寫入會覆蓋使用者的勾選）
     async function syncDataToCloud() {
       try {
         if (!auth.currentUser) return;
-        await window.dbRef.set({ expenses: state.expenses, checkedItems: state.checkedItems, history: state.history, updatedAt: Date.now() }, { merge: true });
+        await window.dbRef.set({
+          expenses: state.expenses,
+          history: state.history,
+          updatedAt: Date.now()
+        }, { merge: true });
         updateCloudBadge(true);
       } catch(e) { updateCloudBadge(false); }
     }
@@ -820,7 +841,6 @@ body {
       const toastMessage = document.getElementById("toast-message");
       const toastIcon = document.getElementById("toast-icon");
       if (!toast) return;
-      // 清掉舊的撤銷按鈕
       const oldBtn = document.getElementById("toast-undo-btn");
       if (oldBtn) oldBtn.remove();
       window._undoCallback = null;
@@ -842,14 +862,12 @@ body {
       const toastIcon = document.getElementById("toast-icon");
       if (!toast) return;
 
-      // 移除舊的撤銷按鈕
       const oldBtn = document.getElementById("toast-undo-btn");
       if (oldBtn) oldBtn.remove();
 
       toastMessage.innerText = message;
       toastIcon.innerText = icon;
 
-      // 建立撤銷按鈕
       const btn = document.createElement("button");
       btn.id = "toast-undo-btn";
       btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto";
@@ -860,7 +878,6 @@ body {
           window._undoCallback();
           window._undoCallback = null;
         }
-        // 立即關閉 toast
         const t = document.getElementById("toast");
         if (t) {
           t.classList.remove("translate-y-0", "opacity-100");
@@ -1117,7 +1134,6 @@ body {
         const expense = state.expenses.find(e => e.id === expenseId);
         if (!expense) return;
 
-        // 保存快照（含原始索引，還原時放回原位）
         const originalIndex = state.expenses.indexOf(expense);
         const snapshot = { ...expense };
         const historyEntry = {
@@ -1127,14 +1143,11 @@ body {
           details: `刪除了「${expense.desc}」(${expense.amount} ${expense.currency})`
         };
 
-        // 執行刪除
         state.history.unshift(historyEntry);
         state.expenses = state.expenses.filter(e => e.id !== expenseId);
         saveLocalExpenses(); syncDataToCloud(); updateLedgerUI();
 
-        // 顯示撤銷 Toast
         showUndoToast(`已刪除「${expense.desc}」`, "🗑", () => {
-          // 還原：從 history 移除該筆紀錄、把 expense 放回原位
           state.history = state.history.filter(h => h !== historyEntry);
           state.expenses.splice(Math.min(originalIndex, state.expenses.length), 0, snapshot);
           saveLocalExpenses(); syncDataToCloud(); updateLedgerUI();
