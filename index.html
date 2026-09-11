@@ -58,13 +58,25 @@ const db = firebase.firestore();
 window.db = db;
 window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 
+// ✅ 只同步「行前預訂」相關的鍵（booking- / custom-booking-），裝備清單保留本地
 window.dbRef.onSnapshot(docSnap => {
   if (docSnap.exists()) {
     const cloudData = docSnap.data();
+
     if (cloudData.checkedItems) {
-      state.checkedItems = cloudData.checkedItems;
+      // 1. 先清掉本地所有「行前預訂」相關的鍵（讓取消勾選也能同步）
+      Object.keys(state.checkedItems).forEach(k => {
+        if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
+          delete state.checkedItems[k];
+        }
+      });
+      // 2. 套用雲端版本（雲端只有 booking 鍵）
+      Object.assign(state.checkedItems, cloudData.checkedItems);
+
+      saveLocalCheckedItems();
       restoreChecklistUI();
     }
+
     if (cloudData.customBookingItems) {
       customBookingItems = cloudData.customBookingItems;
       localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
@@ -75,8 +87,16 @@ window.dbRef.onSnapshot(docSnap => {
 
 async function syncDataToCloud() {
   try {
+    // ✅ 只挑出 booking- 和 custom-booking- 前綴的鍵
+    const bookingOnly = {};
+    Object.keys(state.checkedItems).forEach(k => {
+      if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
+        bookingOnly[k] = state.checkedItems[k];
+      }
+    });
+
     await window.dbRef.set({
-      checkedItems: state.checkedItems,
+      checkedItems: bookingOnly,
       customBookingItems: customBookingItems,
       updatedAt: Date.now()
     }, { merge: true });
@@ -1060,9 +1080,7 @@ async function syncDataToCloud() {
                 <button onclick="switchDay(6)" id="tab-d6" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D6 (1/26)</button>
                 <button onclick="switchDay(7)" id="tab-d7" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D7 (1/27)</button>
               </div>
-              <button id="fab-collapse-all" onclick="collapseAllItineraries()" class="shrink-0 w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center shadow-sm active:scale-95 transition">
-                <span class="text-base" id="collapse-icon">⬆️</span>
-              </button>
+              <!-- ✅ 收合按鈕已移至右下角浮動區 -->
             </div>
             <div class="border-b border-slate-200 mt-1"></div>
           </div>
@@ -1098,7 +1116,12 @@ async function syncDataToCloud() {
     </div>
   </div>
 
+  <!-- ✅ 右下角浮動按鈕區：上方收合、下方匯率 -->
   <div id="currency-fab-container" class="fixed right-4 z-[9999] flex flex-col items-end gap-2 fab-wrapper" style="bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 20px);">
+    <button id="fab-collapse-all" onclick="collapseAllItineraries()" title="展開／收合全部行程"
+      class="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95">
+      <span class="text-base" id="collapse-icon">⬆️</span>
+    </button>
     <button onclick="toggleCurrencyWidget()" id="currency-fab" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center shadow-lg border border-slate-600 transition-all hover:scale-105 active:scale-95">
       <span class="text-lg">🪙</span>
     </button>
@@ -2256,7 +2279,8 @@ async function syncDataToCloud() {
 
     function toggleEquipCheck(key) {
       state.checkedItems[key] = !state.checkedItems[key];
-      saveLocalCheckedItems(); syncDataToCloud(); renderEquipChecklist();
+      // ✅ 裝備清單不同步雲端（每人不同），只存本地
+      saveLocalCheckedItems(); renderEquipChecklist();
       haptic(5);
     }
     function checkAllEquipment() {
@@ -2264,7 +2288,7 @@ async function syncDataToCloud() {
         const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
         state.checkedItems[key] = true;
       });
-      saveLocalCheckedItems(); syncDataToCloud(); renderEquipChecklist();
+      saveLocalCheckedItems(); renderEquipChecklist();
       showToast("✅ 已全部勾選！");
     }
     function uncheckAllEquipment() {
@@ -2272,7 +2296,7 @@ async function syncDataToCloud() {
         const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
         state.checkedItems[key] = false;
       });
-      saveLocalCheckedItems(); syncDataToCloud(); renderEquipChecklist();
+      saveLocalCheckedItems(); renderEquipChecklist();
       showToast("🧹 已清除所有勾選！");
     }
     function copyEquipmentList() {
@@ -2952,7 +2976,6 @@ async function syncDataToCloud() {
       const i = document.getElementById("toast-icon");
       if (!toast || !m || !i) return;
 
-      // 移除舊的更新按鈕
       const oldUpdateBtn = document.getElementById("update-btn");
       if (oldUpdateBtn) oldUpdateBtn.remove();
       const oldUndoBtn = document.getElementById("toast-undo-btn");
@@ -2976,13 +2999,22 @@ async function syncDataToCloud() {
 
       toast.classList.remove("-translate-y-24", "opacity-0");
       toast.classList.add("translate-y-0", "opacity-100");
-      // 更新提示不自動消失
     }
 
+    // ✅ 條件化隱藏記帳 iframe（修復新增帳單後畫面空白）
     window.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'closeExpenseModal') {
         const lc = document.getElementById('ledger-frame-container');
-        if (lc) { lc.classList.add('hidden-view'); lc.style.cssText = ''; }
+        if (lc) {
+          lc.style.cssText = '';
+          if (state.currentMainTab === 'ledger') {
+            lc.classList.remove('hidden-view');
+            lc.classList.add('view-active');
+          } else {
+            lc.classList.add('hidden-view');
+            lc.classList.remove('view-active');
+          }
+        }
       }
     });
 
