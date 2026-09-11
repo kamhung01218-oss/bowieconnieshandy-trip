@@ -61,7 +61,7 @@ window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 // ✅ 保留 syncDataToCloud（原本這段就在，不要刪）
 async function syncDataToCloud() {
   try {
-    if (!firebase.auth().currentUser) return;   // ✅ 補上 auth 檢查
+    if (!firebase.auth().currentUser) return;
 
     const bookingOnly = {};
     Object.keys(state.checkedItems).forEach(k => {
@@ -70,11 +70,18 @@ async function syncDataToCloud() {
       }
     });
 
+    // 1. 先寫入 checkedItems (Map 用 merge 沒問題)
     await window.dbRef.set({
       checkedItems: bookingOnly,
-      customBookingItems: customBookingItems,
       updatedAt: Date.now()
     }, { merge: true });
+
+    // 2. 自訂項目改用 arrayUnion，避免覆蓋別台手機的資料
+    if (customBookingItems.length > 0) {
+      await window.dbRef.update({
+        customBookingItems: firebase.firestore.FieldValue.arrayUnion(...customBookingItems)
+      });
+    }
   } catch (e) {
     console.warn("Cloud save fallback to local:", e);
   }
