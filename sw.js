@@ -10,8 +10,11 @@
 const CACHE_NAME = 'tohoku-winter-trip';  // 固定名稱，永不改
 
 const ASSETS = [
-  '/', '/index.html', '/ledger.html', '/data.js', '/shoot-tips.js',
-  '/shopping.js', '/header.css', '/header.js', '/manifest.json',
+  '/', '/index.html', '/ledger.html',
+  '/data.js', '/shoot-tips.js', '/shopping.js',
+  '/header.css', '/header.js',
+  '/style.css',        // ← 新增
+  '/manifest.json',
   'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap'
 ];
