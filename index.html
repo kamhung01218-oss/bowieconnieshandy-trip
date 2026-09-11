@@ -58,26 +58,12 @@ const db = firebase.firestore();
 window.db = db;
 window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 
-window.dbRef.onSnapshot(docSnap => {
-  if (docSnap.exists()) {
-    const cloudData = docSnap.data();
-    if (cloudData.checkedItems) {
-      state.checkedItems = cloudData.checkedItems;
-      restoreChecklistUI();
-    }
-    if (cloudData.customBookingItems) {
-      customBookingItems = cloudData.customBookingItems;
-      localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
-    }
-    renderBookingChecklist();
-  }
-}, err => console.warn("Firestore Sync Warning:", err));
-
 async function syncDataToCloud() {
   try {
     await window.dbRef.set({
       checkedItems: state.checkedItems,
       customBookingItems: customBookingItems,
+      customEquipItemsByUser: customEquipItemsByUser,
       updatedAt: Date.now()
     }, { merge: true });
   } catch (e) {
@@ -90,7 +76,6 @@ async function syncDataToCloud() {
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
 
   :root {
-    --nav-height: 60px;
     --bottom-nav-height: 68px;
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
     --safe-area-top: env(safe-area-inset-top, 0px);
@@ -119,7 +104,6 @@ async function syncDataToCloud() {
   }
   button:active { transform: scale(0.96); transition: transform 0.05s; }
 
-  /* ========== 圖片淡入 ========== */
   img.lazy-fade {
     opacity: 0;
     transform: scale(1.03);
@@ -132,20 +116,13 @@ async function syncDataToCloud() {
     filter: blur(0);
   }
 
-  /* ========== Skeleton ========== */
   .skeleton {
-    background: linear-gradient(90deg,
-      rgba(226, 232, 240, 0.5) 0%,
-      rgba(241, 245, 249, 0.85) 50%,
-      rgba(226, 232, 240, 0.5) 100%);
+    background: linear-gradient(90deg, rgba(226, 232, 240, 0.5) 0%, rgba(241, 245, 249, 0.85) 50%, rgba(226, 232, 240, 0.5) 100%);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.6s ease-in-out infinite;
     border-radius: 8px;
   }
-  @keyframes skeleton-shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
+  @keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   .skeleton-card {
     background: rgba(255,255,255,0.9);
     border-radius: 16px;
@@ -159,21 +136,11 @@ async function syncDataToCloud() {
   .skeleton-line.long { width: 100%; }
   .skeleton-title { height: 18px; width: 60%; margin-bottom: 12px; }
 
-  /* ========== Modal 進度條 ========== */
   .modal-progress-wrap { padding: 0 6px; margin-bottom: 12px; }
-  .modal-progress-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 6px;
-  }
+  .modal-progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .modal-progress-label { font-size: 11px; color: #64748b; font-weight: 700; }
-  .modal-progress-count {
-    font-size: 13px; font-weight: 900; color: #0284c7;
-    font-variant-numeric: tabular-nums;
-  }
-  .modal-progress-track {
-    height: 8px; background: #e2e8f0; border-radius: 999px;
-    overflow: hidden; position: relative;
-  }
+  .modal-progress-count { font-size: 13px; font-weight: 900; color: #0284c7; font-variant-numeric: tabular-nums; }
+  .modal-progress-track { height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; position: relative; }
   .modal-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #38bdf8, #0284c7);
@@ -184,21 +151,13 @@ async function syncDataToCloud() {
   }
   .modal-progress-fill::after {
     content: '';
-    position: absolute;
-    top: 0; left: -30%;
-    width: 30%; height: 100%;
+    position: absolute; top: 0; left: -30%; width: 30%; height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
     animation: progress-shimmer 2s ease-in-out infinite;
   }
-  @keyframes progress-shimmer {
-    0% { left: -30%; }
-    100% { left: 130%; }
-  }
-  .modal-progress-fill.complete {
-    background: linear-gradient(90deg, #34d399, #10b981);
-  }
+  @keyframes progress-shimmer { 0% { left: -30%; } 100% { left: 130%; } }
+  .modal-progress-fill.complete { background: linear-gradient(90deg, #34d399, #10b981); }
 
-  /* ========== Modal Tab ========== */
   .modal-tabs {
     display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
     padding: 4px 2px 10px; -webkit-overflow-scrolling: touch;
@@ -245,16 +204,12 @@ async function syncDataToCloud() {
     transform: translateY(-1px);
   }
 
-  /* ========== 分類摺疊 ========== */
   .category-group {
     margin-bottom: 10px;
     border: 1px solid #e2e8f0; border-radius: 14px;
     overflow: hidden; background: white; transition: all 0.2s;
   }
-  .category-group.done {
-    border-color: #d1fae5;
-    background: rgba(236, 253, 245, 0.4);
-  }
+  .category-group.done { border-color: #d1fae5; background: rgba(236, 253, 245, 0.4); }
   .category-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 11px 14px; cursor: pointer; user-select: none;
@@ -262,9 +217,7 @@ async function syncDataToCloud() {
     transition: background 0.2s; border: none; width: 100%; text-align: left;
   }
   .category-header:active { background: #e2e8f0; }
-  .category-group.done .category-header {
-    background: linear-gradient(180deg, #ecfdf5, #d1fae5);
-  }
+  .category-group.done .category-header { background: linear-gradient(180deg, #ecfdf5, #d1fae5); }
   .category-title-wrap { display: flex; align-items: center; gap: 8px; }
   .category-title { font-size: 13px; font-weight: 900; color: #334155; }
   .category-group.done .category-title { color: #059669; }
@@ -275,20 +228,11 @@ async function syncDataToCloud() {
     font-variant-numeric: tabular-nums;
   }
   .category-group.done .category-count { background: #a7f3d0; color: #065f46; }
-  .category-chevron {
-    width: 16px; height: 16px; color: #94a3b8;
-    transition: transform 0.3s;
-  }
+  .category-chevron { width: 16px; height: 16px; color: #94a3b8; transition: transform 0.3s; }
   .category-group.expanded .category-chevron { transform: rotate(180deg); }
-  .category-body {
-    max-height: 0; overflow: hidden;
-    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+  .category-body { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
   .category-group.expanded .category-body { max-height: 1500px; }
-  .category-body-inner {
-    padding: 8px 10px 12px;
-    display: flex; flex-direction: column; gap: 6px;
-  }
+  .category-body-inner { padding: 8px 10px 12px; display: flex; flex-direction: column; gap: 6px; }
 
   .checklist-item {
     display: flex; align-items: center; gap: 10px;
@@ -297,21 +241,14 @@ async function syncDataToCloud() {
     cursor: pointer; transition: all 0.2s; position: relative;
   }
   .checklist-item:active { background: #f8fafc; transform: scale(0.99); }
-  .checklist-item.checked {
-    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-    border-color: #a7f3d0;
-  }
+  .checklist-item.checked { background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-color: #a7f3d0; }
   .checklist-item.checked .checklist-label {
     color: #64748b; text-decoration: line-through;
-    text-decoration-color: #94a3b8;
-    text-decoration-thickness: 1px;
+    text-decoration-color: #94a3b8; text-decoration-thickness: 1px;
   }
-  .checklist-item .checklist-label {
-    flex: 1; font-size: 12px; color: #334155; line-height: 1.4;
-  }
+  .checklist-item .checklist-label { flex: 1; font-size: 12px; color: #334155; line-height: 1.4; }
   .checklist-item .checklist-icon { font-size: 16px; flex-shrink: 0; }
 
-  /* ========== 編號卡片 ========== */
   .numbered-card {
     display: flex; gap: 12px; padding: 14px;
     background: white; border: 1px solid #e2e8f0;
@@ -319,180 +256,92 @@ async function syncDataToCloud() {
     position: relative; overflow: hidden;
   }
   .numbered-card::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
     background: linear-gradient(180deg, #38bdf8, #0284c7);
   }
-  .numbered-card.warn::before {
-    background: linear-gradient(180deg, #fbbf24, #d97706);
-  }
-  .numbered-card.danger::before {
-    background: linear-gradient(180deg, #f87171, #dc2626);
-  }
-  .numbered-card.success::before {
-    background: linear-gradient(180deg, #34d399, #059669);
-  }
+  .numbered-card.warn::before { background: linear-gradient(180deg, #fbbf24, #d97706); }
+  .numbered-card.danger::before { background: linear-gradient(180deg, #f87171, #dc2626); }
+  .numbered-card.success::before { background: linear-gradient(180deg, #34d399, #059669); }
   .numbered-index {
-    flex-shrink: 0; width: 28px; height: 28px;
-    border-radius: 8px;
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
     background: linear-gradient(135deg, #eff6ff, #dbeafe);
     color: #0284c7; font-size: 13px; font-weight: 900;
     display: flex; align-items: center; justify-content: center;
-    font-variant-numeric: tabular-nums;
-    border: 1px solid #bae6fd;
+    font-variant-numeric: tabular-nums; border: 1px solid #bae6fd;
   }
-  .numbered-card.warn .numbered-index {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    color: #b45309; border-color: #fcd34d;
-  }
-  .numbered-card.danger .numbered-index {
-    background: linear-gradient(135deg, #fee2e2, #fecaca);
-    color: #b91c1c; border-color: #fca5a5;
-  }
-  .numbered-card.success .numbered-index {
-    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-    color: #047857; border-color: #6ee7b7;
-  }
+  .numbered-card.warn .numbered-index { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #b45309; border-color: #fcd34d; }
+  .numbered-card.danger .numbered-index { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #b91c1c; border-color: #fca5a5; }
+  .numbered-card.success .numbered-index { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #047857; border-color: #6ee7b7; }
   .numbered-content { flex: 1; min-width: 0; }
-  .numbered-title {
-    font-size: 13px; font-weight: 900; color: #1e293b;
-    margin-bottom: 4px; line-height: 1.3;
-  }
+  .numbered-title { font-size: 13px; font-weight: 900; color: #1e293b; margin-bottom: 4px; line-height: 1.3; }
   .numbered-desc { font-size: 12px; color: #64748b; line-height: 1.6; }
   .numbered-desc strong { color: #0f172a; font-weight: 800; }
 
-  /* ========== 搶票卡片 ========== */
   .ticket-card {
     background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-    border: 1.5px solid #ddd6fe;
-    border-radius: 16px; padding: 14px;
-    margin-bottom: 12px;
-    position: relative; overflow: hidden;
+    border: 1.5px solid #ddd6fe; border-radius: 16px; padding: 14px;
+    margin-bottom: 12px; position: relative; overflow: hidden;
   }
-  .ticket-card.zao {
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    border-color: #bfdbfe;
-  }
+  .ticket-card.zao { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-color: #bfdbfe; }
   .ticket-card::before {
-    content: '';
-    position: absolute;
-    top: -40px; right: -40px;
-    width: 120px; height: 120px;
-    border-radius: 50%;
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 120px; height: 120px; border-radius: 50%;
     background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
     pointer-events: none;
   }
-  .ticket-card.zao::before {
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
-  }
-  .ticket-header {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 8px; margin-bottom: 8px;
-  }
-  .ticket-title {
-    font-size: 14px; font-weight: 900; color: #4c1d95;
-    display: flex; align-items: center; gap: 6px;
-  }
+  .ticket-card.zao::before { background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%); }
+  .ticket-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .ticket-title { font-size: 14px; font-weight: 900; color: #4c1d95; display: flex; align-items: center; gap: 6px; }
   .ticket-card.zao .ticket-title { color: #1e3a8a; }
-  .ticket-badge {
-    font-size: 9px; font-weight: 900;
-    padding: 2px 8px; border-radius: 999px;
-    background: #a78bfa; color: white;
-    letter-spacing: 0.05em;
-  }
+  .ticket-badge { font-size: 9px; font-weight: 900; padding: 2px 8px; border-radius: 999px; background: #a78bfa; color: white; letter-spacing: 0.05em; }
   .ticket-card.zao .ticket-badge { background: #60a5fa; }
   .ticket-countdown-row {
     display: flex; align-items: baseline; gap: 6px;
     margin-bottom: 10px; padding: 8px 10px;
-    background: rgba(255,255,255,0.6);
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.6); border-radius: 10px; border: 1px solid rgba(255,255,255,0.8);
   }
-  .ticket-countdown-label {
-    font-size: 10px; color: #7c3aed; font-weight: 800;
-  }
+  .ticket-countdown-label { font-size: 10px; color: #7c3aed; font-weight: 800; }
   .ticket-card.zao .ticket-countdown-label { color: #2563eb; }
-  .ticket-countdown {
-    font-size: 16px; font-weight: 900; color: #4c1d95;
-    font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
-  }
+  .ticket-countdown { font-size: 16px; font-weight: 900; color: #4c1d95; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
   .ticket-card.zao .ticket-countdown { color: #1e3a8a; }
-  .ticket-meta {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 6px; margin-bottom: 10px;
-  }
-  .ticket-meta-item {
-    background: rgba(255,255,255,0.5);
-    border-radius: 8px; padding: 6px 8px;
-  }
-  .ticket-meta-item .label {
-    font-size: 9px; color: #7c3aed; font-weight: 800;
-    letter-spacing: 0.05em;
-  }
+  .ticket-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  .ticket-meta-item { background: rgba(255,255,255,0.5); border-radius: 8px; padding: 6px 8px; }
+  .ticket-meta-item .label { font-size: 9px; color: #7c3aed; font-weight: 800; letter-spacing: 0.05em; }
   .ticket-card.zao .ticket-meta-item .label { color: #2563eb; }
-  .ticket-meta-item .value {
-    font-size: 11px; font-weight: 900; color: #4c1d95;
-    margin-top: 2px; line-height: 1.3;
-  }
+  .ticket-meta-item .value { font-size: 11px; font-weight: 900; color: #4c1d95; margin-top: 2px; line-height: 1.3; }
   .ticket-card.zao .ticket-meta-item .value { color: #1e3a8a; }
   .ticket-steps { display: flex; flex-direction: column; gap: 6px; }
-  .ticket-step {
-    display: flex; align-items: flex-start; gap: 8px;
-    font-size: 11px; color: #4c1d95; line-height: 1.5;
-  }
+  .ticket-step { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; color: #4c1d95; line-height: 1.5; }
   .ticket-card.zao .ticket-step { color: #1e3a8a; }
   .ticket-step-dot {
-    flex-shrink: 0; width: 18px; height: 18px;
-    border-radius: 50%; background: #a78bfa;
+    flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; background: #a78bfa;
     color: white; font-size: 10px; font-weight: 900;
-    display: flex; align-items: center; justify-content: center;
-    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
   }
   .ticket-card.zao .ticket-step-dot { background: #60a5fa; }
 
-  /* ========== 天氣 Hero ========== */
   .weather-hero {
-    display: flex; align-items: center; gap: 16px;
-    padding: 16px;
+    display: flex; align-items: center; gap: 16px; padding: 16px;
     background: linear-gradient(135deg, #0284c7 0%, #0c4a6e 100%);
-    border-radius: 18px; color: white;
-    margin-bottom: 12px; position: relative; overflow: hidden;
+    border-radius: 18px; color: white; margin-bottom: 12px;
+    position: relative; overflow: hidden;
   }
   .weather-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%; right: -20%;
+    content: ''; position: absolute; top: -50%; right: -20%;
     width: 200px; height: 200px;
     background: radial-gradient(circle, rgba(125, 211, 252, 0.3) 0%, transparent 70%);
     pointer-events: none;
   }
-  .weather-hero-icon {
-    font-size: 52px; line-height: 1;
-    flex-shrink: 0;
-    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
-  }
-  .weather-hero-temp {
-    font-size: 36px; font-weight: 900; line-height: 1;
-    font-variant-numeric: tabular-nums; letter-spacing: -0.03em;
-  }
-  .weather-hero-meta {
-    font-size: 11px; color: rgba(255,255,255,0.75);
-    margin-top: 4px; font-weight: 600;
-  }
+  .weather-hero-icon { font-size: 52px; line-height: 1; flex-shrink: 0; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2)); }
+  .weather-hero-temp { font-size: 36px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+  .weather-hero-meta { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 4px; font-weight: 600; }
   .weather-advice {
-    background: rgba(251, 191, 36, 0.15);
-    border: 1px solid rgba(251, 191, 36, 0.3);
-    border-radius: 12px; padding: 10px 12px;
-    margin-bottom: 12px;
+    background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px; padding: 10px 12px; margin-bottom: 12px;
     display: flex; align-items: center; gap: 10px;
   }
   .weather-advice-icon { font-size: 22px; flex-shrink: 0; }
-  .weather-advice-text {
-    font-size: 12px; font-weight: 800; color: #92400e;
-    line-height: 1.4;
-  }
+  .weather-advice-text { font-size: 12px; font-weight: 800; color: #92400e; line-height: 1.4; }
 
   .forecast-list { display: flex; flex-direction: column; gap: 6px; }
   .forecast-row {
@@ -501,82 +350,46 @@ async function syncDataToCloud() {
     border-radius: 12px; border: 1px solid #f1f5f9;
     transition: all 0.2s;
   }
-  .forecast-row.today {
-    background: linear-gradient(135deg, #eff6ff, #dbeafe);
-    border-color: #bfdbfe;
-  }
-  .forecast-date {
-    flex-shrink: 0; width: 62px;
-    font-size: 11px; font-weight: 800; color: #64748b;
-  }
+  .forecast-row.today { background: linear-gradient(135deg, #eff6ff, #dbeafe); border-color: #bfdbfe; }
+  .forecast-date { flex-shrink: 0; width: 62px; font-size: 11px; font-weight: 800; color: #64748b; }
   .forecast-row.today .forecast-date { color: #0284c7; }
-  .forecast-icon {
-    font-size: 18px; flex-shrink: 0;
-    width: 24px; text-align: center;
-  }
-  .forecast-temp {
-    flex: 1; font-size: 12px; font-weight: 800;
-    color: #334155; font-variant-numeric: tabular-nums;
-  }
+  .forecast-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
+  .forecast-temp { flex: 1; font-size: 12px; font-weight: 800; color: #334155; font-variant-numeric: tabular-nums; }
   .forecast-temp-max { color: #dc2626; font-weight: 900; }
   .forecast-temp-min { color: #0284c7; font-weight: 900; }
-  .forecast-rain {
-    font-size: 11px; font-weight: 800; color: #0ea5e9;
-    background: rgba(14, 165, 233, 0.1);
-    padding: 3px 8px; border-radius: 999px;
-  }
+  .forecast-rain { font-size: 11px; font-weight: 800; color: #0ea5e9; background: rgba(14, 165, 233, 0.1); padding: 3px 8px; border-radius: 999px; }
 
-  /* ========== 行程速覽時間軸 ========== */
-  .overview-timeline {
-    display: flex; flex-direction: column;
-    gap: 2px; position: relative;
-  }
-  .overview-day {
-    display: flex; gap: 12px;
-    padding: 10px 0; position: relative;
-  }
+  .overview-timeline { display: flex; flex-direction: column; gap: 2px; position: relative; }
+  .overview-day { display: flex; gap: 12px; padding: 10px 0; position: relative; }
   .overview-day:not(:last-child)::before {
-    content: '';
-    position: absolute;
-    left: 15px; top: 40px; bottom: -2px;
-    width: 2px;
-    background: linear-gradient(180deg, #bae6fd, #e0f2fe);
-    border-radius: 2px;
+    content: ''; position: absolute;
+    left: 15px; top: 40px; bottom: -2px; width: 2px;
+    background: linear-gradient(180deg, #bae6fd, #e0f2fe); border-radius: 2px;
   }
   .overview-day-marker {
-    flex-shrink: 0;
-    width: 32px; height: 32px; border-radius: 50%;
+    flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 900; color: white;
-    z-index: 1;
-    box-shadow: 0 0 0 3px white;
+    z-index: 1; box-shadow: 0 0 0 3px white;
   }
   .overview-day-content { flex: 1; min-width: 0; padding-top: 2px; }
-  .overview-day-title {
-    font-size: 13px; font-weight: 900; color: #1e293b;
-    margin-bottom: 2px;
-  }
+  .overview-day-title { font-size: 13px; font-weight: 900; color: #1e293b; margin-bottom: 2px; }
   .overview-day-desc { font-size: 11px; color: #64748b; line-height: 1.4; }
 
-  /* ========== Modal 手勢關閉 ========== */
   .modal-handle-area {
     position: sticky; top: 0; z-index: 30;
     display: flex; justify-content: center;
     padding: 10px 0 6px;
     cursor: grab; touch-action: none;
     background: linear-gradient(180deg, white 0%, rgba(255,255,255,0.85) 100%);
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
+    border-top-left-radius: 24px; border-top-right-radius: 24px;
   }
   .modal-handle-area:active { cursor: grabbing; }
   .modal-handle {
     width: 40px; height: 5px; border-radius: 999px;
-    background: #cbd5e1;
-    transition: background 0.2s, transform 0.2s;
+    background: #cbd5e1; transition: background 0.2s, transform 0.2s;
   }
-  .modal-handle-area:active .modal-handle {
-    background: #94a3b8; transform: scaleX(1.15);
-  }
+  .modal-handle-area:active .modal-handle { background: #94a3b8; transform: scaleX(1.15); }
   .modal-box.dragging { transition: none !important; }
   .modal-box.snapping { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; }
 
@@ -613,57 +426,34 @@ async function syncDataToCloud() {
     transition: all 0.3s ease;
   }
 
-  .timeline {
-    position: relative;
-    padding-left: 42px;
-    padding-top: 8px; padding-bottom: 8px;
-  }
+  .timeline { position: relative; padding-left: 42px; padding-top: 8px; padding-bottom: 8px; }
   .timeline::before {
-    content: '';
-    position: absolute;
-    left: 17px; top: 32px; bottom: 32px;
-    width: 2px;
-    background: linear-gradient(180deg,
-      rgba(125, 211, 252, 0.7) 0%,
-      rgba(186, 230, 253, 0.45) 50%,
-      rgba(224, 242, 254, 0.15) 100%);
+    content: ''; position: absolute;
+    left: 17px; top: 32px; bottom: 32px; width: 2px;
+    background: linear-gradient(180deg, rgba(125, 211, 252, 0.7) 0%, rgba(186, 230, 253, 0.45) 50%, rgba(224, 242, 254, 0.15) 100%);
     border-radius: 2px; z-index: 0;
   }
   .timeline-item { position: relative; margin-bottom: 20px; }
   .timeline-item:last-child { margin-bottom: 0; }
   .timeline-node {
-    position: absolute;
-    left: -42px; top: 2px;
+    position: absolute; left: -42px; top: 2px;
     width: 36px; height: 36px; border-radius: 50%;
     background: linear-gradient(135deg, #38bdf8, #0284c7);
     color: white;
     display: flex; align-items: center; justify-content: center;
-    box-shadow:
-      0 0 0 4px rgba(240, 249, 255, 0.95),
-      0 2px 8px rgba(2, 132, 199, 0.35),
-      inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 4px rgba(240, 249, 255, 0.95), 0 2px 8px rgba(2, 132, 199, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.3);
     z-index: 2;
   }
-  .timeline-node svg {
-    width: 16px; height: 16px;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
-  }
+  .timeline-node svg { width: 16px; height: 16px; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2)); }
 
   .event-collapsible {
-    position: relative;
-    max-height: 280px;
-    overflow: hidden;
+    position: relative; max-height: 280px; overflow: hidden;
     transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .event-collapsible:not(.expanded):not(.no-collapse)::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 90px;
-    background: linear-gradient(180deg,
-      rgba(248, 250, 252, 0) 0%,
-      rgba(248, 250, 252, 0.7) 50%,
-      rgba(248, 250, 252, 0.98) 100%);
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 90px;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0) 0%, rgba(248, 250, 252, 0.7) 50%, rgba(248, 250, 252, 0.98) 100%);
     pointer-events: none; z-index: 1;
   }
   .event-collapsible.expanded { max-height: 12000px; }
@@ -671,66 +461,47 @@ async function syncDataToCloud() {
   .event-collapsible.no-collapse { max-height: none; }
   .expand-btn {
     display: flex; align-items: center; justify-content: center;
-    gap: 6px; width: 100%; margin-top: 10px;
-    padding: 10px 14px;
+    gap: 6px; width: 100%; margin-top: 10px; padding: 10px 14px;
     background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-    border: 1px dashed #7dd3fc;
-    border-radius: 12px; color: #0284c7;
-    font-size: 12px; font-weight: 800;
-    cursor: pointer; transition: all 0.2s;
+    border: 1px dashed #7dd3fc; border-radius: 12px; color: #0284c7;
+    font-size: 12px; font-weight: 800; cursor: pointer; transition: all 0.2s;
     letter-spacing: 0.02em;
   }
-  .expand-btn:active {
-    transform: scale(0.98);
-    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-    border-style: solid;
-  }
+  .expand-btn:active { transform: scale(0.98); background: linear-gradient(135deg, #e0f2fe, #bae6fd); border-style: solid; }
   .expand-btn svg { width: 14px; height: 14px; transition: transform 0.3s; }
   .expand-btn.expanded svg { transform: rotate(180deg); }
 
   .bottom-nav {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
+    position: fixed; bottom: 0; left: 0; right: 0;
     height: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
-    background: rgba(255,255,255,0.98);
-    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.98); backdrop-filter: blur(10px);
     border-top: 1px solid rgba(226,232,240,0.8);
     display: flex; align-items: center; justify-content: space-around;
-    z-index: 100;
-    padding: 0 16px;
+    z-index: 100; padding: 0 16px;
     padding-bottom: calc(var(--safe-area-bottom) + 8px);
   }
   .bottom-nav button {
-    flex: 1;
-    display: flex; flex-direction: column;
+    flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 2px; font-size: 11px; font-weight: 700;
-    color: #64748b; border-radius: 12px;
-    padding: 8px 0; transition: all 0.2s;
-    background: transparent; border: none;
+    color: #64748b; border-radius: 12px; padding: 8px 0;
+    transition: all 0.2s; background: transparent; border: none;
   }
   .bottom-nav button.active { color: #0284c7; }
   .bottom-nav .nav-fab {
-    flex: 0 0 auto;
-    width: 58px; height: 58px; border-radius: 50%;
+    flex: 0 0 auto; width: 58px; height: 58px; border-radius: 50%;
     background: linear-gradient(135deg, #0284c7, #0c4a6e);
-    color: white !important;
-    margin-top: -28px;
+    color: white !important; margin-top: -28px;
     box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
     border: 4px solid #f8fafc;
     display: flex; align-items: center; justify-content: center;
     z-index: 101; transition: all 0.2s; padding: 0;
   }
-  .bottom-nav .nav-fab:active {
-    transform: scale(0.92);
-    box-shadow: 0 3px 12px rgba(2, 132, 199, 0.5);
-  }
+  .bottom-nav .nav-fab:active { transform: scale(0.92); box-shadow: 0 3px 12px rgba(2, 132, 199, 0.5); }
 
   .walking-character {
-    position: fixed; z-index: 9998;
-    cursor: pointer;
-    opacity: 0;
-    transform: translateY(50px) scale(0.8);
+    position: fixed; z-index: 9998; cursor: pointer;
+    opacity: 0; transform: translateY(50px) scale(0.8);
     transition: all 0.5s ease;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 10px) !important;
@@ -753,13 +524,8 @@ async function syncDataToCloud() {
     70% { transform: translateY(-35px) scale(1.1); }
   }
 
-  #currency-fab-container {
-    bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 20px) !important;
-  }
-
   .day-tab {
-    border-radius: 999px !important;
-    transition: all 0.3s ease;
+    border-radius: 999px !important; transition: all 0.3s ease;
     min-height: 44px;
     display: inline-flex; align-items: center; justify-content: center;
     padding: 8px 16px; font-weight: 700;
@@ -767,28 +533,23 @@ async function syncDataToCloud() {
   }
   .day-tab.active {
     background: linear-gradient(135deg, #0369a1, #0c4a6e) !important;
-    color: white;
-    box-shadow: 0 4px 10px rgba(12, 74, 110, 0.3);
+    color: white; box-shadow: 0 4px 10px rgba(12, 74, 110, 0.3);
   }
 
   .tag {
     display: inline-flex; align-items: center; gap: 0.25rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 9999px;
+    padding: 0.2rem 0.6rem; border-radius: 9999px;
     font-size: 0.75rem; font-weight: 800;
     line-height: 1.4; white-space: nowrap;
-    background: #e0f2fe; color: #0369a1;
-    border: 1px solid #bae6fd;
+    background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;
   }
 
   .modal-close {
-    position: absolute;
-    top: 1rem; right: 1rem;
+    position: absolute; top: 1rem; right: 1rem;
     width: 2rem; height: 2rem;
     background: #f1f5f9; border-radius: 9999px;
     display: flex; align-items: center; justify-content: center;
-    color: #64748b; transition: all 0.2s;
-    z-index: 40;
+    color: #64748b; transition: all 0.2s; z-index: 40;
   }
   .modal-close:hover { background: #e2e8f0; color: #0f172a; }
   .modal-overlay {
@@ -799,24 +560,17 @@ async function syncDataToCloud() {
   .modal-box {
     transform: scale(0.95) translateY(10px);
     transition: transform 0.3s ease;
-    display: flex; flex-direction: column;
-    max-height: 90vh;
+    display: flex; flex-direction: column; max-height: 90vh;
   }
   .modal-overlay.active .modal-box { transform: scale(1) translateY(0); }
-  .modal-box .modal-scrollable {
-    flex: 1; overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+  .modal-box .modal-scrollable { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
   .btn-gradient {
     background: linear-gradient(135deg, #0284c7, #0c4a6e) !important;
     box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
     transition: all 0.3s;
   }
-  .btn-gradient:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
-  }
+  .btn-gradient:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3); }
 
   input[type="checkbox"] {
     appearance: none; -webkit-appearance: none;
@@ -846,34 +600,21 @@ async function syncDataToCloud() {
   @keyframes snowfall-large { 0% { transform: translateY(0); opacity: 0.3; } 100% { transform: translateY(80vh) rotate(360deg); opacity: 0.2; } }
 
   .itinerary-cat-strip {
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 4px;
-    border-radius: 4px 0 0 4px;
-    background: #0284c7;
+    position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    border-radius: 4px 0 0 4px; background: #0284c7;
   }
 
   .weather-card { animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
   details.event-card[open] .event-content-wrapper { animation: slideDown 0.3s ease; }
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-  .timeline-time {
-    display: inline-flex; align-items: center; gap: 0.25rem;
-    margin-bottom: 0.25rem;
-  }
+  .timeline-time { display: inline-flex; align-items: center; gap: 0.25rem; margin-bottom: 0.25rem; }
   .timeline-time span {
     display: inline-flex; align-items: center;
     background: #e0f2fe; color: #0369a1;
-    border-radius: 9999px;
-    padding: 0.2rem 0.6rem;
+    border-radius: 9999px; padding: 0.2rem 0.6rem;
     font-size: 0.7rem; font-weight: 800;
     line-height: 1.4; white-space: nowrap;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
@@ -893,8 +634,7 @@ async function syncDataToCloud() {
   #lightbox.active { opacity: 1; visibility: visible; }
   #lightbox img { max-width: 95vw; max-height: 85vh; object-fit: contain; border-radius: 12px; }
   .lightbox-btn {
-    background: rgba(255, 255, 255, 0.2);
-    color: white; padding: 12px;
+    background: rgba(255, 255, 255, 0.2); color: white; padding: 12px;
     border-radius: 9999px; cursor: pointer; font-weight: bold;
   }
   .particle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 9999; }
@@ -913,28 +653,15 @@ async function syncDataToCloud() {
 
   button { position: relative; overflow: hidden; }
   button::after {
-    content: '';
-    position: absolute;
-    width: 100%; height: 100%;
-    top: 0; left: 0;
-    background: rgba(255,255,255,0.3);
-    border-radius: 50%;
-    transform: scale(0); opacity: 0;
-    pointer-events: none;
+    content: ''; position: absolute;
+    width: 100%; height: 100%; top: 0; left: 0;
+    background: rgba(255,255,255,0.3); border-radius: 50%;
+    transform: scale(0); opacity: 0; pointer-events: none;
   }
-  button:active::after {
-    animation: ripple 0.4s ease-out;
-    transform: scale(2); opacity: 1;
-  }
-  @keyframes ripple {
-    from { transform: scale(0); opacity: 1; }
-    to { transform: scale(2); opacity: 0; }
-  }
+  button:active::after { animation: ripple 0.4s ease-out; transform: scale(2); opacity: 1; }
+  @keyframes ripple { from { transform: scale(0); opacity: 1; } to { transform: scale(2); opacity: 0; } }
 
-  #currency-fab {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transition: box-shadow 0.3s, transform 0.2s;
-  }
+  #currency-fab { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: box-shadow 0.3s, transform 0.2s; }
   .fab-wrapper { pointer-events: none; }
   .fab-wrapper > button { pointer-events: auto; }
 </style>
@@ -943,18 +670,12 @@ async function syncDataToCloud() {
 
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
-  <!-- 動態角色：雪人 -->
+  <!-- 雪人 -->
   <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！" style="left: 15px;">
     <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <radialGradient id="snowGrad" cx="50%" cy="30%" r="60%">
-          <stop offset="0%" stop-color="#ffffff"/>
-          <stop offset="100%" stop-color="#dbeafe"/>
-        </radialGradient>
-        <linearGradient id="hatGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#ef4444"/>
-          <stop offset="100%" stop-color="#b91c1c"/>
-        </linearGradient>
+        <radialGradient id="snowGrad" cx="50%" cy="30%" r="60%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dbeafe"/></radialGradient>
+        <linearGradient id="hatGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient>
       </defs>
       <circle cx="32" cy="48" r="13" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/>
       <circle cx="32" cy="30" r="10" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/>
@@ -973,18 +694,12 @@ async function syncDataToCloud() {
     </svg>
   </div>
 
-  <!-- 動態角色：狐狸 -->
+  <!-- 狐狸 -->
   <div id="fox" class="walking-character" onclick="jump('fox')" title="點我！" style="right: 15px;">
     <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="foxBody" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#fdba74"/>
-          <stop offset="100%" stop-color="#f97316"/>
-        </linearGradient>
-        <radialGradient id="foxCheek" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#fecdd3"/>
-          <stop offset="100%" stop-color="#fda4af"/>
-        </radialGradient>
+        <linearGradient id="foxBody" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#fdba74"/><stop offset="100%" stop-color="#f97316"/></linearGradient>
+        <radialGradient id="foxCheek" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fecdd3"/><stop offset="100%" stop-color="#fda4af"/></radialGradient>
       </defs>
       <path d="M58 44 Q68 38 62 28 Q56 20 48 26 Q44 30 46 38 Q50 48 58 44 Z" fill="url(#foxBody)"/>
       <path d="M58 44 Q64 42 62 34 Q58 28 52 32" fill="#fff" opacity="0.5"/>
@@ -1006,6 +721,19 @@ async function syncDataToCloud() {
       <path d="M40 48 Q42 54 38 56" stroke="#f97316" stroke-width="4" stroke-linecap="round"/>
       <ellipse cx="32" cy="40" rx="6" ry="2" fill="white" opacity="0.3"/>
     </svg>
+  </div>
+
+  <!-- ✅ 用戶選擇 Modal（首次使用） -->
+  <div id="user-picker-modal" class="modal-overlay hidden fixed inset-0 z-[200] bg-slate-900/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative">
+      <div class="text-center mb-5">
+        <span class="text-4xl block mb-2">👋</span>
+        <h2 class="text-xl font-black text-slate-900 mb-1">你是哪位？</h2>
+        <p class="text-xs text-slate-500">選擇後將記住你的身份<br>用於個人裝備清單</p>
+      </div>
+      <div class="grid grid-cols-2 gap-2" id="user-picker-grid"></div>
+      <p class="text-[10px] text-slate-400 text-center mt-4">※ 可在 Header 右上角隨時切換身份</p>
+    </div>
   </div>
 
   <!-- 歡迎導覽 -->
@@ -1047,7 +775,6 @@ async function syncDataToCloud() {
         <div class="space-y-6">
           <div class="sticky top-0 z-40 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-2.5 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
             <div class="flex items-center justify-between gap-2">
-              <!-- ✅ 今天按鈕（行程中才顯示） -->
               <button id="btn-today" onclick="scrollToToday()" class="hidden shrink-0 flex items-center gap-1 px-3 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[11px] font-black shadow-md border-0 transition active:scale-95 mr-1">
                 <span>📍</span><span class="hidden sm:inline">今天</span>
               </button>
@@ -1060,9 +787,6 @@ async function syncDataToCloud() {
                 <button onclick="switchDay(6)" id="tab-d6" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D6 (1/26)</button>
                 <button onclick="switchDay(7)" id="tab-d7" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D7 (1/27)</button>
               </div>
-              <button id="fab-collapse-all" onclick="collapseAllItineraries()" class="shrink-0 w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center shadow-sm active:scale-95 transition">
-                <span class="text-base" id="collapse-icon">⬆️</span>
-              </button>
             </div>
             <div class="border-b border-slate-200 mt-1"></div>
           </div>
@@ -1098,13 +822,31 @@ async function syncDataToCloud() {
     </div>
   </div>
 
-  <div id="currency-fab-container" class="fixed right-4 z-[9999] flex flex-col items-end gap-2 fab-wrapper" style="bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 20px);">
-    <button onclick="toggleCurrencyWidget()" id="currency-fab" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center shadow-lg border border-slate-600 transition-all hover:scale-105 active:scale-95">
+  <!-- ✅ 右側浮動按鈕（收合在上、匯率在下） -->
+  <!-- 修正：不再使用會被 !important 覆蓋的 CSS 變數，改用內聯 style + env() fallback -->
+  <div id="currency-fab-container"
+       class="fixed right-4 z-[9999] flex flex-col items-end gap-3 fab-wrapper"
+       style="bottom: calc(88px + env(safe-area-inset-bottom, 0px));">
+    <!-- 收合按鈕（在上） -->
+    <button type="button"
+            onclick="collapseAllItineraries()"
+            id="fab-collapse-all"
+            class="pointer-events-auto w-9 h-9 rounded-full bg-white/95 backdrop-blur text-slate-500 flex items-center justify-center shadow-md border border-slate-200 transition-all hover:scale-105 active:scale-95"
+            title="展開/收合所有行程">
+      <span class="text-base" id="collapse-icon">⬆️</span>
+    </button>
+    <!-- 匯率按鈕（在下） -->
+    <button type="button"
+            onclick="toggleCurrencyWidget()"
+            id="currency-fab"
+            class="pointer-events-auto w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center shadow-lg border border-slate-600 transition-all hover:scale-105 active:scale-95"
+            title="匯率試算">
       <span class="text-lg">🪙</span>
     </button>
   </div>
 
-  <div id="currency-widget-panel" class="fixed bottom-24 right-4 md:right-6 z-[10000] bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] border border-slate-200 w-[calc(100vw-2rem)] sm:w-80 overflow-hidden transition-all duration-300 origin-bottom-right opacity-0 scale-90 translate-y-4 invisible pointer-events-none">
+  <div id="currency-widget-panel" class="fixed right-4 md:right-6 z-[10000] bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.15)] border border-slate-200 w-[calc(100vw-2rem)] sm:w-80 overflow-hidden transition-all duration-300 origin-bottom-right opacity-0 scale-90 translate-y-4 invisible pointer-events-none"
+       style="bottom: calc(148px + env(safe-area-inset-bottom, 0px));">
     <div class="bg-gradient-to-r from-sky-900 to-indigo-900 p-4 flex justify-between items-center text-white">
       <div class="flex items-center gap-2"><span class="text-xl">🪙</span><h3 class="text-sm font-black tracking-wide">即時匯率試算</h3></div>
       <button onclick="toggleCurrencyWidget()" class="bg-white/20 hover:bg-white/40 text-white rounded-full p-1.5 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
@@ -1150,9 +892,7 @@ async function syncDataToCloud() {
       <span>行程指南</span>
     </button>
     <button onclick="openLedgerAdd()" class="nav-fab" title="快速記帳">
-      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
-      </svg>
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
     </button>
     <button id="nav-ledger-btn" onclick="switchMainTab('ledger')">
       <span class="text-lg">💰</span>
@@ -1160,13 +900,13 @@ async function syncDataToCloud() {
     </button>
   </nav>
 
-  <!-- 行前預訂 -->
+  <!-- 行前準備 -->
   <div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeBookingModal()">
     <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()">
       <div class="modal-handle-area" data-drag-handle="booking-modal"><div class="modal-handle"></div></div>
       <button onclick="closeBookingModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6">
-        <h2 class="text-xl font-black mb-3">📌 行前預訂</h2>
+        <h2 class="text-xl font-black mb-3">📌 行前準備 <span class="text-[10px] font-bold text-slate-400 ml-1">(共享)</span></h2>
         <div id="booking-modal-inner"></div>
       </div>
     </div>
@@ -1178,7 +918,7 @@ async function syncDataToCloud() {
       <div class="modal-handle-area" data-drag-handle="equip-modal"><div class="modal-handle"></div></div>
       <button onclick="closeEquipModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6">
-        <h2 class="text-xl font-black mb-3">🎒 裝備清單</h2>
+        <h2 class="text-xl font-black mb-3">🎒 裝備清單 <span id="equip-modal-user-tag" class="text-[10px] font-bold text-sky-500 ml-1">(余生)</span></h2>
         <div id="equip-modal-inner"></div>
       </div>
     </div>
@@ -1303,7 +1043,7 @@ async function syncDataToCloud() {
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative" onclick="event.stopPropagation()">
       <button onclick="closePasswordModal()" class="modal-close">✕</button>
       <h2 class="text-xl font-black mb-2 flex items-center gap-2">🔒 輸入管理密碼</h2>
-      <p class="text-xs text-slate-500 mb-4">輸入密碼以解鎖「行前預訂」編輯權限</p>
+      <p class="text-xs text-slate-500 mb-4">輸入密碼以解鎖「行前準備」編輯權限</p>
       <input id="password-input" type="password" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 mb-3" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')verifyPassword()">
       <div class="flex gap-2">
         <button onclick="verifyPassword()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl transition">確認</button>
@@ -1315,7 +1055,14 @@ async function syncDataToCloud() {
 
   <script>
     // ==================== 全域變數 ====================
-    let state = { currentMainTab: "itinerary", checkedItems: {} };
+    const USERS = ["余生", "bowie", "shandy", "connie"];
+    const USER_INITIALS = { "余生": "余", "bowie": "B", "shandy": "S", "connie": "C" };
+    const CURRENT_USER_KEY = "tohoku_current_user";
+
+    let state = {
+      currentMainTab: "itinerary",
+      checkedItems: {}
+    };
     let simulatedTime = null;
     const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27"];
     const TRIP_START = new Date("2027-01-21T10:00:00+08:00").getTime();
@@ -1327,17 +1074,74 @@ async function syncDataToCloud() {
     let exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
     const ADMIN_PASSWORD = "2027";
 
+    let customBookingItems = [];
+    let customEquipItemsByUser = {};
+
     const modalUIState = {
       'booking-modal': { activeTab: 'all', expanded: {} },
       'equip-modal': { activeTab: 'all', expanded: {} }
     };
+
+    // ==================== 用戶管理 ====================
+    function getCurrentUser() {
+      return localStorage.getItem(CURRENT_USER_KEY) || "";
+    }
+    function setCurrentUser(user) {
+      localStorage.setItem(CURRENT_USER_KEY, user);
+    }
+    function hasChosenUser() {
+      return !!getCurrentUser();
+    }
+
+    function showUserPicker() {
+      const modal = document.getElementById("user-picker-modal");
+      const grid = document.getElementById("user-picker-grid");
+      if (!modal || !grid) return;
+      grid.innerHTML = "";
+      USERS.forEach(user => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "py-3 px-3 rounded-2xl bg-slate-50 hover:bg-sky-50 border-2 border-slate-200 hover:border-sky-300 transition active:scale-95 flex flex-col items-center gap-1.5";
+        btn.innerHTML = `
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-sky-400 to-sky-600 text-white flex items-center justify-center text-lg font-black shadow-md">${USER_INITIALS[user]}</div>
+          <span class="text-sm font-black text-slate-700">${user}</span>
+        `;
+        btn.onclick = () => {
+          setCurrentUser(user);
+          closeUserPicker();
+          showToast(`👋 歡迎，${user}！`, "✅");
+          haptic(15);
+          renderEquipChecklist();
+          if (window.AppHeader) window.AppHeader.setUser(user);
+        };
+        grid.appendChild(btn);
+      });
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+    }
+
+    function closeUserPicker() {
+      const modal = document.getElementById("user-picker-modal");
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+      }
+    }
+
+    function switchUser(user) {
+      setCurrentUser(user);
+      showToast(`✅ 已切換為 ${user}`, "👤");
+      haptic(15);
+      renderEquipChecklist();
+      if (window.AppHeader) window.AppHeader.setUser(user);
+    }
 
     // ==================== 觸覺回饋 ====================
     function haptic(ms = 10) {
       if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} }
     }
 
-    // ==================== ✅ 跳今天 ====================
+    // ==================== 跳今天 ====================
     function scrollToToday() {
       const now = Date.now();
       if (now < TRIP_START) {
@@ -1524,7 +1328,7 @@ async function syncDataToCloud() {
       const input = document.getElementById("password-input").value.trim();
       if (input === ADMIN_PASSWORD) {
         localStorage.setItem("tohoku_admin_unlocked", "true");
-        closePasswordModal(); renderBookingChecklist(); renderEquipChecklist();
+        closePasswordModal(); renderBookingChecklist();
         showToast("✅ 已解鎖管理權限"); haptic(15);
       } else {
         document.getElementById("password-error").classList.remove("hidden");
@@ -1534,7 +1338,7 @@ async function syncDataToCloud() {
     }
     function lockAdmin() {
       localStorage.removeItem("tohoku_admin_unlocked");
-      renderBookingChecklist(); renderEquipChecklist();
+      renderBookingChecklist();
       showToast("🔒 已鎖定管理權限");
     }
 
@@ -1598,7 +1402,7 @@ async function syncDataToCloud() {
       if (input) { input.value = amount; convertCurrency(currency); }
     }
 
-    // ==================== ✅ Toast（含撤銷） ====================
+    // ==================== Toast（含撤銷） ====================
     function showToast(message, icon = "✅") {
       const toast = document.getElementById("toast");
       const m = document.getElementById("toast-message");
@@ -1607,7 +1411,6 @@ async function syncDataToCloud() {
         const oldBtn = document.getElementById("toast-undo-btn");
         if (oldBtn) oldBtn.remove();
         window._undoCallback = null;
-
         m.innerText = message; i.innerText = icon;
         toast.classList.remove("-translate-y-24", "opacity-0");
         toast.classList.add("translate-y-0", "opacity-100");
@@ -1624,36 +1427,25 @@ async function syncDataToCloud() {
       const m = document.getElementById("toast-message");
       const i = document.getElementById("toast-icon");
       if (!toast) return;
-
       const oldBtn = document.getElementById("toast-undo-btn");
       if (oldBtn) oldBtn.remove();
-
       m.innerText = message; i.innerText = icon;
-
       const btn = document.createElement("button");
       btn.id = "toast-undo-btn";
       btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto";
       btn.textContent = "撤銷";
       btn.onclick = (e) => {
         e.stopPropagation();
-        if (window._undoCallback) {
-          window._undoCallback();
-          window._undoCallback = null;
-        }
+        if (window._undoCallback) { window._undoCallback(); window._undoCallback = null; }
         const t = document.getElementById("toast");
-        if (t) {
-          t.classList.remove("translate-y-0", "opacity-100");
-          t.classList.add("-translate-y-24", "opacity-0");
-        }
+        if (t) { t.classList.remove("translate-y-0", "opacity-100"); t.classList.add("-translate-y-24", "opacity-0"); }
         if (window.toastTimeout) clearTimeout(window.toastTimeout);
         haptic(15);
       };
       toast.appendChild(btn);
-
       window._undoCallback = onUndo;
       toast.classList.remove("-translate-y-24", "opacity-0");
       toast.classList.add("translate-y-0", "opacity-100");
-
       if (window.toastTimeout) clearTimeout(window.toastTimeout);
       window.toastTimeout = setTimeout(() => {
         toast.classList.remove("translate-y-0", "opacity-100");
@@ -1805,7 +1597,7 @@ async function syncDataToCloud() {
     }
     function closeWeatherModal() { hideModal('weather-modal'); setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300); }
 
-    // ==================== 雪地攻略渲染 ====================
+    // ==================== 雪地攻略 ====================
     let driveTabState = 'basic';
     function setDriveTab(tab) {
       driveTabState = tab;
@@ -1853,7 +1645,7 @@ async function syncDataToCloud() {
       `).join('');
     }
 
-    // ==================== 搶票攻略渲染 ====================
+    // ==================== 搶票攻略 ====================
     function renderTicketContent() {
       const container = document.getElementById('ticket-content');
       if (!container) return;
@@ -1915,7 +1707,7 @@ async function syncDataToCloud() {
       `;
     }
 
-    // ==================== 行前預訂 ====================
+    // ==================== 行前準備（共享） ====================
     const bookingList = [
       { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
       { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
@@ -1931,7 +1723,6 @@ async function syncDataToCloud() {
       { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/23 16:30)", icon: "♨️" },
       { id: "other-strawberry", category: "其他", label: "寒河江草莓園 (1/23 14:00)", icon: "🍓" },
     ];
-    let customBookingItems = [];
 
     function renderBookingChecklist() {
       const container = document.getElementById("booking-modal-inner");
@@ -1950,7 +1741,7 @@ async function syncDataToCloud() {
       html += `
         <div class="modal-progress-wrap">
           <div class="modal-progress-header">
-            <span class="modal-progress-label">${percent === 100 ? '🎉 全部完成！' : '整體進度'}</span>
+            <span class="modal-progress-label">${percent === 100 ? '🎉 全部完成！' : '整體進度 (共享)'}</span>
             <span class="modal-progress-count">${doneCount} / ${totalCount}</span>
           </div>
           <div class="modal-progress-track">
@@ -2042,7 +1833,70 @@ async function syncDataToCloud() {
       container.innerHTML = html;
     }
 
-    // ==================== 裝備清單 ====================
+    function toggleBookingCheck(key) {
+      if (!isAdminUnlocked()) { showToast("🔒 請先解鎖管理權限", "⚠️"); return; }
+      state.checkedItems[key] = !state.checkedItems[key];
+      saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist();
+      haptic(5);
+    }
+    function checkAllBooking() {
+      if (!isAdminUnlocked()) return;
+      [...bookingList, ...customBookingItems].forEach(item => {
+        const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+        state.checkedItems[key] = true;
+      });
+      saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist();
+      showToast("✅ 已全部勾選！");
+    }
+    function uncheckAllBooking() {
+      if (!isAdminUnlocked()) return;
+      [...bookingList, ...customBookingItems].forEach(item => {
+        const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+        state.checkedItems[key] = false;
+      });
+      saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist();
+      showToast("🧹 已清除所有勾選！");
+    }
+    function copyBookingList() {
+      let text = "📌 行前準備 Check List (共享)\n=====================\n";
+      ["租車", "住宿", "門票", "其他"].forEach(cat => {
+        const items = bookingList.filter(i => i.category === cat);
+        const customs = customBookingItems.filter(i => i.category === cat);
+        const all = [...items, ...customs];
+        if (all.length === 0) return;
+        text += `\n【${cat}】\n`;
+        all.forEach(item => {
+          const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+          text += `${state.checkedItems[key] ? "✅" : "⬜"} ${item.icon} ${item.label}\n`;
+        });
+      });
+      copyText(text); showToast("📋 行前準備清單已複製！");
+    }
+    function addCustomBooking() {
+      if (!isAdminUnlocked()) return;
+      const l = document.getElementById("new-booking-label");
+      const c = document.getElementById("new-booking-category");
+      const label = l.value.trim();
+      if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
+      customBookingItems.push({ id: "custom-" + Date.now(), category: c.value, label, icon: "📌", isCustom: true });
+      saveCustomItems(); syncDataToCloud(); renderBookingChecklist();
+      l.value = ""; showToast("已新增項目！");
+    }
+    function deleteCustomBooking(id) {
+      if (!isAdminUnlocked()) return;
+      const originalIndex = customBookingItems.findIndex(i => i.id === id);
+      if (originalIndex === -1) return;
+      const snapshot = { ...customBookingItems[originalIndex] };
+      customBookingItems = customBookingItems.filter(i => i.id !== id);
+      saveCustomItems(); syncDataToCloud(); renderBookingChecklist();
+      showUndoToast(`已刪除「${snapshot.label}」`, "🗑", () => {
+        customBookingItems.splice(Math.min(originalIndex, customBookingItems.length), 0, snapshot);
+        saveCustomItems(); syncDataToCloud(); renderBookingChecklist();
+        showToast("✅ 已還原", "↩️");
+      });
+    }
+
+    // ==================== 裝備清單（每人獨立） ====================
     const equipmentList = [
       { id: "passport", category: "重要證件", label: "身份證 / 護照（效期需剩餘6個月以上）", icon: "🪪" },
       { id: "license", category: "重要證件", label: "國際車牌 / 駕駛執照", icon: "🚗" },
@@ -2073,25 +1927,50 @@ async function syncDataToCloud() {
       { id: "safetybelt", category: "其他", label: "便攜式兒童安全帶", icon: "🪑" },
       { id: "firstaid", category: "其他", label: "簡易急救包", icon: "🩹" },
     ];
-    let customEquipItems = [];
+
+    function getCurrentCustomEquipItems() {
+      const user = getCurrentUser();
+      if (!user) return [];
+      return customEquipItemsByUser[user] || [];
+    }
 
     function renderEquipChecklist() {
       const container = document.getElementById("equip-modal-inner");
       if (!container) return;
+
+      const currentUser = getCurrentUser();
+      const tagEl = document.getElementById("equip-modal-user-tag");
+      if (tagEl) tagEl.textContent = `(${currentUser || "未選擇"})`;
+
+      if (!currentUser) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-500 text-sm">請先選擇身份</div>`;
+        return;
+      }
+
+      const customItems = getCurrentCustomEquipItems();
       const categories = ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"];
-      const allItems = [...equipmentList, ...customEquipItems];
+      const allItems = [...equipmentList, ...customItems];
       const totalCount = allItems.length;
-      const doneCount = allItems.filter(item => {
-        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-        return state.checkedItems[key] === true;
-      }).length;
+
+      const getUserKey = (item) => {
+        if (item.isCustom) return `custom-equip_${currentUser}_${item.id}`;
+        return `equip_${currentUser}_${item.id}`;
+      };
+
+      const doneCount = allItems.filter(item => state.checkedItems[getUserKey(item)] === true).length;
       const percent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
       const activeTab = modalUIState['equip-modal'].activeTab;
       let html = '';
+
+      html += `
+        <div class="mb-2 flex items-center justify-center gap-1.5 text-[11px] font-bold text-sky-600 bg-sky-50 border border-sky-200 rounded-lg py-1.5">
+          <span>👤</span><span>目前身份：<strong>${currentUser}</strong></span>
+        </div>
+      `;
       html += `
         <div class="modal-progress-wrap">
           <div class="modal-progress-header">
-            <span class="modal-progress-label">${percent === 100 ? '🎉 全部完成！' : '整體進度'}</span>
+            <span class="modal-progress-label">${percent === 100 ? '🎉 全部完成！' : '整體進度 (個人)'}</span>
             <span class="modal-progress-count">${doneCount} / ${totalCount}</span>
           </div>
           <div class="modal-progress-track">
@@ -2104,27 +1983,22 @@ async function syncDataToCloud() {
       html += `<button class="modal-tab ${activeTab === 'all' ? 'active' : ''} ${allDone ? 'complete' : ''}" onclick="setModalTab('equip-modal','all')">全部 <span class="tab-count">${doneCount}/${totalCount}</span></button>`;
       categories.forEach(cat => {
         const items = equipmentList.filter(i => i.category === cat);
-        const customs = customEquipItems.filter(i => i.category === cat);
+        const customs = customItems.filter(i => i.category === cat);
         const catAll = [...items, ...customs];
         if (catAll.length === 0) return;
-        const catDone = catAll.filter(item => {
-          const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-          return state.checkedItems[key] === true;
-        }).length;
+        const catDone = catAll.filter(item => state.checkedItems[getUserKey(item)] === true).length;
         const isComplete = catDone === catAll.length;
         html += `<button class="modal-tab ${activeTab === cat ? 'active' : ''} ${isComplete ? 'complete' : ''}" onclick="setModalTab('equip-modal','${cat}')">${cat} <span class="tab-count">${catDone}/${catAll.length}</span></button>`;
       });
       html += `</div>`;
+
       const catsToRender = activeTab === 'all' ? categories : [activeTab];
       catsToRender.forEach(cat => {
         const items = equipmentList.filter(i => i.category === cat);
-        const customs = customEquipItems.filter(i => i.category === cat);
+        const customs = customItems.filter(i => i.category === cat);
         const catAll = [...items, ...customs];
         if (catAll.length === 0) return;
-        const catDone = catAll.filter(item => {
-          const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-          return state.checkedItems[key] === true;
-        }).length;
+        const catDone = catAll.filter(item => state.checkedItems[getUserKey(item)] === true).length;
         const isComplete = catDone === catAll.length;
         const isExpanded = modalUIState['equip-modal'].expanded[cat] !== false;
         html += `<div class="category-group ${isExpanded ? 'expanded' : ''} ${isComplete ? 'done' : ''}">`;
@@ -2139,7 +2013,7 @@ async function syncDataToCloud() {
           <div class="category-body"><div class="category-body-inner">
         `;
         catAll.forEach(item => {
-          const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
+          const key = getUserKey(item);
           const isChecked = state.checkedItems[key] === true;
           html += `
             <label class="checklist-item ${isChecked ? 'checked' : ''}">
@@ -2152,9 +2026,10 @@ async function syncDataToCloud() {
         });
         html += `</div></div></div>`;
       });
+
       html += `
         <div class="mt-5 pt-4 border-t border-slate-200">
-          <h4 class="text-sm font-bold text-slate-800 mb-2">➕ 新增項目</h4>
+          <h4 class="text-sm font-bold text-slate-800 mb-2">➕ 新增「${currentUser}」的項目</h4>
           <div class="flex gap-2">
             <input id="new-equip-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50">
             <select id="new-equip-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white">
@@ -2172,6 +2047,93 @@ async function syncDataToCloud() {
       container.innerHTML = html;
     }
 
+    function toggleEquipCheck(key) {
+      const currentUser = getCurrentUser();
+      if (!currentUser) { showToast("請先選擇身份", "⚠️"); return; }
+      state.checkedItems[key] = !state.checkedItems[key];
+      saveLocalCheckedItems(); syncDataToCloud(); renderEquipChecklist();
+      haptic(5);
+    }
+
+    function checkAllEquipment() {
+      const currentUser = getCurrentUser();
+      if (!currentUser) return;
+      const customItems = getCurrentCustomEquipItems();
+      [...equipmentList, ...customItems].forEach(item => {
+        const key = item.isCustom ? `custom-equip_${currentUser}_${item.id}` : `equip_${currentUser}_${item.id}`;
+        state.checkedItems[key] = true;
+      });
+      saveLocalCheckedItems(); syncDataToCloud(); renderEquipChecklist();
+      showToast("✅ 已全部勾選！");
+    }
+    function uncheckAllEquipment() {
+      const currentUser = getCurrentUser();
+      if (!currentUser) return;
+      const customItems = getCurrentCustomEquipItems();
+      [...equipmentList, ...customItems].forEach(item => {
+        const key = item.isCustom ? `custom-equip_${currentUser}_${item.id}` : `equip_${currentUser}_${item.id}`;
+        state.checkedItems[key] = false;
+      });
+      saveLocalCheckedItems(); syncDataToCloud(); renderEquipChecklist();
+      showToast("🧹 已清除所有勾選！");
+    }
+    function copyEquipmentList() {
+      const currentUser = getCurrentUser();
+      if (!currentUser) return;
+      let text = `🎒 ${currentUser} 的裝備清單\n=====================\n`;
+      const customItems = getCurrentCustomEquipItems();
+      ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"].forEach(cat => {
+        const items = equipmentList.filter(i => i.category === cat);
+        const customs = customItems.filter(i => i.category === cat);
+        const all = [...items, ...customs];
+        if (all.length === 0) return;
+        text += `\n【${cat}】\n`;
+        all.forEach(item => {
+          const key = item.isCustom ? `custom-equip_${currentUser}_${item.id}` : `equip_${currentUser}_${item.id}`;
+          text += `${state.checkedItems[key] ? "✅" : "⬜"} ${item.icon} ${item.label}\n`;
+        });
+      });
+      copyText(text); showToast("📋 裝備清單已複製！");
+    }
+    function addCustomEquip() {
+      const currentUser = getCurrentUser();
+      if (!currentUser) { showToast("請先選擇身份", "⚠️"); return; }
+      const l = document.getElementById("new-equip-label");
+      const c = document.getElementById("new-equip-category");
+      const label = l.value.trim();
+      if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
+
+      if (!customEquipItemsByUser[currentUser]) customEquipItemsByUser[currentUser] = [];
+      customEquipItemsByUser[currentUser].push({
+        id: "custom-" + Date.now(),
+        category: c.value,
+        label,
+        icon: "📦",
+        isCustom: true
+      });
+      saveCustomItems(); syncDataToCloud(); renderEquipChecklist();
+      l.value = ""; showToast(`已新增到 ${currentUser} 的清單！`);
+    }
+    function deleteCustomEquip(id) {
+      const currentUser = getCurrentUser();
+      if (!currentUser) return;
+      const items = customEquipItemsByUser[currentUser] || [];
+      const originalIndex = items.findIndex(i => i.id === id);
+      if (originalIndex === -1) return;
+      const snapshot = { ...items[originalIndex] };
+
+      customEquipItemsByUser[currentUser] = items.filter(i => i.id !== id);
+      saveCustomItems(); syncDataToCloud(); renderEquipChecklist();
+
+      showUndoToast(`已刪除「${snapshot.label}」`, "🗑", () => {
+        const cur = customEquipItemsByUser[currentUser] || [];
+        cur.splice(Math.min(originalIndex, cur.length), 0, snapshot);
+        customEquipItemsByUser[currentUser] = cur;
+        saveCustomItems(); syncDataToCloud(); renderEquipChecklist();
+        showToast("✅ 已還原", "↩️");
+      });
+    }
+
     // ==================== Modal UI 狀態管理 ====================
     function setModalTab(modalId, tab) {
       modalUIState[modalId].activeTab = tab;
@@ -2185,135 +2147,6 @@ async function syncDataToCloud() {
       haptic(5);
       if (modalId === 'booking-modal') renderBookingChecklist();
       else if (modalId === 'equip-modal') renderEquipChecklist();
-    }
-
-    function toggleBookingCheck(key) {
-      if (!isAdminUnlocked()) { showToast("🔒 請先解鎖管理權限", "⚠️"); return; }
-      state.checkedItems[key] = !state.checkedItems[key];
-      saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist();
-      haptic(5);
-    }
-    function checkAllBooking() {
-      if (!isAdminUnlocked()) return;
-      [...bookingList, ...customBookingItems].forEach(item => {
-        const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
-        state.checkedItems[key] = true;
-      });
-      saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist();
-      showToast("✅ 已全部勾選！");
-    }
-    function uncheckAllBooking() {
-      if (!isAdminUnlocked()) return;
-      [...bookingList, ...customBookingItems].forEach(item => {
-        const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
-        state.checkedItems[key] = false;
-      });
-      saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist();
-      showToast("🧹 已清除所有勾選！");
-    }
-    function copyBookingList() {
-      let text = "📌 行前預訂 Check List\n=====================\n";
-      ["租車", "住宿", "門票", "其他"].forEach(cat => {
-        const items = bookingList.filter(i => i.category === cat);
-        const customs = customBookingItems.filter(i => i.category === cat);
-        const all = [...items, ...customs];
-        if (all.length === 0) return;
-        text += `\n【${cat}】\n`;
-        all.forEach(item => {
-          const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
-          text += `${state.checkedItems[key] ? "✅" : "⬜"} ${item.icon} ${item.label}\n`;
-        });
-      });
-      copyText(text); showToast("📋 行前預訂清單已複製！");
-    }
-    function addCustomBooking() {
-      if (!isAdminUnlocked()) return;
-      const l = document.getElementById("new-booking-label");
-      const c = document.getElementById("new-booking-category");
-      const label = l.value.trim();
-      if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
-      customBookingItems.push({ id: "custom-" + Date.now(), category: c.value, label, icon: "📌", isCustom: true });
-      saveCustomItems(); syncDataToCloud(); renderBookingChecklist();
-      l.value = ""; showToast("已新增項目！");
-    }
-
-    // ==================== ✅ 刪除自訂項目（含撤銷） ====================
-    function deleteCustomBooking(id) {
-      if (!isAdminUnlocked()) return;
-      const originalIndex = customBookingItems.findIndex(i => i.id === id);
-      if (originalIndex === -1) return;
-      const snapshot = { ...customBookingItems[originalIndex] };
-
-      customBookingItems = customBookingItems.filter(i => i.id !== id);
-      saveCustomItems(); syncDataToCloud(); renderBookingChecklist();
-
-      showUndoToast(`已刪除「${snapshot.label}」`, "🗑", () => {
-        customBookingItems.splice(Math.min(originalIndex, customBookingItems.length), 0, snapshot);
-        saveCustomItems(); syncDataToCloud(); renderBookingChecklist();
-        showToast("✅ 已還原", "↩️");
-      });
-    }
-
-    function toggleEquipCheck(key) {
-      state.checkedItems[key] = !state.checkedItems[key];
-      saveLocalCheckedItems(); syncDataToCloud(); renderEquipChecklist();
-      haptic(5);
-    }
-    function checkAllEquipment() {
-      [...equipmentList, ...customEquipItems].forEach(item => {
-        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-        state.checkedItems[key] = true;
-      });
-      saveLocalCheckedItems(); syncDataToCloud(); renderEquipChecklist();
-      showToast("✅ 已全部勾選！");
-    }
-    function uncheckAllEquipment() {
-      [...equipmentList, ...customEquipItems].forEach(item => {
-        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-        state.checkedItems[key] = false;
-      });
-      saveLocalCheckedItems(); syncDataToCloud(); renderEquipChecklist();
-      showToast("🧹 已清除所有勾選！");
-    }
-    function copyEquipmentList() {
-      let text = "🎒 裝備清單 Check List\n=====================\n";
-      ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"].forEach(cat => {
-        const items = equipmentList.filter(i => i.category === cat);
-        const customs = customEquipItems.filter(i => i.category === cat);
-        const all = [...items, ...customs];
-        if (all.length === 0) return;
-        text += `\n【${cat}】\n`;
-        all.forEach(item => {
-          const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-          text += `${state.checkedItems[key] ? "✅" : "⬜"} ${item.icon} ${item.label}\n`;
-        });
-      });
-      copyText(text); showToast("📋 裝備清單已複製！");
-    }
-    function addCustomEquip() {
-      const l = document.getElementById("new-equip-label");
-      const c = document.getElementById("new-equip-category");
-      const label = l.value.trim();
-      if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
-      customEquipItems.push({ id: "custom-" + Date.now(), category: c.value, label, icon: "📦", isCustom: true });
-      saveCustomItems(); renderEquipChecklist();
-      l.value = ""; showToast("已新增項目！");
-    }
-
-    // ==================== ✅ 刪除裝備（含撤銷） ====================
-    function deleteCustomEquip(id) {
-      const originalIndex = customEquipItems.findIndex(i => i.id === id);
-      if (originalIndex === -1) return;
-      const snapshot = { ...customEquipItems[originalIndex] };
-
-      customEquipItems = customEquipItems.filter(i => i.id !== id);
-      saveCustomItems(); renderEquipChecklist();
-
-      showUndoToast(`已刪除「${snapshot.label}」`, "🗑", () => {
-        customEquipItems.splice(Math.min(originalIndex, customEquipItems.length), 0, snapshot);
-        saveCustomItems(); renderEquipChecklist();
-        showToast("✅ 已還原", "↩️");
-      });
     }
 
     // ==================== 拍攝靈感 ====================
@@ -2485,15 +2318,12 @@ async function syncDataToCloud() {
       document.getElementById('shopping-content').innerHTML = renderShoppingList(t);
       haptic(5);
     }
-
-    // ==================== ✅ 刪除購物項目（含撤銷） ====================
     function deleteShoppingItem(t, i) {
       const items = loadShoppingItems(t);
       const snapshot = { ...items[i] };
       items.splice(i, 1);
       saveShoppingItems(t, items);
       document.getElementById('shopping-content').innerHTML = renderShoppingList(t);
-
       showUndoToast(`已刪除「${snapshot.name}」`, "🗑", () => {
         const cur = loadShoppingItems(t);
         cur.splice(Math.min(i, cur.length), 0, snapshot);
@@ -2528,7 +2358,6 @@ async function syncDataToCloud() {
           const feels = Math.round(data.current.apparent_temperature);
           const humidity = data.current.relative_humidity_2m;
           const curIcon = data.current.weather_code === 0 ? "☀️" : data.current.weather_code < 5 ? "⛅" : data.current.weather_code < 70 ? "☁️" : "❄️";
-
           let advice = { icon: "🧥", text: "防風外套即可" };
           if (curTemp < -10) advice = { icon: "🥶", text: "極寒！羽絨 + 雪靴 + 毛帽 + 手套，小孩勿久留戶外" };
           else if (curTemp < -5) advice = { icon: "❄️", text: "羽絨 + 雪靴 + 毛帽必備，注意保暖" };
@@ -2582,7 +2411,7 @@ async function syncDataToCloud() {
       }
     }
 
-    // ==================== 行程速覽渲染 ====================
+    // ==================== 行程速覽 ====================
     function renderTripOverview() {
       const container = document.getElementById('overview-timeline-content');
       if (!container) return;
@@ -2873,20 +2702,21 @@ async function syncDataToCloud() {
       }
     }
 
+    // ==================== 存儲（本地） ====================
     function saveLocalCheckedItems() {
       localStorage.setItem("tohoku_checked_items", JSON.stringify(state.checkedItems));
       localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
-      localStorage.setItem("custom_equip_items", JSON.stringify(customEquipItems));
+      localStorage.setItem("custom_equip_items_by_user", JSON.stringify(customEquipItemsByUser));
     }
     function saveCustomItems() {
       localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
-      localStorage.setItem("custom_equip_items", JSON.stringify(customEquipItems));
+      localStorage.setItem("custom_equip_items_by_user", JSON.stringify(customEquipItemsByUser));
     }
     function loadCustomItems() {
       const b = localStorage.getItem("custom_booking_items");
       if (b) { try { customBookingItems = JSON.parse(b); } catch(e) {} }
-      const e = localStorage.getItem("custom_equip_items");
-      if (e) { try { customEquipItems = JSON.parse(e); } catch(e2) {} }
+      const e = localStorage.getItem("custom_equip_items_by_user");
+      if (e) { try { customEquipItemsByUser = JSON.parse(e); } catch(e2) {} }
     }
     function restoreChecklistUI() { renderBookingChecklist(); renderEquipChecklist(); }
 
@@ -2915,13 +2745,11 @@ async function syncDataToCloud() {
       } catch(e) { navigator.clipboard.writeText(text).catch(() => {}); }
     }
 
-    // ==================== ✅ Service Worker + 更新提示 ====================
+    // ==================== Service Worker + 更新提示 ====================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then(reg => {
           console.log('Service Worker registered:', reg.scope);
-
-          // 偵測新版本
           reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;
             if (!newWorker) return;
@@ -2931,13 +2759,9 @@ async function syncDataToCloud() {
               }
             });
           });
-
-          // 每 60 秒檢查一次更新
           setInterval(() => reg.update().catch(() => {}), 60 * 1000);
         }).catch(err => console.log('SW registration failed:', err));
       });
-
-      // 當新的 SW 接管時，自動重新載入
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (refreshing) return;
@@ -2946,13 +2770,15 @@ async function syncDataToCloud() {
       });
     }
 
+    // ✅ 修復：更新按鈕不會再卡住
+    // 1) 向所有 waiting/installing 的 SW 發送 SKIP_WAITING
+    // 2) 800ms 後無條件 fallback reload（含 cache-bust 參數）
     function showUpdateAvailable(worker) {
       const toast = document.getElementById("toast");
       const m = document.getElementById("toast-message");
       const i = document.getElementById("toast-icon");
       if (!toast || !m || !i) return;
 
-      // 移除舊的更新按鈕
       const oldUpdateBtn = document.getElementById("update-btn");
       if (oldUpdateBtn) oldUpdateBtn.remove();
       const oldUndoBtn = document.getElementById("toast-undo-btn");
@@ -2965,18 +2791,46 @@ async function syncDataToCloud() {
       btn.id = "update-btn";
       btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto";
       btn.textContent = "立即更新";
-      btn.onclick = (e) => {
+
+      let clicked = false;
+      btn.onclick = async (e) => {
         e.stopPropagation();
-        worker.postMessage({ type: 'SKIP_WAITING' });
+        if (clicked) return;
+        clicked = true;
         btn.textContent = "更新中...";
         btn.disabled = true;
         haptic(15);
-      };
-      toast.appendChild(btn);
 
+        // ✅ 向所有註冊的 SW 發送 SKIP_WAITING
+        try {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(reg => {
+            if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            if (reg.installing) reg.installing.postMessage({ type: 'SKIP_WAITING' });
+            if (reg.active) reg.active.postMessage({ type: 'SKIP_WAITING' });
+          }));
+        } catch (err) {
+          console.warn('postMessage failed:', err);
+        }
+
+        // ✅ 無條件 fallback reload（就算 controllerchange 沒觸發也一定會重整）
+        setTimeout(() => {
+          const url = new URL(window.location.href);
+          url.searchParams.set('_v', Date.now());
+          window.location.replace(url.toString());
+        }, 800);
+      };
+
+      toast.appendChild(btn);
       toast.classList.remove("-translate-y-24", "opacity-0");
       toast.classList.add("translate-y-0", "opacity-100");
-      // 更新提示不自動消失
+
+      // 15 秒後自動關閉
+      if (window.toastTimeout) clearTimeout(window.toastTimeout);
+      window.toastTimeout = setTimeout(() => {
+        toast.classList.remove("translate-y-0", "opacity-100");
+        toast.classList.add("-translate-y-24", "opacity-0");
+      }, 15000);
     }
 
     window.addEventListener('message', (event) => {
@@ -2985,6 +2839,27 @@ async function syncDataToCloud() {
         if (lc) { lc.classList.add('hidden-view'); lc.style.cssText = ''; }
       }
     });
+
+    // ==================== Firestore 即時同步 ====================
+    window.dbRef.onSnapshot(docSnap => {
+      if (docSnap.exists()) {
+        const cloudData = docSnap.data();
+        if (cloudData.checkedItems) {
+          state.checkedItems = cloudData.checkedItems;
+          restoreChecklistUI();
+        }
+        if (cloudData.customBookingItems) {
+          customBookingItems = cloudData.customBookingItems;
+          localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
+        }
+        if (cloudData.customEquipItemsByUser) {
+          customEquipItemsByUser = cloudData.customEquipItemsByUser;
+          localStorage.setItem("custom_equip_items_by_user", JSON.stringify(customEquipItemsByUser));
+        }
+        renderBookingChecklist();
+        renderEquipChecklist();
+      }
+    }, err => console.warn("Firestore Sync Warning:", err));
 
     // ==================== 初始化 ====================
     window.addEventListener("DOMContentLoaded", () => {
@@ -3022,7 +2897,9 @@ async function syncDataToCloud() {
           ginzanTarget: GINZAN_TARGET,
           zaoTarget: ZAO_TARGET,
           itineraries: winterItineraries,
+          users: USERS,
           weatherCache: () => window.weatherCache,
+          getCurrentUser: () => getCurrentUser(),
           callbacks: {
             onBooking: () => toggleBookingModal(),
             onEquip: () => toggleEquipModal(),
@@ -3032,6 +2909,7 @@ async function syncDataToCloud() {
             onWeather: () => openWeatherModal(),
             onOverview: () => openTripOverview(),
             onSwitchTab: (tab) => switchMainTab(tab),
+            onSwitchUser: (user) => switchUser(user),
             onScrollToDay: (day) => {
               switchDay(day);
               setTimeout(() => {
@@ -3057,6 +2935,12 @@ async function syncDataToCloud() {
       updateSnowmanVisual();
       updateTodayButtonVisibility();
       setInterval(updateTodayButtonVisibility, 60 * 1000);
+
+      if (!hasChosenUser()) {
+        setTimeout(() => {
+          if (!hasChosenUser()) showUserPicker();
+        }, 800);
+      }
 
       const anyOpen = document.querySelector('details.event-card[open]');
       const ci = document.getElementById('collapse-icon');
