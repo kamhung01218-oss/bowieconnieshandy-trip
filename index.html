@@ -76,11 +76,47 @@ try {
 
 // ✅ 使用點記法，避免淺層合併覆蓋別台裝置的資料
 async function syncDataToCloud() {
-  // ✅ 唯讀模式防護：非管理員不允許寫入雲端
+  // 1. 檢查是否解鎖編輯模式
   if (!isAdminUnlocked()) {
-    console.warn("[Sync] 唯讀模式，跳過雲端寫入");
+    showToast("🔒 唯讀模式，無法寫入雲端！請先解鎖編輯。", "⚠️");
     return;
   }
+
+  // 2. 檢查 Firebase 是否就緒
+  if (typeof firebase === 'undefined' || !window.dbRef) {
+    showToast("⏳ 雲端尚未連線，請稍等幾秒再試一次", "⚠️");
+    return;
+  }
+
+  try {
+    if (!firebase.auth().currentUser) {
+      showToast("👤 尚未完成匿名登入，請檢查網路", "⚠️");
+      return;
+    }
+
+    const payload = { updatedAt: Date.now() };
+    Object.keys(state.checkedItems).forEach(k => {
+      if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
+        payload[`checkedItems.${k}`] = state.checkedItems[k];
+      }
+    });
+
+    if (Object.keys(payload).length > 1) {
+      await window.dbRef.set(payload, { merge: true });
+    }
+
+    if (customBookingItems.length > 0) {
+      await window.dbRef.set({
+        customBookingItems: firebase.firestore.FieldValue.arrayUnion(...customBookingItems)
+      }, { merge: true });
+    }
+
+    showToast("✅ 已成功寫入雲端！", "☁️"); // 成功時會跳這個
+  } catch (e) {
+    console.warn("Cloud save fallback to local:", e);
+    showToast("❌ 寫入失敗：" + e.message, "⚠️"); // 失敗時會跳這個
+  }
+}
 
   try {
     if (!firebase.auth().currentUser) return;
