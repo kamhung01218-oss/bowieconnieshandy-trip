@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
+  <script>
+// ✅ 攔截所有 JavaScript 錯誤，並用手機彈窗顯示
+window.onerror = function(msg, url, line, col, error) {
+  var errorMsg = "⚠️ 網頁發生錯誤！\n\n" + 
+                 "訊息: " + msg + "\n" + 
+                 "檔案: " + url + "\n" + 
+                 "行數: " + line;
+  alert(errorMsg);
+  return false;
+};
+  </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>❄️ 東北冬季親子溫泉自駕之旅 (7天6夜)</title>
