@@ -13,9 +13,9 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <!-- ✅ 使用 compat 版本，讓 firebase 命名空間可用 -->
-<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@11.6.1/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@11.6.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@11.6.1/firebase-firestore-compat.js"></script>
 
 <script src="data.js"></script>
 <script src="shoot-tips.js"></script>
@@ -55,9 +55,24 @@ firebase.auth().signInAnonymously()
     window.AppHeader && AppHeader.setSyncState(false);
   });
 
-const db = firebase.firestore();
-window.db = db;
-window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
+let db = null;
+let dbRef = null;
+try {
+  // 檢查 Firestore 模組是否真的載入成功
+  if (typeof firebase !== 'undefined' && typeof firebase.firestore === 'function') {
+    db = firebase.firestore();
+    window.db = db;
+    dbRef = db.collection("tohoku_trip").doc("shared_expenses");
+    window.dbRef = dbRef;
+    console.log("✅ Firestore 初始化成功");
+  } else {
+    console.warn("❌ Firestore SDK 未載入，請檢查網路或 CDN。");
+    window.dbRefError = "SDK未載入";
+  }
+} catch (err) {
+  console.warn("❌ Firestore 初始化失敗:", err);
+  window.dbRefError = err.message;
+}
 
 // ✅ 使用點記法，避免淺層合併覆蓋別台裝置的資料
 async function syncDataToCloud() {
@@ -1126,11 +1141,12 @@ state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking };
     // ==================== 編輯/唯讀模式控制 ====================
     function forceSyncFromCloud() {
   if (!window.dbRef) {
-    // 讓手機畫面直接顯示缺少什麼
-    const debugMsg = `⚠️ 未連線 (firebase: ${typeof firebase}, dbRef: ${typeof window.dbRef})`;
-    showToast(debugMsg, "⚠️");
+    // 顯示更詳細的失敗原因
+    const errMsg = window.dbRefError ? ` [${window.dbRefError}]` : '';
+    showToast(`⚠️ 未連線 (dbRef: ${typeof window.dbRef})${errMsg}`, "⚠️");
     return;
   }
+
       showToast("🔄 同步中...", "☁️");
       haptic(8);
 
