@@ -111,17 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
 
-        const mergedBooking = { ...cloudData.checkedItems };
-        Object.keys(state.checkedItems).forEach(k => {
-          if ((k.startsWith('booking-') || k.startsWith('custom-booking-'))
-              && state.checkedItems[k] === true
-              && mergedBooking[k] !== true) {
-            mergedBooking[k] = true;
-          }
-        });
-
-        state.checkedItems = { ...mergedBooking, ...localNonBooking };
-      }
+        // ✅ 直接信任雲端為權威來源，不再強制保留本地的 true
+state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking };
 
       if (Array.isArray(cloudData.customBookingItems)) {
         const localIds = new Set(customBookingItems.map(i => i.id));
