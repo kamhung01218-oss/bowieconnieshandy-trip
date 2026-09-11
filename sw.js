@@ -6,7 +6,7 @@
  *   - 支援 SKIP_WAITING 訊息，讓使用者手動更新
  * ============================================================ */
 
-const CACHE_NAME = 'tohoku-winter-trip-v12';
+const CACHE_NAME = 'tohoku-winter-trip-v17';
 
 const ASSETS = [
   '/',

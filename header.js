@@ -1,29 +1,6 @@
 /* ============================================================
- * AppHeader 獨立元件 v2.3
- * 移除 Chip 列的搶票按鈕（搶票入口統一由焦點卡片提供）
- *
- * 使用方式：
- *   AppHeader.init({
- *     containerId: 'app-header',
- *     tripStart:   1234567890000,
- *     tripEnd:     1234567890000,
- *     tripDates:   ['2027-01-21', ...],
- *     ginzanTarget: 1234567890000,
- *     zaoTarget:    1234567890000,
- *     itineraries: winterItineraries,
- *     weatherCache: () => window.weatherCache,
- *     callbacks: {
- *       onBooking, onEquip, onDrive, onShoot, onTicket,
- *       onWeather, onOverview, onScrollToDay, onSwitchTab,
- *       getExpenseCount
- *     }
- *   });
- *
- * 公開方法：
- *   AppHeader.render()           // 手動重繪焦點卡片
- *   AppHeader.getPhase()         // 取得目前階段 (before/during/after)
- *   AppHeader.setSyncState(bool) // 設定雲端同步狀態
- *   AppHeader.destroy()          // 銷毀元件
+ * AppHeader 獨立元件 v2.5
+ * 新增用戶頭像切換（用於個人裝備清單）
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -33,6 +10,13 @@ window.AppHeader = (function () {
   let _tickTimer = null;
   let _syncConnected = true;
   let _lastRenderedPhase = null;
+
+  const USER_INITIALS = {
+    "余生": "余",
+    "bowie": "B",
+    "shandy": "S",
+    "connie": "C"
+  };
 
   // ---------- 私有工具 ----------
   function getTripPhase() {
@@ -74,7 +58,6 @@ window.AppHeader = (function () {
     return tasks[0] || null;
   }
 
-  // 準備進度：從「提前 180 天」開始計算到出發日
   function getPrepProgress() {
     const now = Date.now();
     const PREP_START = _config.tripStart - 180 * 86400000;
@@ -97,7 +80,67 @@ window.AppHeader = (function () {
     }[c]));
   }
 
-  // ---------- 倒計時數字更新 ----------
+  function getCurrentUser() {
+    if (_config.getCurrentUser) return _config.getCurrentUser();
+    return localStorage.getItem('tohoku_current_user') || "余生";
+  }
+
+  function updateUserAvatar() {
+    if (!_container) return;
+    const userEl = _container.querySelector("#app-header-user-text");
+    if (userEl) {
+      const user = getCurrentUser();
+      userEl.textContent = USER_INITIALS[user] || user[0];
+    }
+  }
+
+  // ---------- 用戶切換選單 ----------
+  function showUserSwitcher() {
+    const existing = document.getElementById('user-switcher-menu');
+    if (existing) { existing.remove(); return; }
+
+    const users = _config.users || ["余生", "bowie", "shandy", "connie"];
+    const currentUser = getCurrentUser();
+
+    const menu = document.createElement('div');
+    menu.id = 'user-switcher-menu';
+    menu.className = 'user-switcher';
+
+    users.forEach(user => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = user === currentUser ? 'active' : '';
+      btn.innerHTML = `
+        <span class="avatar-mini">${USER_INITIALS[user] || user[0]}</span>
+        <span>${user}</span>
+        ${user === currentUser ? '<span class="check">✓</span>' : ''}
+      `;
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        menu.remove();
+        if (user !== currentUser) {
+          if (_config.callbacks && _config.callbacks.onSwitchUser) {
+            _config.callbacks.onSwitchUser(user);
+          }
+        }
+      };
+      menu.appendChild(btn);
+    });
+
+    document.body.appendChild(menu);
+
+    setTimeout(() => {
+      const closeHandler = (e) => {
+        if (!menu.contains(e.target)) {
+          menu.remove();
+          document.removeEventListener('click', closeHandler);
+        }
+      };
+      document.addEventListener('click', closeHandler);
+    }, 0);
+  }
+
+  // ---------- 倒計時更新 ----------
   function updateCountdownNumbers() {
     if (!_container) return;
     const focusEl = _container.querySelector("#app-header-focus");
@@ -115,7 +158,6 @@ window.AppHeader = (function () {
     updateCell(focusEl, "minutes", String(minutes).padStart(2, "0"));
     updateCell(focusEl, "seconds", String(seconds).padStart(2, "0"));
 
-    // 每 30 秒更新一次進度條
     if (seconds % 30 === 0) {
       const fill = focusEl.querySelector(".focus-progress-fill");
       if (fill) fill.style.width = getPrepProgress() + "%";
@@ -160,7 +202,6 @@ window.AppHeader = (function () {
         innerHTML = `
           <div class="focus-inner">
             <div class="focus-label">距離出發還有</div>
-
             <div class="countdown-grid">
               <div class="countdown-cell">
                 <div class="countdown-value" data-cell="days">${days}</div>
@@ -179,14 +220,12 @@ window.AppHeader = (function () {
                 <div class="countdown-unit">秒</div>
               </div>
             </div>
-
             <div class="focus-progress-row">
               <div class="focus-progress-track">
                 <div class="focus-progress-fill" style="width:${progress}%"></div>
               </div>
               <div class="focus-progress-label">準備進度 ${Math.round(progress)}%</div>
             </div>
-
             ${task ? `
               <div class="focus-task">
                 <span class="focus-task-icon">${task.emoji}</span>
@@ -196,7 +235,6 @@ window.AppHeader = (function () {
                 </div>
               </div>
             ` : ""}
-
             <div style="display:flex;gap:8px;margin-top:12px">
               <button type="button" class="focus-cta focus-cta-primary" data-action="booking">
                 <span>📌</span> 查看行前準備
@@ -209,16 +247,13 @@ window.AppHeader = (function () {
         `;
       } else if (phase === "during") {
         const dayIdx = getCurrentDayIndex();
-        const dayData = dayIdx >= 0
-          ? _config.itineraries[dayIdx]
-          : _config.itineraries[0];
+        const dayData = dayIdx >= 0 ? _config.itineraries[dayIdx] : _config.itineraries[0];
         const weatherMap = _config.weatherCache ? _config.weatherCache() : {};
         const weather = weatherMap[_config.tripDates[dayIdx >= 0 ? dayIdx : 0]];
         const nextEvt = getNextEvent(dayData);
         const totalEvents = dayData.events.length;
         const doneEvents = nextEvt ? dayData.events.indexOf(nextEvt) : totalEvents;
         const progress = Math.round((doneEvents / totalEvents) * 100);
-
         const temp = weather ? Math.round((weather.max + weather.min) / 2) : null;
         const advice = weather ? getWeatherAdvice(temp, weather.rain) : "載入中...";
 
@@ -232,7 +267,6 @@ window.AppHeader = (function () {
               </div>
               <div style="font-size:30px;flex-shrink:0">${dayData.emoji}</div>
             </div>
-
             <div class="focus-weather-grid">
               <div class="focus-weather-cell">
                 <div class="label">⛅ 天氣</div>
@@ -245,12 +279,10 @@ window.AppHeader = (function () {
                 <div style="font-size:9px;color:#cbd5e1;margin-top:2px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nextEvt ? escapeHtml(nextEvt.title) : "--"}</div>
               </div>
             </div>
-
             <div class="focus-progress-track" style="margin-top:10px">
               <div class="focus-progress-fill" style="width:${progress}%"></div>
             </div>
             <div class="focus-progress-label">今日進度 ${progress}% · 已完成 ${doneEvents} / ${totalEvents} 個行程</div>
-
             <div style="display:flex;gap:8px;margin-top:12px">
               <button type="button" class="focus-cta focus-cta-primary" data-action="scrollToDay">
                 <span>📋</span> 查看今日行程
@@ -277,13 +309,11 @@ window.AppHeader = (function () {
             <div class="focus-label">旅程圓滿結束</div>
             <div class="focus-title">🎉 感謝這趟美好的雪國之旅</div>
             <div class="focus-subtitle">7 天 · 4 大 2 小 · 無數美好回憶</div>
-
             <div class="focus-stats">
               <div class="focus-stat"><div class="num">7</div><div class="lbl">旅行天數</div></div>
               <div class="focus-stat"><div class="num">${totalExpenses}</div><div class="lbl">記帳筆數</div></div>
               <div class="focus-stat"><div class="num">23</div><div class="lbl">造訪景點</div></div>
             </div>
-
             <div style="display:flex;gap:8px;margin-top:12px">
               <button type="button" class="focus-cta focus-cta-primary" data-action="overview">
                 <span>📖</span> 回顧旅程
@@ -301,7 +331,6 @@ window.AppHeader = (function () {
     }
   }
 
-  // ---------- 事件綁定 ----------
   function bindFocusActions(focusEl, cb) {
     focusEl.querySelectorAll("[data-action]").forEach(el => {
       el.addEventListener("click", () => {
@@ -330,11 +359,9 @@ window.AppHeader = (function () {
       el.addEventListener("click", () => {
         const action = el.dataset.chipAction;
         const map = {
-          booking: cb.onBooking,
           equip: cb.onEquip,
           drive: cb.onDrive,
           shoot: cb.onShoot
-          // ✅ 已移除 ticket
         };
         if (map[action]) map[action]();
       });
@@ -344,6 +371,14 @@ window.AppHeader = (function () {
   function bindBrandActions() {
     if (!_container) return;
     const cb = _config.callbacks || {};
+
+    const userBtn = _container.querySelector("#app-header-user");
+    if (userBtn) {
+      userBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showUserSwitcher();
+      });
+    }
 
     const syncBtn = _container.querySelector("#app-header-sync");
     if (syncBtn) {
@@ -389,6 +424,9 @@ window.AppHeader = (function () {
             <span class="brand-title">東北冬季親子自駕 2027</span>
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <button type="button" id="app-header-user" class="user-avatar" title="切換身份">
+              <span id="app-header-user-text">余</span>
+            </button>
             <button type="button" id="app-header-weather" class="brand-icon-btn" title="天氣">⛅</button>
             <button type="button" id="app-header-overview" class="brand-icon-btn" title="行程速覽">📋</button>
             <button type="button" id="app-header-sync" class="sync-badge">
@@ -405,7 +443,6 @@ window.AppHeader = (function () {
         </div>
 
         <div class="chip-bar">
-          <button type="button" class="chip" data-chip-action="booking"><span>📌</span> 行前預訂</button>
           <button type="button" class="chip" data-chip-action="equip"><span>🎒</span> 裝備</button>
           <button type="button" class="chip" data-chip-action="drive"><span>⚠️</span> 雪地攻略</button>
           <button type="button" class="chip" data-chip-action="shoot"><span>📷</span> 拍攝</button>
@@ -414,6 +451,7 @@ window.AppHeader = (function () {
 
       bindBrandActions();
       bindChipActions();
+      updateUserAvatar();
       renderFocusCard();
 
       if (_tickTimer) clearInterval(_tickTimer);
@@ -449,8 +487,14 @@ window.AppHeader = (function () {
       }
     },
 
+    setUser(user) {
+      updateUserAvatar();
+    },
+
     destroy() {
       if (_tickTimer) { clearInterval(_tickTimer); _tickTimer = null; }
+      const menu = document.getElementById('user-switcher-menu');
+      if (menu) menu.remove();
       if (_container) _container.innerHTML = "";
       _config = null;
       _container = null;
