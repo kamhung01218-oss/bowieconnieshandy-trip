@@ -12,9 +12,9 @@
 <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2744.png">
 
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
 
 <script src="data.js"></script>
 <script src="shoot-tips.js"></script>
@@ -63,70 +63,72 @@ async function syncDataToCloud() {
   try {
     if (!firebase.auth().currentUser) return;
 
-    const bookingOnly = {};
+    const payload = { updatedAt: Date.now() };
     Object.keys(state.checkedItems).forEach(k => {
       if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
-        bookingOnly[k] = state.checkedItems[k];
+        payload[`checkedItems.${k}`] = state.checkedItems[k];
       }
     });
 
-    // 1. 先寫入 checkedItems (Map 用 merge 沒問題)
-    await window.dbRef.set({
-      checkedItems: bookingOnly,
-      updatedAt: Date.now()
-    }, { merge: true });
+    // 用點記法只更新有勾選的 key，不會覆蓋別台裝置的資料
+    if (Object.keys(payload).length > 1) {
+      await window.dbRef.update(payload);
+    }
 
-    // 2. 自訂項目改用 arrayUnion，避免覆蓋別台手機的資料
+    // 2. 自訂項目改用 arrayUnion
     if (customBookingItems.length > 0) {
-      await window.dbRef.update({
+      await window.dbRef.set({
         customBookingItems: firebase.firestore.FieldValue.arrayUnion(...customBookingItems)
-      });
+      }, { merge: true });
     }
   } catch (e) {
     console.warn("Cloud save fallback to local:", e);
   }
 }
-
 // 等 DOM 與 body script 都跑完再註冊
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.dbRef) return;
 
-  window.dbRef.onSnapshot(docSnap => {
-    if (!docSnap.exists) return;
-    if (docSnap.metadata?.hasPendingWrites) return;
+    window.dbRef.onSnapshot(docSnap => {
+    try {
+      if (!docSnap.exists) return;
+      if (docSnap.metadata?.hasPendingWrites) return;
 
-    const cloudData = docSnap.data();
+      const cloudData = docSnap.data();
 
-    if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
-      const localNonBooking = {};
-      Object.keys(state.checkedItems).forEach(k => {
-        if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) {
-          localNonBooking[k] = state.checkedItems[k];
-        }
-      });
+      if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
+        const localNonBooking = {};
+        Object.keys(state.checkedItems).forEach(k => {
+          if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) {
+            localNonBooking[k] = state.checkedItems[k];
+          }
+        });
 
-      const mergedBooking = { ...cloudData.checkedItems };
-      Object.keys(state.checkedItems).forEach(k => {
-        if ((k.startsWith('booking-') || k.startsWith('custom-booking-'))
-            && state.checkedItems[k] === true
-            && mergedBooking[k] !== true) {
-          mergedBooking[k] = true;
-        }
-      });
+        const mergedBooking = { ...cloudData.checkedItems };
+        Object.keys(state.checkedItems).forEach(k => {
+          if ((k.startsWith('booking-') || k.startsWith('custom-booking-'))
+              && state.checkedItems[k] === true
+              && mergedBooking[k] !== true) {
+            mergedBooking[k] = true;
+          }
+        });
 
-      state.checkedItems = { ...mergedBooking, ...localNonBooking };
+        state.checkedItems = { ...mergedBooking, ...localNonBooking };
+      }
+
+      if (Array.isArray(cloudData.customBookingItems)) {
+        const localIds = new Set(customBookingItems.map(i => i.id));
+        cloudData.customBookingItems.forEach(item => {
+          if (!localIds.has(item.id)) customBookingItems.push(item);
+        });
+        localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
+      }
+
+      saveLocalCheckedItems();
+      restoreChecklistUI();
+    } catch (err) {
+      console.warn("[Snapshot merge error]", err);
     }
-
-    if (Array.isArray(cloudData.customBookingItems)) {
-      const localIds = new Set(customBookingItems.map(i => i.id));
-      cloudData.customBookingItems.forEach(item => {
-        if (!localIds.has(item.id)) customBookingItems.push(item);
-      });
-      localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
-    }
-
-    saveLocalCheckedItems();
-    restoreChecklistUI();
   }, err => console.warn("Firestore Sync Warning:", err));
 });
 </script>
