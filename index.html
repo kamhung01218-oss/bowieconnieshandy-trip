@@ -59,36 +59,43 @@ const db = firebase.firestore();
 window.db = db;
 window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 
-// ✅ 只同步「行前預訂」相關的鍵（booking- / custom-booking-），裝備清單保留本地
+// ✅ 修復版：完整同步行前預訂（包含「取消勾選全部」的情境）
 window.dbRef.onSnapshot(docSnap => {
-  if (docSnap.exists()) {
-    const cloudData = docSnap.data();
+  if (!docSnap.exists()) return;
 
-    if (cloudData.checkedItems && Object.keys(cloudData.checkedItems).length > 0) {
-      // 1. 先清掉本地所有「行前預訂」相關的鍵（讓取消勾選也能同步）
-      Object.keys(state.checkedItems).forEach(k => {
-        if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
-          delete state.checkedItems[k];
-        }
-      });
-      // 2. 套用雲端版本（雲端只有 booking 鍵）
-      Object.assign(state.checkedItems, cloudData.checkedItems);
+  // 跳過自己尚未確認的本地寫入，避免無限迴圈
+  if (docSnap.metadata && docSnap.metadata.hasPendingWrites) return;
 
-      saveLocalCheckedItems();
-      restoreChecklistUI();
+  const cloudData = docSnap.data();
+
+  // 1. 先清掉本地所有「行前預訂」相關的鍵
+  Object.keys(state.checkedItems).forEach(k => {
+    if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
+      delete state.checkedItems[k];
     }
+  });
 
-    if (cloudData.customBookingItems) {
-      customBookingItems = cloudData.customBookingItems;
-      localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
-    }
-    renderBookingChecklist();
+  // 2. 套用雲端版本（★ 就算是空物件也要套用 ★）
+  if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
+    Object.keys(cloudData.checkedItems).forEach(k => {
+      state.checkedItems[k] = cloudData.checkedItems[k];
+    });
   }
+
+  saveLocalCheckedItems();
+
+  // 3. 同步自訂項目
+  if (Array.isArray(cloudData.customBookingItems)) {
+    customBookingItems = cloudData.customBookingItems;
+    localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
+  }
+
+  // 4. 更新 UI
+  restoreChecklistUI();
 }, err => console.warn("Firestore Sync Warning:", err));
 
 async function syncDataToCloud() {
   try {
-    // ✅ 只挑出 booking- 和 custom-booking- 前綴的鍵
     const bookingOnly = {};
     Object.keys(state.checkedItems).forEach(k => {
       if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
