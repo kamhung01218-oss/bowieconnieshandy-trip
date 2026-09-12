@@ -855,7 +855,25 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const savedDiary = localStorage.getItem(`diary_day_${dayData.day}_${currentUser || 'guest'}`) || "";
       html += `<div class="mt-4 mb-6 bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 rounded-2xl p-3"><div class="flex items-center gap-2 mb-1.5"><span class="text-base">📖</span><strong class="text-xs text-slate-800">今日旅行日記</strong><button onclick="saveDiary(${dayData.day})" class="ml-auto text-[10px] bg-sky-500 hover:bg-sky-600 text-white px-2 py-0.5 rounded font-bold transition">儲存</button></div><textarea id="diary-input-${dayData.day}" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-1.5 px-2.5 text-[11px] resize-none">${savedDiary}</textarea></div>`;
-      html += `</div></div>`; section.innerHTML = html;
+      html += `</div></div>`; 
+      section.innerHTML = html;
+
+      // ✅ 新增：渲染後自動計算每個行程卡片內容高度，決定是否顯示「展開完整攻略」按鈕
+      setTimeout(() => {
+        dayData.events.forEach((_, index) => {
+          const wrapper = document.getElementById(`collapsible-${dayData.day}-${index}`);
+          const btn = document.querySelector(`[data-expand-btn="${dayData.day}-${index}"]`);
+          if (wrapper && btn) {
+            if (wrapper.scrollHeight <= 300) {
+              wrapper.classList.add("no-collapse");
+              btn.classList.add("hidden");
+            } else {
+              wrapper.classList.remove("no-collapse");
+              btn.classList.remove("hidden");
+            }
+          }
+        });
+      }, 150);
     }
     function saveDiary(day) { const input = document.getElementById(`diary-input-${day}`); if (input) { localStorage.setItem(`diary_day_${day}_${currentUser || 'guest'}`, input.value); showToast("📖 日記已儲存！", "✅"); haptic(10); } }
 
