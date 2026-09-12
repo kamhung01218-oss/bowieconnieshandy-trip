@@ -431,12 +431,30 @@ window.AppHeader = (function () {
     }
   }, 1000);
 
-  // ✅ 初始化用戶頭像
+  // ✅ 初始化用戶頭像（自給自足，不依賴 index.html）
   setTimeout(() => {
-    if (typeof window.updateUserBadge === "function") {
-      window.updateUserBadge();
-    }
-  }, 100);
+    const currentUser = localStorage.getItem("tohoku_current_user");
+    if (!currentUser) return;
+
+    const badge = _container.querySelector("#user-badge");
+    const avatarEl = _container.querySelector("#user-badge-avatar");
+    const nameEl = _container.querySelector("#user-badge-name");
+    if (!badge || !avatarEl || !nameEl) return;
+
+    const USER_COLORS = {
+      "余生": "linear-gradient(135deg,#3b82f6,#1d4ed8)",
+      "bowie": "linear-gradient(135deg,#f472b6,#db2777)",
+      "shandy": "linear-gradient(135deg,#34d399,#059669)",
+      "connie": "linear-gradient(135deg,#a78bfa,#7c3aed)"
+    };
+
+    nameEl.textContent = currentUser;
+    nameEl.style.color = "white";
+    avatarEl.textContent = currentUser[0].toUpperCase();
+    avatarEl.style.background = USER_COLORS[currentUser] || "linear-gradient(135deg,#64748b,#475569)";
+    badge.style.display = 'inline-flex';
+    badge.style.alignItems = 'center';
+  }, 200);
 },
 
     render() {
