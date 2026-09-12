@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cloudData.userData && typeof cloudData.userData === 'object') {
         window.cloudUserData = cloudData.userData;
         cloudUserData = cloudData.userData;
-        if (currentUser && currentUser !== "访客") {
+        if (currentUser && currentUser !== "訪客") {
           renderEquipChecklist();
           renderAllShoppingContent();
         }
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="user-avatar" style="background:linear-gradient(135deg,#a78bfa,#7c3aed)">C</div>
           <span class="text-xs font-black text-slate-700">connie</span>
         </button>
-        <button type="button" class="user-btn" data-user="访客" style="grid-column: span 2;">
+        <button type="button" class="user-btn" data-user="訪客" style="grid-column: span 2;">
           <div class="user-avatar" style="background:linear-gradient(135deg,#94a3b8,#475569)">👤</div>
           <span class="text-xs font-black text-slate-700">訪客（僅瀏覽）</span>
         </button>
@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
       "bowie": "linear-gradient(135deg,#f472b6,#db2777)",
       "shandy": "linear-gradient(135deg,#34d399,#059669)",
       "connie": "linear-gradient(135deg,#a78bfa,#7c3aed)",
-      "访客": "linear-gradient(135deg,#94a3b8,#475569)"
+      "訪客": "linear-gradient(135deg,#94a3b8,#475569)"
     };
 
     const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27"];
@@ -346,9 +346,9 @@ document.addEventListener('DOMContentLoaded', () => {
           selectedUser = btn.dataset.user;
 
           // 訪客直接進入
-          if (selectedUser === "访客") {
-            currentUser = "访客";
-            localStorage.setItem("tohoku_current_user", "访客");
+          if (selectedUser === "訪客") {
+            currentUser = "訪客";
+            localStorage.setItem("tohoku_current_user", "訪客");
             document.getElementById('user-modal').style.display = 'none';
             showToast("👤 歡迎，訪客！", "👋");
             haptic(15);
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const savedUser = localStorage.getItem("tohoku_current_user");
-      if (savedUser && (savedUser === "访客" || USER_PINS[savedUser])) {
+      if (savedUser && (savedUser === "訪客" || USER_PINS[savedUser])) {
         currentUser = savedUser;
         document.getElementById('user-modal').style.display = 'none';
         initAppAfterLogin();
@@ -462,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!badge || !avatarEl || !nameEl || !currentUser) return;
         nameEl.textContent = currentUser;
         nameEl.style.color = "white";
-        avatarEl.textContent = currentUser === "访客" ? "👤" : currentUser[0].toUpperCase();
+        avatarEl.textContent = currentUser === "訪客" ? "👤" : currentUser[0].toUpperCase();
         avatarEl.style.background = USER_COLORS[currentUser] || "linear-gradient(135deg,#64748b,#475569)";
         badge.style.display = 'inline-flex';
         badge.style.alignItems = 'center';
@@ -472,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==================== 用戶資料讀取/寫入 ====================
     function getUserData() {
-      if (!currentUser || currentUser === "访客") return { equipChecked: {}, customEquip: [], shopping: {} };
+      if (!currentUser || currentUser === "訪客") return { equipChecked: {}, customEquip: [], shopping: {} };
       if (!cloudUserData[currentUser]) {
         cloudUserData[currentUser] = { equipChecked: {}, customEquip: [], shopping: {} };
       }
@@ -484,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function saveUserData() {
-      if (!currentUser || currentUser === "访客") return;
+      if (!currentUser || currentUser === "訪客") return;
       if (typeof firebase === 'undefined' || !window.dbRef) { showToast("⏳ 雲端未連線", "⚠️"); return; }
       try {
         const docSnap = await window.dbRef.get();
@@ -622,7 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!currentUser) { container.innerHTML = '<div class="text-center py-8 text-slate-500">請先登入身份</div>'; return; }
 
       // 訪客無法使用
-      if (currentUser === "访客") {
+      if (currentUser === "訪客") {
         container.innerHTML = `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用專屬清單</p><p class="text-xs text-slate-500 leading-relaxed">請切換為家庭成員身份<br>才能建立自己的裝備清單</p></div>`;
         return;
       }
@@ -659,7 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleEquipCheck(key) {
-      if (!currentUser || currentUser === "访客") { showToast("🔒 請先登入", "⚠️"); return; }
+      if (!currentUser || currentUser === "訪客") { showToast("🔒 請先登入", "⚠️"); return; }
       const userData = getUserData();
       userData.equipChecked[key] = !userData.equipChecked[key];
       renderEquipChecklist();
@@ -667,19 +667,19 @@ document.addEventListener('DOMContentLoaded', () => {
       haptic(5);
     }
     function checkAllEquipment() {
-      if (!currentUser || currentUser === "访客") return;
+      if (!currentUser || currentUser === "訪客") return;
       const userData = getUserData();
       [...equipmentList, ...(userData.customEquip || [])].forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; userData.equipChecked[key] = true; });
       renderEquipChecklist(); saveUserData(); showToast("✅ 已全部勾選！");
     }
     function uncheckAllEquipment() {
-      if (!currentUser || currentUser === "访客") return;
+      if (!currentUser || currentUser === "訪客") return;
       const userData = getUserData();
       [...equipmentList, ...(userData.customEquip || [])].forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; userData.equipChecked[key] = false; });
       renderEquipChecklist(); saveUserData(); showToast("🧹 已清除所有勾選！");
     }
     function copyEquipmentList() {
-      if (!currentUser || currentUser === "访客") return;
+      if (!currentUser || currentUser === "訪客") return;
       const userData = getUserData();
       const customEquipItems = userData.customEquip || [];
       let text = `🎒 ${currentUser} 的裝備清單 Check List\n=====================\n`;
@@ -691,7 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
       copyText(text); showToast("📋 裝備清單已複製！");
     }
     function addCustomEquip() {
-      if (!currentUser || currentUser === "访客") return;
+      if (!currentUser || currentUser === "訪客") return;
       const l = document.getElementById("new-equip-label"); const c = document.getElementById("new-equip-category");
       const label = l.value.trim(); if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
       const userData = getUserData();
@@ -699,7 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderEquipChecklist(); saveUserData(); l.value = ""; showToast("已新增項目！");
     }
     function deleteCustomEquip(id) {
-      if (!currentUser || currentUser === "访客") return;
+      if (!currentUser || currentUser === "訪客") return;
       const userData = getUserData();
       const originalIndex = userData.customEquip.findIndex(i => i.id === id);
       if (originalIndex === -1) return;
@@ -711,12 +711,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==================== 購物清單 ====================
     function loadShoppingItems(eventTitle) {
-      if (!currentUser || currentUser === "访客") return [];
+      if (!currentUser || currentUser === "訪客") return [];
       const userData = getUserData();
       return userData.shopping[eventTitle] || [];
     }
     function saveShoppingItems(eventTitle, items) {
-      if (!currentUser || currentUser === "访客") return;
+      if (!currentUser || currentUser === "訪客") return;
       const userData = getUserData();
       userData.shopping[eventTitle] = items;
       saveUserData();
@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     function renderShoppingList(eventTitle) {
-      if (!currentUser || currentUser === "访客") {
+      if (!currentUser || currentUser === "訪客") {
         return `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用購物清單</p><p class="text-xs text-slate-500">請切換為家庭成員身份</p></div>`;
       }
       const items = loadShoppingItems(eventTitle);
@@ -758,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return html;
     }
     function addShoppingItem(t) {
-      if (!currentUser || currentUser === "访客") { showToast("請先登入", "⚠️"); return; }
+      if (!currentUser || currentUser === "訪客") { showToast("請先登入", "⚠️"); return; }
       const n = document.getElementById('new-shopping-name'); const c = document.getElementById('new-shopping-category'); const no = document.getElementById('new-shopping-note');
       const name = n.value.trim(); if (!name) { showToast("請輸入物品名稱", "⚠️"); return; }
       const items = loadShoppingItems(t);
@@ -774,7 +774,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openAllShoppingModal() { const m = document.getElementById('all-shopping-modal'); if (!m) return; m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); renderAllShoppingContent(); haptic(8); }
     function closeAllShoppingModal() { const m = document.getElementById('all-shopping-modal'); if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; refreshCurrentDay(); }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
     function getAllShoppingItems() {
-      if (!currentUser || currentUser === "访客") return [];
+      if (!currentUser || currentUser === "訪客") return [];
       const userData = getUserData();
       const groups = [];
       winterItineraries.forEach(day => { day.events.forEach(event => { const items = userData.shopping[event.title] || []; if (items.length > 0) { groups.push({ day: day.day, dateLabel: day.dateLabel, eventTitle: event.title, eventTime: event.time, eventIndex: day.events.indexOf(event), items: items }); } }); });
@@ -784,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderAllShoppingContent() {
       const container = document.getElementById('all-shopping-content'); if (!container) return;
       if (!currentUser) { container.innerHTML = '<div class="text-center py-8 text-slate-500">請先登入</div>'; return; }
-      if (currentUser === "访客") {
+      if (currentUser === "訪客") {
         container.innerHTML = `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用購物清單</p><p class="text-xs text-slate-500">請切換為家庭成員身份</p></div>`;
         return;
       }
@@ -916,7 +916,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================== 拍攝靈感 ====================
     function openShootTipsModal(day, eventIndex) { const dayData = winterItineraries.find(d => d.day === day); if (!dayData) return; const event = dayData.events[eventIndex]; if (!event) return; const tips = shootTips[event.title]; const content = document.getElementById("shoot-tips-content"); let html = ""; if (tips) { const pa = tips["拍照建議"] || ""; html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3><p class="text-sm text-slate-700 leading-relaxed">${pa}</p></div>`; if (tips["參考照片"] && tips["參考照片"].length > 0) { const imgHtml = tips["參考照片"].map(url => `<img src="${url}" class="lazy-fade w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" onclick="openLightbox(['${url}'], 0)" loading="lazy" decoding="async">`).join(""); html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3><div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div></div>`; } html += `<details class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-3"><summary class="cursor-pointer text-sm font-black text-slate-700 mb-2">📸 展開詳細拍攝建議</summary><div class="space-y-3 mt-2">`; if (tips["Pocket 3 參數"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3"><h3 class="text-sm font-black text-sky-800 mb-1">📸 Pocket 3 參數</h3><p class="text-sm text-slate-700">${tips["Pocket 3 參數"]}</p></div>`; if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3><ul class="list-disc pl-4 space-y-1">${tips["Vlog 必拍鏡頭"].map(i => `<li>${i}</li>`).join('')}</ul></div>`; if (tips["最佳拍攝時間"] || tips["拍攝時長"]) { let ti = ""; if (tips["最佳拍攝時間"]) ti += `<span class="block mb-1">⏰ ${tips["最佳拍攝時間"]}</span>`; if (tips["拍攝時長"]) ti += `<span class="block">⏳ ${tips["拍攝時長"]}</span>`; html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3"><h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3><p class="text-sm text-slate-700">${ti}</p></div>`; } if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3><ul class="list-disc pl-4 space-y-1">${tips["拍攝角度"].map(i => `<li>${i}</li>`).join('')}</ul></div>`; if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3"><h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3><ul class="list-disc pl-4 space-y-1">${tips["人物動作建議"].map(i => `<li>${i}</li>`).join('')}</ul></div>`; html += `</div></details>`; } else { html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議。</div>`; } content.innerHTML = html; showModal('shoot-tips-modal'); document.getElementById('shoot-tips-modal').classList.remove('hidden'); setTimeout(() => setupImageFadeIn(content), 50); }
     function closeShootTipsModal() { hideModal('shoot-tips-modal'); setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300); }
-    function openCommonTipsModal() { const m = document.getElementById('common-tips-modal'); if (!m) return; m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); const c = document.getElementById('common-tips-content'); if (c && typeof shootTipsCommon !== 'undefined') { let html = ''; Object.keys(shootTipsCommon).forEach(title => { const tips = shootTipsCommon[title]; html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4"><h3 class="text-sm font-black text-slate-800 mb-2">${title}</h3>`; if (tips['拍照建議']) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${tips['拍照建議']}</div>`; html += `</div>`; }); c.innerHTML = html; } }
+    function openCommonTipsModal() { 
+      const m = document.getElementById('common-tips-modal'); 
+      if (!m) return; 
+      m.style.display = 'flex'; 
+      m.classList.add('active'); 
+      document.body.classList.add('modal-open'); 
+      const c = document.getElementById('common-tips-content'); 
+      if (c && typeof shootTipsCommon !== 'undefined') { 
+        let html = ''; 
+        Object.keys(shootTipsCommon).forEach(title => { 
+          const tips = shootTipsCommon[title]; 
+          html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4"><h3 class="text-sm font-black text-slate-800 mb-2">${title}</h3>`; 
+          if (tips['拍照建議']) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${tips['拍照建議']}</div>`; 
+          html += `</div>`; 
+        }); 
+        c.innerHTML = html; 
+      } 
+    }
     function closeCommonTipsModal() { const m = document.getElementById('common-tips-modal'); if (m) { m.classList.remove('active'); setTimeout(() => m.style.display = 'none', 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
 
     // ==================== Vlog 構思 ====================
