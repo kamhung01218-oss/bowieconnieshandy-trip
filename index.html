@@ -49,8 +49,7 @@ firebase.auth().signInAnonymously()
     window.AppHeader && AppHeader.setSyncState(false);
   });
 
-let db = null;
-let dbRef = null;
+let db = null, dbRef = null;
 try {
   if (typeof firebase !== 'undefined' && typeof firebase.firestore === 'function') {
     db = firebase.firestore();
@@ -64,6 +63,63 @@ try {
 } catch (err) {
   window.dbRefError = err.message;
 }
+
+// ==================== 行前預訂同步 ====================
+async function syncDataToCloud() {
+  if (!isAdminUnlocked()) { showToast("🔒 唯讀模式，無法寫入雲端！", "⚠️"); return; }
+  if (typeof firebase === 'undefined' || !window.dbRef) { showToast("⏳ 雲端未連線", "⚠️"); return; }
+  try {
+    if (!firebase.auth().currentUser) { showToast("👤 尚未完成匿名登入", "⚠️"); return; }
+    const docSnap = await window.dbRef.get();
+    const cloudData = docSnap.exists ? docSnap.data() : {};
+    const cloudCheckedItems = cloudData.checkedItems || {};
+    const merged = { ...cloudCheckedItems };
+    Object.keys(state.checkedItems).forEach(k => {
+      if (k.startsWith('booking-') || k.startsWith('custom-booking-')) merged[k] = state.checkedItems[k];
+    });
+    await window.dbRef.set({ checkedItems: merged, updatedAt: Date.now() }, { merge: true });
+    if (customBookingItems.length > 0) {
+      await window.dbRef.set({ customBookingItems: customBookingItems }, { merge: true });
+    }
+    showToast("✅ 已成功寫入雲端！", "☁️");
+  } catch (e) {
+    console.warn("Cloud save error:", e);
+    showToast("❌ 寫入失敗：" + e.message, "⚠️");
+  }
+}
+
+// ==================== 即時監聽 ====================
+document.addEventListener('DOMContentLoaded', () => {
+  if (!window.dbRef) return;
+  window.dbRef.onSnapshot(docSnap => {
+    try {
+      if (!docSnap.exists) return;
+      if (docSnap.metadata?.hasPendingWrites) return;
+      const cloudData = docSnap.data();
+      if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
+        const localNonBooking = {};
+        Object.keys(state.checkedItems).forEach(k => {
+          if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) localNonBooking[k] = state.checkedItems[k];
+        });
+        state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking };
+      }
+      if (Array.isArray(cloudData.customBookingItems)) {
+        customBookingItems = cloudData.customBookingItems.slice();
+        localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
+      }
+      if (cloudData.userData && typeof cloudData.userData === 'object') {
+        window.cloudUserData = cloudData.userData;
+        cloudUserData = cloudData.userData;
+        if (currentUser && currentUser !== "访客") {
+          renderEquipChecklist();
+          renderAllShoppingContent();
+        }
+      }
+      saveLocalCheckedItems();
+      restoreChecklistUI();
+    } catch (err) { console.warn("[Snapshot merge error]", err); }
+  }, err => console.warn("Firestore Sync Warning:", err));
+});
 </script>
 
 <style>
@@ -121,6 +177,10 @@ try {
           <div class="user-avatar" style="background:linear-gradient(135deg,#a78bfa,#7c3aed)">C</div>
           <span class="text-xs font-black text-slate-700">connie</span>
         </button>
+        <button type="button" class="user-btn" data-user="访客" style="grid-column: span 2;">
+          <div class="user-avatar" style="background:linear-gradient(135deg,#94a3b8,#475569)">👤</div>
+          <span class="text-xs font-black text-slate-700">訪客（僅瀏覽）</span>
+        </button>
       </div>
 
       <div id="pin-area" class="hidden">
@@ -150,14 +210,8 @@ try {
         <div class="text-center mb-6">
           <span class="text-4xl block mb-3 animate-bounce">❄️</span>
           <h2 class="text-xl font-black text-slate-900 mb-2">歡迎來到東北雪國之旅！</h2>
-          <p class="text-sm text-slate-600 leading-relaxed">這是一個完整的旅遊規劃工具，包含：</p>
         </div>
-        <div class="space-y-2.5 mb-6">
-          <div class="flex items-center gap-3 bg-sky-50 border border-sky-100 rounded-xl p-3"><span class="text-xl">🗺️</span><div><strong class="text-sm text-slate-800">7天完整行程</strong><p class="text-xs text-slate-500">每日詳細安排、美食攻略、導航連結</p></div></div>
-          <div class="flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-xl p-3"><span class="text-xl">💰</span><div><strong class="text-sm text-slate-800">團隊記帳本</strong><p class="text-xs text-slate-500">共同記帳、自動分帳、最佳清債方案</p></div></div>
-          <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-xl p-3"><span class="text-xl">❄️</span><div><strong class="text-sm text-slate-800">即時天氣與搶票</strong><p class="text-xs text-slate-500">即時氣溫監測、搶票倒數提醒</p></div></div>
-        </div>
-        <button onclick="closeWelcomeModal()" class="w-full btn-gradient text-white font-black py-3.5 rounded-xl transition active:scale-95 shadow-md shadow-sky-200 mb-3">開始使用 →</button>
+        <button onclick="closeWelcomeModal()" class="w-full btn-gradient text-white font-black py-3.5 rounded-xl transition active:scale-95 mb-3">開始使用 →</button>
         <button onclick="closeWelcomeModal(true)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl transition text-xs">「跳過，不再顯示」</button>
       </div>
     </div>
@@ -213,13 +267,13 @@ try {
     <div class="p-4 space-y-3">
       <div class="flex justify-between items-center"><p id="rate-hint-text" class="text-xs text-slate-500 font-semibold">目前匯率：1 JPY ≈ 0.052 HKD</p><button onclick='convertCurrency("clear")' class="text-[10px] text-slate-400 hover:text-red-500 transition font-bold flex items-center gap-1 bg-slate-100 px-2 py-1 rounded"><span>🧹</span> 清除</button></div>
       <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none snap-x">
-        <button onclick='quickConvert("jpy",1e3)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-sky-50 transition">¥1千 JPY</button>
-        <button onclick='quickConvert("jpy",1e4)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-sky-50 transition">¥1萬 JPY</button>
-        <button onclick='quickConvert("hkd",100)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-xs hover:bg-blue-50 transition">$100 HKD</button>
+        <button onclick='quickConvert("jpy",1e3)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold">¥1千 JPY</button>
+        <button onclick='quickConvert("jpy",1e4)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold">¥1萬 JPY</button>
+        <button onclick='quickConvert("hkd",100)' class="snap-start flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold">$100 HKD</button>
       </div>
       <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 shadow-inner">
-        <div><label class="block text-xs font-bold text-rose-800 mb-1.5">🇯🇵 日圓 (JPY)</label><div class="relative rounded-xl shadow-xs"><div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-rose-600 text-base font-black">¥</span></div><input type="number" id="calc-jpy" oninput='convertCurrency("jpy")' value="10000" class="block w-full pl-8 pr-12 text-lg font-black text-rose-900 border border-rose-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 transition"><div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span class="text-rose-400 text-xs font-bold">JPY</span></div></div></div>
-        <div><label class="block text-xs font-bold text-sky-800 mb-1.5">🇭🇰 港幣 (HKD)</label><div class="relative rounded-xl shadow-xs"><div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-sky-600 text-base font-black">$</span></div><input type="number" id="calc-hkd" oninput='convertCurrency("hkd")' class="block w-full pl-8 pr-12 text-lg font-black text-sky-900 border border-sky-200 bg-white rounded-xl py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"></div></div>
+        <div><label class="block text-xs font-bold text-rose-800 mb-1.5">🇯🇵 日圓 (JPY)</label><div class="relative rounded-xl"><div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-rose-600 text-base font-black">¥</span></div><input type="number" id="calc-jpy" oninput='convertCurrency("jpy")' value="10000" class="block w-full pl-8 pr-12 text-lg font-black text-rose-900 border border-rose-200 bg-white rounded-xl py-2.5"><div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><span class="text-rose-400 text-xs font-bold">JPY</span></div></div></div>
+        <div><label class="block text-xs font-bold text-sky-800 mb-1.5">🇭🇰 港幣 (HKD)</label><div class="relative rounded-xl"><div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-sky-600 text-base font-black">$</span></div><input type="number" id="calc-hkd" oninput='convertCurrency("hkd")' class="block w-full pl-8 pr-12 text-lg font-black text-sky-900 border border-sky-200 bg-white rounded-xl py-2.5"></div></div>
       </div>
     </div>
   </div>
@@ -234,17 +288,17 @@ try {
 
   <div id="booking-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeBookingModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="booking-modal"><div class="modal-handle"></div></div><button onclick="closeBookingModal()" class="modal-close">✕</button><div class="modal-scrollable px-5 pb-6"><h2 class="text-xl font-black mb-3">📌 行前預訂</h2><div id="booking-modal-inner"></div></div></div></div>
   <div id="equip-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeEquipModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="equip-modal"><div class="modal-handle"></div></div><button onclick="closeEquipModal()" class="modal-close">✕</button><div class="modal-scrollable px-5 pb-6"><h2 class="text-xl font-black mb-3">🎒 裝備清單</h2><div id="equip-modal-inner"></div></div></div></div>
-  <div id="drive-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeDriveModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="drive-modal"><div class="modal-handle"></div></div><button onclick="closeDriveModal()" class="modal-close">✕</button><div class="modal-scrollable px-5 pb-6"><h2 class="text-xl font-black mb-3">⚠️ 雪地駕駛安全攻略</h2><div class="modal-tabs"><button class="skill-tab active" data-drive-tab="basic" onclick="setDriveTab('basic')">🚗 基本原則</button><button class="skill-tab" data-drive-tab="road" onclick="setDriveTab('road')">🛣️ 特殊路況</button><button class="skill-tab" data-drive-tab="emergency" onclick="setDriveTab('emergency')">🛠️ 應急準備</button></div><div id="drive-content"></div></div></div></div>
-  <div id="ticket-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeTicketModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="ticket-modal"><div class="modal-handle"></div></div><button onclick="closeTicketModal()" class="modal-close">✕</button><div class="modal-scrollable px-5 pb-6"><h2 class="text-xl font-black mb-3">⚔️ 搶票作戰攻略</h2><div id="ticket-content"></div></div></div></div>
+  <div id="drive-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeDriveModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="drive-modal"><div class="modal-handle"></div></div><button onclick="closeDriveModal()" class="modal-close">✕</button><div class="modal-scrollable px-5 pb-6"><h2 class="text-xl font-black mb-3">⚠️ 雪地攻略</h2><div class="modal-tabs"><button class="skill-tab active" data-drive-tab="basic" onclick="setDriveTab('basic')">🚗 基本原則</button><button class="skill-tab" data-drive-tab="road" onclick="setDriveTab('road')">🛣️ 特殊路況</button><button class="skill-tab" data-drive-tab="emergency" onclick="setDriveTab('emergency')">🛠️ 應急準備</button></div><div id="drive-content"></div></div></div></div>
+  <div id="ticket-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeTicketModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="ticket-modal"><div class="modal-handle"></div></div><button onclick="closeTicketModal()" class="modal-close">✕</button><div class="modal-scrollable px-5 pb-6"><h2 class="text-xl font-black mb-3">⚔️ 搶票攻略</h2><div id="ticket-content"></div></div></div></div>
   <div id="weather-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeWeatherModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="weather-modal"><div class="modal-handle"></div></div><button onclick="closeWeatherModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4">📊 詳細天氣預報</h2><div id="weather-detail-content" class="text-sm text-slate-600"></div></div></div></div>
-  <div id="trip-overview-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeTripOverview()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-3xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="trip-overview-modal"><div class="modal-handle"></div></div><button onclick="closeTripOverview()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2">📋 7天6夜行程速覽</h2><div id="overview-timeline-content"></div></div></div></div>
-  <div id="lightbox" onclick="closeLightbox(event)"><button onclick="closeLightbox()" class="absolute top-4 right-4 text-white text-3xl w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition z-10">✕</button><button id="lightbox-prev" class="lightbox-btn absolute left-4 top-1/2 -translate-y-1/2" onclick="changeLightbox(-1)">‹</button><img id="lightbox-img" src="" alt="預覽圖片" onclick="event.stopPropagation()"><button id="lightbox-next" class="lightbox-btn absolute right-4 top-1/2 -translate-y-1/2" onclick="changeLightbox(1)">›</button><div id="lightbox-caption" class="absolute bottom-6 left-0 right-0 text-center text-white/90 text-sm"></div></div>
-  <div id="shoot-tips-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeShootTipsModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="shoot-tips-modal"><div class="modal-handle"></div></div><button onclick="closeShootTipsModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🎬</span> 拍攝靈感 & Pocket 3 參數</h2><div id="shoot-tips-content"></div></div></div></div>
-  <div id="vlog-plan-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeVlogPlanModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="vlog-plan-modal"><div class="modal-handle"></div></div><button onclick="closeVlogPlanModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🎬</span> 今日 Vlog 分鏡構思</h2><div id="vlog-plan-content"></div></div></div></div>
-  <div id="common-tips-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeCommonTipsModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="common-tips-modal"><div class="modal-handle"></div></div><button onclick="closeCommonTipsModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">📷</span> 通用人像拍攝技巧</h2><div id="common-tips-content"></div></div></div></div>
+  <div id="trip-overview-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeTripOverview()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-3xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="trip-overview-modal"><div class="modal-handle"></div></div><button onclick="closeTripOverview()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4">📋 行程速覽</h2><div id="overview-timeline-content"></div></div></div></div>
+  <div id="lightbox" onclick="closeLightbox(event)"><button onclick="closeLightbox()" class="absolute top-4 right-4 text-white text-3xl w-10 h-10 flex items-center justify-center rounded-full bg-black/50">✕</button><button id="lightbox-prev" class="lightbox-btn absolute left-4 top-1/2 -translate-y-1/2" onclick="changeLightbox(-1)">‹</button><img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()"><button id="lightbox-next" class="lightbox-btn absolute right-4 top-1/2 -translate-y-1/2" onclick="changeLightbox(1)">›</button><div id="lightbox-caption" class="absolute bottom-6 left-0 right-0 text-center text-white/90 text-sm"></div></div>
+  <div id="shoot-tips-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeShootTipsModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="shoot-tips-modal"><div class="modal-handle"></div></div><button onclick="closeShootTipsModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🎬</span> 拍攝靈感</h2><div id="shoot-tips-content"></div></div></div></div>
+  <div id="vlog-plan-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeVlogPlanModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="vlog-plan-modal"><div class="modal-handle"></div></div><button onclick="closeVlogPlanModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🎬</span> Vlog 構思</h2><div id="vlog-plan-content"></div></div></div></div>
+  <div id="common-tips-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeCommonTipsModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="common-tips-modal"><div class="modal-handle"></div></div><button onclick="closeCommonTipsModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">📷</span> 通用拍攝技巧</h2><div id="common-tips-content"></div></div></div></div>
   <div id="shopping-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeShoppingModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="shopping-modal"><div class="modal-handle"></div></div><button onclick="closeShoppingModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🛍️</span> 購物清單</h2><div id="shopping-content"></div></div></div></div>
   <div id="all-shopping-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeAllShoppingModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="all-shopping-modal"><div class="modal-handle"></div></div><button onclick="closeAllShoppingModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🛍️</span> 我的購物清單</h2><div id="all-shopping-content"></div></div></div></div>
-  <div id="password-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closePasswordModal()"><div class="modal-box bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative" onclick="event.stopPropagation()"><button onclick="closePasswordModal()" class="modal-close">✕</button><h2 class="text-xl font-black mb-2 flex items-center gap-2">🔒 輸入管理密碼</h2><p class="text-xs text-slate-500 mb-4">輸入密碼以解鎖「行前預訂」編輯權限</p><input id="password-input" type="password" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 mb-3" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')verifyPassword()"><div class="flex gap-2"><button onclick="verifyPassword()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl transition">確認</button><button onclick="closePasswordModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition">取消</button></div><p id="password-error" class="text-xs text-red-500 font-bold mt-2 hidden">⚠️ 密碼錯誤，請重試</p></div></div>
+  <div id="password-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closePasswordModal()"><div class="modal-box bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative" onclick="event.stopPropagation()"><button onclick="closePasswordModal()" class="modal-close">✕</button><h2 class="text-xl font-black mb-2 flex items-center gap-2">🔒 輸入管理密碼</h2><p class="text-xs text-slate-500 mb-4">輸入密碼以解鎖「行前預訂」編輯權限</p><input id="password-input" type="password" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm mb-3" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')verifyPassword()"><div class="flex gap-2"><button onclick="verifyPassword()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">確認</button><button onclick="closePasswordModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl">取消</button></div><p id="password-error" class="text-xs text-red-500 font-bold mt-2 hidden">⚠️ 密碼錯誤</p></div></div>
   
   <script>
     // ==================== 全域變數 ====================
@@ -263,7 +317,8 @@ try {
       "余生": "linear-gradient(135deg,#3b82f6,#1d4ed8)",
       "bowie": "linear-gradient(135deg,#f472b6,#db2777)",
       "shandy": "linear-gradient(135deg,#34d399,#059669)",
-      "connie": "linear-gradient(135deg,#a78bfa,#7c3aed)"
+      "connie": "linear-gradient(135deg,#a78bfa,#7c3aed)",
+      "访客": "linear-gradient(135deg,#94a3b8,#475569)"
     };
 
     const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27"];
@@ -284,21 +339,31 @@ try {
     let selectedUser = null;
 
     document.addEventListener('DOMContentLoaded', () => {
-      // 綁定用戶按鈕點擊
       document.querySelectorAll('#user-grid .user-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('#user-grid .user-btn').forEach(b => b.classList.remove('selected'));
           btn.classList.add('selected');
           selectedUser = btn.dataset.user;
+
+          // 訪客直接進入
+          if (selectedUser === "访客") {
+            currentUser = "访客";
+            localStorage.setItem("tohoku_current_user", "访客");
+            document.getElementById('user-modal').style.display = 'none';
+            showToast("👤 歡迎，訪客！", "👋");
+            haptic(15);
+            initAppAfterLogin();
+            return;
+          }
+
           document.getElementById('pin-area').classList.remove('hidden');
           setTimeout(() => document.getElementById('pin-input').focus(), 100);
           haptic(8);
         });
       });
 
-      // 檢查是否已登入
       const savedUser = localStorage.getItem("tohoku_current_user");
-      if (savedUser && USER_PINS[savedUser]) {
+      if (savedUser && (savedUser === "访客" || USER_PINS[savedUser])) {
         currentUser = savedUser;
         document.getElementById('user-modal').style.display = 'none';
         initAppAfterLogin();
@@ -371,8 +436,6 @@ try {
             onOverview: () => openTripOverview(),
             onSwitchTab: (tab) => switchMainTab(tab),
             onScrollToDay: (day) => { switchDay(day); setTimeout(() => { const el = document.getElementById("day-section-" + day); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 120); },
-            onSwitchUser: () => switchUser(),
-            getCurrentUser: () => currentUser,
             getExpenseCount: () => { try { const s = localStorage.getItem("tohoku_expenses_2027"); return s ? JSON.parse(s).length : 0; } catch (e) { return 0; } }
           }
         });
@@ -390,48 +453,26 @@ try {
       observer.observe(document.body, { childList: true, subtree: true });
     }
 
+    // 頭像更新（供 header.js 呼叫，也供本地直接呼叫）
     function updateUserBadge() {
-  // 等 AppHeader 渲染完後，動態插入頭像按鈕
-  setTimeout(() => {
-    const brandBar = document.querySelector('.app-header .brand-bar');
-    if (!brandBar || !currentUser) return;
-
-    // 如果已經有頭像按鈕，就只更新內容
-    let badge = document.getElementById('user-badge');
-    if (!badge) {
-      // 找到右側的容器（weather 按鈕的父層）
-      const rightGroup = brandBar.querySelector('div[style*="flex-shrink:0"]') 
-                      || brandBar.lastElementChild;
-      if (!rightGroup) return;
-
-      badge = document.createElement('button');
-      badge.id = 'user-badge';
-      badge.type = 'button';
-      badge.className = 'brand-icon-btn';
-      badge.style.cssText = 'width:auto;padding:0 8px;gap:5px;display:inline-flex;align-items:center';
-      badge.title = '切換身份';
-      badge.onclick = () => switchUser();
-      badge.innerHTML = `
-        <span id="user-badge-avatar" style="width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:white"></span>
-        <span id="user-badge-name" style="font-size:10px;font-weight:900;color:white"></span>
-      `;
-      rightGroup.insertBefore(badge, rightGroup.firstChild);
+      setTimeout(() => {
+        const badge = document.getElementById('user-badge');
+        const avatarEl = document.getElementById('user-badge-avatar');
+        const nameEl = document.getElementById('user-badge-name');
+        if (!badge || !avatarEl || !nameEl || !currentUser) return;
+        nameEl.textContent = currentUser;
+        nameEl.style.color = "white";
+        avatarEl.textContent = currentUser === "访客" ? "👤" : currentUser[0].toUpperCase();
+        avatarEl.style.background = USER_COLORS[currentUser] || "linear-gradient(135deg,#64748b,#475569)";
+        badge.style.display = 'inline-flex';
+        badge.style.alignItems = 'center';
+      }, 150);
     }
-
-    // 更新頭像文字與顏色
-    const avatarEl = document.getElementById('user-badge-avatar');
-    const nameEl = document.getElementById('user-badge-name');
-    if (avatarEl) {
-      avatarEl.textContent = currentUser[0].toUpperCase();
-      avatarEl.style.background = USER_COLORS[currentUser];
-    }
-    if (nameEl) nameEl.textContent = currentUser;
-  }, 300);
-}
+    window.updateUserBadge = updateUserBadge;
 
     // ==================== 用戶資料讀取/寫入 ====================
     function getUserData() {
-      if (!currentUser) return { equipChecked: {}, customEquip: [], shopping: {} };
+      if (!currentUser || currentUser === "访客") return { equipChecked: {}, customEquip: [], shopping: {} };
       if (!cloudUserData[currentUser]) {
         cloudUserData[currentUser] = { equipChecked: {}, customEquip: [], shopping: {} };
       }
@@ -443,11 +484,8 @@ try {
     }
 
     async function saveUserData() {
-      if (!currentUser) return;
-      if (typeof firebase === 'undefined' || !window.dbRef) {
-        showToast("⏳ 雲端未連線", "⚠️");
-        return;
-      }
+      if (!currentUser || currentUser === "访客") return;
+      if (typeof firebase === 'undefined' || !window.dbRef) { showToast("⏳ 雲端未連線", "⚠️"); return; }
       try {
         const docSnap = await window.dbRef.get();
         const cloudData = docSnap.exists ? docSnap.data() : {};
@@ -555,7 +593,7 @@ try {
       if (isAdmin) {
         html += `<div class="mt-5 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2">➕ 新增項目</h4><div class="flex gap-2"><input id="new-booking-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><select id="new-booking-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="租車">租車</option><option value="住宿">住宿</option><option value="門票">門票</option><option value="其他">其他</option></select><button onclick="addCustomBooking()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div><div class="flex gap-2 mt-4"><button onclick="checkAllBooking()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button><button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button><button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button></div><div class="mt-3 flex items-center justify-center gap-3 text-center flex-wrap"><button onclick="lockAdmin()" class="text-[10px] text-amber-600 hover:text-amber-800 underline">🔒 暫時鎖定</button><span class="text-[10px] text-slate-300">|</span><button onclick="releaseAdminDevice()" class="text-[10px] text-red-500 hover:text-red-700 underline">❌ 解除此裝置的管理員身分</button></div>`;
       } else {
-        html += `<div class="mt-5 text-center"><button onclick="showPasswordModal()" class="text-[11px] bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 px-3 py-1.5 rounded-full font-bold transition">🔓 輸入密碼解鎖編輯</button><p class="text-[10px] text-slate-400 mt-2">🔒 目前為唯讀模式，僅管理員可修改</p></div>`;
+        html += `<div class="mt-5 text-center"><button onclick="showPasswordModal()" class="text-[11px] bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 px-3 py-1.5 rounded-full font-bold transition">🔓 輸入密碼解鎖編輯</button><p class="text-[10px] text-slate-400 mt-2">🔒 目前為唯讀模式</p></div>`;
       }
       container.innerHTML = html;
     }
@@ -576,32 +614,29 @@ try {
     function setModalTab(modalId, tab) { modalUIState[modalId].activeTab = tab; haptic(6); if (modalId === 'booking-modal') renderBookingChecklist(); else if (modalId === 'equip-modal') renderEquipChecklist(); }
     function toggleCategory(modalId, cat) { const expanded = modalUIState[modalId].expanded; expanded[cat] = expanded[cat] === false ? true : false; haptic(5); if (modalId === 'booking-modal') renderBookingChecklist(); else if (modalId === 'equip-modal') renderEquipChecklist(); }
 
-    // ==================== 裝備清單（每人獨立） ====================
-    const equipmentList = [ { id: "passport", category: "重要證件", label: "身份證 / 護照（效期需剩餘6個月以上）", icon: "🪪" }, { id: "license", category: "重要證件", label: "國際車牌 / 駕駛執照", icon: "🚗" }, { id: "tickets", category: "重要證件", label: "機票 / 住宿憑證 / Visit Japan Web QR Code", icon: "✈️" }, { id: "money", category: "重要證件", label: "日幣現金與信用卡（部分小店只收現金）", icon: "💴" }, { id: "car-mount", category: "重要證件", label: "車用手機架", icon: "📱" }, { id: "thermal", category: "保暖衣物", label: "發熱衣 / 保暖內衣（3-4件，貼身排汗）", icon: "👕" }, { id: "mid-layer", category: "保暖衣物", label: "中層保暖衣物（毛衣或刷毛絨，2-3件）", icon: "🧶" }, { id: "outer-coat", category: "保暖衣物", label: "防風防水厚外套 / 羽絨服（1-2件）", icon: "🧥" }, { id: "pants", category: "保暖衣物", label: "長褲與發熱內搭褲（2-3條）", icon: "👖" }, { id: "scarf", category: "保暖衣物", label: "圍巾、毛帽或耳罩", icon: "🧣" }, { id: "gloves", category: "保暖衣物", label: "觸控手套", icon: "🧤" }, { id: "boots", category: "保暖衣物", label: "舒適好走且防水防滑的雪靴或厚底運動鞋", icon: "👢" }, { id: "socks", category: "保暖衣物", label: "厚羊毛襪（3-5雙）", icon: "🧦" }, { id: "sim", category: "電子與隨身", label: "日本上網卡（SIM卡 / eSIM / 漫遊）", icon: "📶" }, { id: "powerbank", category: "電子與隨身", label: "行動電源（僅限手提，不可託運）", icon: "🔋" }, { id: "thermos", category: "電子與隨身", label: "保溫瓶（隨時補充熱飲）", icon: "🍶" }, { id: "skincare", category: "電子與隨身", label: "保濕護膚品與潤唇膏", icon: "🧴" }, { id: "medicine", category: "電子與隨身", label: "常備藥品（感冒藥、腸胃藥、個人處方箋）", icon: "💊" }, { id: "warmpack", category: "電子與隨身", label: "暖暖包（注意不可貼在皮膚或薄內衣上）", icon: "🔥" }, { id: "adult-crampons", category: "其他", label: "簡易冰爪", icon: "⛸️" }, { id: "kid-hat", category: "小孩", label: "小孩毛帽 (蓋耳)", icon: "🧢" }, { id: "kid-gloves", category: "小孩", label: "小孩手套 (備2雙)", icon: "🧤" }, { id: "kid-scarf", category: "小孩", label: "小孩圍脖", icon: "🧣" }, { id: "kid-snowpants", category: "小孩", label: "小孩防水雪褲", icon: "👖" }, { id: "kid-boots", category: "小孩", label: "小孩雪靴 (防水)", icon: "👢" }, { id: "swimwear", category: "其他", label: "泳衣 (溫泉泳池用)", icon: "🩱" }, { id: "safetybelt", category: "其他", label: "便攜式兒童安全帶", icon: "🪑" }, { id: "firstaid", category: "其他", label: "簡易急救包", icon: "🩹" } ];
+    // ==================== 裝備清單 ====================
+    const equipmentList = [ { id: "passport", category: "重要證件", label: "身份證 / 護照（效期需剩餘6個月以上）", icon: "🪪" }, { id: "license", category: "重要證件", label: "國際車牌 / 駕駛執照", icon: "🚗" }, { id: "tickets", category: "重要證件", label: "機票 / 住宿憑證 / Visit Japan Web QR Code", icon: "✈️" }, { id: "money", category: "重要證件", label: "日幣現金與信用卡", icon: "💴" }, { id: "car-mount", category: "重要證件", label: "車用手機架", icon: "📱" }, { id: "thermal", category: "保暖衣物", label: "發熱衣 / 保暖內衣（3-4件）", icon: "👕" }, { id: "mid-layer", category: "保暖衣物", label: "中層保暖衣物（2-3件）", icon: "🧶" }, { id: "outer-coat", category: "保暖衣物", label: "防風防水厚外套 / 羽絨服", icon: "🧥" }, { id: "pants", category: "保暖衣物", label: "長褲與發熱內搭褲", icon: "👖" }, { id: "scarf", category: "保暖衣物", label: "圍巾、毛帽或耳罩", icon: "🧣" }, { id: "gloves", category: "保暖衣物", label: "觸控手套", icon: "🧤" }, { id: "boots", category: "保暖衣物", label: "防水防滑雪靴", icon: "👢" }, { id: "socks", category: "保暖衣物", label: "厚羊毛襪（3-5雙）", icon: "🧦" }, { id: "sim", category: "電子與隨身", label: "日本上網卡", icon: "📶" }, { id: "powerbank", category: "電子與隨身", label: "行動電源（僅限手提）", icon: "🔋" }, { id: "thermos", category: "電子與隨身", label: "保溫瓶", icon: "🍶" }, { id: "skincare", category: "電子與隨身", label: "保濕護膚品與潤唇膏", icon: "🧴" }, { id: "medicine", category: "電子與隨身", label: "常備藥品", icon: "💊" }, { id: "warmpack", category: "電子與隨身", label: "暖暖包", icon: "🔥" }, { id: "adult-crampons", category: "其他", label: "簡易冰爪", icon: "⛸️" }, { id: "kid-hat", category: "小孩", label: "小孩毛帽 (蓋耳)", icon: "🧢" }, { id: "kid-gloves", category: "小孩", label: "小孩手套 (備2雙)", icon: "🧤" }, { id: "kid-scarf", category: "小孩", label: "小孩圍脖", icon: "🧣" }, { id: "kid-snowpants", category: "小孩", label: "小孩防水雪褲", icon: "👖" }, { id: "kid-boots", category: "小孩", label: "小孩雪靴 (防水)", icon: "👢" }, { id: "swimwear", category: "其他", label: "泳衣 (溫泉泳池用)", icon: "🩱" }, { id: "safetybelt", category: "其他", label: "便攜式兒童安全帶", icon: "🪑" }, { id: "firstaid", category: "其他", label: "簡易急救包", icon: "🩹" } ];
 
     function renderEquipChecklist() {
       const container = document.getElementById("equip-modal-inner"); if (!container) return;
       if (!currentUser) { container.innerHTML = '<div class="text-center py-8 text-slate-500">請先登入身份</div>'; return; }
+
+      // 訪客無法使用
+      if (currentUser === "访客") {
+        container.innerHTML = `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用專屬清單</p><p class="text-xs text-slate-500 leading-relaxed">請切換為家庭成員身份<br>才能建立自己的裝備清單</p></div>`;
+        return;
+      }
 
       const userData = getUserData();
       const customEquipItems = userData.customEquip || [];
       const categories = ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"];
       const allItems = [...equipmentList, ...customEquipItems];
       const totalCount = allItems.length;
-      const doneCount = allItems.filter(item => {
-        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-        return userData.equipChecked[key] === true;
-      }).length;
+      const doneCount = allItems.filter(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; return userData.equipChecked[key] === true; }).length;
       const percent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
       const activeTab = modalUIState['equip-modal'].activeTab;
 
-      const userBanner = `<div class="bg-gradient-to-r from-sky-50 to-indigo-50 border-2 border-sky-200 rounded-xl p-3 mb-3 flex items-center gap-2.5">
-        <div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div>
-        <div class="flex-1 min-w-0">
-          <div class="text-xs font-black text-sky-800">${currentUser} 的專屬裝備清單</div>
-          <div class="text-[10px] text-sky-600 leading-relaxed">只有你能看到和修改</div>
-        </div>
-      </div>`;
+      const userBanner = `<div class="bg-gradient-to-r from-sky-50 to-indigo-50 border-2 border-sky-200 rounded-xl p-3 mb-3 flex items-center gap-2.5"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="flex-1 min-w-0"><div class="text-xs font-black text-sky-800">${currentUser} 的專屬裝備清單</div><div class="text-[10px] text-sky-600 leading-relaxed">只有你能看到和修改</div></div></div>`;
 
       let html = userBanner;
       html += `<div class="modal-progress-wrap"><div class="modal-progress-header"><span class="modal-progress-label">${percent === 100 ? '🎉 全部完成！' : '整體進度'}</span><span class="modal-progress-count">${doneCount} / ${totalCount}</span></div><div class="modal-progress-track"><div class="modal-progress-fill ${percent === 100 ? 'complete' : ''}" style="width:${percent}%"></div></div></div>`;
@@ -624,7 +659,7 @@ try {
     }
 
     function toggleEquipCheck(key) {
-      if (!currentUser) { showToast("🔒 請先登入", "⚠️"); return; }
+      if (!currentUser || currentUser === "访客") { showToast("🔒 請先登入", "⚠️"); return; }
       const userData = getUserData();
       userData.equipChecked[key] = !userData.equipChecked[key];
       renderEquipChecklist();
@@ -632,42 +667,31 @@ try {
       haptic(5);
     }
     function checkAllEquipment() {
-      if (!currentUser) return;
+      if (!currentUser || currentUser === "访客") return;
       const userData = getUserData();
-      [...equipmentList, ...(userData.customEquip || [])].forEach(item => {
-        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-        userData.equipChecked[key] = true;
-      });
+      [...equipmentList, ...(userData.customEquip || [])].forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; userData.equipChecked[key] = true; });
       renderEquipChecklist(); saveUserData(); showToast("✅ 已全部勾選！");
     }
     function uncheckAllEquipment() {
-      if (!currentUser) return;
+      if (!currentUser || currentUser === "访客") return;
       const userData = getUserData();
-      [...equipmentList, ...(userData.customEquip || [])].forEach(item => {
-        const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-        userData.equipChecked[key] = false;
-      });
+      [...equipmentList, ...(userData.customEquip || [])].forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; userData.equipChecked[key] = false; });
       renderEquipChecklist(); saveUserData(); showToast("🧹 已清除所有勾選！");
     }
     function copyEquipmentList() {
-      if (!currentUser) return;
+      if (!currentUser || currentUser === "访客") return;
       const userData = getUserData();
       const customEquipItems = userData.customEquip || [];
       let text = `🎒 ${currentUser} 的裝備清單 Check List\n=====================\n`;
       ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"].forEach(cat => {
-        const items = equipmentList.filter(i => i.category === cat);
-        const customs = customEquipItems.filter(i => i.category === cat);
-        const all = [...items, ...customs]; if (all.length === 0) return;
+        const items = equipmentList.filter(i => i.category === cat); const customs = customEquipItems.filter(i => i.category === cat); const all = [...items, ...customs]; if (all.length === 0) return;
         text += `\n【${cat}】\n`;
-        all.forEach(item => {
-          const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
-          text += `${userData.equipChecked[key] ? "✅" : "⬜"} ${item.icon} ${item.label}\n`;
-        });
+        all.forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; text += `${userData.equipChecked[key] ? "✅" : "⬜"} ${item.icon} ${item.label}\n`; });
       });
       copyText(text); showToast("📋 裝備清單已複製！");
     }
     function addCustomEquip() {
-      if (!currentUser) return;
+      if (!currentUser || currentUser === "访客") return;
       const l = document.getElementById("new-equip-label"); const c = document.getElementById("new-equip-category");
       const label = l.value.trim(); if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
       const userData = getUserData();
@@ -675,28 +699,24 @@ try {
       renderEquipChecklist(); saveUserData(); l.value = ""; showToast("已新增項目！");
     }
     function deleteCustomEquip(id) {
-      if (!currentUser) return;
+      if (!currentUser || currentUser === "访客") return;
       const userData = getUserData();
       const originalIndex = userData.customEquip.findIndex(i => i.id === id);
       if (originalIndex === -1) return;
       const snapshot = { ...userData.customEquip[originalIndex] };
       userData.customEquip = userData.customEquip.filter(i => i.id !== id);
       renderEquipChecklist(); saveUserData();
-      showUndoToast(`已刪除「${snapshot.label}」`, "🗑", () => {
-        const ud = getUserData();
-        ud.customEquip.splice(Math.min(originalIndex, ud.customEquip.length), 0, snapshot);
-        renderEquipChecklist(); saveUserData(); showToast("✅ 已還原", "↩️");
-      });
+      showUndoToast(`已刪除「${snapshot.label}」`, "🗑", () => { const ud = getUserData(); ud.customEquip.splice(Math.min(originalIndex, ud.customEquip.length), 0, snapshot); renderEquipChecklist(); saveUserData(); showToast("✅ 已還原", "↩️"); });
     }
 
-    // ==================== 購物清單（每人獨立） ====================
+    // ==================== 購物清單 ====================
     function loadShoppingItems(eventTitle) {
-      if (!currentUser) return [];
+      if (!currentUser || currentUser === "访客") return [];
       const userData = getUserData();
       return userData.shopping[eventTitle] || [];
     }
     function saveShoppingItems(eventTitle, items) {
-      if (!currentUser) return;
+      if (!currentUser || currentUser === "访客") return;
       const userData = getUserData();
       userData.shopping[eventTitle] = items;
       saveUserData();
@@ -722,23 +742,23 @@ try {
       }
     }
     function renderShoppingList(eventTitle) {
+      if (!currentUser || currentUser === "访客") {
+        return `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用購物清單</p><p class="text-xs text-slate-500">請切換為家庭成員身份</p></div>`;
+      }
       const items = loadShoppingItems(eventTitle);
-      const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-2.5"><div class="w-8 h-8 rounded-full text-white flex items-center justify-center font-black text-xs shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser ? currentUser[0].toUpperCase() : '?'}</div><div class="text-[11px] font-bold text-sky-800">${currentUser} 的購物清單</div></div>`;
+      const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-2.5"><div class="w-8 h-8 rounded-full text-white flex items-center justify-center font-black text-xs shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="text-[11px] font-bold text-sky-800">${currentUser} 的購物清單</div></div>`;
       let html = userBanner + `<h3 class="text-sm font-bold text-slate-700 mb-2">${eventTitle}</h3>`;
       if (items.length === 0) { html += `<div class="text-center text-slate-400 text-xs py-6">暫無購物項目，請在下方新增</div>`; }
       else {
         html += `<div class="space-y-2 mb-4">`;
-        items.forEach((item, index) => {
-          const checked = item.planned ? 'checked' : '';
-          html += `<div class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg"><input type="checkbox" ${checked} onchange="toggleShoppingItem('${eventTitle}', ${index})" class="w-4 h-4 shrink-0"><div class="flex-1 min-w-0"><strong class="text-sm text-slate-800">${item.name}</strong><span class="text-[10px] text-slate-500 ml-2">${item.category || ''}</span>${item.note ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate">📝 ${item.note}</p>` : ''}</div><button onclick="deleteShoppingItem('${eventTitle}', ${index})" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`;
-        });
+        items.forEach((item, index) => { const checked = item.planned ? 'checked' : ''; html += `<div class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg"><input type="checkbox" ${checked} onchange="toggleShoppingItem('${eventTitle}', ${index})" class="w-4 h-4 shrink-0"><div class="flex-1 min-w-0"><strong class="text-sm text-slate-800">${item.name}</strong><span class="text-[10px] text-slate-500 ml-2">${item.category || ''}</span>${item.note ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate">📝 ${item.note}</p>` : ''}</div><button onclick="deleteShoppingItem('${eventTitle}', ${index})" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`; });
         html += `</div>`;
       }
-      html += `<div class="mt-4 border-t border-slate-200 pt-4"><h4 class="text-sm font-bold text-slate-800 mb-2">新增購物項目</h4><div class="flex flex-col gap-2"><input id="new-shopping-name" type="text" placeholder="物品名稱 *" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><div class="flex gap-2"><input id="new-shopping-category" type="text" placeholder="類別 (選填)" class="w-1/3 border border-slate-300 rounded-lg px-3 py-2 text-xs"><input id="new-shopping-note" type="text" placeholder="備註 (選填)" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"></div><button onclick="addShoppingItem('${eventTitle}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0">新增</button></div></div>`;
+      html += `<div class="mt-4 border-t border-slate-200 pt-4"><h4 class="text-sm font-bold text-slate-800 mb-2">新增購物項目</h4><div class="flex flex-col gap-2"><input id="new-shopping-name" type="text" placeholder="物品名稱 *" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><div class="flex gap-2"><input id="new-shopping-category" type="text" placeholder="類別" class="w-1/3 border border-slate-300 rounded-lg px-3 py-2 text-xs"><input id="new-shopping-note" type="text" placeholder="備註" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"></div><button onclick="addShoppingItem('${eventTitle}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0">新增</button></div></div>`;
       return html;
     }
     function addShoppingItem(t) {
-      if (!currentUser) { showToast("請先登入", "⚠️"); return; }
+      if (!currentUser || currentUser === "访客") { showToast("請先登入", "⚠️"); return; }
       const n = document.getElementById('new-shopping-name'); const c = document.getElementById('new-shopping-category'); const no = document.getElementById('new-shopping-note');
       const name = n.value.trim(); if (!name) { showToast("請輸入物品名稱", "⚠️"); return; }
       const items = loadShoppingItems(t);
@@ -747,68 +767,30 @@ try {
       document.getElementById('shopping-content').innerHTML = renderShoppingList(t);
       showToast("✅ 已新增購物項目"); haptic(10);
     }
-    function toggleShoppingItem(t, i) {
-      const items = loadShoppingItems(t);
-      items[i].planned = !items[i].planned;
-      saveShoppingItems(t, items);
-      document.getElementById('shopping-content').innerHTML = renderShoppingList(t);
-      haptic(5);
-    }
-    function deleteShoppingItem(t, i) {
-      const items = loadShoppingItems(t); const snapshot = { ...items[i] };
-      items.splice(i, 1); saveShoppingItems(t, items);
-      document.getElementById('shopping-content').innerHTML = renderShoppingList(t);
-      showUndoToast(`已刪除「${snapshot.name}」`, "🗑", () => {
-        const cur = loadShoppingItems(t);
-        cur.splice(Math.min(i, cur.length), 0, snapshot);
-        saveShoppingItems(t, cur);
-        document.getElementById('shopping-content').innerHTML = renderShoppingList(t);
-        showToast("✅ 已還原", "↩️");
-      });
-    }
+    function toggleShoppingItem(t, i) { const items = loadShoppingItems(t); items[i].planned = !items[i].planned; saveShoppingItems(t, items); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); haptic(5); }
+    function deleteShoppingItem(t, i) { const items = loadShoppingItems(t); const snapshot = { ...items[i] }; items.splice(i, 1); saveShoppingItems(t, items); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); showUndoToast(`已刪除「${snapshot.name}」`, "🗑", () => { const cur = loadShoppingItems(t); cur.splice(Math.min(i, cur.length), 0, snapshot); saveShoppingItems(t, cur); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); showToast("✅ 已還原", "↩️"); }); }
 
     // ==================== 購物清單總覽 ====================
-    function openAllShoppingModal() {
-      const m = document.getElementById('all-shopping-modal'); if (!m) return;
-      m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open');
-      renderAllShoppingContent(); haptic(8);
-    }
-    function closeAllShoppingModal() {
-      const m = document.getElementById('all-shopping-modal');
-      if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; refreshCurrentDay(); }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); }
-    }
-    function renderShoppingListForCurrentUser() {
-      // 重新渲染當前開啟的購物清單（如果有的話）
-      const m = document.getElementById('shopping-modal');
-      if (m && m.classList.contains('active')) {
-        const title = document.getElementById('shopping-content').querySelector('h3')?.textContent;
-        if (title) document.getElementById('shopping-content').innerHTML = renderShoppingList(title);
-      }
-    }
+    function openAllShoppingModal() { const m = document.getElementById('all-shopping-modal'); if (!m) return; m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); renderAllShoppingContent(); haptic(8); }
+    function closeAllShoppingModal() { const m = document.getElementById('all-shopping-modal'); if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; refreshCurrentDay(); }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
     function getAllShoppingItems() {
-      if (!currentUser) return [];
+      if (!currentUser || currentUser === "访客") return [];
       const userData = getUserData();
       const groups = [];
-      winterItineraries.forEach(day => {
-        day.events.forEach(event => {
-          const items = userData.shopping[event.title] || [];
-          if (items.length > 0) {
-            groups.push({ day: day.day, dateLabel: day.dateLabel, eventTitle: event.title, eventTime: event.time, eventIndex: day.events.indexOf(event), items: items });
-          }
-        });
-      });
+      winterItineraries.forEach(day => { day.events.forEach(event => { const items = userData.shopping[event.title] || []; if (items.length > 0) { groups.push({ day: day.day, dateLabel: day.dateLabel, eventTitle: event.title, eventTime: event.time, eventIndex: day.events.indexOf(event), items: items }); } }); });
       return groups;
     }
     function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function renderAllShoppingContent() {
       const container = document.getElementById('all-shopping-content'); if (!container) return;
       if (!currentUser) { container.innerHTML = '<div class="text-center py-8 text-slate-500">請先登入</div>'; return; }
-      const groups = getAllShoppingItems();
-      const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-3"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="text-xs font-black text-sky-800">${currentUser} 的購物清單總覽</div></div>`;
-      if (groups.length === 0) {
-        container.innerHTML = userBanner + `<div class="text-center py-12 px-4"><div class="text-6xl mb-3">🛒</div><p class="text-sm font-bold text-slate-700 mb-1">購物清單還是空的</p><p class="text-xs text-slate-500 leading-relaxed">在行程卡片的「🛍️ 購物清單」按鈕中<br>加入你想買的東西吧！</p></div>`;
+      if (currentUser === "访客") {
+        container.innerHTML = `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用購物清單</p><p class="text-xs text-slate-500">請切換為家庭成員身份</p></div>`;
         return;
       }
+      const groups = getAllShoppingItems();
+      const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-3"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="text-xs font-black text-sky-800">${currentUser} 的購物清單總覽</div></div>`;
+      if (groups.length === 0) { container.innerHTML = userBanner + `<div class="text-center py-12 px-4"><div class="text-6xl mb-3">🛒</div><p class="text-sm font-bold text-slate-700 mb-1">購物清單還是空的</p><p class="text-xs text-slate-500 leading-relaxed">在行程卡片的「🛍️ 購物清單」按鈕中<br>加入你想買的東西吧！</p></div>`; return; }
       let totalItems = 0; let checkedItems = 0;
       groups.forEach(g => { g.items.forEach(item => { totalItems++; if (item.planned) checkedItems++; }); });
       const percent = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
@@ -821,17 +803,8 @@ try {
       });
       container.innerHTML = html;
     }
-    function handleAllShoppingToggle(el) {
-      const eventTitle = el.dataset.eventTitle; const index = parseInt(el.dataset.index);
-      const items = loadShoppingItems(eventTitle); if (!items[index]) return;
-      items[index].planned = !items[index].planned;
-      saveShoppingItems(eventTitle, items);
-      renderAllShoppingContent(); haptic(5);
-    }
-    function jumpToEvent(day, eventIndex) {
-      closeAllShoppingModal(); switchDay(day);
-      setTimeout(() => { const cards = document.querySelectorAll(`#day-section-${day} details.event-card`); const target = cards[eventIndex]; if (target) { target.open = true; target.scrollIntoView({ behavior: 'smooth', block: 'center' }); target.style.transition = 'box-shadow 0.4s'; target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.4)'; setTimeout(() => { target.style.boxShadow = ''; }, 1500); } }, 400); haptic(8);
-    }
+    function handleAllShoppingToggle(el) { const eventTitle = el.dataset.eventTitle; const index = parseInt(el.dataset.index); const items = loadShoppingItems(eventTitle); if (!items[index]) return; items[index].planned = !items[index].planned; saveShoppingItems(eventTitle, items); renderAllShoppingContent(); haptic(5); }
+    function jumpToEvent(day, eventIndex) { closeAllShoppingModal(); switchDay(day); setTimeout(() => { const cards = document.querySelectorAll(`#day-section-${day} details.event-card`); const target = cards[eventIndex]; if (target) { target.open = true; target.scrollIntoView({ behavior: 'smooth', block: 'center' }); target.style.transition = 'box-shadow 0.4s'; target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.4)'; setTimeout(() => { target.style.boxShadow = ''; }, 1500); } }, 400); haptic(8); }
 
     // ==================== 天氣 ====================
     const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
@@ -850,7 +823,6 @@ try {
           if (curTemp < -10) advice = { icon: "🥶", text: "極寒！羽絨 + 雪靴 + 毛帽 + 手套" };
           else if (curTemp < -5) advice = { icon: "❄️", text: "羽絨 + 雪靴 + 毛帽必備" };
           else if (curTemp < 0) advice = { icon: "🧣", text: "寒冷，圍巾 + 手套不可少" };
-          else if (curTemp < 5) advice = { icon: "🧥", text: "偏涼，建議防風防水外套" };
           const today = new Date().toISOString().substring(0, 10);
           const forecastRows = [0,1,2,3,4,5,6].map(i => { const ds = data.daily.time[i]; const max = Math.round(data.daily.temperature_2m_max[i]); const min = Math.round(data.daily.temperature_2m_min[i]); const rain = data.daily.precipitation_probability_max[i] ?? 0; const icon = data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️"; const d = new Date(ds); const week = ["日","一","二","三","四","五","六"][d.getDay()]; const isToday = ds === today; return `<div class="forecast-row ${isToday ? 'today' : ''}"><div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div><div class="forecast-icon">${icon}</div><div class="forecast-temp"><span class="forecast-temp-max">${max}°</span><span class="text-slate-400 mx-1">/</span><span class="forecast-temp-min">${min}°</span></div><div class="forecast-rain">💧 ${rain}%</div></div>`; }).join('');
           detail.innerHTML = `<div class="weather-hero"><div class="weather-hero-icon">${curIcon}</div><div><div class="weather-hero-temp">${curTemp}°C</div><div class="weather-hero-meta">體感 ${feels}°C · 濕度 ${humidity}% · 宮城仙台</div></div></div><div class="weather-advice"><div class="weather-advice-icon">${advice.icon}</div><div class="weather-advice-text">${advice.text}</div></div><div class="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">未來 7 天預報</div><div class="forecast-list">${forecastRows}</div>`;
@@ -861,7 +833,7 @@ try {
     // ==================== 行程速覽 ====================
     function renderTripOverview() {
       const container = document.getElementById('overview-timeline-content'); if (!container) return;
-      const days = [ { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達雪國", desc: "仙台機場 → 秋保溫泉 → 蟹腳 Buffet" }, { day: "D2", color: "#f59e0b", emoji: "🏮", title: "天童 + 銀山", desc: "AEON 天童 → 瀧之湯 → 銀山夜景 → 深夜美食" }, { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → 樹冰 → 山形壽司 → 溫泉懷石" }, { day: "D4", color: "#10b981", emoji: "⛷️", title: "Spring Valley", desc: "玩雪 → 入住 Grand Bach → 伊達牛舌" }, { day: "D5", color: "#f43f5e", emoji: "🦊", title: "狐狸村", desc: "客美多早餐 → 狐狸村 → 白石溫麵 → 市區血拼" }, { day: "D6", color: "#14b8a6", emoji: "🐬", title: "水族館 / 採草莓", desc: "早餐 → 水族館或草莓 → 仔虎和牛 → 三井 Outlet" }, { day: "D7", color: "#475569", emoji: "✈️", title: "返港", desc: "仙台車站伴手禮 → 機場還車 → 起飛返港" } ];
+      const days = [ { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達雪國", desc: "仙台機場 → 秋保溫泉 → 蟹腳 Buffet" }, { day: "D2", color: "#f59e0b", emoji: "🏮", title: "天童 + 銀山", desc: "AEON 天童 → 瀧之湯 → 銀山夜景" }, { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → 樹冰 → 山形壽司 → 溫泉懷石" }, { day: "D4", color: "#10b981", emoji: "⛷️", title: "Spring Valley", desc: "玩雪 → 入住 Grand Bach → 伊達牛舌" }, { day: "D5", color: "#f43f5e", emoji: "🦊", title: "狐狸村", desc: "客美多早餐 → 狐狸村 → 白石溫麵" }, { day: "D6", color: "#14b8a6", emoji: "🐬", title: "水族館 / 採草莓", desc: "早餐 → 水族館或草莓 → 仔虎和牛 → Outlet" }, { day: "D7", color: "#475569", emoji: "✈️", title: "返港", desc: "仙台車站伴手禮 → 機場還車 → 起飛返港" } ];
       container.innerHTML = `<div class="overview-timeline">${days.map(d => `<div class="overview-day"><div class="overview-day-marker" style="background:${d.color}">${d.day}</div><div class="overview-day-content"><div class="overview-day-title">${d.emoji} ${d.title}</div><div class="overview-day-desc">${d.desc}</div></div></div>`).join('')}</div>`;
     }
 
@@ -874,7 +846,7 @@ try {
       const section = document.getElementById(sectionId); if (!section) return;
       const dateStr = tripDates[dayData.day - 1]; const weatherInfo = window.weatherCache[dateStr] || null; let weatherHtml = "";
       if (weatherInfo) { const { icon, max, min, rain } = weatherInfo; let advice = ""; if (min < -5) advice = "❄️ 極寒！羽絨+雪靴+毛帽必備"; else if (min < 0) advice = "🧣 寒冷，圍巾手套不可少"; else advice = "🧥 偏涼，外套防風防水"; if (rain > 50) advice += "，攜帶雨具⚠️"; weatherHtml = `<div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card"><span class="text-base">${icon}</span><span class="font-bold text-sky-700">${dateStr.substring(5)} 天氣：</span><span>最高 ${max}° / 最低 ${min}°</span><span class="text-slate-400">|</span><span class="text-slate-500">💧 ${rain}%</span><span class="ml-auto font-bold text-slate-600">${advice}</span></div>`; }
-      let html = `<div class="mb-8"><div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-lg shadow-md shrink-0">${dayData.emoji}</div><div class="flex-1"><span class="text-[11px] font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span><h2 class="text-sm md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}${weatherHtml}</div></div><button onclick="openVlogPlanModal(${dayData.day})" title="查看今日 Vlog 構思" class="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-full shadow-sm shrink-0 ml-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></div><div class="timeline">`;
+      let html = `<div class="mb-8"><div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-lg shadow-md shrink-0">${dayData.emoji}</div><div class="flex-1"><span class="text-[11px] font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span><h2 class="text-sm md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}${weatherHtml}</div></div><button onclick="openVlogPlanModal(${dayData.day})" class="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-full shadow-sm shrink-0 ml-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></div><div class="timeline">`;
       dayData.events.forEach((event, index) => {
         const isOpen = event.open ? "open" : ""; const tagHtml = event.tag ? `<span class="tag">${event.tag.text}</span>` : ""; const timeParts = event.time.split(" - "); const startTime = timeParts[0].trim(); const endTime = timeParts[1] ? timeParts[1].trim() : "";
         const shootingItems = loadShoppingItems(event.title); const shoppingBadge = shootingItems.length > 0 ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shoppingItems.length}</span>` : '';
@@ -904,7 +876,7 @@ try {
     let characterTimeout = null;
     function spawnCharacters() { clearTimeout(characterTimeout); const s = document.getElementById('snowman'), f = document.getElementById('fox'); if (!s || !f) return; s.classList.remove('show', 'greet'); f.classList.remove('show', 'greet'); s.classList.add('hide'); f.classList.add('hide'); if (Math.random() < 0.5) { characterTimeout = setTimeout(spawnCharacters, Math.random() * 5000 + 4000); return; } const c = Math.random() < 0.5 ? s : f; c.classList.remove('hide'); c.classList.add('show'); setTimeout(() => c.classList.add('greet'), 600); characterTimeout = setTimeout(() => { c.classList.remove('show', 'greet'); c.classList.add('hide'); setTimeout(spawnCharacters, Math.random() * 5000 + 3000); }, 4000); }
     function jump(id) { const c = document.getElementById(id); if (c) { c.classList.add('jumping'); setTimeout(() => c.classList.remove('jumping'), 600); haptic(10); if (id === 'snowman') { snowmanProgress = Math.min(snowmanProgress + 1, 5); localStorage.setItem("snowman_progress", JSON.stringify(snowmanProgress)); updateSnowmanVisual(); snowParticles(); showToast(`雪人成長度：${snowmanProgress}/5！`, "⛄"); } else showToast(`你點了一下狐狸！`, "🦊"); } }
-    function updateSnowmanVisual() { const s = document.getElementById("snowman"); if (!s) return; let color = "#ef4444", acc = ""; if (snowmanProgress >= 1) color = "#f97316"; if (snowmanProgress >= 2) color = "#facc15"; if (snowmanProgress >= 3) { color = "#4ade80"; acc = "圍巾已升級！"; } if (snowmanProgress >= 4) { color = "#38bdf8"; acc = "手套已升級！"; } if (snowmanProgress >= 5) { color = "#a78bfa"; acc = "終極雪人！"; } const hp = s.querySelector('#hatGrad stop:first-child'); if (hp) hp.setAttribute('stop-color', color); }
+    function updateSnowmanVisual() { const s = document.getElementById("snowman"); if (!s) return; let color = "#ef4444"; if (snowmanProgress >= 1) color = "#f97316"; if (snowmanProgress >= 2) color = "#facc15"; if (snowmanProgress >= 3) color = "#4ade80"; if (snowmanProgress >= 4) color = "#38bdf8"; if (snowmanProgress >= 5) color = "#a78bfa"; const hp = s.querySelector('#hatGrad stop:first-child'); if (hp) hp.setAttribute('stop-color', color); }
     function initRandomCharacters() { setTimeout(spawnCharacters, 2000); }
     function snowParticles() { const p = document.createElement("div"); p.className = "particle"; const colors = ["#ffffff", "#e0f2fe", "#bae6fd", "#38bdf8", "#a78bfa"]; for (let i = 0; i < 30; i++) { const el = document.createElement("div"); el.style.width = `${Math.random() * 10 + 5}px`; el.style.height = el.style.width; el.style.background = colors[Math.floor(Math.random() * colors.length)]; el.style.left = `${Math.random() * 100}vw`; el.style.top = `${Math.random() * 20 - 10}vh`; el.style.opacity = Math.random(); el.style.animation = `snowfall ${Math.random() * 3 + 2}s linear forwards`; p.appendChild(el); } document.body.appendChild(p); setTimeout(() => p.remove(), 5000); }
 
@@ -936,7 +908,7 @@ try {
     // ==================== 雪地攻略 ====================
     let driveTabState = 'basic';
     function setDriveTab(tab) { driveTabState = tab; haptic(6); document.querySelectorAll('[data-drive-tab]').forEach(btn => { btn.classList.toggle('active', btn.dataset.driveTab === tab); }); renderDriveContent(); }
-    function renderDriveContent() { const container = document.getElementById('drive-content'); if (!container) return; const data = { basic: [ { title: "全程使用 4WD + 雪胎", desc: "出發前確認車輛配置，並檢查雪胎深度（建議 ≥ 5mm）與胎壓", type: "success" }, { title: "保持 3 秒以上車距", desc: "雪地煞車距離約為乾地的 3-5 倍", type: "success" }, { title: "避免急煞、急加速、急轉彎", desc: "所有動作放慢 2 倍", type: "warn" }, { title: "下坡善用低速檔", desc: "用引擎煞車取代腳踩煞車", type: "success" }, { title: "轉彎前先減速", desc: "彎中不踩煞車，進彎前完成減速", type: "warn" } ], road: [ { title: "Black Ice 最危險", desc: "看似乾燥的柏油路面其實結冰", type: "danger" }, { title: "橋樑與陰影處優先結冰", desc: "通過前先減速", type: "warn" }, { title: "山區連續彎道", desc: "減速至 20-30 km/h", type: "warn" }, { title: "除雪車後方保持距離", desc: "保持 50m 以上距離", type: "success" }, { title: "隧道兩端注意", desc: "進出時提前減速", type: "warn" } ], emergency: [ { title: "備用保暖衣物與毯子", desc: "保暖是第一優先", type: "success" }, { title: "行動電源 2 個 + 車充", desc: "手機沒電等於失去導航", type: "success" }, { title: "食物與飲水", desc: "餅乾、巧克力、保溫瓶裝熱水", type: "success" }, { title: "小鏟子 + 拖車繩 + 三角牌", desc: "車輪陷入雪中時可自救", type: "success" }, { title: "緊急聯絡資訊", desc: "日本道路緊急電話 #9910", type: "warn" } ] }; const items = data[driveTabState] || []; container.innerHTML = items.map((item, i) => `<div class="numbered-card ${item.type}" style="margin-bottom:8px"><div class="numbered-index">${i + 1}</div><div class="numbered-content"><div class="numbered-title">${item.title}</div><div class="numbered-desc">${item.desc}</div></div></div>`).join(''); }
+    function renderDriveContent() { const container = document.getElementById('drive-content'); if (!container) return; const data = { basic: [ { title: "全程使用 4WD + 雪胎", desc: "出發前確認車輛配置，並檢查雪胎深度（建議 ≥ 5mm）與胎壓", type: "success" }, { title: "保持 3 秒以上車距", desc: "雪地煞車距離約為乾地的 3-5 倍", type: "success" }, { title: "避免急煞、急加速、急轉彎", desc: "所有動作放慢 2 倍", type: "warn" }, { title: "下坡善用低速檔", desc: "用引擎煞車取代腳踩煞車", type: "success" }, { title: "轉彎前先減速", desc: "彎中不踩煞車", type: "warn" } ], road: [ { title: "Black Ice 最危險", desc: "看似乾燥的柏油路面其實結冰", type: "danger" }, { title: "橋樑與陰影處優先結冰", desc: "通過前先減速", type: "warn" }, { title: "山區連續彎道", desc: "減速至 20-30 km/h", type: "warn" }, { title: "除雪車後方保持距離", desc: "保持 50m 以上距離", type: "success" }, { title: "隧道兩端注意", desc: "進出時提前減速", type: "warn" } ], emergency: [ { title: "備用保暖衣物與毯子", desc: "保暖是第一優先", type: "success" }, { title: "行動電源 2 個 + 車充", desc: "手機沒電等於失去導航", type: "success" }, { title: "食物與飲水", desc: "餅乾、巧克力、保溫瓶裝熱水", type: "success" }, { title: "小鏟子 + 拖車繩 + 三角牌", desc: "車輪陷入雪中時可自救", type: "success" }, { title: "緊急聯絡資訊", desc: "日本道路緊急電話 #9910", type: "warn" } ] }; const items = data[driveTabState] || []; container.innerHTML = items.map((item, i) => `<div class="numbered-card ${item.type}" style="margin-bottom:8px"><div class="numbered-index">${i + 1}</div><div class="numbered-content"><div class="numbered-title">${item.title}</div><div class="numbered-desc">${item.desc}</div></div></div>`).join(''); }
 
     // ==================== 搶票攻略 ====================
     function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">首選方案</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/8 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>1/8 22:55 設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 15:30-19:15 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/15 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
@@ -970,9 +942,7 @@ try {
         if (!docSnap.exists) { showToast("📭 雲端尚無資料", "📭"); return; }
         const cloudData = docSnap.data();
         const localNonBooking = {};
-        Object.keys(state.checkedItems).forEach(k => {
-          if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) { localNonBooking[k] = state.checkedItems[k]; }
-        });
+        Object.keys(state.checkedItems).forEach(k => { if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) { localNonBooking[k] = state.checkedItems[k]; } });
         if (cloudData.checkedItems) { state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking }; }
         if (Array.isArray(cloudData.customBookingItems)) { customBookingItems = cloudData.customBookingItems.slice(); localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems)); }
         if (cloudData.userData) { cloudUserData = cloudData.userData; }
