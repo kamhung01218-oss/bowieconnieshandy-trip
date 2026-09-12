@@ -449,8 +449,45 @@ document.addEventListener('DOMContentLoaded', () => {
       updateSnowmanVisual();
       updateTodayButtonVisibility();
       setInterval(updateTodayButtonVisibility, 60 * 1000);
+
       const observer = new MutationObserver(() => setupImageFadeIn());
       observer.observe(document.body, { childList: true, subtree: true });
+
+      // ✅ 啟動滾動入場動畫
+      setTimeout(() => {
+        const scrollObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              scrollObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('.timeline-item, .glass-card').forEach(el => {
+          el.classList.add('scroll-animate');
+          scrollObserver.observe(el);
+        });
+      }, 500);
+
+      // ✅ 啟動桌面端 3D 傾斜效果
+      if (window.matchMedia('(hover: hover) and (min-width: 1024px)').matches) {
+        document.querySelectorAll('.timeline-card').forEach(card => {
+          card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -5;
+            const rotateY = ((x - centerX) / centerX) * 5;
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+          });
+          card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+          });
+        });
+      }
     }
 
     // 頭像更新（供 header.js 呼叫，也供本地直接呼叫）
@@ -845,43 +882,63 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderDayItinerary(sectionId, dayData) {
       const section = document.getElementById(sectionId); if (!section) return;
       const dateStr = tripDates[dayData.day - 1]; const weatherInfo = window.weatherCache[dateStr] || null; let weatherHtml = "";
-      if (weatherInfo) { const { icon, max, min, rain } = weatherInfo; let advice = ""; if (min < -5) advice = "❄️ 極寒！羽絨+雪靴+毛帽必備"; else if (min < 0) advice = "🧣 寒冷，圍巾手套不可少"; else advice = "🧥 偏涼，外套防風防水"; if (rain > 50) advice += "，攜帶雨具⚠️"; weatherHtml = `<div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card"><span class="text-base">${icon}</span><span class="font-bold text-sky-700">${dateStr.substring(5)} 天氣：</span><span>最高 ${max}° / 最低 ${min}°</span><span class="text-slate-400">|</span><span class="text-slate-500">💧 ${rain}%</span><span class="ml-auto font-bold text-slate-600">${advice}</span></div>`; }
+      if (weatherInfo) { 
+        const { icon, max, min, rain } = weatherInfo; 
+        let advice = ""; 
+        if (min < -5) advice = "❄️ 極寒！羽絨+雪靴+毛帽必備"; 
+        else if (min < 0) advice = "🧣 寒冷，圍巾手套不可少"; 
+        else advice = "🧥 偏涼，外套防風防水"; 
+        if (rain > 50) advice += "，攜帶雨具⚠️"; 
+        const isFrosty = min < -5 ? "frosty" : "";
+        weatherHtml = `<div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card ${isFrosty}"><span class="text-base">${icon}</span><span class="font-bold text-sky-700">${dateStr.substring(5)} 天氣：</span><span>最高 ${max}° / 最低 ${min}°</span><span class="text-slate-400">|</span><span class="text-slate-500">💧 ${rain}%</span><span class="ml-auto font-bold text-slate-600">${advice}</span></div>`; 
+      }
       let html = `<div class="mb-8"><div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-lg shadow-md shrink-0">${dayData.emoji}</div><div class="flex-1"><span class="text-[11px] font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span><h2 class="text-sm md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}${weatherHtml}</div></div><button onclick="openVlogPlanModal(${dayData.day})" class="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-full shadow-sm shrink-0 ml-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></div><div class="timeline">`;
+      
       dayData.events.forEach((event, index) => {
-        const isOpen = event.open ? "open" : ""; const tagHtml = event.tag ? `<span class="tag">${event.tag.text}</span>` : ""; const timeParts = event.time.split(" - "); const startTime = timeParts[0].trim(); const endTime = timeParts[1] ? timeParts[1].trim() : "";
-        const shootingItems = loadShoppingItems(event.title); const shoppingBadge = shootingItems.length > 0 ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shoppingItems.length}</span>` : '';
+        const isOpen = event.open ? "open" : ""; 
+        const tagHtml = event.tag ? `<span class="tag">${event.tag.text}</span>` : ""; 
+        const timeParts = event.time.split(" - "); 
+        const startTime = timeParts[0].trim(); 
+        const endTime = timeParts[1] ? timeParts[1].trim() : "";
+        const shootingItems = loadShoppingItems(event.title); 
+        const shoppingBadge = shootingItems.length > 0 ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shoppingItems.length}</span>` : '';
         const shootBtnHtml = `<div class="flex flex-wrap gap-1 mt-1"><button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button><button onclick="openShoppingModal('${event.title}')" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單${shoppingBadge}</button></div>`;
+        
         html += `<div class="timeline-item"><div class="timeline-node"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div><div class="timeline-card"><div class="timeline-time"><span><svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>${startTime}${endTime ? `<span class="mx-1 text-slate-400">–</span>${endTime}` : ""}</span></div><details ${isOpen} data-day="${dayData.day}" data-index="${index}" class="group glass-card rounded-2xl relative overflow-hidden event-card"><div class="itinerary-cat-strip"></div><summary class="flex items-start gap-3 p-3 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none pl-5"><div class="flex-1 min-w-0 pr-8"><div class="flex flex-wrap items-center gap-2 mb-1">${tagHtml}</div><h3 class="text-[13px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>${shootBtnHtml}${event.location ? `<div class="text-[11px] text-slate-500 mt-0.5">📍 ${event.location}</div>` : ""}</div><div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="event-content-wrapper p-3 pt-0 pb-4 border-t border-slate-50/80 bg-slate-50/30">${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm cursor-pointer" onclick="openLightbox(['${event.img}'], 0)"><img src="${event.img}" alt="${event.title}" class="lazy-fade w-full h-32 object-cover" loading="lazy" decoding="async"></div>` : ''}${event.navUrl || event.title ? `<a href="${event.navUrl || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(event.title)}" target="_blank" class="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-xs font-bold py-2 rounded-xl transition active:scale-95 shadow-sm mt-2 mb-2"><span>📍</span> 導航前往 ${event.navName || "景點"}</a>` : '<div class="h-2"></div>'}<div class="event-collapsible" id="collapsible-${dayData.day}-${index}">${event.content}</div><button type="button" class="expand-btn hidden" data-expand-btn="${dayData.day}-${index}" onclick="toggleContent(${dayData.day}, ${index})"><span>展開完整攻略</span><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button></div></details></div></div>`;
       });
+      
+      // 今日旅行日記
       const savedDiary = localStorage.getItem(`diary_day_${dayData.day}_${currentUser || 'guest'}`) || "";
       html += `<div class="mt-4 mb-6 bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 rounded-2xl p-3"><div class="flex items-center gap-2 mb-1.5"><span class="text-base">📖</span><strong class="text-xs text-slate-800">今日旅行日記</strong><button onclick="saveDiary(${dayData.day})" class="ml-auto text-[10px] bg-sky-500 hover:bg-sky-600 text-white px-2 py-0.5 rounded font-bold transition">儲存</button></div><textarea id="diary-input-${dayData.day}" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-1.5 px-2.5 text-[11px] resize-none">${savedDiary}</textarea></div>`;
+      
+      // ✅ 一鍵路線導航
+      const navPoints = dayData.events
+        .filter(e => e.navUrl || e.title)
+        .map(e => encodeURIComponent(e.navName || e.title));
+      
+      if (navPoints.length > 1) {
+        const routeUrl = `https://www.google.com/maps/dir/${navPoints.join('/')}`;
+        html += `<div class="mt-4 mb-2 text-center"><a href="${routeUrl}" target="_blank" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-indigo-700 text-white font-black py-3.5 px-6 rounded-2xl shadow-lg hover:shadow-xl active:scale-95 transition-all w-full max-w-md mx-auto"><span class="text-lg">🚗</span> 一鍵導航今日所有行程</a></div>`;
+      }
+      
       html += `</div></div>`; 
       section.innerHTML = html;
-      html += `</div></div>`; 
-section.innerHTML = html;
 
-// ✅ 新增：修復景點內多張照片無法放大的問題
-section.querySelectorAll('.event-content-wrapper').forEach(wrapper => {
-  // 抓取內容裡的所有圖片
-  const contentImgs = wrapper.querySelectorAll('.event-collapsible img');
-  if (contentImgs.length === 0) return;
+      // ✅ 修復：景點內多張照片放大
+      section.querySelectorAll('.event-content-wrapper').forEach(wrapper => {
+        const contentImgs = wrapper.querySelectorAll('.event-collapsible img');
+        if (contentImgs.length === 0) return;
+        const imageUrls = Array.from(contentImgs).map(img => img.src);
+        contentImgs.forEach((img, idx) => {
+          if (img.hasAttribute('onclick') || img.closest('a')) return;
+          img.style.cursor = 'pointer';
+          img.addEventListener('click', () => {
+            openLightbox(imageUrls, idx);
+          });
+        });
+      });
 
-  // 收集所有圖片的 URL
-  const imageUrls = Array.from(contentImgs).map(img => img.src);
-  
-  contentImgs.forEach((img, idx) => {
-    // 如果圖片本身已經有 onclick 或在 a 標籤內，則跳過（避免衝突）
-    if (img.hasAttribute('onclick') || img.closest('a')) return;
-    
-    img.style.cursor = 'pointer';
-    img.addEventListener('click', () => {
-      // 調用燈箱，傳入這個區塊內的所有圖片與當前點擊的索引
-      openLightbox(imageUrls, idx);
-    });
-  });
-});
-
-      // ✅ 新增：渲染後自動計算每個行程卡片內容高度，決定是否顯示「展開完整攻略」按鈕
+      // ✅ 修復：渲染後自動計算卡片高度，決定是否顯示「展開完整攻略」按鈕
       setTimeout(() => {
         dayData.events.forEach((_, index) => {
           const wrapper = document.getElementById(`collapsible-${dayData.day}-${index}`);
@@ -916,7 +973,60 @@ section.querySelectorAll('.event-content-wrapper').forEach(wrapper => {
     function checkWelcomeModal() { if (localStorage.getItem("tohoku_welcome_dismissed") === "true") { const m = document.getElementById("welcome-modal"); if (m) m.style.display = "none"; } }
     let characterTimeout = null;
     function spawnCharacters() { clearTimeout(characterTimeout); const s = document.getElementById('snowman'), f = document.getElementById('fox'); if (!s || !f) return; s.classList.remove('show', 'greet'); f.classList.remove('show', 'greet'); s.classList.add('hide'); f.classList.add('hide'); if (Math.random() < 0.5) { characterTimeout = setTimeout(spawnCharacters, Math.random() * 5000 + 4000); return; } const c = Math.random() < 0.5 ? s : f; c.classList.remove('hide'); c.classList.add('show'); setTimeout(() => c.classList.add('greet'), 600); characterTimeout = setTimeout(() => { c.classList.remove('show', 'greet'); c.classList.add('hide'); setTimeout(spawnCharacters, Math.random() * 5000 + 3000); }, 4000); }
-    function jump(id) { const c = document.getElementById(id); if (c) { c.classList.add('jumping'); setTimeout(() => c.classList.remove('jumping'), 600); haptic(10); if (id === 'snowman') { snowmanProgress = Math.min(snowmanProgress + 1, 5); localStorage.setItem("snowman_progress", JSON.stringify(snowmanProgress)); updateSnowmanVisual(); snowParticles(); showToast(`雪人成長度：${snowmanProgress}/5！`, "⛄"); } else showToast(`你點了一下狐狸！`, "🦊"); } }
+    
+    // 隱藏彩蛋計數器
+    let snowmanClickCount = 0;
+    let foxClickCount = 0;
+
+    function jump(id) { 
+      const c = document.getElementById(id); 
+      if (!c) return; 
+      
+      c.classList.add('jumping'); 
+      setTimeout(() => c.classList.remove('jumping'), 600); 
+      haptic(10); 
+
+      if (id === 'snowman') { 
+        snowmanProgress = Math.min(snowmanProgress + 1, 5); 
+        localStorage.setItem("snowman_progress", JSON.stringify(snowmanProgress)); 
+        updateSnowmanVisual(); 
+        snowParticles(); 
+        showToast(`雪人成長度：${snowmanProgress}/5！`, "⛄"); 
+
+        // ✅ 雪人彩蛋：連續點擊 5 次，噴出大量雪花
+        snowmanClickCount++;
+        if (snowmanClickCount >= 5) {
+          snowmanClickCount = 0;
+          snowParticles(); snowParticles(); snowParticles();
+          showToast("⛄ 雪人暴走了！噴出大量雪花！", "❄️");
+        }
+      } else {
+        // ✅ 狐狸彩蛋：連續點擊 3 次，狐狸會跑動
+        foxClickCount++;
+        if (foxClickCount >= 3) {
+          foxClickCount = 0;
+          const fox = document.getElementById('fox');
+          if (fox) {
+            fox.style.transition = 'left 1s ease, right 1s ease';
+            fox.style.left = '80vw';
+            fox.style.right = 'auto';
+            setTimeout(() => {
+              fox.style.left = '15px';
+              fox.style.right = 'auto';
+              setTimeout(() => {
+                fox.style.transition = '';
+                fox.style.left = '';
+                fox.style.right = '15px';
+              }, 1000);
+            }, 1000);
+          }
+          showToast("🦊 狐狸跑起來了！", "💨");
+        } else {
+          showToast(`你點了一下狐狸！`, "🦊"); 
+        }
+      }
+    }
+    
     function updateSnowmanVisual() { const s = document.getElementById("snowman"); if (!s) return; let color = "#ef4444"; if (snowmanProgress >= 1) color = "#f97316"; if (snowmanProgress >= 2) color = "#facc15"; if (snowmanProgress >= 3) color = "#4ade80"; if (snowmanProgress >= 4) color = "#38bdf8"; if (snowmanProgress >= 5) color = "#a78bfa"; const hp = s.querySelector('#hatGrad stop:first-child'); if (hp) hp.setAttribute('stop-color', color); }
     function initRandomCharacters() { setTimeout(spawnCharacters, 2000); }
     function snowParticles() { const p = document.createElement("div"); p.className = "particle"; const colors = ["#ffffff", "#e0f2fe", "#bae6fd", "#38bdf8", "#a78bfa"]; for (let i = 0; i < 30; i++) { const el = document.createElement("div"); el.style.width = `${Math.random() * 10 + 5}px`; el.style.height = el.style.width; el.style.background = colors[Math.floor(Math.random() * colors.length)]; el.style.left = `${Math.random() * 100}vw`; el.style.top = `${Math.random() * 20 - 10}vh`; el.style.opacity = Math.random(); el.style.animation = `snowfall ${Math.random() * 3 + 2}s linear forwards`; p.appendChild(el); } document.body.appendChild(p); setTimeout(() => p.remove(), 5000); }
