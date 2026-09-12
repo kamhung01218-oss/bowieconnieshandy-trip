@@ -72,6 +72,7 @@ try {
   window.dbRefError = err.message;
 }
 
+// ==================== ✅ 最終版：先讀雲端 → 合併 → 寫回 ====================
 async function syncDataToCloud() {
   if (!isAdminUnlocked()) {
     showToast("🔒 唯讀模式，無法寫入雲端！請先解鎖編輯。", "⚠️");
@@ -81,25 +82,38 @@ async function syncDataToCloud() {
     showToast("⏳ 雲端未連線，請稍等幾秒再試一次", "⚠️");
     return;
   }
+
   try {
     if (!firebase.auth().currentUser) {
       showToast("👤 尚未完成匿名登入，請檢查網路", "⚠️");
       return;
     }
-    const payload = { updatedAt: Date.now() };
+
+    // 第一步：讀取雲端現有資料
+    const docSnap = await window.dbRef.get();
+    const cloudData = docSnap.exists ? docSnap.data() : {};
+    const cloudCheckedItems = cloudData.checkedItems || {};
+
+    // 第二步：把本地行前預訂的狀態合併到雲端資料上
+    const merged = { ...cloudCheckedItems };
     Object.keys(state.checkedItems).forEach(k => {
       if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
-        payload[`checkedItems.${k}`] = state.checkedItems[k];
+        merged[k] = state.checkedItems[k];
       }
     });
-    if (Object.keys(payload).length > 1) {
-      await window.dbRef.set(payload, { merge: true });
-    }
+
+    // 第三步：把完整合併後的資料寫回雲端
+    await window.dbRef.set({
+      checkedItems: merged,
+      updatedAt: Date.now()
+    }, { merge: true });
+
     if (customBookingItems.length > 0) {
       await window.dbRef.set({
-        customBookingItems: firebase.firestore.FieldValue.arrayUnion(...customBookingItems)
+        customBookingItems: customBookingItems
       }, { merge: true });
     }
+
     showToast("✅ 已成功寫入雲端！", "☁️");
   } catch (e) {
     console.warn("Cloud save error:", e);
@@ -107,6 +121,7 @@ async function syncDataToCloud() {
   }
 }
 
+// ==================== onSnapshot：完全信任雲端 ====================
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.dbRef) return;
 
@@ -118,29 +133,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const cloudData = docSnap.data();
 
       if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
-        const cloudUpdatedAt = cloudData.updatedAt || 0;
+        // 保留非行前預訂的本地狀態（例如裝備清單勾選）
         const localNonBooking = {};
         Object.keys(state.checkedItems).forEach(k => {
           if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) {
             localNonBooking[k] = state.checkedItems[k];
           }
         });
-        const localUnsaved = {};
-        Object.keys(state.checkedItems).forEach(k => {
-          if ((k.startsWith('booking-') || k.startsWith('custom-booking-')) 
-              && state.checkedItems[k] === true 
-              && (state.lastLocalUpdate || 0) > cloudUpdatedAt) {
-            localUnsaved[k] = true;
-          }
-        });
-        state.checkedItems = { ...cloudData.checkedItems, ...localUnsaved, ...localNonBooking };
+        // 行前預訂完全由雲端決定
+        state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking };
       }
 
       if (Array.isArray(cloudData.customBookingItems)) {
-        const localIds = new Set(customBookingItems.map(i => i.id));
-        cloudData.customBookingItems.forEach(item => {
-          if (!localIds.has(item.id)) customBookingItems.push(item);
-        });
+        customBookingItems = cloudData.customBookingItems.slice();
         localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
       }
 
@@ -419,7 +424,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleBookingCheck(key) {
       if (!isAdminUnlocked()) { showToast("🔒 唯讀模式，無法修改", "⚠️"); return; }
       state.checkedItems[key] = !state.checkedItems[key];
-      state.lastLocalUpdate = Date.now();
       renderBookingChecklist();
       saveLocalCheckedItems();
       syncDataToCloud();
