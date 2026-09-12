@@ -118,14 +118,6 @@ async function syncDataToCloud() {
   }
 }
 
-  try {
-    if (!firebase.auth().currentUser) return;
-
-    const payload = { updatedAt: Date.now() };
-    Object.keys(state.checkedItems).forEach(k => {
-      if (k.startsWith('booking-') || k.startsWith('custom-booking-')) {
-        payload[`checkedItems.${k}`] = state.checkedItems[k];
-      }
     });
 
     if (Object.keys(payload).length > 1) {
@@ -154,16 +146,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const cloudData = docSnap.data();
 
-      if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
-        const localNonBooking = {};
-        Object.keys(state.checkedItems).forEach(k => {
-          if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) {
-            localNonBooking[k] = state.checkedItems[k];
-          }
-        });
-
-        // ✅ 直接信任雲端為權威來源，不再強制保留本地的 true
-state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking };
+if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
+  const cloudUpdatedAt = cloudData.updatedAt || 0;
+  
+  // 保留非預訂項目（裝備清單等本地資料）
+  const localNonBooking = {};
+  Object.keys(state.checkedItems).forEach(k => {
+    if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) {
+      localNonBooking[k] = state.checkedItems[k];
+    }
+  });
+  
+  // ✅ 只保留本地在雲端更新之後才勾選的項目
+  const localUnsaved = {};
+  Object.keys(state.checkedItems).forEach(k => {
+    if ((k.startsWith('booking-') || k.startsWith('custom-booking-')) 
+        && state.checkedItems[k] === true 
+        && (state.lastLocalUpdate || 0) > cloudUpdatedAt) {
+      localUnsaved[k] = true;
+    }
+  });
+  
+  state.checkedItems = { ...cloudData.checkedItems, ...localUnsaved, ...localNonBooking };
+}
 
       if (Array.isArray(cloudData.customBookingItems)) {
         const localIds = new Set(customBookingItems.map(i => i.id));
@@ -1526,13 +1531,16 @@ state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking };
   // 1. 先切換狀態
   state.checkedItems[key] = !state.checkedItems[key];
   
-  // 2. 立刻更新畫面！(這行移到最前面，畫面就會秒變色)
+  // ✅ 新增這行：記錄本地更新時間
+  state.lastLocalUpdate = Date.now();
+  
+  // 2. 立刻更新畫面
   renderBookingChecklist();
   
-  // 3. 再存進手機本地
+  // 3. 存進手機本地
   saveLocalCheckedItems();
   
-  // 4. 最後才嘗試寫入雲端 (就算失敗也不影響畫面)
+  // 4. 寫入雲端
   syncDataToCloud();
   
   haptic(5);
