@@ -1461,8 +1461,10 @@ body {
 
     // ==================== 雪花 ====================
     function initSnowEffect() {
-      const snowContainer = document.getElementById("snow-fall");
-      if (!snowContainer) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const snowContainer = document.getElementById("snow-fall");
+  if (!snowContainer) return;
       snowContainer.innerHTML = "";
       const snowflakeCount = window.innerWidth < 768 ? 15 : 30;
       const animations = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"];

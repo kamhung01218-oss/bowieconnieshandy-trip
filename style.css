@@ -599,6 +599,7 @@ body.modal-open #app-root {
 .expand-btn svg { width: 14px; height: 14px; transition: transform 0.3s; }
 .expand-btn.expanded svg { transform: rotate(180deg); }
 
+/* ========== 底部導航（含當前頁指示器） ========== */
 .bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
@@ -619,8 +620,29 @@ body.modal-open #app-root {
   color: #64748b; border-radius: 12px;
   padding: 8px 0; transition: all 0.2s;
   background: transparent; border: none;
+  position: relative;                 /* ✅ 新增：給指示器定位 */
 }
 .bottom-nav button.active { color: #0284c7; }
+
+/* ✅ 新增：當前頁指示器（漸層短橫線） */
+.bottom-nav button.active::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8, #0284c7);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.55);
+  animation: nav-indicator-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes nav-indicator-in {
+  from { opacity: 0; transform: translateX(-50%) scaleX(0.3); }
+  to   { opacity: 1; transform: translateX(-50%) scaleX(1); }
+}
+
 .bottom-nav .nav-fab {
   flex: 0 0 auto;
   width: 58px; height: 58px; border-radius: 50%;
@@ -635,6 +657,10 @@ body.modal-open #app-root {
 .bottom-nav .nav-fab:active {
   transform: scale(0.92);
   box-shadow: 0 3px 12px rgba(2, 132, 199, 0.5);
+}
+/* ✅ FAB 不需要指示器 */
+.bottom-nav .nav-fab::before {
+  display: none;
 }
 
 .walking-character {
@@ -848,3 +874,44 @@ button:active::after {
 }
 .fab-wrapper { pointer-events: none; }
 .fab-wrapper > button { pointer-events: auto; }
+
+/* ============================================================
+ * ✅ 無障礙：尊重系統「減少動態效果」偏好
+ * 同時覆蓋 header.css 的極光、進度條、倒數動畫
+ * ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* 徹底隱藏雪花（省電 + 避免視覺干擾） */
+  #snow-fall,
+  #snow-fall * {
+    display: none !important;
+  }
+
+  /* 停用 AppHeader 的極光旋轉與進度條 shimmer */
+  .app-header .focus-inner::before,
+  .app-header .focus-progress-fill::after,
+  .app-header .countdown-cell::after,
+  .app-header .focus-label::before,
+  .app-header .sync-dot {
+    animation: none !important;
+  }
+
+  /* 停用角色跳躍與招呼動畫 */
+  .walking-character.greet,
+  .walking-character.jumping {
+    animation: none !important;
+  }
+
+  /* 停用彩帶 */
+  .confetti-container {
+    display: none !important;
+  }
+}

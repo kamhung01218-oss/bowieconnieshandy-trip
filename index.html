@@ -238,7 +238,35 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="border-b border-slate-200 mt-1"></div>
           </div>
           <div id="schedule-container" class="space-y-6 pt-2 pb-4">
-            <div id="day-section-1" class="day-section"></div>
+            <div id="day-section-1" class="day-section">
+  <!-- 首屏骨架屏：renderDayItinerary 執行後會被覆蓋 -->
+  <div class="mb-8">
+    <div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex items-center gap-2.5">
+      <div class="w-10 h-10 rounded-full skeleton shrink-0"></div>
+      <div class="flex-1 space-y-2">
+        <div class="skeleton skeleton-line short" style="height:10px;width:30%"></div>
+        <div class="skeleton skeleton-line long" style="height:14px;width:70%"></div>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="skeleton-card" style="margin-left:42px">
+        <div class="skeleton skeleton-line short" style="height:10px;width:28%"></div>
+        <div class="skeleton skeleton-line long" style="height:16px;width:80%;margin-top:8px"></div>
+        <div class="skeleton skeleton-line medium" style="height:10px;width:55%;margin-top:8px"></div>
+        <div class="skeleton" style="height:120px;width:100%;margin-top:12px;border-radius:12px"></div>
+      </div>
+      <div class="skeleton-card" style="margin-left:42px">
+        <div class="skeleton skeleton-line short" style="height:10px;width:22%"></div>
+        <div class="skeleton skeleton-line long" style="height:16px;width:75%;margin-top:8px"></div>
+        <div class="skeleton skeleton-line medium" style="height:10px;width:50%;margin-top:8px"></div>
+      </div>
+      <div class="skeleton-card" style="margin-left:42px">
+        <div class="skeleton skeleton-line short" style="height:10px;width:26%"></div>
+        <div class="skeleton skeleton-line long" style="height:16px;width:68%;margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+</div>
             <div id="day-section-2" class="day-section hidden"></div>
             <div id="day-section-3" class="day-section hidden"></div>
             <div id="day-section-4" class="day-section hidden"></div>
@@ -928,7 +956,11 @@ section.querySelectorAll('.event-content-wrapper').forEach(wrapper => {
     function restoreChecklistUI() { renderBookingChecklist(); renderEquipChecklist(); renderAllShoppingContent(); }
 
     // ==================== 雪花 ====================
-    function initSnowEffect() { const c = document.getElementById("snow-fall"); if (!c) return; c.innerHTML = ""; const count = window.innerWidth < 768 ? 20 : 40; const anims = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"]; const colors = ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#ffffff"]; for (let i = 0; i < count; i++) { const f = document.createElement("div"); f.className = "snowflake"; const size = Math.random() * 7 + 3; f.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; animation: ${anims[Math.floor(Math.random() * anims.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%;`; c.appendChild(f); } }
+    function initSnowEffect() {
+  // ✅ 尊重系統減少動態偏好，直接不生成雪花
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const c = document.getElementById("snow-fall"); if (!c) return; c.innerHTML = ""; const count = window.innerWidth < 768 ? 20 : 40; const anims = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"]; const colors = ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#ffffff"]; for (let i = 0; i < count; i++) { const f = document.createElement("div"); f.className = "snowflake"; const size = Math.random() * 7 + 3; f.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; animation: ${anims[Math.floor(Math.random() * anims.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%;`; c.appendChild(f); } }9
 
     // ==================== Modal 開啟/關閉 ====================
     function showModal(id) { const overlay = document.getElementById(id); if (overlay) { overlay.classList.add('active'); overlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; document.body.classList.add('modal-open'); haptic(8); } }
