@@ -1530,20 +1530,21 @@ if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
   
   // 1. 先切換狀態
   state.checkedItems[key] = !state.checkedItems[key];
-  
-  // ✅ 新增這行：記錄本地更新時間
   state.lastLocalUpdate = Date.now();
   
-  // 2. 立刻更新畫面
-  renderBookingChecklist();
-  
-  // 3. 存進手機本地
+  // 2. 存進手機本地
   saveLocalCheckedItems();
   
-  // 4. 寫入雲端
+  // 3. 先發出寫入雲端的請求 (讓它在背景跑，不卡住畫面)
   syncDataToCloud();
   
   haptic(5);
+  
+  // 4. 延遲 50 毫秒後再重新繪製畫面
+  // 這樣可以讓剛剛的點擊事件完整跑完，避免 DOM 被瞬間替換而卡住
+  setTimeout(() => {
+    renderBookingChecklist();
+  }, 50);
 }
     function checkAllBooking() {
       if (!isAdminUnlocked()) return;
