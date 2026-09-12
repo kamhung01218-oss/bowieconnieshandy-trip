@@ -384,19 +384,23 @@ window.AppHeader = (function () {
 
       _container.innerHTML = `
         <div class="brand-bar">
-          <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">
-            <span style="font-size:16px;flex-shrink:0">❄️</span>
-            <span class="brand-title">東北冬季親子自駕 2027</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-            <button type="button" id="app-header-weather" class="brand-icon-btn" title="天氣">⛅</button>
-            <button type="button" id="app-header-overview" class="brand-icon-btn" title="行程速覽">📋</button>
-            <button type="button" id="app-header-sync" class="sync-badge">
-              <span class="sync-dot"></span>
-              <span id="app-header-sync-text">已同步</span>
-            </button>
-          </div>
-        </div>
+  <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">
+    <span style="font-size:16px;flex-shrink:0">❄️</span>
+    <span class="brand-title">東北冬季親子自駕 2027</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+    <button type="button" id="user-badge" class="brand-icon-btn" style="display:none;width:auto;padding:0 8px;gap:5px" onclick="switchUser()" title="切換身份">
+      <span id="user-badge-avatar" style="width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:white"></span>
+      <span id="user-badge-name" style="font-size:10px;font-weight:900"></span>
+    </button>
+    <button type="button" id="app-header-weather" class="brand-icon-btn" title="天氣">⛅</button>
+    <button type="button" id="app-header-overview" class="brand-icon-btn" title="行程速覽">📋</button>
+    <button type="button" id="app-header-sync" class="sync-badge">
+      <span class="sync-dot"></span>
+      <span id="app-header-sync-text">已同步</span>
+    </button>
+  </div>
+</div>
 
         <div class="focus-card">
           <div id="app-header-focus" class="focus-inner">
@@ -415,18 +419,25 @@ window.AppHeader = (function () {
         </div>
       `;
 
-      bindBrandActions();
-      bindChipActions();
-      renderFocusCard();
+        bindBrandActions();
+  bindChipActions();
+  renderFocusCard();
 
-      if (_tickTimer) clearInterval(_tickTimer);
-      _tickTimer = setInterval(() => {
-        const phase = getTripPhase();
-        if (phase === "before") {
-          updateCountdownNumbers();
-        }
-      }, 1000);
-    },
+  if (_tickTimer) clearInterval(_tickTimer);
+  _tickTimer = setInterval(() => {
+    const phase = getTripPhase();
+    if (phase === "before") {
+      updateCountdownNumbers();
+    }
+  }, 1000);
+
+  // ✅ 初始化用戶頭像
+  setTimeout(() => {
+    if (typeof window.updateUserBadge === "function") {
+      window.updateUserBadge();
+    }
+  }, 100);
+},
 
     render() {
       _lastRenderedPhase = null;
