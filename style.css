@@ -1,9 +1,10 @@
 /* ============================================================
- * style.css — v2.0（效能優化版）
+ * style.css — v2.1（效能優化版 + Tag 顏色修復）
  * 修復：
  *   1. 移除 @import 阻塞，改用 HTML <link> 載入字體
  *   2. 加入 content-visibility 加速長列表渲染
  *   3. 加入 will-change 提示
+ *   4. ✨ 新增 5 個 .tag-* 顏色變體
  * ============================================================ */
 
 :root {
@@ -695,6 +696,9 @@ body.modal-open #app-root {
   box-shadow: 0 4px 10px rgba(12, 74, 110, 0.3);
 }
 
+/* ============================================================
+ * ✨ Tag 標籤 — 基礎樣式 + 5 種顏色變體
+ * ============================================================ */
 .tag {
   display: inline-flex; align-items: center; gap: 0.25rem;
   padding: 0.2rem 0.6rem;
@@ -703,6 +707,41 @@ body.modal-open #app-root {
   line-height: 1.4; white-space: nowrap;
   background: #e0f2fe; color: #0369a1;
   border: 1px solid #bae6fd;
+}
+
+/* 青綠 — 移動 / 自駕 / 交通 */
+.tag-teal {
+  background: #ccfbf1;
+  color: #0f766e;
+  border-color: #99f6e4;
+}
+
+/* 琥珀 — 美食 / 餐廳 / 咖啡 */
+.tag-amber {
+  background: #fef3c7;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+/* 靛藍 — 住宿 / 溫泉 / 休息 */
+.tag-indigo {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
+
+/* 天藍 — 景點 / 體驗 / 活動 */
+.tag-sky {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+/* 玫瑰 — 購物 / 採買 */
+.tag-rose {
+  background: #ffe4e6;
+  color: #be123c;
+  border-color: #fecdd3;
 }
 
 .modal-close {
