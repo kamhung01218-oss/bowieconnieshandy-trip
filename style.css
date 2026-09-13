@@ -1,10 +1,8 @@
 /* ============================================================
- * style.css — v3.2
+ * style.css — v3.0
  * 新增：
  *   - Header 過渡帶（含光暈）
- *   - 時間軸：左側精簡（只留節點+豎線）
- *   - 時間膠囊：移到卡片內
- *   - 時間狀態變色（未開始/進行中/已完成）
+ *   - 時間軸左側時間欄（主流 App 風格）
  * ============================================================ */
 
 :root {
@@ -529,22 +527,20 @@ body.modal-open #app-root {
   transition: all 0.3s ease;
 }
 
-/* ============================================================
- * ⭐ 時間軸（精簡版：左側只有節點 + 豎線）
- * ============================================================ */
+/* ⭐ 時間軸（重新對齊） */
 .timeline {
   position: relative;
-  padding-left: 24px;      /* ← 大幅縮小，只留節點 + 豎線 */
+  padding-left: 68px;
   padding-top: 8px;
   padding-bottom: 8px;
 }
 .timeline::before {
   content: '';
   position: absolute;
-  left: 16px;
+  left: 60px;              /* 豎線中心 = 節點中心 */
   top: 22px;
   bottom: 22px;
-  width: 2px;
+  width: 1.5px;
   background: linear-gradient(180deg,
     rgba(125, 211, 252, 0.8) 0%,
     rgba(186, 230, 253, 0.5) 50%,
@@ -552,10 +548,24 @@ body.modal-open #app-root {
   border-radius: 2px;
   z-index: 0;
 }
+.timeline-time-rail {
+  position: absolute;
+  left: -68px;             /* 回到 .timeline 最左 */
+  top: 10px;
+  width: 52px;             /* 加寬，容納 14:05 */
+  text-align: right;
+  font-size: 14px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: #0369a1;
+  line-height: 1.1;
+  padding-right: 6px;      /* 文字右邊緣停在 46px */
+}
 .timeline-node {
   position: absolute;
-  left: -13px;             /* 24 − 13 + 6 = 17px，與豎線中心對齊 */
-  top: 14px;
+  left: -14px;             /* 68 − 14 = 54px，中心 60px */
+  top: 12px;
   width: 12px;
   height: 12px;
   border-radius: 50%;
@@ -564,7 +574,6 @@ body.modal-open #app-root {
     0 0 0 3px rgba(240, 249, 255, 1),
     0 2px 6px rgba(2, 132, 199, 0.4);
   z-index: 2;
-  transition: all 0.4s ease;
 }
 .timeline-node svg { display: none; }
 .timeline-card { position: relative; }
@@ -575,109 +584,40 @@ body.modal-open #app-root {
 }
 .timeline-item:last-child { margin-bottom: 0; }
 
-/* ============================================================
- * ⭐ 事件時間膠囊（在卡片內）
- * ============================================================ */
-.event-time-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 900;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  color: #0369a1;
-  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-  border: 1px solid #7dd3fc;
-  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.15);
-  transition: all 0.4s ease;
-  white-space: nowrap;
-}
-
-/* ---------- 狀態：已完成（灰） ---------- */
-.timeline-item.status-done .event-time-pill {
-  background: #f1f5f9;
-  color: #94a3b8;
-  border-color: #e2e8f0;
-  box-shadow: none;
-}
-.timeline-item.status-done .timeline-node {
-  background: #cbd5e1;
-  box-shadow: 0 0 0 3px rgba(241, 245, 249, 1);
-}
-
-/* ---------- 狀態：進行中（深藍脈衝） ---------- */
-.timeline-item.status-active .event-time-pill {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: white;
-  border-color: #0284c7;
-  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.45);
-  animation: pulse-pill 2s ease-in-out infinite;
-}
-.timeline-item.status-active .timeline-node {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  animation: pulse-node 2s ease-in-out infinite;
-}
-@keyframes pulse-pill {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-@keyframes pulse-node {
-  0%, 100% {
-    box-shadow:
-      0 0 0 3px rgba(240, 249, 255, 1),
-      0 0 0 4px rgba(14, 165, 233, 0.35),
-      0 0 12px rgba(14, 165, 233, 0.5);
-  }
-  50% {
-    box-shadow:
-      0 0 0 3px rgba(240, 249, 255, 1),
-      0 0 0 10px rgba(14, 165, 233, 0.1),
-      0 0 24px rgba(14, 165, 233, 0.8);
-  }
-}
-
-/* ---------- 手機（≤ 380px） ---------- */
+/* 手機（≤ 380px） */
 @media (max-width: 380px) {
-  .timeline {
-    padding-left: 20px;
-  }
-  .timeline::before {
-    left: 12px;
-    top: 20px;
-    bottom: 20px;
+  .timeline { padding-left: 58px; }
+  .timeline::before { left: 50px; top: 20px; bottom: 20px; }
+  .timeline-time-rail {
+    left: -58px;
+    width: 44px;
+    font-size: 13px;
+    padding-right: 5px;
+    top: 10px;
   }
   .timeline-node {
-    left: -12px;           /* 20 − 12 + 5 = 13px */
-    top: 14px;
+    left: -13px;           /* 58 − 13 = 45px，中心 50px */
+    top: 13px;
     width: 10px;
     height: 10px;
-  }
-  .event-time-pill {
-    font-size: 11px;
-    padding: 3px 8px;
   }
 }
 
-/* ---------- 超小手機（≤ 340px） ---------- */
+/* 超小手機（≤ 340px） */
 @media (max-width: 340px) {
-  .timeline {
-    padding-left: 18px;
-  }
-  .timeline::before {
-    left: 11px;
+  .timeline { padding-left: 52px; }
+  .timeline::before { left: 45px; }
+  .timeline-time-rail {
+    left: -52px;
+    width: 40px;
+    font-size: 12px;
+    padding-right: 4px;
   }
   .timeline-node {
-    left: -11px;           /* 18 − 11 + 5 = 12px */
+    left: -12px;           /* 52 − 12 = 40px，中心 45px */
+    top: 13px;
     width: 10px;
     height: 10px;
-    top: 14px;
-  }
-  .event-time-pill {
-    font-size: 10px;
-    padding: 2px 7px;
   }
 }
 
@@ -700,7 +640,7 @@ body.modal-open #app-root {
   content: '';
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 40px;
+  height: 90px;
   background: linear-gradient(180deg,
     rgba(248, 250, 252, 0) 0%,
     rgba(248, 250, 252, 0.7) 50%,
@@ -1026,6 +966,4 @@ button:active::after {
   .walking-character.greet,
   .walking-character.jumping { animation: none !important; }
   .confetti-container { display: none !important; }
-  .timeline-item.status-active .event-time-pill,
-  .timeline-item.status-active .timeline-node { animation: none !important; }
 }
