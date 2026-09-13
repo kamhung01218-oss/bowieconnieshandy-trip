@@ -100,7 +100,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
     <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="foxBody" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#fdba74"/><stop offset="100%" stop-color="#f97316"/></linearGradient><radialGradient id="foxCheek" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fecdd3"/><stop offset="100%" stop-color="#fda4af"/></radialGradient></defs><path d="M58 44 Q68 38 62 28 Q56 20 48 26 Q44 30 46 38 Q50 48 58 44 Z" fill="url(#foxBody)"/><path d="M58 44 Q64 42 62 34 Q58 28 52 32" fill="#fff" opacity="0.5"/><ellipse cx="34" cy="42" rx="20" ry="14" fill="url(#foxBody)"/><path d="M20 22 L16 10 L28 16 Z" fill="#f97316"/><path d="M20 22 L18 14 L26 18 Z" fill="#fed7aa"/><path d="M48 22 L52 10 L40 16 Z" fill="#f97316"/><path d="M48 22 L50 14 L42 18 Z" fill="#fed7aa"/><circle cx="34" cy="26" r="14" fill="url(#foxBody)"/><ellipse cx="27" cy="30" rx="6" ry="5" fill="url(#foxCheek)" opacity="0.7"/><ellipse cx="41" cy="30" rx="6" ry="5" fill="url(#foxCheek)" opacity="0.7"/><ellipse cx="29" cy="24" rx="3" ry="4" fill="#1e293b"/><ellipse cx="39" cy="24" rx="3" ry="4" fill="#1e293b"/><circle cx="30" cy="23" r="1.2" fill="white"/><circle cx="40" cy="23" r="1.2" fill="white"/><path d="M32 31 L36 31 L34 34 Z" fill="#1e293b"/><path d="M32 34 Q34 36 36 34" stroke="#1e293b" stroke-width="1.2" fill="none"/><path d="M26 48 Q28 54 24 56" stroke="#f97316" stroke-width="4" stroke-linecap="round"/><path d="M40 48 Q42 54 38 56" stroke="#f97316" stroke-width="4" stroke-linecap="round"/><ellipse cx="32" cy="40" rx="6" ry="2" fill="white" opacity="0.3"/></svg>
   </div>
 
-  <!-- ✅ 統一危險操作密碼彈窗 -->
+  <!-- 統一危險操作密碼彈窗 -->
   <div id="dangerous-password-modal" class="fixed inset-0 z-[200] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
       <h3 class="text-lg font-black mb-2 flex items-center gap-2">
@@ -118,7 +118,6 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
 
   <div id="ledger-root" class="max-w-4xl mx-auto px-4 pt-4 pb-16 space-y-4">
 
-    <!-- 頂部工具列（加入當前用戶徽章） -->
     <div class="bg-white border border-slate-200 p-2 rounded-2xl shadow-sm flex items-center justify-between gap-3">
       <div class="flex items-center gap-1.5 flex-wrap">
         <span id="cloud-sync-badge" class="text-[10px] bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-sky-200">
@@ -227,7 +226,6 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
         <div class="space-y-2" id="suggested-settle-container"></div>
       </div>
 
-      <!-- ✅ 歷史紀錄（加入清空按鈕） -->
       <div id="subview-history" class="p-4 hidden space-y-4">
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <h4 class="text-sm font-bold text-slate-800">🕘 歷史變更記錄</h4>
@@ -246,7 +244,6 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
     </div>
   </div>
 
-  <!-- 記帳 Modal -->
   <div id="expense-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeExpenseModal()"></div>
   <div id="expense-modal" class="fixed bottom-0 left-0 right-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-full md:max-w-lg bg-white rounded-t-3xl md:rounded-3xl shadow-2xl z-[70] transform translate-y-full md:translate-y-8 md:scale-95 opacity-0 hidden transition-all duration-300 flex flex-col max-h-[92vh] md:max-h-[85vh]">
     <div class="shrink-0 flex justify-center pt-3 pb-2 md:hidden cursor-grab active:cursor-grabbing" id="expense-modal-handle">
@@ -350,27 +347,24 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
     }
     function escAttr(str) { return escapeHtml(str); }
 
-    // ==================== ✅ 新的權限系統 ====================
+    // ==================== 權限系統（非訪客可寫） ====================
     function getCurrentUser() {
-      // 優先從 parent 取（若 index.html 有暴露 window.currentUser）
       try {
         if (window.parent && window.parent !== window && window.parent.currentUser) {
           const pu = window.parent.currentUser;
           if (pu && pu !== "訪客") return pu;
         }
-      } catch(e) { /* 跨域保護，忽略 */ }
+      } catch(e) {}
       const u = localStorage.getItem("tohoku_current_user");
       return (u && u !== "訪客") ? u : null;
     }
-
     function canWrite() { return !!getCurrentUser(); }
-
     function ensureWriteAccess(actionFn) {
       if (canWrite()) actionFn();
       else showToast("🔒 請先登入身份才能修改", "⚠️");
     }
 
-    // ==================== ✅ 危險操作密碼驗證 ====================
+    // ==================== 危險操作密碼驗證 ====================
     const DANGEROUS_PASSWORD = "admin2027";
     let _pendingDangerousAction = null;
 
@@ -456,6 +450,51 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       setInterval(fetchLiveRates, RATES_UPDATE_INTERVAL);
     }
 
+    // ==================== 成員資料 ====================
+    const members = ["余生", "bowie", "shandy", "connie"];
+    const memberSymbols = { "余生": "余", "bowie": "B", "shandy": "S", "connie": "C" };
+    const memberStyle = {
+      "余生": { badge:"bg-blue-100 text-blue-800 border-blue-200", solid:"bg-blue-600 text-white border-blue-700", soft:"bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100", text:"text-blue-700", avatar:"bg-blue-500" },
+      "bowie": { badge:"bg-pink-100 text-pink-800 border-pink-200", solid:"bg-pink-500 text-white border-pink-600", soft:"bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100", text:"text-pink-600", avatar:"bg-pink-400" },
+      "shandy": { badge:"bg-emerald-100 text-emerald-800 border-emerald-200", solid:"bg-emerald-500 text-white border-emerald-600", soft:"bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100", text:"text-emerald-600", avatar:"bg-emerald-500" },
+      "connie": { badge:"bg-purple-100 text-purple-800 border-purple-200", solid:"bg-purple-500 text-white border-purple-600", soft:"bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100", text:"text-purple-600", avatar:"bg-purple-400" }
+    };
+
+    // ==================== 全域狀態 ====================
+    let state = { viewingAs: members[0], activePayer: members[0], activeSplitWith: [...members], expenses: [], history: [] };
+    let editingExpenseId = null;
+    let lastExpense = null;
+    let settlementStatus = JSON.parse(localStorage.getItem("settlement_status")) || {};
+
+    // ✅ 追蹤本地已刪但雲端尚未確認的帳單 ID（避免刪除被 echo 覆蓋）
+    let pendingDeletes = new Set(JSON.parse(localStorage.getItem('tohoku_pending_deletes') || '[]'));
+    function savePendingDeletes() {
+      localStorage.setItem('tohoku_pending_deletes', JSON.stringify([...pendingDeletes]));
+    }
+
+    // ✅ 歷史記錄清空時間戳（跨裝置同步）
+    let historyClearedAt = Number(localStorage.getItem('tohoku_history_cleared_at') || 0);
+    function saveHistoryClearedAt() {
+      localStorage.setItem('tohoku_history_cleared_at', String(historyClearedAt));
+    }
+
+    // ==================== 顯示當前用戶徽章 ====================
+    function updateCurrentUserBadge() {
+      const badge = document.getElementById('current-user-badge');
+      if (!badge) return;
+      const u = getCurrentUser();
+      if (u) {
+        const colorMap = { "余生":"bg-blue-100 text-blue-800 border-blue-200", "bowie":"bg-pink-100 text-pink-800 border-pink-200", "shandy":"bg-emerald-100 text-emerald-800 border-emerald-200", "connie":"bg-purple-100 text-purple-800 border-purple-200" };
+        badge.className = `text-[10px] px-2 py-0.5 rounded-full font-bold border ${colorMap[u] || "bg-slate-100 text-slate-700 border-slate-200"}`;
+        badge.textContent = `👤 ${u}`;
+        badge.classList.remove('hidden');
+      } else {
+        badge.className = 'text-[10px] px-2 py-0.5 rounded-full font-bold border bg-slate-100 text-slate-500 border-slate-200';
+        badge.textContent = '👤 訪客（唯讀）';
+        badge.classList.remove('hidden');
+      }
+    }
+
     // ==================== 雲端同步 ====================
     let _snapshotUnsub = null;
 
@@ -491,36 +530,65 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
 
       _snapshotUnsub = window.dbRef.onSnapshot(docSnap => {
         if (!docSnap.exists) return;
+
+        // ✅ 跳過本地未確認寫入的快照，避免被自己的 echo 覆蓋（刪除不同步問題根因）
+        if (docSnap.metadata?.hasPendingWrites) return;
+
         const cloudData = docSnap.data();
 
-        // ---------- Expenses 合併（雲端為主 + 本地 pending） ----------
+        // ---------- 同步 historyClearedAt（取最新） ----------
+        if (cloudData.historyClearedAt && cloudData.historyClearedAt > historyClearedAt) {
+          historyClearedAt = cloudData.historyClearedAt;
+          saveHistoryClearedAt();
+        }
+
+        // ---------- Expenses 合併 ----------
         if (cloudData && cloudData.expenses) {
           const cloudExpenses = sanitizeExpenses(cloudData.expenses);
+
+          // ✅ 過濾掉本地正在刪除的項目（避免復活）
+          const afterDeletesFilter = cloudExpenses.filter(ce => !pendingDeletes.has(ce.id));
+
+          // ✅ 保留本地尚未同步的新增
           const localPending = state.expenses.filter(le => le.pendingSync === true);
           const pendingIds = new Set(localPending.map(p => p.id));
-          const cloudFiltered = cloudExpenses.filter(ce => !pendingIds.has(ce.id));
+          const cloudFiltered = afterDeletesFilter.filter(ce => !pendingIds.has(ce.id));
+
           state.expenses = [...cloudFiltered, ...localPending];
+
+          // 去重
           const uniqueMap = new Map();
           state.expenses.forEach(item => uniqueMap.set(item.id, item));
           state.expenses = Array.from(uniqueMap.values());
+
           saveLocalExpenses();
           updateLedgerUI();
         }
 
-        // ---------- ✅ History 合併（全用雲端） ----------
+        // ---------- History 合併（只保留清空時間之後的） ----------
         if (cloudData.history && Array.isArray(cloudData.history)) {
           const cloudHistory = sanitizeHistory(cloudData.history);
-          const cloudIds = new Set(cloudHistory.map(h => h.id).filter(Boolean));
-          // 保留本地尚未同步上去的
-          const localPending = state.history.filter(h => h.pendingSync && !cloudIds.has(h.id));
-          state.history = [...localPending, ...cloudHistory]
+
+          // ✅ 只保留清空時間之後的雲端歷史
+          const validCloud = cloudHistory.filter(h => (h.timestamp || 0) > historyClearedAt);
+          const cloudIds = new Set(validCloud.map(h => h.id).filter(Boolean));
+
+          // ✅ 本地保留尚未同步的（且未被清空）
+          const localPending = state.history.filter(h =>
+            h.pendingSync &&
+            !cloudIds.has(h.id) &&
+            (h.timestamp || 0) > historyClearedAt
+          );
+
+          state.history = [...localPending, ...validCloud]
             .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
             .slice(0, 200);
+
           saveLocalExpenses();
           renderHistoryList();
         }
 
-        // ---------- settlementStatus 同步 ----------
+        // ---------- settlementStatus ----------
         if (cloudData.settlementStatus && typeof cloudData.settlementStatus === 'object') {
           settlementStatus = cloudData.settlementStatus;
           localStorage.setItem("settlement_status", JSON.stringify(settlementStatus));
@@ -529,21 +597,42 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       }, err => updateCloudBadge(false));
     });
 
-    // ✅ 同步到雲端：合併歷史記錄避免覆蓋
-    async function syncDataToCloud() {
+    // ✅ 同步到雲端（含 replaceHistory 模式用於清空歷史）
+    async function syncDataToCloud(mode = 'merge') {
       try {
         if (!auth.currentUser) return;
 
-        // 讀取雲端現有資料，合併歷史（因為歷史是 append-only）
+        // ========== 模式：直接覆蓋（用於清空歷史） ==========
+        if (mode === 'replaceHistory') {
+          await window.dbRef.set({
+            expenses: state.expenses,
+            history: [],
+            historyClearedAt: historyClearedAt,
+            settlementStatus: settlementStatus,
+            updatedAt: Date.now()
+          }, { merge: true });
+
+          pendingDeletes.clear();
+          savePendingDeletes();
+          state.expenses.forEach(e => { e.pendingSync = false; });
+          saveLocalExpenses();
+          updateCloudBadge(true);
+          return;
+        }
+
+        // ========== 模式：合併（預設） ==========
         const docSnap = await window.dbRef.get();
         const cloudData = docSnap.exists ? docSnap.data() : {};
         const cloudHistory = cloudData.history || [];
 
-        // 合併本地 + 雲端歷史（去重 by id，按時間倒序）
+        // ✅ 只保留清空時間之後的雲端歷史
+        const validCloudHistory = sanitizeHistory(cloudHistory)
+          .filter(h => (h.timestamp || 0) > historyClearedAt);
+
         const localIds = new Set(state.history.map(h => h.id).filter(Boolean));
         const mergedHistory = [
           ...state.history,
-          ...sanitizeHistory(cloudHistory).filter(h => !localIds.has(h.id))
+          ...validCloudHistory.filter(h => !localIds.has(h.id))
         ]
           .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
           .slice(0, 200);
@@ -551,47 +640,24 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
         await window.dbRef.set({
           expenses: state.expenses,
           history: mergedHistory,
+          historyClearedAt: historyClearedAt,
           settlementStatus: settlementStatus,
           updatedAt: Date.now()
         }, { merge: true });
 
+        // ✅ 同步成功後清除 pendingDeletes
+        pendingDeletes.clear();
+        savePendingDeletes();
+
         // 更新本地 state
         state.history = mergedHistory;
         state.history.forEach(h => { h.pendingSync = false; });
+        state.expenses.forEach(e => { e.pendingSync = false; });
         saveLocalExpenses();
         updateCloudBadge(true);
-      } catch(e) { console.warn("[syncDataToCloud]", e); updateCloudBadge(false); }
-    }
-
-    // ==================== 成員資料 ====================
-    const members = ["余生", "bowie", "shandy", "connie"];
-    const memberSymbols = { "余生": "余", "bowie": "B", "shandy": "S", "connie": "C" };
-    const memberStyle = {
-      "余生": { badge:"bg-blue-100 text-blue-800 border-blue-200", solid:"bg-blue-600 text-white border-blue-700", soft:"bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100", text:"text-blue-700", avatar:"bg-blue-500" },
-      "bowie": { badge:"bg-pink-100 text-pink-800 border-pink-200", solid:"bg-pink-500 text-white border-pink-600", soft:"bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100", text:"text-pink-600", avatar:"bg-pink-400" },
-      "shandy": { badge:"bg-emerald-100 text-emerald-800 border-emerald-200", solid:"bg-emerald-500 text-white border-emerald-600", soft:"bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100", text:"text-emerald-600", avatar:"bg-emerald-500" },
-      "connie": { badge:"bg-purple-100 text-purple-800 border-purple-200", solid:"bg-purple-500 text-white border-purple-600", soft:"bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100", text:"text-purple-600", avatar:"bg-purple-400" }
-    };
-
-    let state = { viewingAs: members[0], activePayer: members[0], activeSplitWith: [...members], expenses: [], history: [] };
-    let editingExpenseId = null;
-    let lastExpense = null;
-    let settlementStatus = JSON.parse(localStorage.getItem("settlement_status")) || {};
-
-    // ==================== 顯示當前用戶徽章 ====================
-    function updateCurrentUserBadge() {
-      const badge = document.getElementById('current-user-badge');
-      if (!badge) return;
-      const u = getCurrentUser();
-      if (u) {
-        const colorMap = { "余生":"bg-blue-100 text-blue-800 border-blue-200", "bowie":"bg-pink-100 text-pink-800 border-pink-200", "shandy":"bg-emerald-100 text-emerald-800 border-emerald-200", "connie":"bg-purple-100 text-purple-800 border-purple-200" };
-        badge.className = `text-[10px] px-2 py-0.5 rounded-full font-bold border ${colorMap[u] || "bg-slate-100 text-slate-700 border-slate-200"}`;
-        badge.textContent = `👤 ${u}`;
-        badge.classList.remove('hidden');
-      } else {
-        badge.className = 'text-[10px] px-2 py-0.5 rounded-full font-bold border bg-slate-100 text-slate-500 border-slate-200';
-        badge.textContent = '👤 訪客（唯讀）';
-        badge.classList.remove('hidden');
+      } catch(e) {
+        console.warn("[syncDataToCloud]", e);
+        updateCloudBadge(false);
       }
     }
 
@@ -827,7 +893,6 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
         pendingSync: true
       };
       state.history.unshift(entry);
-      // 上限 200 條
       if (state.history.length > 200) state.history = state.history.slice(0, 200);
       return entry;
     }
@@ -883,20 +948,41 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       });
     }
 
-    // ==================== 刪除（含撤銷） ====================
+    // ==================== 刪除（含撤銷 + 同步修復） ====================
     function deleteExpense(expenseId) {
-      ensureWriteAccess(() => {
+      ensureWriteAccess(async () => {
         const expense = state.expenses.find(e => e.id === expenseId);
         if (!expense) return;
+
         const originalIndex = state.expenses.indexOf(expense);
         const snapshot = { ...expense };
+
+        // ✅ 標記為「刪除中」，onSnapshot 會過濾掉（避免復活）
+        pendingDeletes.add(expenseId);
+        savePendingDeletes();
+
         const historyEntry = addHistoryEntry("delete", expense, `刪除了「${escapeHtml(expense.desc)}」(${expense.amount} ${expense.currency})`);
         state.expenses = state.expenses.filter(e => e.id !== expenseId);
-        saveLocalExpenses(); syncDataToCloud(); updateLedgerUI();
-        showUndoToast(`已刪除「${expense.desc}」`, "🗑", () => {
+        saveLocalExpenses();
+        updateLedgerUI();
+
+        // ✅ 立即同步
+        await syncDataToCloud();
+
+        showUndoToast(`已刪除「${expense.desc}」`, "🗑", async () => {
+          // 撤銷：清除 pendingDeletes
+          pendingDeletes.delete(expenseId);
+          savePendingDeletes();
+
           state.history = state.history.filter(h => h !== historyEntry);
+
+          // ✅ 還原時標記為 pendingSync，避免被雲端覆蓋
+          snapshot.pendingSync = true;
           state.expenses.splice(Math.min(originalIndex, state.expenses.length), 0, snapshot);
-          saveLocalExpenses(); syncDataToCloud(); updateLedgerUI();
+          saveLocalExpenses();
+          updateLedgerUI();
+
+          await syncDataToCloud();
           showToast("✅ 已還原", "↩️");
         });
       });
@@ -933,8 +1019,8 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       container.innerHTML = "";
       if (!state.history || state.history.length === 0) { container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-12">尚無變更記錄</div>'; return; }
       state.history.slice(0, 100).forEach(item => {
-        const typeColor = item.type === "add" ? "bg-emerald-100 text-emerald-800" : item.type === "edit" ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800";
-        const typeText = item.type === "add" ? "新增" : item.type === "edit" ? "修改" : "刪除";
+        const typeColor = item.type === "add" ? "bg-emerald-100 text-emerald-800" : item.type === "edit" ? "bg-amber-100 text-amber-800" : item.type === "clear" ? "bg-sky-100 text-sky-800" : "bg-red-100 text-red-800";
+        const typeText = item.type === "add" ? "新增" : item.type === "edit" ? "修改" : item.type === "clear" ? "清空" : "刪除";
         const card = document.createElement("div");
         card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start gap-2";
         card.innerHTML = `<span class="text-xl">${escapeHtml(item.actionSymbol || "📝")}</span><div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1 flex-wrap"><span class="text-[10px] font-black px-2 py-0.5 rounded-full ${typeColor}">${typeText}</span><span class="text-[10px] font-bold text-slate-700">${escapeHtml(item.actionBy)}</span><span class="text-[9px] text-slate-400">${escapeHtml(item.actionTime)}</span>${item.pendingSync ? '<span class="text-[9px] text-amber-500 font-bold">⏳ 同步中</span>' : ''}</div><p class="text-[11px] text-slate-600">${escapeHtml(item.details)}</p></div>`;
@@ -942,18 +1028,28 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       });
     }
 
-    // ==================== ✅ 清空歷史記錄 ====================
+    // ==================== 清空歷史記錄 ====================
     function openClearHistoryConfirm() {
       if (!canWrite()) { showToast("🔒 請先登入身份", "⚠️"); return; }
       if (state.history.length === 0) { showToast("尚無歷史記錄", "ℹ️"); return; }
+
+      const count = state.history.length;
+
       ensureDangerousAccess(async () => {
+        // ✅ 更新清空時間戳（跨裝置同步）
+        historyClearedAt = Date.now();
+        saveHistoryClearedAt();
+
         state.history = [];
         saveLocalExpenses();
         renderHistoryList();
-        await syncDataToCloud();
-        showToast("🗑 已清空歷史紀錄", "🗑");
+
+        // ✅ 使用 replaceHistory 模式，直接清空雲端歷史
+        await syncDataToCloud('replaceHistory');
+
+        showToast(`🗑 已清空 ${count} 筆歷史紀錄`, "🗑");
         haptic(20);
-      }, "清空歷史記錄", `即將刪除 ${state.history.length} 筆歷史記錄。此操作無法復原，請輸入管理員密碼。`);
+      }, "清空歷史記錄", `即將刪除 ${count} 筆歷史記錄。此操作無法復原，請輸入管理員密碼。`);
     }
 
     // ==================== 更新介面 ====================
@@ -1186,9 +1282,18 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       ensureDangerousAccess(async () => {
         // 記錄一筆「清空」到歷史（在清空前）
         addHistoryEntry("clear", null, `清空了所有記帳資料（原有 ${state.expenses.length} 筆）`);
-        state.expenses = []; lastExpense = null; settlementStatus = {};
-        saveLocalExpenses(); await syncDataToCloud(); updateLedgerUI();
-        showToast("🗑 已清空所有記帳", "🗑"); haptic(20);
+
+        state.expenses = [];
+        lastExpense = null;
+        settlementStatus = {};
+        pendingDeletes.clear();
+        savePendingDeletes();
+
+        saveLocalExpenses();
+        await syncDataToCloud();
+        updateLedgerUI();
+        showToast("🗑 已清空所有記帳", "🗑");
+        haptic(20);
       }, "清空所有記帳", "此操作將刪除所有記帳與清償狀態，無法復原。請輸入管理員密碼。");
     }
 
@@ -1290,26 +1395,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       });
     }
 
-    // ==================== 初始化 ====================
-    window.addEventListener("DOMContentLoaded", () => {
-      // 讀取本地歷史（沒有就空）
-      const savedHistory = localStorage.getItem("tohoku_history_2027");
-      if (savedHistory) { try { state.history = sanitizeHistory(JSON.parse(savedHistory)); } catch(e) { state.history = []; } }
-      loadLocalExpenses();
-      updateLedgerUI();
-      updateCurrentUserBadge();
-      initSnowEffect();
-      initRandomCharacters();
-      initExchangeRates();
-
-      // 監聽 localStorage 用戶變更（例如 parent 切換身份）
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'tohoku_current_user') updateCurrentUserBadge();
-      });
-      // 定時檢查（因為同源 iframe 的 storage 事件不會自己觸發）
-      setInterval(updateCurrentUserBadge, 2000);
-    });
-
+    // ==================== 本地儲存 ====================
     function saveLocalExpenses() {
       localStorage.setItem("tohoku_expenses_2027", JSON.stringify(state.expenses));
       localStorage.setItem("tohoku_history_2027", JSON.stringify(state.history));
@@ -1354,6 +1440,23 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
         pendingSync: !!item.pendingSync
       })) : [];
     }
+
+    // ==================== 初始化 ====================
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedHistory = localStorage.getItem("tohoku_history_2027");
+      if (savedHistory) { try { state.history = sanitizeHistory(JSON.parse(savedHistory)); } catch(e) { state.history = []; } }
+      loadLocalExpenses();
+      updateLedgerUI();
+      updateCurrentUserBadge();
+      initSnowEffect();
+      initRandomCharacters();
+      initExchangeRates();
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'tohoku_current_user') updateCurrentUserBadge();
+      });
+      setInterval(updateCurrentUserBadge, 2000);
+    });
   </script>
 </body>
 </html>
