@@ -9,14 +9,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="./manifest.json">
 
-<script src="https://cdn.tailwindcss.com"></script>
+<!-- ✅ 修復 #1：移除 @import 阻塞，改用 preconnect + link -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
 
 <style>
-@import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap);
 :root {
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -41,17 +44,13 @@ button:active { transform: scale(0.96); transition: transform 0.05s; }
 .scrollbar-none::-webkit-scrollbar{display:none}
 .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
 
-/* ---------- Modal 開啟時背景縮小 ---------- */
-body.modal-open {
-  overflow: hidden;
-}
+body.modal-open { overflow: hidden; }
 body.modal-open #ledger-root {
   transform: scale(0.96);
   border-radius: 16px;
   filter: brightness(0.95);
 }
 
-/* ---------- 雪花 ---------- */
 .snowflake {
   position: absolute;
   top: -10px;
@@ -70,7 +69,6 @@ body.modal-open #ledger-root {
 @keyframes snowfall-medium { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(90vh) rotate(270deg); opacity: 0.5; } }
 @keyframes snowfall-large { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(80vh) rotate(360deg); opacity: 0.7; } }
 
-/* ---------- 動態角色 ---------- */
 .walking-character {
   position: fixed;
   bottom: 10px !important;
@@ -108,7 +106,6 @@ body.modal-open #ledger-root {
 }
 .shake { animation: shake 0.3s ease; }
 
-/* ---------- 可折疊 ---------- */
 .collapsible-section {
   transition: max-height 0.3s ease, opacity 0.3s ease;
 }
@@ -125,7 +122,6 @@ body.modal-open #ledger-root {
   opacity: 1;
 }
 
-/* ---------- 分類色條 ---------- */
 .cat-strip {
   position: absolute;
   left: 0;
@@ -135,7 +131,6 @@ body.modal-open #ledger-root {
   border-radius: 2px 0 0 2px;
 }
 
-/* ---------- 彩帶 ---------- */
 .confetti-container {
   position: fixed;
   top: 0;
@@ -158,7 +153,6 @@ body.modal-open #ledger-root {
   100% { transform: translateY(110vh) rotate(720deg); }
 }
 
-/* ---------- 貨幣快速按鈕 ---------- */
 .currency-btn {
   flex: 1;
   padding: 6px 0;
@@ -181,7 +175,6 @@ body.modal-open #ledger-root {
   border-color: #0284c7;
 }
 
-/* ---------- Skeleton ---------- */
 .skeleton {
   background: linear-gradient(90deg,
     rgba(226, 232, 240, 0.5) 0%,
@@ -196,7 +189,6 @@ body.modal-open #ledger-root {
   100% { background-position: -200% 0; }
 }
 
-/* ---------- Modal 拖動把手 ---------- */
 .modal-handle-area {
   position: sticky;
   top: 0;
@@ -225,7 +217,6 @@ body.modal-open #ledger-root {
 #expense-modal.dragging { transition: none !important; }
 #expense-modal.snapping { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; }
 
-/* ---------- Toast 撤銷按鈕 ---------- */
 #toast-undo-btn {
   animation: toast-btn-in 0.25s ease;
 }
@@ -234,13 +225,11 @@ body.modal-open #ledger-root {
   to { opacity: 1; transform: translateX(0); }
 }
 
-/* ---------- 防止下拉刷新 ---------- */
 body {
   overscroll-behavior-y: contain;
   touch-action: pan-y;
 }
 
-/* ---------- 卡片質感 ---------- */
 .glass-card {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
@@ -248,14 +237,25 @@ body {
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
+
+/* ✅ 無障礙 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  #snow-fall, #snow-fall * { display: none !important; }
+  .walking-character.greet, .walking-character.jumping { animation: none !important; }
+  .confetti-container { display: none !important; }
+}
 </style>
 </head>
 <body class="text-slate-800 relative">
 
-  <!-- 雪花容器 -->
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
-  <!-- 動態角色 -->
   <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！" style="left: 15px;">
     <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -318,7 +318,6 @@ body {
     </svg>
   </div>
 
-  <!-- 驗證寫入權限 Modal -->
   <div id="write-access-modal" class="fixed inset-0 z-[200] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
       <h3 class="text-lg font-black mb-2 flex items-center gap-2">
@@ -334,10 +333,8 @@ body {
     </div>
   </div>
 
-  <!-- 主容器 -->
   <div id="ledger-root" class="max-w-4xl mx-auto px-4 pt-4 pb-16 space-y-4">
 
-    <!-- 頂部工具列 -->
     <div class="bg-white border border-slate-200 p-2 rounded-2xl shadow-sm flex items-center justify-between gap-3">
       <div class="flex items-center gap-1.5">
         <span id="cloud-sync-badge" class="text-[10px] bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-sky-200">
@@ -348,7 +345,6 @@ body {
       <button onclick="openExpenseModal()" class="py-1.5 px-4 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition">＋ 記帳</button>
     </div>
 
-    <!-- 統計卡片 -->
     <div class="grid grid-cols-3 gap-2">
       <div class="bg-gradient-to-br from-sky-950 to-sky-900 text-white p-2 rounded-xl shadow-sm text-center">
         <div class="flex items-center justify-center gap-1 mb-0.5">
@@ -373,9 +369,7 @@ body {
       </div>
     </div>
 
-    <!-- 主內容區 -->
     <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden min-h-[500px]">
-      <!-- 子分頁 -->
       <div class="border-b border-slate-200 bg-slate-50 p-1.5 flex gap-1.5 overflow-x-auto scrollbar-none">
         <button id="tab-records-btn" onclick='switchLedgerSubTab("records")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black bg-white text-sky-900 shadow-sm transition flex flex-col items-center justify-center">
           <span class="text-base">📝</span><span>明細</span>
@@ -391,7 +385,6 @@ body {
         </button>
       </div>
 
-      <!-- 記帳明細 -->
       <div id="subview-records" class="p-3 space-y-3">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
           <h4 class="text-sm font-bold text-slate-800">記錄清單</h4>
@@ -411,7 +404,6 @@ body {
           </div>
         </div>
 
-        <!-- 篩選列 -->
         <div class="mb-3 space-y-2">
           <div class="flex gap-1.5 overflow-x-auto scrollbar-none pb-1">
             <button onclick="toggleFilter('day', 0)" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="day" data-value="0">全部天數</button>
@@ -439,7 +431,6 @@ body {
         </div>
       </div>
 
-      <!-- 個人結算 -->
       <div id="subview-balances" class="p-4 hidden space-y-4">
         <h4 class="text-sm font-bold text-slate-800">個人結算表</h4>
         <div class="overflow-x-auto">
@@ -454,7 +445,6 @@ body {
         </div>
       </div>
 
-      <!-- 建議還款 -->
       <div id="subview-suggested" class="p-4 hidden space-y-4">
         <div class="grid grid-cols-3 gap-2">
           <div class="bg-red-50 border border-red-200 p-2 rounded-xl text-center">
@@ -475,7 +465,6 @@ body {
         <div class="space-y-2" id="suggested-settle-container"></div>
       </div>
 
-      <!-- 變更紀錄 -->
       <div id="subview-history" class="p-4 hidden space-y-4">
         <h4 class="text-sm font-bold text-slate-800">🕘 歷史變更記錄</h4>
         <div class="space-y-2" id="history-list-container">
@@ -485,10 +474,8 @@ body {
     </div>
   </div>
 
-  <!-- 新增支出 Modal -->
   <div id="expense-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeExpenseModal()"></div>
   <div id="expense-modal" class="fixed bottom-0 left-0 right-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-full md:max-w-lg bg-white rounded-t-3xl md:rounded-3xl shadow-2xl z-[70] transform translate-y-full md:translate-y-8 md:scale-95 opacity-0 hidden transition-all duration-300 flex flex-col max-h-[92vh] md:max-h-[85vh]">
-    <!-- 拖動把手 -->
     <div class="shrink-0 flex justify-center pt-3 pb-2 md:hidden cursor-grab active:cursor-grabbing" id="expense-modal-handle">
       <div class="w-12 h-1.5 bg-slate-300 rounded-full transition-all active:scale-x-110"></div>
     </div>
@@ -577,7 +564,6 @@ body {
     </div>
   </div>
 
-  <!-- 清空確認 Modal -->
   <div id="confirm-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] hidden opacity-0 transition-opacity duration-300" onclick="closeConfirmModal()"></div>
   <div id="confirm-modal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl z-[90] w-11/12 max-w-sm p-6 hidden opacity-0 transition-all duration-300 scale-95">
     <h3 class="text-lg font-black text-slate-900 mb-2 flex items-center gap-2"><span class="text-xl">⚠️</span> 確認清空</h3>
@@ -588,7 +574,6 @@ body {
     </div>
   </div>
 
-  <!-- Toast -->
   <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none">
     <span id="toast-icon">✅</span><span id="toast-message">操作成功</span>
   </div>
@@ -599,16 +584,34 @@ body {
       if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} }
     }
 
-    // ==================== Firebase 初始化 ====================
-    const firebaseConfig = {
-      apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
-      authDomain: "tohoku-winter-trip.firebaseapp.com",
-      projectId: "tohoku-winter-trip",
-      storageBucket: "tohoku-winter-trip.firebasestorage.app",
-      messagingSenderId: "991555590088",
-      appId: "1:991555590088:web:afb089890d7d546821d2fd",
-      measurementId: "G-XLDZRXC8RT"
-    };
+    // ==================== ✅ 修復 #6：escapeHtml 工具 ====================
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str).replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+    }
+    function escAttr(str) { return escapeHtml(str); }
+
+    // ==================== ✅ 修復 #2：Firebase 設定統一 ====================
+    // 若在 iframe 內，優先讀取父層的 FIREBASE_CONFIG；否則用自身 fallback
+    const firebaseConfig = (function() {
+      try {
+        if (window.parent && window.parent !== window && window.parent.FIREBASE_CONFIG) {
+          return window.parent.FIREBASE_CONFIG;
+        }
+      } catch(e) { /* 跨域保護，忽略 */ }
+      // fallback（與 index.html 一致）
+      return {
+        apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
+        authDomain: "tohoku-winter-trip.firebaseapp.com",
+        projectId: "tohoku-winter-trip",
+        storageBucket: "tohoku-winter-trip.firebasestorage.app",
+        messagingSenderId: "991555590088",
+        appId: "1:991555590088:web:afb089890d7d546821d2fd",
+        measurementId: "G-9EN9JG5F3F"
+      };
+    })();
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -657,8 +660,6 @@ body {
     }
 
     // ==================== 雲端同步 ====================
-    let lastSyncNotified = {};
-    // ✅ 防重複註冊 onSnapshot listener
     let _snapshotUnsub = null;
 
     function updateCloudBadge(isConnected) {
@@ -676,55 +677,70 @@ body {
       }
     }
 
+    // ✅ 修復 #7：匿名登入只做一次，避免重複呼叫
+    let _authPromise = null;
     const initAuth = async () => {
-      try { await auth.signInAnonymously(); updateCloudBadge(true); }
-      catch(err) { console.warn("匿名登入失敗:", err); updateCloudBadge(false); }
+      if (_authPromise) return _authPromise;
+      _authPromise = (async () => {
+        try {
+          await auth.signInAnonymously();
+          updateCloudBadge(true);
+        } catch(err) {
+          console.warn("匿名登入失敗:", err);
+          updateCloudBadge(false);
+        }
+      })();
+      return _authPromise;
     };
     initAuth();
 
     auth.onAuthStateChanged(user => {
-      if (!user) { auth.signInAnonymously().catch(() => {}); return; }
+      if (!user) { initAuth().catch(() => {}); return; }
       updateCloudBadge(true);
 
-      // ✅ 已註冊過就跳過，避免 listener 累積
       if (_snapshotUnsub) return;
 
       _snapshotUnsub = window.dbRef.onSnapshot(docSnap => {
-  if (docSnap.exists) {
-    const cloudData = docSnap.data();
-    if (cloudData && cloudData.expenses) {
-      const cloudExpenses = sanitizeExpenses(cloudData.expenses);
-      
-      // ✅ 關鍵修復：拿雲端的更新時間來判斷
-      const cloudUpdatedAt = cloudData.updatedAt || 0;
-      
-      // 只保留「建立時間晚於雲端更新時間」的本地項目（表示這是還沒同步上去的新增）
-      const localUnsaved = state.expenses.filter(le => le.createdAt > cloudUpdatedAt);
-      
-      // 雲端數據為準，加上本地尚未同步的新增
-      state.expenses = [...cloudExpenses, ...localUnsaved];
-      
-      // 去重（防止 id 重複）
-      const uniqueMap = new Map();
-      state.expenses.forEach(item => uniqueMap.set(item.id, item));
-      state.expenses = Array.from(uniqueMap.values());
+        if (!docSnap.exists) return;
+        const cloudData = docSnap.data();
 
-      // ... 下面原本的提示新增代碼保留 ...
-      saveLocalExpenses();
-      updateLedgerUI();
-    }
-  }
-}, err => updateCloudBadge(false));
+        // ✅ 修復 #3：使用 pendingSync 旗標取代時間比較
+        if (cloudData && cloudData.expenses) {
+          const cloudExpenses = sanitizeExpenses(cloudData.expenses);
+
+          // 只保留「本地標記為 pendingSync 且雲端尚未收錄」的本地項目
+          const localPending = state.expenses.filter(le => le.pendingSync === true);
+          const pendingIds = new Set(localPending.map(p => p.id));
+          // 雲端為主，但排除本地正在 pending 的同一 id（避免重複）
+          const cloudFiltered = cloudExpenses.filter(ce => !pendingIds.has(ce.id));
+
+          state.expenses = [...cloudFiltered, ...localPending];
+
+          // 去重（防止 id 重複）
+          const uniqueMap = new Map();
+          state.expenses.forEach(item => uniqueMap.set(item.id, item));
+          state.expenses = Array.from(uniqueMap.values());
+
+          saveLocalExpenses();
+          updateLedgerUI();
+        }
+
+        // ✅ 修復 #4：settlementStatus 同步
+        if (cloudData.settlementStatus && typeof cloudData.settlementStatus === 'object') {
+          settlementStatus = cloudData.settlementStatus;
+          localStorage.setItem("settlement_status", JSON.stringify(settlementStatus));
+          renderSuggestedSettlements();
+        }
+      }, err => updateCloudBadge(false));
     });
 
-    // ✅ 記帳本只同步 expenses 和 history，絕不碰 checkedItems
-    // （checkedItems 是 index.html 行前預訂的專屬欄位，若在此寫入會覆蓋使用者的勾選）
     async function syncDataToCloud() {
       try {
         if (!auth.currentUser) return;
         await window.dbRef.set({
           expenses: state.expenses,
           history: state.history,
+          settlementStatus: settlementStatus,  // ✅ 修復 #4：同步清償狀態
           updatedAt: Date.now()
         }, { merge: true });
         updateCloudBadge(true);
@@ -829,7 +845,7 @@ body {
       else if (tabName === 'balances') renderBalancesTable();
     }
 
-    // ==================== Toast（含撤銷） ====================
+    // ==================== Toast ====================
     function showToast(message, icon = "✅") {
       const toast = document.getElementById("toast");
       const toastMessage = document.getElementById("toast-message");
@@ -999,7 +1015,7 @@ body {
           btn.type = "button";
           btn.onclick = () => { state.activePayer = member; renderLedgerSelectors(); haptic(5); };
           btn.className = `py-1.5 px-1 text-xs rounded-xl font-bold transition border text-center min-h-[48px] flex flex-col items-center justify-center gap-0.5 ${state.activePayer === member ? style.solid + " shadow-sm scale-105" : style.soft}`;
-          btn.innerHTML = `<div class="w-5 h-5 rounded-full ${state.activePayer === member ? "bg-white/20 text-white" : style.avatar + " text-white"} flex items-center justify-center text-[10px] font-black shadow-sm">${member[0].toUpperCase()}</div><span class="${state.activePayer === member ? "text-white" : style.text} text-[10px]">${member} ${symbol}</span>`;
+          btn.innerHTML = `<div class="w-5 h-5 rounded-full ${state.activePayer === member ? "bg-white/20 text-white" : style.avatar + " text-white"} flex items-center justify-center text-[10px] font-black shadow-sm">${escapeHtml(member[0].toUpperCase())}</div><span class="${state.activePayer === member ? "text-white" : style.text} text-[10px]">${escapeHtml(member)} ${escapeHtml(symbol)}</span>`;
           payerGrid.appendChild(btn);
         });
       }
@@ -1014,7 +1030,7 @@ body {
           btn.onclick = () => { toggleSplitter(member); haptic(5); };
           const isActive = state.activeSplitWith.includes(member);
           btn.className = `py-1.5 px-1 text-xs rounded-lg font-bold transition border text-center min-h-[40px] flex items-center justify-center gap-1.5 ${isActive ? style.solid + " shadow-sm" : style.soft}`;
-          btn.innerHTML = `<div class="w-3.5 h-3.5 rounded-full border border-white/60 ${isActive ? "bg-white" : "bg-white/50"} flex items-center justify-center shrink-0 shadow-inner"><div class="w-2 h-2 rounded-full ${isActive ? style.avatar : "bg-transparent"}"></div></div><span>${member} ${symbol}</span>`;
+          btn.innerHTML = `<div class="w-3.5 h-3.5 rounded-full border border-white/60 ${isActive ? "bg-white" : "bg-white/50"} flex items-center justify-center shrink-0 shadow-inner"><div class="w-2 h-2 rounded-full ${isActive ? style.avatar : "bg-transparent"}"></div></div><span>${escapeHtml(member)} ${escapeHtml(symbol)}</span>`;
           splittersGrid.appendChild(btn);
         });
       }
@@ -1088,16 +1104,19 @@ body {
         const rate = exchangeRates[currency.value] || 0.052;
         const now = Date.now();
         const currentTime = new Date(now).toLocaleString("zh-HK");
+
+        // ✅ 修復 #3：加入 pendingSync 旗標
         const expenseData = {
           day: parseInt(day.value), category: category.value, desc: descValue, remark, amount: amountValue,
           currency: currency.value, amountInHKD: parseFloat((amountValue * rate).toFixed(2)),
           payer: state.activePayer, splitWith: [...state.activeSplitWith],
-          createdAt: now, updatedAt: now, createdBy: state.activePayer, createdTime: currentTime, updatedBy: state.activePayer
+          createdAt: now, updatedAt: now, createdBy: state.activePayer, createdTime: currentTime, updatedBy: state.activePayer,
+          pendingSync: true
         };
         if (editingExpenseId) {
           const index = state.expenses.findIndex(e => e.id === editingExpenseId);
           if (index > -1) {
-            state.history.unshift({ type: "edit", expenseId: editingExpenseId, expenseDesc: state.expenses[index].desc, actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer], actionTime: new Date().toLocaleString("zh-HK"), details: `修改了「${state.expenses[index].desc}」` });
+            state.history.unshift({ type: "edit", expenseId: editingExpenseId, expenseDesc: state.expenses[index].desc, actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer], actionTime: new Date().toLocaleString("zh-HK"), details: `修改了「${escapeHtml(state.expenses[index].desc)}」` });
             state.expenses[index] = { ...state.expenses[index], ...expenseData };
             showToast("✅ 已更新支出");
           }
@@ -1106,13 +1125,17 @@ body {
           const expense = { id: "exp-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5), ...expenseData };
           state.expenses.push(expense);
           lastExpense = expense;
-          state.history.unshift({ type: "add", expenseId: expense.id, expenseDesc: expense.desc, actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer], actionTime: new Date().toLocaleString("zh-HK"), details: `新增了「${expense.desc}」(${expense.amount} ${expense.currency})` });
+          state.history.unshift({ type: "add", expenseId: expense.id, expenseDesc: expense.desc, actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer], actionTime: new Date().toLocaleString("zh-HK"), details: `新增了「${escapeHtml(expense.desc)}」(${expense.amount} ${expense.currency})` });
           showToast("✅ 已新增支出");
           showConfetti();
         }
         haptic(10);
         saveLocalExpenses();
-        syncDataToCloud();
+        syncDataToCloud().then(() => {
+          // ✅ 寫入成功後清除 pendingSync
+          state.expenses.forEach(e => { if (e.pendingSync) e.pendingSync = false; });
+          saveLocalExpenses();
+        });
         updateLedgerUI();
         closeExpenseModal();
         setTimeout(() => {
@@ -1122,7 +1145,7 @@ body {
       });
     }
 
-    // ==================== ✅ 刪除（含撤銷） ====================
+    // ==================== 刪除（含撤銷） ====================
     function deleteExpense(expenseId) {
       ensureWriteAccess(() => {
         const expense = state.expenses.find(e => e.id === expenseId);
@@ -1134,7 +1157,7 @@ body {
           type: "delete", expenseId, expenseDesc: expense.desc,
           actionBy: state.activePayer, actionSymbol: memberSymbols[state.activePayer],
           actionTime: new Date().toLocaleString("zh-HK"),
-          details: `刪除了「${expense.desc}」(${expense.amount} ${expense.currency})`
+          details: `刪除了「${escapeHtml(expense.desc)}」(${expense.amount} ${expense.currency})`
         };
 
         state.history.unshift(historyEntry);
@@ -1152,6 +1175,7 @@ body {
 
     // ==================== 彩帶 ====================
     function showConfetti() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       const container = document.createElement('div');
       container.className = 'confetti-container';
       document.body.appendChild(container);
@@ -1171,7 +1195,7 @@ body {
       setTimeout(() => container.remove(), 3000);
     }
 
-    // ==================== 歷史記錄 ====================
+    // ==================== ✅ 修復 #6：歷史記錄 escapeHtml ====================
     function renderHistoryList() {
       const container = document.getElementById("history-list-container");
       if (!container) return;
@@ -1182,7 +1206,7 @@ body {
         const typeText = item.type === "add" ? "新增" : item.type === "edit" ? "修改" : "刪除";
         const card = document.createElement("div");
         card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start gap-2";
-        card.innerHTML = `<span class="text-xl">${item.actionSymbol || "📝"}</span><div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1"><span class="text-[10px] font-black px-2 py-0.5 rounded-full ${typeColor}">${typeText}</span><span class="text-[10px] font-bold text-slate-700">${item.actionBy}</span><span class="text-[9px] text-slate-400">${item.actionTime}</span></div><p class="text-[11px] text-slate-600">${item.details}</p></div>`;
+        card.innerHTML = `<span class="text-xl">${escapeHtml(item.actionSymbol || "📝")}</span><div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1"><span class="text-[10px] font-black px-2 py-0.5 rounded-full ${typeColor}">${typeText}</span><span class="text-[10px] font-bold text-slate-700">${escapeHtml(item.actionBy)}</span><span class="text-[9px] text-slate-400">${escapeHtml(item.actionTime)}</span></div><p class="text-[11px] text-slate-600">${escapeHtml(item.details)}</p></div>`;
         container.appendChild(card);
       });
     }
@@ -1200,7 +1224,7 @@ body {
       renderHistoryList();
     }
 
-    // ==================== 列表渲染 ====================
+    // ==================== ✅ 修復 #6：列表渲染 escapeHtml ====================
     function renderExpensesList() {
       const container = document.getElementById("records-list-container");
       if (!container) return;
@@ -1241,23 +1265,23 @@ body {
         const symbol = memberSymbols[expense.payer] || "";
         const timeStr = expense.createdTime || new Date(expense.createdAt).toLocaleString("zh-HK");
         const catColor = categoryColors[expense.category] || 'bg-slate-400';
-        const remarkHtml = expense.remark ? `<div class="flex items-center gap-1 mt-1 text-[10px] text-slate-500 bg-slate-100 rounded px-1.5 py-0.5"><span>📌</span><span class="truncate">${expense.remark}</span></div>` : "";
+        const remarkHtml = expense.remark ? `<div class="flex items-center gap-1 mt-1 text-[10px] text-slate-500 bg-slate-100 rounded px-1.5 py-0.5"><span>📌</span><span class="truncate">${escapeHtml(expense.remark)}</span></div>` : "";
         const card = document.createElement("div");
         card.className = `relative ${cardBg} p-2 pl-4 rounded-xl border ${cardBorder} flex justify-between items-center text-xs group transition shadow-sm hover:shadow`;
         card.innerHTML = `
           <div class="cat-strip ${catColor}"></div>
           <div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
-            <div class="w-8 h-8 rounded-full ${payerStyle.avatar} text-white font-black flex items-center justify-center shrink-0 border-2 border-white shadow-sm text-sm">${expense.payer[0].toUpperCase()}</div>
+            <div class="w-8 h-8 rounded-full ${payerStyle.avatar} text-white font-black flex items-center justify-center shrink-0 border-2 border-white shadow-sm text-sm">${escapeHtml(expense.payer[0].toUpperCase())}</div>
             <div class="space-y-0.5 flex-1 min-w-0">
               <div class="flex items-center gap-2">
                 <span class="bg-sky-100 text-sky-800 font-bold px-1.5 py-0.5 rounded text-[9px] shrink-0 border border-sky-200">D${expense.day}</span>
-                <strong class="text-slate-900 text-[13px] truncate">${expense.desc}</strong>
-                <span class="text-[10px]">${symbol}</span>
+                <strong class="text-slate-900 text-[13px] truncate">${escapeHtml(expense.desc)}</strong>
+                <span class="text-[10px]">${escapeHtml(symbol)}</span>
               </div>
               <div class="flex items-center gap-1.5 text-[10px] text-slate-500 flex-wrap mt-0.5">
-                <span class="bg-white/80 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-medium">${expense.category}</span>
-                <span class="flex items-center gap-1">付: <span class="${payerStyle.badge} px-1.5 py-0.5 rounded font-bold border">${expense.payer}</span></span>
-                <span class="text-slate-400">🕘 ${timeStr}</span>
+                <span class="bg-white/80 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-medium">${escapeHtml(expense.category)}</span>
+                <span class="flex items-center gap-1">付: <span class="${payerStyle.badge} px-1.5 py-0.5 rounded font-bold border">${escapeHtml(expense.payer)}</span></span>
+                <span class="text-slate-400">🕘 ${escapeHtml(timeStr)}</span>
               </div>
               ${remarkHtml}
             </div>
@@ -1304,11 +1328,14 @@ body {
         const balanceClass = balance > 0 ? "text-emerald-600 font-bold" : balance < 0 ? "text-red-500 font-bold" : "text-slate-400";
         const style = memberStyle[member] || memberStyle["余生"];
         const symbol = memberSymbols[member] || "";
-        tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="py-2 font-bold text-slate-800 flex items-center gap-2"><div class="w-5 h-5 rounded-full ${style.avatar} text-white font-black flex items-center justify-center text-[9px] border border-white shadow-sm">${member[0].toUpperCase()}</div>${member} ${symbol}</td><td class="py-2 text-right text-slate-600 font-medium">$${paid}</td><td class="py-2 text-right text-slate-600 font-medium">$${owed}</td><td class="py-2 text-right ${balanceClass}">$${balanceText}</td></tr>`;
+        tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="py-2 font-bold text-slate-800 flex items-center gap-2"><div class="w-5 h-5 rounded-full ${style.avatar} text-white font-black flex items-center justify-center text-[9px] border border-white shadow-sm">${escapeHtml(member[0].toUpperCase())}</div>${escapeHtml(member)} ${escapeHtml(symbol)}</td><td class="py-2 text-right text-slate-600 font-medium">$${paid}</td><td class="py-2 text-right text-slate-600 font-medium">$${owed}</td><td class="py-2 text-right ${balanceClass}">$${balanceText}</td></tr>`;
       });
     }
 
     // ==================== 建議還款 ====================
+    // ✅ 修復 #5：把結算結果存為全域，供複製用
+    let _lastSettlements = [];
+
     function renderSuggestedSettlements() {
       const container = document.getElementById("suggested-settle-container");
       const badge = document.getElementById("debt-count-badge");
@@ -1333,6 +1360,8 @@ body {
         if (debtor.amount < 0.01) d++;
         if (creditor.amount < 0.01) c++;
       }
+      _lastSettlements = settlements;  // ✅ 修復 #5：存起來
+
       const totalDebt = debtors.reduce((sum, d) => sum + d.amount, 0).toFixed(2);
       const totalCredit = creditors.reduce((sum, c) => sum + c.amount, 0).toFixed(2);
       const settledCount = settlements.filter(s => settlementStatus[`${s.from}_${s.to}_${s.amount}`]).length;
@@ -1352,7 +1381,7 @@ body {
         const toSymbol = memberSymbols[s.to] || "";
         const key = `${s.from}_${s.to}_${s.amount}`;
         const isDone = settlementStatus[key] || false;
-        container.innerHTML += `<div class="bg-slate-50 border ${isDone ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200'} p-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm hover:shadow-md transition"><div class="flex items-center gap-1.5 md:gap-2"><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${s.from[0].toUpperCase()}</div><span class="font-bold text-slate-700 hidden sm:inline">${s.from} ${fromSymbol}</span></div><span class="text-slate-400 text-[10px] font-bold flex flex-col items-center px-1"><span>轉帳</span><span class="text-[8px] mt-0.5 text-slate-300">→</span></span><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${toStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${s.to[0].toUpperCase()}</div><span class="font-bold text-slate-700 hidden sm:inline">${s.to} ${toSymbol}</span></div></div><div class="flex items-center gap-2"><div class="text-right"><span class="block text-[9px] text-slate-400 mb-0.5 font-medium">金額</span><strong class="text-sm md:text-base font-black ${isDone ? 'text-emerald-600 line-through' : 'text-rose-600'}">$${s.amount}</strong></div><button onclick="toggleSettlementDone('${s.from}','${s.to}','${s.amount}')" class="px-2 py-1 rounded-lg font-bold text-[10px] ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600 hover:bg-emerald-100 hover:text-emerald-700'} transition">${isDone ? '✓ 已還' : '標記已還'}</button></div></div>`;
+        container.innerHTML += `<div class="bg-slate-50 border ${isDone ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200'} p-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm hover:shadow-md transition"><div class="flex items-center gap-1.5 md:gap-2"><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${escapeHtml(s.from[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.from)} ${escapeHtml(fromSymbol)}</span></div><span class="text-slate-400 text-[10px] font-bold flex flex-col items-center px-1"><span>轉帳</span><span class="text-[8px] mt-0.5 text-slate-300">→</span></span><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${toStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${escapeHtml(s.to[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.to)} ${escapeHtml(toSymbol)}</span></div></div><div class="flex items-center gap-2"><div class="text-right"><span class="block text-[9px] text-slate-400 mb-0.5 font-medium">金額</span><strong class="text-sm md:text-base font-black ${isDone ? 'text-emerald-600 line-through' : 'text-rose-600'}">$${escapeHtml(s.amount)}</strong></div><button onclick="toggleSettlementDone('${escAttr(s.from)}','${escAttr(s.to)}','${escAttr(s.amount)}')" class="px-2 py-1 rounded-lg font-bold text-[10px] ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600 hover:bg-emerald-100 hover:text-emerald-700'} transition">${isDone ? '✓ 已還' : '標記已還'}</button></div></div>`;
       });
     }
 
@@ -1361,6 +1390,8 @@ body {
       settlementStatus[key] = !settlementStatus[key];
       localStorage.setItem("settlement_status", JSON.stringify(settlementStatus));
       renderSuggestedSettlements();
+      // ✅ 修復 #4：同步到雲端
+      syncDataToCloud();
       showToast(settlementStatus[key] ? "✅ 已標記為已還款" : "🔁 已取消已還款");
       haptic(10);
     }
@@ -1369,14 +1400,20 @@ body {
       settlementStatus = {};
       localStorage.removeItem("settlement_status");
       renderSuggestedSettlements();
+      syncDataToCloud();  // ✅ 修復 #4：同步到雲端
       showToast("🔄 已重置清償狀態");
     }
+    // ✅ 修復 #5：改用結構化資料，不再解析 innerText
     function copySettlementPlan() {
-      const container = document.getElementById("suggested-settle-container");
-      const texts = container.innerText.split('\n').filter(t => t.trim() !== '' && !t.includes('標記已還') && !t.includes('已還') && !t.includes('轉帳'));
-      if (texts.length === 0) { showToast("目前沒有待還款計畫", "⚠️"); return; }
-      let plan = "📋 建議還款 (HKD)\n";
-      texts.forEach(t => { const parts = t.split(' '); if (parts.length >= 5) plan += `${parts[0]} 付 ${parts[1]} : $${parts[2]}\n`; });
+      if (!_lastSettlements || _lastSettlements.length === 0) {
+        showToast("目前沒有待還款計畫", "⚠️");
+        return;
+      }
+      let plan = "📋 建議還款 (HKD)\n=====================\n";
+      _lastSettlements.forEach(s => {
+        plan += `${s.from} → ${s.to} : $${s.amount}\n`;
+      });
+      plan += `\n共 ${_lastSettlements.length} 筆轉帳`;
       copyText(plan);
       showToast("📋 已複製還款計畫");
     }
@@ -1461,10 +1498,9 @@ body {
 
     // ==================== 雪花 ====================
     function initSnowEffect() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  const snowContainer = document.getElementById("snow-fall");
-  if (!snowContainer) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const snowContainer = document.getElementById("snow-fall");
+      if (!snowContainer) return;
       snowContainer.innerHTML = "";
       const snowflakeCount = window.innerWidth < 768 ? 15 : 30;
       const animations = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"];
@@ -1479,7 +1515,7 @@ body {
       }
     }
 
-    // ==================== ✅ Modal 拖動關閉 ====================
+    // ==================== Modal 拖動關閉（✅ 監聽器不洩漏） ====================
     (function setupExpenseModalDrag() {
       const modal = document.getElementById('expense-modal');
       const backdrop = document.getElementById('expense-modal-backdrop');
@@ -1488,14 +1524,6 @@ body {
 
       let startY = 0, currentY = 0, isDragging = false;
 
-      const onStart = (e) => {
-        isDragging = true;
-        startY = e.touches ? e.touches[0].clientY : e.clientY;
-        currentY = startY;
-        modal.classList.add('dragging');
-        modal.classList.remove('snapping');
-        haptic(5);
-      };
       const onMove = (e) => {
         if (!isDragging) return;
         currentY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -1523,6 +1551,19 @@ body {
           backdrop.style.opacity = '';
           setTimeout(() => modal.classList.remove('snapping'), 300);
         }
+        // ✅ 移除臨時監聽器
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onEnd);
+      };
+      const onStart = (e) => {
+        isDragging = true;
+        startY = e.touches ? e.touches[0].clientY : e.clientY;
+        currentY = startY;
+        modal.classList.add('dragging');
+        modal.classList.remove('snapping');
+        haptic(5);
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onEnd);
       };
 
       handle.addEventListener('touchstart', onStart, { passive: true });
@@ -1530,8 +1571,6 @@ body {
       handle.addEventListener('touchend', onEnd);
       handle.addEventListener('touchcancel', onEnd);
       handle.addEventListener('mousedown', onStart);
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onEnd);
     })();
 
     // ==================== Service Worker ====================
@@ -1553,6 +1592,7 @@ body {
       initRandomCharacters();
       initExchangeRates();
     });
+
     function saveLocalExpenses() {
       localStorage.setItem("tohoku_expenses_2027", JSON.stringify(state.expenses));
       localStorage.setItem("tohoku_history_2027", JSON.stringify(state.history));
@@ -1578,7 +1618,8 @@ body {
         createdTime: item.createdTime || "",
         createdBy: item.createdBy || "",
         updatedAt: item.updatedAt || Date.now(),
-        updatedBy: item.updatedBy || ""
+        updatedBy: item.updatedBy || "",
+        pendingSync: !!item.pendingSync
       })) : [];
     }
   </script>

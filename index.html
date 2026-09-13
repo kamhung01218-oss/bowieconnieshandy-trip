@@ -11,6 +11,11 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2744.png">
 
+<!-- ✅ 修復 #10：加入 preconnect 取代 CSS @import -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@11.6.1/firebase-app-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@11.6.1/firebase-auth-compat.js"></script>
@@ -32,7 +37,8 @@ tailwind.config = {
 }
 </script>
 <script>
-firebase.initializeApp({
+// ✅ 修復 #12：Firebase 設定抽成常數（與 ledger.html 統一）
+window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
   authDomain: "tohoku-winter-trip.firebaseapp.com",
   projectId: "tohoku-winter-trip",
@@ -40,7 +46,8 @@ firebase.initializeApp({
   messagingSenderId: "991555590088",
   appId: "1:991555590088:web:afb089890d7d546821d2fd",
   measurementId: "G-9EN9JG5F3F"
-});
+};
+firebase.initializeApp(window.FIREBASE_CONFIG);
 
 firebase.auth().signInAnonymously()
   .then(() => window.AppHeader && AppHeader.setSyncState(true))
@@ -239,7 +246,6 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div id="schedule-container" class="space-y-6 pt-2 pb-4">
             <div id="day-section-1" class="day-section">
-  <!-- 首屏骨架屏：renderDayItinerary 執行後會被覆蓋 -->
   <div class="mb-8">
     <div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex items-center gap-2.5">
       <div class="w-10 h-10 rounded-full skeleton shrink-0"></div>
@@ -327,8 +333,17 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="shopping-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeShoppingModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="shopping-modal"><div class="modal-handle"></div></div><button onclick="closeShoppingModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🛍️</span> 購物清單</h2><div id="shopping-content"></div></div></div></div>
   <div id="all-shopping-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeAllShoppingModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="all-shopping-modal"><div class="modal-handle"></div></div><button onclick="closeAllShoppingModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🛍️</span> 我的購物清單</h2><div id="all-shopping-content"></div></div></div></div>
   <div id="password-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closePasswordModal()"><div class="modal-box bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative" onclick="event.stopPropagation()"><button onclick="closePasswordModal()" class="modal-close">✕</button><h2 class="text-xl font-black mb-2 flex items-center gap-2">🔒 輸入管理密碼</h2><p class="text-xs text-slate-500 mb-4">輸入密碼以解鎖「行前預訂」編輯權限</p><input id="password-input" type="password" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm mb-3" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')verifyPassword()"><div class="flex gap-2"><button onclick="verifyPassword()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">確認</button><button onclick="closePasswordModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl">取消</button></div><p id="password-error" class="text-xs text-red-500 font-bold mt-2 hidden">⚠️ 密碼錯誤</p></div></div>
-  
+
   <script>
+    // ==================== ✅ 修復 #11：全域 escapeHtml 工具 ====================
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str).replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+    }
+    function escAttr(str) { return escapeHtml(str); }
+
     // ==================== 全域變數 ====================
     let state = { currentMainTab: "itinerary", checkedItems: {} };
     let currentUser = null;
@@ -356,12 +371,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const ZAO_TARGET = new Date("2027-01-15T23:00:00+08:00").getTime();
     const ADMIN_PASSWORD = "tohoku2027admin";
 
+    // ✅ 修復 #7：天氣座標依 Day 動態切換
+    const WEATHER_LOCATIONS = {
+      1: { name: "宮城仙台", lat: 38.2682, lon: 140.8694 },
+      2: { name: "山形天童", lat: 38.3625, lon: 140.3694 },
+      3: { name: "山形藏王", lat: 38.1656, lon: 140.3986 },
+      4: { name: "宮城泉",   lat: 38.3189, lon: 140.8831 },
+      5: { name: "宮城白石", lat: 38.0022, lon: 140.6197 },
+      6: { name: "宮城仙台", lat: 38.2682, lon: 140.8694 },
+      7: { name: "宮城仙台", lat: 38.2682, lon: 140.8694 }
+    };
+
     let snowmanProgress = JSON.parse(localStorage.getItem("snowman_progress")) || 0;
     if (!window.weatherCache) window.weatherCache = {};
     const modalUIState = {
       'booking-modal': { activeTab: 'all', expanded: {} },
       'equip-modal': { activeTab: 'all', expanded: {} }
     };
+
+    // ✅ 修復 #6：Lazy Render 記錄
+    window._renderedDays = new Set();
 
     // ==================== 用戶登入系統 ====================
     let selectedUser = null;
@@ -373,7 +402,6 @@ document.addEventListener('DOMContentLoaded', () => {
           btn.classList.add('selected');
           selectedUser = btn.dataset.user;
 
-          // 訪客直接進入
           if (selectedUser === "訪客") {
             currentUser = "訪客";
             localStorage.setItem("tohoku_current_user", "訪客");
@@ -443,8 +471,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (saved) { try { state.checkedItems = JSON.parse(saved); } catch(e) {} }
       fetchLiveRates();
       initSnowEffect();
+
+      // ✅ 修復 #4：使用新的 setupModalDrag（自動移除監聽器）
       setupModalDrag([ 'booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal' ]);
-      winterItineraries.forEach((dayData, index) => { renderDayItinerary(`day-section-${index + 1}`, dayData); });
+
+      // ✅ 修復 #6：只渲染 Day 1，其餘按需 Lazy Render
+      renderDayItinerary('day-section-1', winterItineraries[0]);
+
       setupImageFadeIn();
       if (window.AppHeader) {
         AppHeader.init({
@@ -477,11 +510,11 @@ document.addEventListener('DOMContentLoaded', () => {
       updateSnowmanVisual();
       updateTodayButtonVisibility();
       setInterval(updateTodayButtonVisibility, 60 * 1000);
-      const observer = new MutationObserver(() => setupImageFadeIn());
-      observer.observe(document.body, { childList: true, subtree: true });
+
+      // ✅ 修復 #5：移除全域 MutationObserver
+      // 改為在需要的地方手動呼叫 setupImageFadeIn（見 renderDayItinerary 等）
     }
 
-    // 頭像更新（供 header.js 呼叫，也供本地直接呼叫）
     function updateUserBadge() {
       setTimeout(() => {
         const badge = document.getElementById('user-badge');
@@ -539,20 +572,68 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function updateTodayButtonVisibility() { const btn = document.getElementById('btn-today'); if (!btn) return; const now = Date.now(); if (now >= TRIP_START && now <= TRIP_END) { btn.classList.remove('hidden'); } else { btn.classList.add('hidden'); } }
 
-    // ==================== Modal 手勢關閉 ====================
+    // ==================== ✅ 修復 #4：Modal 手勢關閉（監聽器不再洩漏） ====================
     function setupModalDrag(modals) {
       modals.forEach(id => {
         const modal = document.getElementById(id); if (!modal) return;
-        const box = modal.querySelector('.modal-box'); const handleArea = modal.querySelector('[data-drag-handle]'); if (!box || !handleArea) return;
+        const box = modal.querySelector('.modal-box');
+        const handleArea = modal.querySelector('[data-drag-handle]');
+        if (!box || !handleArea) return;
+
         let startY = 0, currentY = 0, isDragging = false;
-        const onStart = (e) => { isDragging = true; startY = e.touches ? e.touches[0].clientY : e.clientY; currentY = startY; box.classList.add('dragging'); box.classList.remove('snapping'); haptic(5); };
-        const onMove = (e) => { if (!isDragging) return; currentY = e.touches ? e.touches[0].clientY : e.clientY; const diff = currentY - startY; if (diff > 0) { box.style.transform = `translateY(${diff}px)`; modal.style.opacity = Math.max(0, 1 - diff / 400); } };
-        const onEnd = () => {
-          if (!isDragging) return; isDragging = false; const diff = currentY - startY; box.classList.remove('dragging'); box.classList.add('snapping');
-          if (diff > 100) { box.style.transform = `translateY(100%)`; modal.style.opacity = '0'; haptic(15); setTimeout(() => { const closers = { 'booking-modal': closeBookingModal, 'equip-modal': closeEquipModal, 'drive-modal': closeDriveModal, 'ticket-modal': closeTicketModal, 'weather-modal': closeWeatherModal, 'trip-overview-modal': closeTripOverview, 'shoot-tips-modal': closeShootTipsModal, 'vlog-plan-modal': closeVlogPlanModal, 'common-tips-modal': closeCommonTipsModal, 'shopping-modal': closeShoppingModal, 'all-shopping-modal': closeAllShoppingModal }; if (closers[id]) closers[id](); box.style.transform = ''; modal.style.opacity = ''; }, 280); }
-          else { box.style.transform = ''; modal.style.opacity = ''; setTimeout(() => box.classList.remove('snapping'), 300); }
+
+        // ✅ 這些是「每個 modal 唯一」的監聽器，只在拖動時掛到 document，結束後立即移除
+        const onMove = (e) => {
+          if (!isDragging) return;
+          currentY = e.touches ? e.touches[0].clientY : e.clientY;
+          const diff = currentY - startY;
+          if (diff > 0) {
+            box.style.transform = `translateY(${diff}px)`;
+            modal.style.opacity = Math.max(0, 1 - diff / 400);
+          }
         };
-        handleArea.addEventListener('touchstart', onStart, { passive: true }); handleArea.addEventListener('touchmove', onMove, { passive: true }); handleArea.addEventListener('touchend', onEnd); handleArea.addEventListener('touchcancel', onEnd); handleArea.addEventListener('mousedown', onStart); document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onEnd);
+        const onEnd = () => {
+          if (!isDragging) return;
+          isDragging = false;
+          const diff = currentY - startY;
+          box.classList.remove('dragging');
+          box.classList.add('snapping');
+          if (diff > 100) {
+            box.style.transform = `translateY(100%)`;
+            modal.style.opacity = '0';
+            haptic(15);
+            setTimeout(() => {
+              const closers = { 'booking-modal': closeBookingModal, 'equip-modal': closeEquipModal, 'drive-modal': closeDriveModal, 'ticket-modal': closeTicketModal, 'weather-modal': closeWeatherModal, 'trip-overview-modal': closeTripOverview, 'shoot-tips-modal': closeShootTipsModal, 'vlog-plan-modal': closeVlogPlanModal, 'common-tips-modal': closeCommonTipsModal, 'shopping-modal': closeShoppingModal, 'all-shopping-modal': closeAllShoppingModal };
+              if (closers[id]) closers[id]();
+              box.style.transform = '';
+              modal.style.opacity = '';
+            }, 280);
+          } else {
+            box.style.transform = '';
+            modal.style.opacity = '';
+            setTimeout(() => box.classList.remove('snapping'), 300);
+          }
+          // ✅ 移除臨時監聽器
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onEnd);
+        };
+        const onStart = (e) => {
+          isDragging = true;
+          startY = e.touches ? e.touches[0].clientY : e.clientY;
+          currentY = startY;
+          box.classList.add('dragging');
+          box.classList.remove('snapping');
+          haptic(5);
+          // ✅ 只在拖動開始時掛上 document 監聽器
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onEnd);
+        };
+
+        handleArea.addEventListener('touchstart', onStart, { passive: true });
+        handleArea.addEventListener('touchmove', onMove, { passive: true });
+        handleArea.addEventListener('touchend', onEnd);
+        handleArea.addEventListener('touchcancel', onEnd);
+        handleArea.addEventListener('mousedown', onStart);
       });
     }
 
@@ -615,7 +696,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isComplete = catDone === catAll.length; const isExpanded = modalUIState['booking-modal'].expanded[cat] !== false;
         html += `<div class="category-group ${isExpanded ? 'expanded' : ''} ${isComplete ? 'done' : ''}">`;
         html += `<button class="category-header" onclick="toggleCategory('booking-modal','${cat}')"><div class="category-title-wrap"><span class="category-title">${cat}</span><span class="category-count">${catDone}/${catAll.length}</span></div><svg class="category-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button><div class="category-body"><div class="category-body-inner">`;
-        catAll.forEach(item => { const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`; const isChecked = state.checkedItems[key] === true; const disabled = isAdmin ? "" : "disabled"; html += `<label class="checklist-item ${isChecked ? 'checked' : ''} ${!isAdmin ? 'opacity-80' : ''}"><input type="checkbox" ${disabled} ${isChecked ? 'checked' : ''} onchange="toggleBookingCheck('${key}')"><span class="checklist-icon">${item.icon}</span><span class="checklist-label">${item.label}</span>${isAdmin && item.isCustom ? `<button onclick="event.preventDefault();event.stopPropagation();deleteCustomBooking('${item.id}')" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}</label>`; });
+        catAll.forEach(item => { const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`; const isChecked = state.checkedItems[key] === true; const disabled = isAdmin ? "" : "disabled"; html += `<label class="checklist-item ${isChecked ? 'checked' : ''} ${!isAdmin ? 'opacity-80' : ''}"><input type="checkbox" ${disabled} ${isChecked ? 'checked' : ''} onchange="toggleBookingCheck('${key}')"><span class="checklist-icon">${item.icon}</span><span class="checklist-label">${escapeHtml(item.label)}</span>${isAdmin && item.isCustom ? `<button onclick="event.preventDefault();event.stopPropagation();deleteCustomBooking('${item.id}')" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}</label>`; });
         html += `</div></div></div>`;
       });
       if (isAdmin) {
@@ -649,7 +730,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById("equip-modal-inner"); if (!container) return;
       if (!currentUser) { container.innerHTML = '<div class="text-center py-8 text-slate-500">請先登入身份</div>'; return; }
 
-      // 訪客無法使用
       if (currentUser === "訪客") {
         container.innerHTML = `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用專屬清單</p><p class="text-xs text-slate-500 leading-relaxed">請切換為家庭成員身份<br>才能建立自己的裝備清單</p></div>`;
         return;
@@ -664,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const percent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
       const activeTab = modalUIState['equip-modal'].activeTab;
 
-      const userBanner = `<div class="bg-gradient-to-r from-sky-50 to-indigo-50 border-2 border-sky-200 rounded-xl p-3 mb-3 flex items-center gap-2.5"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="flex-1 min-w-0"><div class="text-xs font-black text-sky-800">${currentUser} 的專屬裝備清單</div><div class="text-[10px] text-sky-600 leading-relaxed">只有你能看到和修改</div></div></div>`;
+      const userBanner = `<div class="bg-gradient-to-r from-sky-50 to-indigo-50 border-2 border-sky-200 rounded-xl p-3 mb-3 flex items-center gap-2.5"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="flex-1 min-w-0"><div class="text-xs font-black text-sky-800">${escapeHtml(currentUser)} 的專屬裝備清單</div><div class="text-[10px] text-sky-600 leading-relaxed">只有你能看到和修改</div></div></div>`;
 
       let html = userBanner;
       html += `<div class="modal-progress-wrap"><div class="modal-progress-header"><span class="modal-progress-label">${percent === 100 ? '🎉 全部完成！' : '整體進度'}</span><span class="modal-progress-count">${doneCount} / ${totalCount}</span></div><div class="modal-progress-track"><div class="modal-progress-fill ${percent === 100 ? 'complete' : ''}" style="width:${percent}%"></div></div></div>`;
@@ -679,7 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isComplete = catDone === catAll.length; const isExpanded = modalUIState['equip-modal'].expanded[cat] !== false;
         html += `<div class="category-group ${isExpanded ? 'expanded' : ''} ${isComplete ? 'done' : ''}">`;
         html += `<button class="category-header" onclick="toggleCategory('equip-modal','${cat}')"><div class="category-title-wrap"><span class="category-title">${cat}</span><span class="category-count">${catDone}/${catAll.length}</span></div><svg class="category-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button><div class="category-body"><div class="category-body-inner">`;
-        catAll.forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; const isChecked = userData.equipChecked[key] === true; html += `<label class="checklist-item ${isChecked ? 'checked' : ''}"><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleEquipCheck('${key}')"><span class="checklist-icon">${item.icon}</span><span class="checklist-label">${item.label}</span>${item.isCustom ? `<button onclick="event.preventDefault();event.stopPropagation();deleteCustomEquip('${item.id}')" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}</label>`; });
+        catAll.forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; const isChecked = userData.equipChecked[key] === true; html += `<label class="checklist-item ${isChecked ? 'checked' : ''}"><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleEquipCheck('${key}')"><span class="checklist-icon">${item.icon}</span><span class="checklist-label">${escapeHtml(item.label)}</span>${item.isCustom ? `<button onclick="event.preventDefault();event.stopPropagation();deleteCustomEquip('${item.id}')" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}</label>`; });
         html += `</div></div></div>`;
       });
       html += `<div class="mt-5 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2">➕ 新增項目</h4><div class="flex gap-2"><input id="new-equip-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><select id="new-equip-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="重要證件">重要證件</option><option value="保暖衣物">保暖衣物</option><option value="電子與隨身">電子與隨身</option><option value="小孩">小孩</option><option value="其他">其他</option></select><button onclick="addCustomEquip()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div><div class="flex gap-2 mt-4"><button onclick="checkAllEquipment()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button><button onclick="uncheckAllEquipment()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button><button onclick="copyEquipmentList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button></div>`;
@@ -750,9 +830,12 @@ document.addEventListener('DOMContentLoaded', () => {
       saveUserData();
     }
     function openShoppingModal(eventTitle) {
+      // ✅ 修復 #2：現在從 data-title 傳入，不再有引號注入問題
       const m = document.getElementById('shopping-modal'); if (!m) return;
       m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open');
       const c = document.getElementById('shopping-content'); if (c) c.innerHTML = renderShoppingList(eventTitle);
+      // ✅ 修復 #5：手動觸發圖片淡入
+      setTimeout(() => setupImageFadeIn(m), 50);
     }
     function closeShoppingModal() {
       const m = document.getElementById('shopping-modal');
@@ -762,7 +845,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window._lastActiveDay) {
         const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
         if (dayData) {
-          renderDayItinerary(`day-section-${dayData.day}`, dayData);
+          // ✅ 修復 #6：強制重新渲染當前 Day
+          renderDayItinerary(`day-section-${dayData.day}`, dayData, true);
           document.querySelectorAll('.day-section').forEach(sec => { if (sec.id !== `day-section-${dayData.day}`) sec.classList.add('hidden'); });
           document.querySelectorAll("#day-tabs-container button").forEach(btn => { btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition"; });
           const a = document.getElementById(`tab-d${dayData.day}`); if (a) a.className = "day-tab active flex-shrink-0 transition";
@@ -774,18 +858,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用購物清單</p><p class="text-xs text-slate-500">請切換為家庭成員身份</p></div>`;
       }
       const items = loadShoppingItems(eventTitle);
-      const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-2.5"><div class="w-8 h-8 rounded-full text-white flex items-center justify-center font-black text-xs shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="text-[11px] font-bold text-sky-800">${currentUser} 的購物清單</div></div>`;
-      let html = userBanner + `<h3 class="text-sm font-bold text-slate-700 mb-2">${eventTitle}</h3>`;
+      const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-2.5"><div class="w-8 h-8 rounded-full text-white flex items-center justify-center font-black text-xs shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="text-[11px] font-bold text-sky-800">${escapeHtml(currentUser)} 的購物清單</div></div>`;
+      let html = userBanner + `<h3 class="text-sm font-bold text-slate-700 mb-2">${escapeHtml(eventTitle)}</h3>`;
       if (items.length === 0) { html += `<div class="text-center text-slate-400 text-xs py-6">暫無購物項目，請在下方新增</div>`; }
       else {
         html += `<div class="space-y-2 mb-4">`;
-        items.forEach((item, index) => { const checked = item.planned ? 'checked' : ''; html += `<div class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg"><input type="checkbox" ${checked} onchange="toggleShoppingItem('${eventTitle}', ${index})" class="w-4 h-4 shrink-0"><div class="flex-1 min-w-0"><strong class="text-sm text-slate-800">${item.name}</strong><span class="text-[10px] text-slate-500 ml-2">${item.category || ''}</span>${item.note ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate">📝 ${item.note}</p>` : ''}</div><button onclick="deleteShoppingItem('${eventTitle}', ${index})" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`; });
+        items.forEach((item, index) => {
+          const checked = item.planned ? 'checked' : '';
+          // ✅ 修復 #3：用戶輸入全部 escapeHtml
+          html += `<div class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg"><input type="checkbox" ${checked} onchange="toggleShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" data-index="${index}" class="w-4 h-4 shrink-0"><div class="flex-1 min-w-0"><strong class="text-sm text-slate-800">${escapeHtml(item.name)}</strong>${item.category ? `<span class="text-[10px] text-slate-500 ml-2">${escapeHtml(item.category)}</span>` : ''}${item.note ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate">📝 ${escapeHtml(item.note)}</p>` : ''}</div><button onclick="deleteShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" data-index="${index}" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`;
+        });
         html += `</div>`;
       }
-      html += `<div class="mt-4 border-t border-slate-200 pt-4"><h4 class="text-sm font-bold text-slate-800 mb-2">新增購物項目</h4><div class="flex flex-col gap-2"><input id="new-shopping-name" type="text" placeholder="物品名稱 *" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><div class="flex gap-2"><input id="new-shopping-category" type="text" placeholder="類別" class="w-1/3 border border-slate-300 rounded-lg px-3 py-2 text-xs"><input id="new-shopping-note" type="text" placeholder="備註" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"></div><button onclick="addShoppingItem('${eventTitle}')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0">新增</button></div></div>`;
+      html += `<div class="mt-4 border-t border-slate-200 pt-4"><h4 class="text-sm font-bold text-slate-800 mb-2">新增購物項目</h4><div class="flex flex-col gap-2"><input id="new-shopping-name" type="text" placeholder="物品名稱 *" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><div class="flex gap-2"><input id="new-shopping-category" type="text" placeholder="類別" class="w-1/3 border border-slate-300 rounded-lg px-3 py-2 text-xs"><input id="new-shopping-note" type="text" placeholder="備註" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"></div><button onclick="addShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0">新增</button></div></div>`;
       return html;
     }
-    function addShoppingItem(t) {
+    function addShoppingItem(btn) {
+      const t = btn.dataset.eventTitle;
       if (!currentUser || currentUser === "訪客") { showToast("請先登入", "⚠️"); return; }
       const n = document.getElementById('new-shopping-name'); const c = document.getElementById('new-shopping-category'); const no = document.getElementById('new-shopping-note');
       const name = n.value.trim(); if (!name) { showToast("請輸入物品名稱", "⚠️"); return; }
@@ -795,8 +884,19 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('shopping-content').innerHTML = renderShoppingList(t);
       showToast("✅ 已新增購物項目"); haptic(10);
     }
-    function toggleShoppingItem(t, i) { const items = loadShoppingItems(t); items[i].planned = !items[i].planned; saveShoppingItems(t, items); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); haptic(5); }
-    function deleteShoppingItem(t, i) { const items = loadShoppingItems(t); const snapshot = { ...items[i] }; items.splice(i, 1); saveShoppingItems(t, items); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); showUndoToast(`已刪除「${snapshot.name}」`, "🗑", () => { const cur = loadShoppingItems(t); cur.splice(Math.min(i, cur.length), 0, snapshot); saveShoppingItems(t, cur); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); showToast("✅ 已還原", "↩️"); }); }
+    function toggleShoppingItem(el) {
+      const t = el.dataset.eventTitle;
+      const i = parseInt(el.dataset.index);
+      const items = loadShoppingItems(t); items[i].planned = !items[i].planned; saveShoppingItems(t, items);
+      document.getElementById('shopping-content').innerHTML = renderShoppingList(t); haptic(5);
+    }
+    function deleteShoppingItem(btn) {
+      const t = btn.dataset.eventTitle;
+      const i = parseInt(btn.dataset.index);
+      const items = loadShoppingItems(t); const snapshot = { ...items[i] }; items.splice(i, 1); saveShoppingItems(t, items);
+      document.getElementById('shopping-content').innerHTML = renderShoppingList(t);
+      showUndoToast(`已刪除「${snapshot.name}」`, "🗑", () => { const cur = loadShoppingItems(t); cur.splice(Math.min(i, cur.length), 0, snapshot); saveShoppingItems(t, cur); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); showToast("✅ 已還原", "↩️"); });
+    }
 
     // ==================== 購物清單總覽 ====================
     function openAllShoppingModal() { const m = document.getElementById('all-shopping-modal'); if (!m) return; m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); renderAllShoppingContent(); haptic(8); }
@@ -808,7 +908,6 @@ document.addEventListener('DOMContentLoaded', () => {
       winterItineraries.forEach(day => { day.events.forEach(event => { const items = userData.shopping[event.title] || []; if (items.length > 0) { groups.push({ day: day.day, dateLabel: day.dateLabel, eventTitle: event.title, eventTime: event.time, eventIndex: day.events.indexOf(event), items: items }); } }); });
       return groups;
     }
-    function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function renderAllShoppingContent() {
       const container = document.getElementById('all-shopping-content'); if (!container) return;
       if (!currentUser) { container.innerHTML = '<div class="text-center py-8 text-slate-500">請先登入</div>'; return; }
@@ -817,7 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       const groups = getAllShoppingItems();
-      const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-3"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="text-xs font-black text-sky-800">${currentUser} 的購物清單總覽</div></div>`;
+      const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-3"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="text-xs font-black text-sky-800">${escapeHtml(currentUser)} 的購物清單總覽</div></div>`;
       if (groups.length === 0) { container.innerHTML = userBanner + `<div class="text-center py-12 px-4"><div class="text-6xl mb-3">🛒</div><p class="text-sm font-bold text-slate-700 mb-1">購物清單還是空的</p><p class="text-xs text-slate-500 leading-relaxed">在行程卡片的「🛍️ 購物清單」按鈕中<br>加入你想買的東西吧！</p></div>`; return; }
       let totalItems = 0; let checkedItems = 0;
       groups.forEach(g => { g.items.forEach(item => { totalItems++; if (item.planned) checkedItems++; }); });
@@ -825,37 +924,133 @@ document.addEventListener('DOMContentLoaded', () => {
       let html = userBanner + `<div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 mb-4"><div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-emerald-800">${percent === 100 ? '🎉 全部買齊！' : '📊 購物進度'}</span><span class="text-sm font-black text-emerald-700">${checkedItems} / ${totalItems}</span></div><div class="h-2 bg-white/70 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500" style="width:${percent}%"></div></div></div>`;
       groups.forEach((group, gIdx) => {
         const groupChecked = group.items.filter(i => i.planned).length; const groupTotal = group.items.length; const allDone = groupChecked === groupTotal; const safeTitle = escAttr(group.eventTitle);
-        html += `<details class="mb-3 bg-white border ${allDone ? 'border-emerald-200' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden group" ${gIdx === 0 ? 'open' : ''}><summary class="cursor-pointer px-4 py-3 hover:bg-slate-50 transition-colors list-none flex items-center gap-3"><div class="shrink-0 w-10 h-10 rounded-full ${allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'} flex items-center justify-center text-xs font-black border-2 border-white shadow-sm">D${group.day}</div><div class="flex-1 min-w-0"><div class="text-[10px] font-bold text-sky-600 tracking-wide">${group.dateLabel}</div><div class="text-sm font-bold text-slate-800 truncate">${group.eventTitle}</div></div><div class="shrink-0 flex items-center gap-1.5"><span class="text-[10px] font-black ${allDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">${groupChecked}/${groupTotal}</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="border-t border-slate-100 bg-slate-50/50 p-3 space-y-1.5">`;
-        group.items.forEach((item, idx) => { html += `<label class="flex items-center gap-2.5 p-2.5 bg-white border ${item.planned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} rounded-xl cursor-pointer transition-all hover:shadow-sm active:scale-[0.99]"><input type="checkbox" ${item.planned ? 'checked' : ''} data-event-title="${safeTitle}" data-index="${idx}" onchange="handleAllShoppingToggle(this)" class="w-4 h-4 shrink-0"><div class="flex-1 min-w-0"><div class="flex items-center gap-2"><strong class="text-[13px] ${item.planned ? 'text-slate-500 line-through' : 'text-slate-800'} truncate">${item.name}</strong>${item.category ? `<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">${item.category}</span>` : ''}</div>${item.note ? `<p class="text-[10px] text-slate-500 mt-0.5 truncate">📝 ${item.note}</p>` : ''}</div></label>`; });
+        html += `<details class="mb-3 bg-white border ${allDone ? 'border-emerald-200' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden group" ${gIdx === 0 ? 'open' : ''}><summary class="cursor-pointer px-4 py-3 hover:bg-slate-50 transition-colors list-none flex items-center gap-3"><div class="shrink-0 w-10 h-10 rounded-full ${allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'} flex items-center justify-center text-xs font-black border-2 border-white shadow-sm">D${group.day}</div><div class="flex-1 min-w-0"><div class="text-[10px] font-bold text-sky-600 tracking-wide">${escapeHtml(group.dateLabel)}</div><div class="text-sm font-bold text-slate-800 truncate">${escapeHtml(group.eventTitle)}</div></div><div class="shrink-0 flex items-center gap-1.5"><span class="text-[10px] font-black ${allDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">${groupChecked}/${groupTotal}</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="border-t border-slate-100 bg-slate-50/50 p-3 space-y-1.5">`;
+        group.items.forEach((item, idx) => {
+          // ✅ 修復 #3：用戶輸入全部 escapeHtml
+          html += `<label class="flex items-center gap-2.5 p-2.5 bg-white border ${item.planned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} rounded-xl cursor-pointer transition-all hover:shadow-sm active:scale-[0.99]"><input type="checkbox" ${item.planned ? 'checked' : ''} data-event-title="${safeTitle}" data-index="${idx}" onchange="handleAllShoppingToggle(this)" class="w-4 h-4 shrink-0"><div class="flex-1 min-w-0"><div class="flex items-center gap-2"><strong class="text-[13px] ${item.planned ? 'text-slate-500 line-through' : 'text-slate-800'} truncate">${escapeHtml(item.name)}</strong>${item.category ? `<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">${escapeHtml(item.category)}</span>` : ''}</div>${item.note ? `<p class="text-[10px] text-slate-500 mt-0.5 truncate">📝 ${escapeHtml(item.note)}</p>` : ''}</div></label>`;
+        });
         html += `<button onclick="jumpToEvent(${group.day}, ${group.eventIndex})" class="mt-2 w-full text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 py-2 rounded-lg transition active:scale-95">📍 前往行程查看</button></div></details>`;
       });
       container.innerHTML = html;
     }
     function handleAllShoppingToggle(el) { const eventTitle = el.dataset.eventTitle; const index = parseInt(el.dataset.index); const items = loadShoppingItems(eventTitle); if (!items[index]) return; items[index].planned = !items[index].planned; saveShoppingItems(eventTitle, items); renderAllShoppingContent(); haptic(5); }
-    function jumpToEvent(day, eventIndex) { closeAllShoppingModal(); switchDay(day); setTimeout(() => { const cards = document.querySelectorAll(`#day-section-${day} details.event-card`); const target = cards[eventIndex]; if (target) { target.open = true; target.scrollIntoView({ behavior: 'smooth', block: 'center' }); target.style.transition = 'box-shadow 0.4s'; target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.4)'; setTimeout(() => { target.style.boxShadow = ''; }, 1500); } }, 400); haptic(8); }
-
-    // ==================== 天氣 ====================
-    const weatherDest = { name: "宮城仙台", lat: 38.2682, lon: 140.8694 };
-    async function fetchWeatherData() {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${weatherDest.lat}&longitude=${weatherDest.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo`;
-      try {
-        const response = await fetch(url); const data = await response.json();
-        for (let i = 0; i < 7; i++) { const ds = data.daily.time[i]; window.weatherCache[ds] = { max: Math.round(data.daily.temperature_2m_max[i]), min: Math.round(data.daily.temperature_2m_min[i]), rain: data.daily.precipitation_probability_max[i] ?? 0, icon: data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️" }; }
-        if (window.AppHeader) window.AppHeader.render();
-        if (window._lastActiveDay) switchDay(window._lastActiveDay);
-        const detail = document.getElementById('weather-detail-content');
-        if (detail) {
-          const curTemp = Math.round(data.current.temperature_2m); const feels = Math.round(data.current.apparent_temperature); const humidity = data.current.relative_humidity_2m;
-          const curIcon = data.current.weather_code === 0 ? "☀️" : data.current.weather_code < 5 ? "⛅" : data.current.weather_code < 70 ? "☁️" : "❄️";
-          let advice = { icon: "🧥", text: "防風外套即可" };
-          if (curTemp < -10) advice = { icon: "🥶", text: "極寒！羽絨 + 雪靴 + 毛帽 + 手套" };
-          else if (curTemp < -5) advice = { icon: "❄️", text: "羽絨 + 雪靴 + 毛帽必備" };
-          else if (curTemp < 0) advice = { icon: "🧣", text: "寒冷，圍巾 + 手套不可少" };
-          const today = new Date().toISOString().substring(0, 10);
-          const forecastRows = [0,1,2,3,4,5,6].map(i => { const ds = data.daily.time[i]; const max = Math.round(data.daily.temperature_2m_max[i]); const min = Math.round(data.daily.temperature_2m_min[i]); const rain = data.daily.precipitation_probability_max[i] ?? 0; const icon = data.daily.weather_code[i] === 0 ? "☀️" : data.daily.weather_code[i] < 5 ? "⛅" : data.daily.weather_code[i] < 70 ? "☁️" : "❄️"; const d = new Date(ds); const week = ["日","一","二","三","四","五","六"][d.getDay()]; const isToday = ds === today; return `<div class="forecast-row ${isToday ? 'today' : ''}"><div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div><div class="forecast-icon">${icon}</div><div class="forecast-temp"><span class="forecast-temp-max">${max}°</span><span class="text-slate-400 mx-1">/</span><span class="forecast-temp-min">${min}°</span></div><div class="forecast-rain">💧 ${rain}%</div></div>`; }).join('');
-          detail.innerHTML = `<div class="weather-hero"><div class="weather-hero-icon">${curIcon}</div><div><div class="weather-hero-temp">${curTemp}°C</div><div class="weather-hero-meta">體感 ${feels}°C · 濕度 ${humidity}% · 宮城仙台</div></div></div><div class="weather-advice"><div class="weather-advice-icon">${advice.icon}</div><div class="weather-advice-text">${advice.text}</div></div><div class="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">未來 7 天預報</div><div class="forecast-list">${forecastRows}</div>`;
+    function jumpToEvent(day, eventIndex) {
+      closeAllShoppingModal();
+      switchDay(day);
+      setTimeout(() => {
+        const cards = document.querySelectorAll(`#day-section-${day} details.event-card`);
+        const target = cards[eventIndex];
+        if (target) {
+          target.open = true;
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.style.transition = 'box-shadow 0.4s';
+          target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.4)';
+          setTimeout(() => { target.style.boxShadow = ''; }, 1500);
         }
-      } catch(e) { const d = document.getElementById('weather-detail-content'); if (d) d.innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">天氣資料暫時無法取得</div>'; }
+      }, 400);
+      haptic(8);
+    }
+
+    // ==================== 天氣（✅ 修復 #7：依 Day 動態座標） ====================
+    function weatherCodeToIcon(code) {
+      if (code === 0) return "☀️";
+      if (code < 5) return "⛅";
+      if (code < 70) return "☁️";
+      return "❄️";
+    }
+
+    async function fetchWeatherData() {
+      const today = new Date();
+      const tripStartDate = new Date(TRIP_START);
+      const daysUntil = Math.floor((tripStartDate - today) / 86400000);
+      // 若旅行日期超出 API 預報範圍（16 天內），跳過
+      if (daysUntil > 16) {
+        const d = document.getElementById('weather-detail-content');
+        if (d) d.innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">旅行日期尚遠，天氣預報將於出發前 16 天內顯示</div>';
+        return;
+      }
+
+      // 並行獲取每個 Day 的天氣
+      const dayPromises = tripDates.map(async (dateStr, idx) => {
+        const loc = WEATHER_LOCATIONS[idx + 1];
+        try {
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo&start_date=${dateStr}&end_date=${dateStr}`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (!data.daily || !data.daily.time || data.daily.time.length === 0) return null;
+          return {
+            dateStr,
+            location: loc.name,
+            max: Math.round(data.daily.temperature_2m_max[0]),
+            min: Math.round(data.daily.temperature_2m_min[0]),
+            rain: data.daily.precipitation_probability_max[0] ?? 0,
+            icon: weatherCodeToIcon(data.daily.weather_code[0]),
+            current: data.current ? {
+              temp: Math.round(data.current.temperature_2m),
+              feels: Math.round(data.current.apparent_temperature),
+              humidity: data.current.relative_humidity_2m,
+              icon: weatherCodeToIcon(data.current.weather_code)
+            } : null
+          };
+        } catch(e) { return null; }
+      });
+
+      const results = await Promise.all(dayPromises);
+      results.forEach(r => {
+        if (r) window.weatherCache[r.dateStr] = { max: r.max, min: r.min, rain: r.rain, icon: r.icon, location: r.location, current: r.current };
+      });
+
+      // 更新 UI
+      if (window.AppHeader) window.AppHeader.render();
+      if (window._lastActiveDay) {
+        // 重新渲染當前 Day 的天氣卡
+        const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
+        if (dayData) renderDayItinerary(`day-section-${dayData.day}`, dayData, true);
+      }
+      renderWeatherDetail();
+    }
+
+    function renderWeatherDetail() {
+      const detail = document.getElementById('weather-detail-content');
+      if (!detail) return;
+      const today = new Date().toISOString().substring(0, 10);
+      // 找到今天對應的旅行 Day
+      const todayIdx = tripDates.indexOf(today);
+      const currentDayData = todayIdx >= 0 ? window.weatherCache[today] : null;
+      const curLocName = todayIdx >= 0 ? WEATHER_LOCATIONS[todayIdx + 1].name : "宮城仙台";
+      const curTemp = currentDayData?.current?.temp ?? (currentDayData ? Math.round((currentDayData.max + currentDayData.min) / 2) : null);
+      const feels = currentDayData?.current?.feels ?? curTemp;
+      const humidity = currentDayData?.current?.humidity ?? '--';
+      const curIcon = currentDayData?.current?.icon ?? currentDayData?.icon ?? "⛅";
+
+      let advice = { icon: "🧥", text: "防風外套即可" };
+      if (curTemp === null) advice = { icon: "⏳", text: "天氣資料尚未取得" };
+      else if (curTemp < -10) advice = { icon: "🥶", text: "極寒！羽絨 + 雪靴 + 毛帽 + 手套" };
+      else if (curTemp < -5) advice = { icon: "❄️", text: "羽絨 + 雪靴 + 毛帽必備" };
+      else if (curTemp < 0) advice = { icon: "🧣", text: "寒冷，圍巾 + 手套不可少" };
+
+      const forecastRows = tripDates.map((ds, i) => {
+        const w = window.weatherCache[ds];
+        const d = new Date(ds);
+        const week = ["日","一","二","三","四","五","六"][d.getDay()];
+        const isToday = ds === today;
+        const loc = WEATHER_LOCATIONS[i + 1].name;
+        if (!w) return `<div class="forecast-row ${isToday ? 'today' : ''}"><div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div><div class="forecast-icon">⏳</div><div class="forecast-temp" style="color:#94a3b8;font-size:11px">${loc} · 暫無資料</div></div>`;
+        return `<div class="forecast-row ${isToday ? 'today' : ''}"><div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div><div class="forecast-icon">${w.icon}</div><div class="forecast-temp"><span class="forecast-temp-max">${w.max}°</span><span class="text-slate-400 mx-1">/</span><span class="forecast-temp-min">${w.min}°</span><span style="font-size:10px;color:#94a3b8;margin-left:4px">${loc}</span></div><div class="forecast-rain">💧 ${w.rain}%</div></div>`;
+      }).join('');
+
+      detail.innerHTML = `
+        <div class="weather-hero">
+          <div class="weather-hero-icon">${curIcon}</div>
+          <div>
+            <div class="weather-hero-temp">${curTemp !== null ? curTemp + '°C' : '--'}</div>
+            <div class="weather-hero-meta">${curTemp !== null ? `體感 ${feels}°C · 濕度 ${humidity}% · ${curLocName}` : curLocName}</div>
+          </div>
+        </div>
+        <div class="weather-advice"><div class="weather-advice-icon">${advice.icon}</div><div class="weather-advice-text">${advice.text}</div></div>
+        <div class="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">7 天行程天氣預報</div>
+        <div class="forecast-list">${forecastRows}</div>
+      `;
     }
 
     // ==================== 行程速覽 ====================
@@ -866,50 +1061,68 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==================== 內容可折疊 ====================
-    function setupExpandableContent(day, index) { const wrapper = document.getElementById(`collapsible-${day}-${index}`); const btn = document.querySelector(`[data-expand-btn="${day}-${index}"]`); if (!wrapper) return; if (wrapper.classList.contains("expanded")) return; wrapper.classList.remove("no-collapse"); wrapper.style.maxHeight = ""; requestAnimationFrame(() => { const contentHeight = wrapper.scrollHeight; if (contentHeight <= 300) { wrapper.classList.add("no-collapse"); if (btn) btn.classList.add("hidden"); } else { wrapper.classList.remove("no-collapse"); if (btn) btn.classList.remove("hidden"); } }); }
     function toggleContent(day, index) { const wrapper = document.getElementById(`collapsible-${day}-${index}`); const btn = document.querySelector(`[data-expand-btn="${day}-${index}"]`); if (!wrapper) return; haptic(6); const isExpanded = wrapper.classList.toggle("expanded"); if (btn) { btn.classList.toggle("expanded", isExpanded); const label = btn.querySelector("span"); if (label) label.textContent = isExpanded ? "收合攻略" : "展開完整攻略"; } }
 
-    // ==================== 行程渲染 ====================
-    function renderDayItinerary(sectionId, dayData) {
+    // ==================== ✅ 修復 #1：行程渲染（修正重複渲染） ====================
+    function renderDayItinerary(sectionId, dayData, force = false) {
+      // ✅ 修復 #6：Lazy Render 支援
+      if (!force && window._renderedDays.has(dayData.day)) return;
+
       const section = document.getElementById(sectionId); if (!section) return;
       const dateStr = tripDates[dayData.day - 1]; const weatherInfo = window.weatherCache[dateStr] || null; let weatherHtml = "";
-      if (weatherInfo) { const { icon, max, min, rain } = weatherInfo; let advice = ""; if (min < -5) advice = "❄️ 極寒！羽絨+雪靴+毛帽必備"; else if (min < 0) advice = "🧣 寒冷，圍巾手套不可少"; else advice = "🧥 偏涼，外套防風防水"; if (rain > 50) advice += "，攜帶雨具⚠️"; weatherHtml = `<div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card"><span class="text-base">${icon}</span><span class="font-bold text-sky-700">${dateStr.substring(5)} 天氣：</span><span>最高 ${max}° / 最低 ${min}°</span><span class="text-slate-400">|</span><span class="text-slate-500">💧 ${rain}%</span><span class="ml-auto font-bold text-slate-600">${advice}</span></div>`; }
-      let html = `<div class="mb-8"><div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-lg shadow-md shrink-0">${dayData.emoji}</div><div class="flex-1"><span class="text-[11px] font-bold text-sky-600 tracking-wider">${dayData.dateLabel}</span><h2 class="text-sm md:text-lg font-extrabold text-slate-800 leading-tight">${dayData.title}</h2>${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${dayData.subtitle}</p>` : ""}${weatherHtml}</div></div><button onclick="openVlogPlanModal(${dayData.day})" class="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-full shadow-sm shrink-0 ml-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></div><div class="timeline">`;
+      if (weatherInfo) {
+        const { icon, max, min, rain, location } = weatherInfo;
+        let advice = "";
+        if (min < -5) advice = "❄️ 極寒！羽絨+雪靴+毛帽必備";
+        else if (min < 0) advice = "🧣 寒冷，圍巾手套不可少";
+        else advice = "🧥 偏涼，外套防風防水";
+        if (rain > 50) advice += "，攜帶雨具⚠️";
+        weatherHtml = `<div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card"><span class="text-base">${icon}</span><span class="font-bold text-sky-700">${dateStr.substring(5)} ${location || ''} 天氣：</span><span>最高 ${max}° / 最低 ${min}°</span><span class="text-slate-400">|</span><span class="text-slate-500">💧 ${rain}%</span><span class="ml-auto font-bold text-slate-600">${advice}</span></div>`;
+      }
+
+      let html = `<div class="mb-8"><div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-lg shadow-md shrink-0">${dayData.emoji}</div><div class="flex-1"><span class="text-[11px] font-bold text-sky-600 tracking-wider">${escapeHtml(dayData.dateLabel)}</span><h2 class="text-sm md:text-lg font-extrabold text-slate-800 leading-tight">${escapeHtml(dayData.title)}</h2>${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${escapeHtml(dayData.subtitle)}</p>` : ""}${weatherHtml}</div></div><button onclick="openVlogPlanModal(${dayData.day})" class="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-full shadow-sm shrink-0 ml-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></div><div class="timeline">`;
+
       dayData.events.forEach((event, index) => {
-        const isOpen = event.open ? "open" : ""; const tagHtml = event.tag ? `<span class="tag">${event.tag.text}</span>` : ""; const timeParts = event.time.split(" - "); const startTime = timeParts[0].trim(); const endTime = timeParts[1] ? timeParts[1].trim() : "";
-        const shootingItems = loadShoppingItems(event.title); const shoppingBadge = shootingItems.length > 0 ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shoppingItems.length}</span>` : '';
-        const shootBtnHtml = `<div class="flex flex-wrap gap-1 mt-1"><button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button><button onclick="openShoppingModal('${event.title}')" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單${shoppingBadge}</button></div>`;
-        html += `<div class="timeline-item"><div class="timeline-node"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div><div class="timeline-card"><div class="timeline-time"><span><svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>${startTime}${endTime ? `<span class="mx-1 text-slate-400">–</span>${endTime}` : ""}</span></div><details ${isOpen} data-day="${dayData.day}" data-index="${index}" class="group glass-card rounded-2xl relative overflow-hidden event-card"><div class="itinerary-cat-strip"></div><summary class="flex items-start gap-3 p-3 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none pl-5"><div class="flex-1 min-w-0 pr-8"><div class="flex flex-wrap items-center gap-2 mb-1">${tagHtml}</div><h3 class="text-[13px] md:text-[15px] font-bold text-slate-800 leading-tight">${event.title}</h3>${shootBtnHtml}${event.location ? `<div class="text-[11px] text-slate-500 mt-0.5">📍 ${event.location}</div>` : ""}</div><div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="event-content-wrapper p-3 pt-0 pb-4 border-t border-slate-50/80 bg-slate-50/30">${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm cursor-pointer" onclick="openLightbox(['${event.img}'], 0)"><img src="${event.img}" alt="${event.title}" class="lazy-fade w-full h-32 object-cover" loading="lazy" decoding="async"></div>` : ''}${event.navUrl || event.title ? `<a href="${event.navUrl || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(event.title)}" target="_blank" class="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-xs font-bold py-2 rounded-xl transition active:scale-95 shadow-sm mt-2 mb-2"><span>📍</span> 導航前往 ${event.navName || "景點"}</a>` : '<div class="h-2"></div>'}<div class="event-collapsible" id="collapsible-${dayData.day}-${index}">${event.content}</div><button type="button" class="expand-btn hidden" data-expand-btn="${dayData.day}-${index}" onclick="toggleContent(${dayData.day}, ${index})"><span>展開完整攻略</span><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button></div></details></div></div>`;
+        // ✅ 修復 #9：只有第一個事件預設展開，不再依賴 data.js 的 open
+        const isOpen = index === 0 ? "open" : "";
+        const tagHtml = event.tag ? `<span class="tag">${escapeHtml(event.tag.text)}</span>` : "";
+        const timeParts = event.time.split(" - ");
+        const startTime = timeParts[0].trim();
+        const endTime = timeParts[1] ? timeParts[1].trim() : "";
+
+        const shoppingItems = loadShoppingItems(event.title);
+        const shoppingBadge = shoppingItems.length > 0 ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shoppingItems.length}</span>` : '';
+
+        // ✅ 修復 #2：改用 data-event-title，避免注入
+        const safeTitle = escAttr(event.title);
+        const shootBtnHtml = `<div class="flex flex-wrap gap-1 mt-1"><button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button><button onclick="openShoppingModal(this.dataset.eventTitle)" data-event-title="${safeTitle}" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單${shoppingBadge}</button></div>`;
+
+        html += `<div class="timeline-item"><div class="timeline-node"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div><div class="timeline-card"><div class="timeline-time"><span><svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>${escapeHtml(startTime)}${endTime ? `<span class="mx-1 text-slate-400">–</span>${escapeHtml(endTime)}` : ""}</span></div><details ${isOpen} data-day="${dayData.day}" data-index="${index}" class="group glass-card rounded-2xl relative overflow-hidden event-card"><div class="itinerary-cat-strip"></div><summary class="flex items-start gap-3 p-3 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none pl-5"><div class="flex-1 min-w-0 pr-8"><div class="flex flex-wrap items-center gap-2 mb-1">${tagHtml}</div><h3 class="text-[13px] md:text-[15px] font-bold text-slate-800 leading-tight">${escapeHtml(event.title)}</h3>${shootBtnHtml}${event.location ? `<div class="text-[11px] text-slate-500 mt-0.5">📍 ${escapeHtml(event.location)}</div>` : ""}</div><div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="event-content-wrapper p-3 pt-0 pb-4 border-t border-slate-50/80 bg-slate-50/30">${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm cursor-pointer" onclick="openLightbox(['${escAttr(event.img)}'], 0)"><img src="${escAttr(event.img)}" alt="${escAttr(event.title)}" class="lazy-fade w-full h-32 object-cover" loading="lazy" decoding="async"></div>` : ''}${event.navUrl || event.title ? `<a href="${escAttr(event.navUrl || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(event.title))}" target="_blank" class="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-xs font-bold py-2 rounded-xl transition active:scale-95 shadow-sm mt-2 mb-2"><span>📍</span> 導航前往 ${escapeHtml(event.navName || "景點")}</a>` : '<div class="h-2"></div>'}<div class="event-collapsible" id="collapsible-${dayData.day}-${index}">${event.content}</div><button type="button" class="expand-btn hidden" data-expand-btn="${dayData.day}-${index}" onclick="toggleContent(${dayData.day}, ${index})"><span>展開完整攻略</span><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button></div></details></div></div>`;
       });
+
       const savedDiary = localStorage.getItem(`diary_day_${dayData.day}_${currentUser || 'guest'}`) || "";
-      html += `<div class="mt-4 mb-6 bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 rounded-2xl p-3"><div class="flex items-center gap-2 mb-1.5"><span class="text-base">📖</span><strong class="text-xs text-slate-800">今日旅行日記</strong><button onclick="saveDiary(${dayData.day})" class="ml-auto text-[10px] bg-sky-500 hover:bg-sky-600 text-white px-2 py-0.5 rounded font-bold transition">儲存</button></div><textarea id="diary-input-${dayData.day}" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-1.5 px-2.5 text-[11px] resize-none">${savedDiary}</textarea></div>`;
-      html += `</div></div>`; 
+      html += `<div class="mt-4 mb-6 bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 rounded-2xl p-3"><div class="flex items-center gap-2 mb-1.5"><span class="text-base">📖</span><strong class="text-xs text-slate-800">今日旅行日記</strong><button onclick="saveDiary(${dayData.day})" class="ml-auto text-[10px] bg-sky-500 hover:bg-sky-600 text-white px-2 py-0.5 rounded font-bold transition">儲存</button></div><textarea id="diary-input-${dayData.day}" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-1.5 px-2.5 text-[11px] resize-none">${escapeHtml(savedDiary)}</textarea></div>`;
+
+      // ✅ 修復 #1：只加一次 </div></div>，並只賦值一次 innerHTML
+      html += `</div></div>`;
       section.innerHTML = html;
-      html += `</div></div>`; 
-section.innerHTML = html;
 
-// ✅ 新增：修復景點內多張照片無法放大的問題
-section.querySelectorAll('.event-content-wrapper').forEach(wrapper => {
-  // 抓取內容裡的所有圖片
-  const contentImgs = wrapper.querySelectorAll('.event-collapsible img');
-  if (contentImgs.length === 0) return;
+      // 圖片淡入
+      setupImageFadeIn(section);
 
-  // 收集所有圖片的 URL
-  const imageUrls = Array.from(contentImgs).map(img => img.src);
-  
-  contentImgs.forEach((img, idx) => {
-    // 如果圖片本身已經有 onclick 或在 a 標籤內，則跳過（避免衝突）
-    if (img.hasAttribute('onclick') || img.closest('a')) return;
-    
-    img.style.cursor = 'pointer';
-    img.addEventListener('click', () => {
-      // 調用燈箱，傳入這個區塊內的所有圖片與當前點擊的索引
-      openLightbox(imageUrls, idx);
-    });
-  });
-});
+      // ✅ 修復：為內容區的圖片加入燈箱
+      section.querySelectorAll('.event-content-wrapper').forEach(wrapper => {
+        const contentImgs = wrapper.querySelectorAll('.event-collapsible img');
+        if (contentImgs.length === 0) return;
+        const imageUrls = Array.from(contentImgs).map(img => img.src);
+        contentImgs.forEach((img, idx) => {
+          if (img.hasAttribute('onclick') || img.closest('a')) return;
+          img.style.cursor = 'pointer';
+          img.addEventListener('click', () => { openLightbox(imageUrls, idx); });
+        });
+      });
 
-      // ✅ 新增：渲染後自動計算每個行程卡片內容高度，決定是否顯示「展開完整攻略」按鈕
+      // 計算展開按鈕
       setTimeout(() => {
         dayData.events.forEach((_, index) => {
           const wrapper = document.getElementById(`collapsible-${dayData.day}-${index}`);
@@ -925,7 +1138,11 @@ section.querySelectorAll('.event-content-wrapper').forEach(wrapper => {
           }
         });
       }, 150);
+
+      // ✅ 標記已渲染
+      window._renderedDays.add(dayData.day);
     }
+
     function saveDiary(day) { const input = document.getElementById(`diary-input-${day}`); if (input) { localStorage.setItem(`diary_day_${day}_${currentUser || 'guest'}`, input.value); showToast("📖 日記已儲存！", "✅"); haptic(10); } }
 
     function collapseAllItineraries() { const details = document.querySelectorAll('details.event-card[open]'); const btnIcon = document.getElementById('collapse-icon'); haptic(8); if (details.length > 0) { details.forEach(detail => detail.open = false); if (btnIcon) btnIcon.textContent = '⬇️'; showToast("✅ 已收合所有行程", "⬆️"); } else { document.querySelectorAll('details.event-card').forEach(detail => detail.open = true); if (btnIcon) btnIcon.textContent = '⬆️'; showToast("✅ 已展開所有行程", "⬇️"); } }
@@ -957,10 +1174,9 @@ section.querySelectorAll('.event-content-wrapper').forEach(wrapper => {
 
     // ==================== 雪花 ====================
     function initSnowEffect() {
-  // ✅ 尊重系統減少動態偏好，直接不生成雪花
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  const c = document.getElementById("snow-fall"); if (!c) return; c.innerHTML = ""; const count = window.innerWidth < 768 ? 20 : 40; const anims = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"]; const colors = ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#ffffff"]; for (let i = 0; i < count; i++) { const f = document.createElement("div"); f.className = "snowflake"; const size = Math.random() * 7 + 3; f.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; animation: ${anims[Math.floor(Math.random() * anims.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%;`; c.appendChild(f); } }9
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const c = document.getElementById("snow-fall"); if (!c) return; c.innerHTML = ""; const count = window.innerWidth < 768 ? 20 : 40; const anims = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"]; const colors = ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#ffffff"]; for (let i = 0; i < count; i++) { const f = document.createElement("div"); f.className = "snowflake"; const size = Math.random() * 7 + 3; f.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; animation: ${anims[Math.floor(Math.random() * anims.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%;`; c.appendChild(f); }
+    }
 
     // ==================== Modal 開啟/關閉 ====================
     function showModal(id) { const overlay = document.getElementById(id); if (overlay) { overlay.classList.add('active'); overlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; document.body.classList.add('modal-open'); haptic(8); } }
@@ -987,37 +1203,63 @@ section.querySelectorAll('.event-content-wrapper').forEach(wrapper => {
     function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">首選方案</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/8 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>1/8 22:55 設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 15:30-19:15 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/15 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
 
     // ==================== 拍攝靈感 ====================
-    function openShootTipsModal(day, eventIndex) { const dayData = winterItineraries.find(d => d.day === day); if (!dayData) return; const event = dayData.events[eventIndex]; if (!event) return; const tips = shootTips[event.title]; const content = document.getElementById("shoot-tips-content"); let html = ""; if (tips) { const pa = tips["拍照建議"] || ""; html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3><p class="text-sm text-slate-700 leading-relaxed">${pa}</p></div>`; if (tips["參考照片"] && tips["參考照片"].length > 0) { const imgHtml = tips["參考照片"].map(url => `<img src="${url}" class="lazy-fade w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" onclick="openLightbox(['${url}'], 0)" loading="lazy" decoding="async">`).join(""); html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3><div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div></div>`; } html += `<details class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-3"><summary class="cursor-pointer text-sm font-black text-slate-700 mb-2">📸 展開詳細拍攝建議</summary><div class="space-y-3 mt-2">`; if (tips["Pocket 3 參數"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3"><h3 class="text-sm font-black text-sky-800 mb-1">📸 Pocket 3 參數</h3><p class="text-sm text-slate-700">${tips["Pocket 3 參數"]}</p></div>`; if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3><ul class="list-disc pl-4 space-y-1">${tips["Vlog 必拍鏡頭"].map(i => `<li>${i}</li>`).join('')}</ul></div>`; if (tips["最佳拍攝時間"] || tips["拍攝時長"]) { let ti = ""; if (tips["最佳拍攝時間"]) ti += `<span class="block mb-1">⏰ ${tips["最佳拍攝時間"]}</span>`; if (tips["拍攝時長"]) ti += `<span class="block">⏳ ${tips["拍攝時長"]}</span>`; html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3"><h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3><p class="text-sm text-slate-700">${ti}</p></div>`; } if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3><ul class="list-disc pl-4 space-y-1">${tips["拍攝角度"].map(i => `<li>${i}</li>`).join('')}</ul></div>`; if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3"><h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3><ul class="list-disc pl-4 space-y-1">${tips["人物動作建議"].map(i => `<li>${i}</li>`).join('')}</ul></div>`; html += `</div></details>`; } else { html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議。</div>`; } content.innerHTML = html; showModal('shoot-tips-modal'); document.getElementById('shoot-tips-modal').classList.remove('hidden'); setTimeout(() => setupImageFadeIn(content), 50); }
+    function openShootTipsModal(day, eventIndex) { const dayData = winterItineraries.find(d => d.day === day); if (!dayData) return; const event = dayData.events[eventIndex]; if (!event) return; const tips = shootTips[event.title]; const content = document.getElementById("shoot-tips-content"); let html = ""; if (tips) { const pa = tips["拍照建議"] || ""; html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3><p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(pa)}</p></div>`; if (tips["參考照片"] && tips["參考照片"].length > 0) { const imgHtml = tips["參考照片"].map(url => `<img src="${escAttr(url)}" class="lazy-fade w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" onclick="openLightbox(['${escAttr(url)}'], 0)" loading="lazy" decoding="async">`).join(""); html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3><div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div></div>`; } html += `<details class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-3"><summary class="cursor-pointer text-sm font-black text-slate-700 mb-2">📸 展開詳細拍攝建議</summary><div class="space-y-3 mt-2">`; if (tips["Pocket 3 參數"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3"><h3 class="text-sm font-black text-sky-800 mb-1">📸 Pocket 3 參數</h3><p class="text-sm text-slate-700">${escapeHtml(tips["Pocket 3 參數"])}</p></div>`; if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3><ul class="list-disc pl-4 space-y-1">${tips["Vlog 必拍鏡頭"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; if (tips["最佳拍攝時間"] || tips["拍攝時長"]) { let ti = ""; if (tips["最佳拍攝時間"]) ti += `<span class="block mb-1">⏰ ${escapeHtml(tips["最佳拍攝時間"])}</span>`; if (tips["拍攝時長"]) ti += `<span class="block">⏳ ${escapeHtml(tips["拍攝時長"])}</span>`; html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3"><h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3><p class="text-sm text-slate-700">${ti}</p></div>`; } if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3><ul class="list-disc pl-4 space-y-1">${tips["拍攝角度"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3"><h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3><ul class="list-disc pl-4 space-y-1">${tips["人物動作建議"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; html += `</div></details>`; } else { html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議。</div>`; } content.innerHTML = html; showModal('shoot-tips-modal'); document.getElementById('shoot-tips-modal').classList.remove('hidden'); setTimeout(() => setupImageFadeIn(content), 50); }
     function closeShootTipsModal() { hideModal('shoot-tips-modal'); setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300); }
-    function openCommonTipsModal() { 
-      const m = document.getElementById('common-tips-modal'); 
-      if (!m) return; 
-      m.style.display = 'flex'; 
-      m.classList.add('active'); 
-      document.body.classList.add('modal-open'); 
-      const c = document.getElementById('common-tips-content'); 
-      if (c && typeof shootTipsCommon !== 'undefined') { 
-        let html = ''; 
-        Object.keys(shootTipsCommon).forEach(title => { 
-          const tips = shootTipsCommon[title]; 
-          html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4"><h3 class="text-sm font-black text-slate-800 mb-2">${title}</h3>`; 
-          if (tips['拍照建議']) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${tips['拍照建議']}</div>`; 
-          html += `</div>`; 
-        }); 
-        c.innerHTML = html; 
-      } 
+    function openCommonTipsModal() {
+      const m = document.getElementById('common-tips-modal');
+      if (!m) return;
+      m.style.display = 'flex';
+      m.classList.add('active');
+      document.body.classList.add('modal-open');
+      const c = document.getElementById('common-tips-content');
+      if (c && typeof shootTipsCommon !== 'undefined') {
+        let html = '';
+        Object.keys(shootTipsCommon).forEach(title => {
+          const tips = shootTipsCommon[title];
+          html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4"><h3 class="text-sm font-black text-slate-800 mb-2">${escapeHtml(title)}</h3>`;
+          if (tips['拍照建議']) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${escapeHtml(tips['拍照建議'])}</div>`;
+          html += `</div>`;
+        });
+        c.innerHTML = html;
+      }
     }
     function closeCommonTipsModal() { const m = document.getElementById('common-tips-modal'); if (m) { m.classList.remove('active'); setTimeout(() => m.style.display = 'none', 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
 
     // ==================== Vlog 構思 ====================
-    function openVlogPlanModal(day) { const plan = vlogPlan["D" + day]; const content = document.getElementById("vlog-plan-content"); let html = ""; if (plan) { if (plan["整支Vlog構思"]) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎬 整支 Vlog 構思</h3><p class="text-sm text-slate-700 leading-relaxed">${plan["整支Vlog構思"]}</p></div>`; if (plan["人物構圖"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-sky-800 mb-2">🧍 人物構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["人物構圖"].map(i=>`<li>${i}</li>`).join('')}</ul></div>`; if (plan["風景構圖"]) html += `<div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-teal-800 mb-2">🏞️ 風景構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["風景構圖"].map(i=>`<li>${i}</li>`).join('')}</ul></div>`; } else { html = `<div class="text-center py-8 text-slate-500 text-sm">暫時未填寫今天的 Vlog 構思。</div>`; } content.innerHTML = html; showModal('vlog-plan-modal'); document.getElementById('vlog-plan-modal').classList.remove('hidden'); }
+    function openVlogPlanModal(day) { const plan = vlogPlan["D" + day]; const content = document.getElementById("vlog-plan-content"); let html = ""; if (plan) { if (plan["整支Vlog構思"]) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎬 整支 Vlog 構思</h3><p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(plan["整支Vlog構思"])}</p></div>`; if (plan["人物構圖"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-sky-800 mb-2">🧍 人物構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["人物構圖"].map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; if (plan["風景構圖"]) html += `<div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-teal-800 mb-2">🏞️ 風景構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["風景構圖"].map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; } else { html = `<div class="text-center py-8 text-slate-500 text-sm">暫時未填寫今天的 Vlog 構思。</div>`; } content.innerHTML = html; showModal('vlog-plan-modal'); document.getElementById('vlog-plan-modal').classList.remove('hidden'); }
     function closeVlogPlanModal() { hideModal('vlog-plan-modal'); setTimeout(() => document.getElementById('vlog-plan-modal').classList.add('hidden'), 300); }
 
     // ==================== 記帳本 ====================
     function openLedgerAdd() { const lc = document.getElementById('ledger-frame-container'); const iframe = document.getElementById('ledger-iframe'); if (lc && iframe) { haptic(12); lc.classList.remove('hidden-view'); lc.style.cssText = 'position: fixed; inset: 0; z-index: 9990; background: #f8fafc; overflow: auto;'; let attempts = 0; const tryOpen = () => { if (iframe.contentWindow && iframe.contentWindow.openExpenseModal) { iframe.contentWindow.openExpenseModal(); } else if (attempts < 10) { attempts++; setTimeout(tryOpen, 200); } else { showToast('記帳本載入失敗', '⚠️'); } }; tryOpen(); } }
 
-    // ==================== 切換 Day ====================
-    function switchDay(day) { window._lastActiveDay = day; haptic(6); document.querySelectorAll("#day-tabs-container button").forEach(btn => { btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition"; }); const activeTab = document.getElementById("tab-d" + day); if (activeTab) activeTab.className = "day-tab active flex-shrink-0 transition"; document.querySelectorAll(".day-section").forEach(s => s.classList.add("hidden")); const targetSection = document.getElementById("day-section-" + day); if (targetSection) { targetSection.classList.remove("hidden"); targetSection.style.opacity = '0'; targetSection.style.transform = 'translateY(8px)'; requestAnimationFrame(() => { targetSection.style.transition = 'opacity 0.3s ease, transform 0.3s ease'; targetSection.style.opacity = '1'; targetSection.style.transform = 'translateY(0)'; }); } }
+    // ==================== ✅ 修復 #6：切換 Day 時觸發 Lazy Render ====================
+    function switchDay(day) {
+      window._lastActiveDay = day;
+      haptic(6);
+
+      // ✅ Lazy Render：如果該 Day 尚未渲染，則渲染
+      const dayData = winterItineraries.find(d => d.day === day);
+      if (dayData && !window._renderedDays.has(day)) {
+        renderDayItinerary(`day-section-${day}`, dayData);
+      }
+
+      document.querySelectorAll("#day-tabs-container button").forEach(btn => { btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition"; });
+      const activeTab = document.getElementById("tab-d" + day);
+      if (activeTab) activeTab.className = "day-tab active flex-shrink-0 transition";
+
+      document.querySelectorAll(".day-section").forEach(s => s.classList.add("hidden"));
+      const targetSection = document.getElementById("day-section-" + day);
+      if (targetSection) {
+        targetSection.classList.remove("hidden");
+        targetSection.style.opacity = '0';
+        targetSection.style.transform = 'translateY(8px)';
+        requestAnimationFrame(() => {
+          targetSection.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+          targetSection.style.opacity = '1';
+          targetSection.style.transform = 'translateY(0)';
+        });
+      }
+    }
 
     // ==================== Service Worker ====================
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => { reg.addEventListener('updatefound', () => { const newWorker = reg.installing; if (!newWorker) return; newWorker.addEventListener('statechange', () => { if (newWorker.state === 'installed' && navigator.serviceWorker.controller) { showUpdateAvailable(newWorker); } }); }); setInterval(() => reg.update().catch(() => {}), 60 * 1000); }).catch(err => console.log('SW failed:', err)); }); let refreshing = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (refreshing) return; refreshing = true; window.location.reload(); }); }

@@ -1,4 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+/* ============================================================
+ * style.css — v2.0（效能優化版）
+ * 修復：
+ *   1. 移除 @import 阻塞，改用 HTML <link> 載入字體
+ *   2. 加入 content-visibility 加速長列表渲染
+ *   3. 加入 will-change 提示
+ * ============================================================ */
 
 :root {
   --nav-height: 60px;
@@ -13,7 +19,7 @@ html {
 }
 
 body {
-  font-family: 'Noto Sans TC', sans-serif;
+  font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: linear-gradient(180deg, #f0f9ff 0%, #ecfeff 40%, #f8fafc 100%);
@@ -34,13 +40,15 @@ button:active { transform: scale(0.96); transition: transform 0.05s; }
 img.lazy-fade {
   opacity: 0;
   transform: scale(1.03);
-  transition: opacity 0.5s ease, transform 0.6s ease;
+  transition: opacity 0.5s ease, transform 0.6s ease, filter 0.5s ease;
   filter: blur(6px);
+  will-change: opacity, transform, filter;
 }
 img.lazy-fade.loaded {
   opacity: 1;
   transform: scale(1);
   filter: blur(0);
+  will-change: auto;
 }
 
 /* ========== Skeleton ========== */
@@ -236,15 +244,9 @@ img.lazy-fade.loaded {
   width: 3px;
   background: linear-gradient(180deg, #38bdf8, #0284c7);
 }
-.numbered-card.warn::before {
-  background: linear-gradient(180deg, #fbbf24, #d97706);
-}
-.numbered-card.danger::before {
-  background: linear-gradient(180deg, #f87171, #dc2626);
-}
-.numbered-card.success::before {
-  background: linear-gradient(180deg, #34d399, #059669);
-}
+.numbered-card.warn::before { background: linear-gradient(180deg, #fbbf24, #d97706); }
+.numbered-card.danger::before { background: linear-gradient(180deg, #f87171, #dc2626); }
+.numbered-card.success::before { background: linear-gradient(180deg, #34d399, #059669); }
 .numbered-index {
   flex-shrink: 0; width: 28px; height: 28px;
   border-radius: 8px;
@@ -321,9 +323,7 @@ img.lazy-fade.loaded {
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.8);
 }
-.ticket-countdown-label {
-  font-size: 10px; color: #7c3aed; font-weight: 800;
-}
+.ticket-countdown-label { font-size: 10px; color: #7c3aed; font-weight: 800; }
 .ticket-card.zao .ticket-countdown-label { color: #2563eb; }
 .ticket-countdown {
   font-size: 16px; font-weight: 900; color: #4c1d95;
@@ -421,10 +421,7 @@ img.lazy-fade.loaded {
   font-size: 11px; font-weight: 800; color: #64748b;
 }
 .forecast-row.today .forecast-date { color: #0284c7; }
-.forecast-icon {
-  font-size: 18px; flex-shrink: 0;
-  width: 24px; text-align: center;
-}
+.forecast-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
 .forecast-temp {
   flex: 1; font-size: 12px; font-weight: 800;
   color: #334155; font-variant-numeric: tabular-nums;
@@ -438,14 +435,8 @@ img.lazy-fade.loaded {
 }
 
 /* ========== 行程速覽時間軸 ========== */
-.overview-timeline {
-  display: flex; flex-direction: column;
-  gap: 2px; position: relative;
-}
-.overview-day {
-  display: flex; gap: 12px;
-  padding: 10px 0; position: relative;
-}
+.overview-timeline { display: flex; flex-direction: column; gap: 2px; position: relative; }
+.overview-day { display: flex; gap: 12px; padding: 10px 0; position: relative; }
 .overview-day:not(:last-child)::before {
   content: '';
   position: absolute;
@@ -599,7 +590,7 @@ body.modal-open #app-root {
 .expand-btn svg { width: 14px; height: 14px; transition: transform 0.3s; }
 .expand-btn.expanded svg { transform: rotate(180deg); }
 
-/* ========== 底部導航（含當前頁指示器） ========== */
+/* ========== 底部導航 ========== */
 .bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
@@ -620,11 +611,10 @@ body.modal-open #app-root {
   color: #64748b; border-radius: 12px;
   padding: 8px 0; transition: all 0.2s;
   background: transparent; border: none;
-  position: relative;                 /* ✅ 新增：給指示器定位 */
+  position: relative;
 }
 .bottom-nav button.active { color: #0284c7; }
 
-/* ✅ 新增：當前頁指示器（漸層短橫線） */
 .bottom-nav button.active::before {
   content: '';
   position: absolute;
@@ -658,10 +648,7 @@ body.modal-open #app-root {
   transform: scale(0.92);
   box-shadow: 0 3px 12px rgba(2, 132, 199, 0.5);
 }
-/* ✅ FAB 不需要指示器 */
-.bottom-nav .nav-fab::before {
-  display: none;
-}
+.bottom-nav .nav-fab::before { display: none; }
 
 .walking-character {
   position: fixed; z-index: 9998;
@@ -876,42 +863,34 @@ button:active::after {
 .fab-wrapper > button { pointer-events: auto; }
 
 /* ============================================================
- * ✅ 無障礙：尊重系統「減少動態效果」偏好
- * 同時覆蓋 header.css 的極光、進度條、倒數動畫
+ * 效能：離屏渲染加速（現代瀏覽器支援）
+ * ============================================================ */
+.view-container:not(.view-active) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+.day-section.hidden {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}
+
+/* ============================================================
+ * 無障礙：尊重系統「減少動態效果」偏好
  * ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-
-  /* 徹底隱藏雪花（省電 + 避免視覺干擾） */
-  #snow-fall,
-  #snow-fall * {
-    display: none !important;
-  }
-
-  /* 停用 AppHeader 的極光旋轉與進度條 shimmer */
+  #snow-fall, #snow-fall * { display: none !important; }
   .app-header .focus-inner::before,
   .app-header .focus-progress-fill::after,
   .app-header .countdown-cell::after,
   .app-header .focus-label::before,
-  .app-header .sync-dot {
-    animation: none !important;
-  }
-
-  /* 停用角色跳躍與招呼動畫 */
+  .app-header .sync-dot { animation: none !important; }
   .walking-character.greet,
-  .walking-character.jumping {
-    animation: none !important;
-  }
-
-  /* 停用彩帶 */
-  .confetti-container {
-    display: none !important;
-  }
+  .walking-character.jumping { animation: none !important; }
+  .confetti-container { display: none !important; }
 }
