@@ -1,9 +1,7 @@
 /* ============================================================
- * AppHeader v4.1 - 版面 B（工具菜單收納 + 速覽快捷）
- * 
- * 品牌列：❄️ 標題 + [📋 速覽] + [⚙️ 工具]
- * 焦點卡片：倒數 / 進度列表 / 任務 / CTA
- * 工具菜單：所有其他功能按鈕
+ * AppHeader v4.3
+ * - 品牌列：❄️ 標題 + [📋 速覽] + [⚙️ 工具]
+ * - 匯率：可拖動 FAB（獨立元件，見 index.html）
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -17,7 +15,6 @@ window.AppHeader = (function () {
   let _docClickHandler = null;
   let _escKeyHandler = null;
 
-  // ---------- 工具 ----------
   function getTripPhase() {
     const now = Date.now();
     if (now < _config.tripStart) return "before";
@@ -76,7 +73,6 @@ window.AppHeader = (function () {
     if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} }
   }
 
-  // ---------- 進度 ----------
   function getProgressData(type) {
     const cb = _config.callbacks || {};
     try {
@@ -93,7 +89,6 @@ window.AppHeader = (function () {
       return p.total > 0;
     });
     if (valid.length === 0) return "";
-
     const rows = valid.map(it => {
       const p = getProgressData(it.type);
       const percent = p.total > 0 ? Math.round((p.done / p.total) * 100) : 0;
@@ -110,7 +105,6 @@ window.AppHeader = (function () {
         </button>
       `;
     }).join("");
-
     return `<div class="progress-list">${rows}</div>`;
   }
 
@@ -121,7 +115,6 @@ window.AppHeader = (function () {
     try { return localStorage.getItem("tohoku_current_user") || ""; } catch(e) { return ""; }
   }
 
-  // ---------- 倒數更新 ----------
   function updateCountdownNumbers() {
     if (!_container) return;
     const focusEl = _container.querySelector("#app-header-focus");
@@ -170,12 +163,10 @@ window.AppHeader = (function () {
     }
   }
 
-  // ---------- 焦點卡片 ----------
   function renderFocusCard() {
     if (!_container) return;
     const focusEl = _container.querySelector("#app-header-focus");
     if (!focusEl) return;
-
     const phase = getTripPhase();
     const cb = _config.callbacks || {};
 
@@ -183,7 +174,6 @@ window.AppHeader = (function () {
       _lastRenderedPhase = phase;
       let innerHTML = "";
 
-      // ========== 出發前 ==========
       if (phase === "before") {
         const now = Date.now();
         const diff = _config.tripStart - now;
@@ -193,12 +183,10 @@ window.AppHeader = (function () {
         const seconds = Math.floor((diff % 60000) / 1000);
         const progress = getPrepProgress();
         const task = getNextBigTask();
-
         const progressRows = renderProgressList([
           { type: "booking", icon: "📌", label: "行前預訂", action: "booking" },
           { type: "equip",   icon: "🎒", label: "我的裝備", action: "equip"   }
         ]);
-
         innerHTML = `
           <div class="focus-inner">
             <div class="focus-label">距離出發還有</div>
@@ -228,9 +216,7 @@ window.AppHeader = (function () {
             </div>
           </div>
         `;
-      }
-      // ========== 旅行中 ==========
-      else if (phase === "during") {
+      } else if (phase === "during") {
         const dayIdx = getCurrentDayIndex();
         const dayData = dayIdx >= 0 ? _config.itineraries[dayIdx] : _config.itineraries[0];
         const weatherMap = _config.weatherCache ? _config.weatherCache() : {};
@@ -241,7 +227,6 @@ window.AppHeader = (function () {
         const progress = totalEvents > 0 ? Math.round((doneEvents / totalEvents) * 100) : 0;
         const temp = weather ? Math.round((weather.max + weather.min) / 2) : null;
         const advice = weather ? getWeatherAdvice(temp, weather.rain) : "載入中...";
-
         _nextEventStartMs = null;
         if (nextEvt) {
           const startStr = nextEvt.time.split(" - ")[0].trim();
@@ -252,11 +237,9 @@ window.AppHeader = (function () {
             _nextEventStartMs = baseDate.getTime();
           }
         }
-
         const progressRows = renderProgressList([
           { type: "shopping", icon: "🛍️", label: "我的購物", action: "shopping" }
         ]);
-
         innerHTML = `
           <div class="focus-inner">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
@@ -291,15 +274,10 @@ window.AppHeader = (function () {
             </div>
           </div>
         `;
-      }
-      // ========== 旅程後 ==========
-      else {
+      } else {
         let totalExpenses = 0;
-        if (cb.getExpenseCount) {
-          try { totalExpenses = cb.getExpenseCount() || 0; } catch (e) {}
-        }
+        if (cb.getExpenseCount) { try { totalExpenses = cb.getExpenseCount() || 0; } catch (e) {} }
         const shoppingP = getProgressData("shopping");
-
         innerHTML = `
           <div class="focus-inner">
             <div class="focus-label">旅程圓滿結束</div>
@@ -320,11 +298,7 @@ window.AppHeader = (function () {
 
       focusEl.innerHTML = innerHTML;
       bindFocusActions(focusEl, cb);
-
-      if (phase === "during") {
-        updateNextEventCountdown();
-        _lastDuringRender = Date.now();
-      }
+      if (phase === "during") { updateNextEventCountdown(); _lastDuringRender = Date.now(); }
     }
   }
 
@@ -351,7 +325,6 @@ window.AppHeader = (function () {
     });
   }
 
-  // ---------- 工具菜單 ----------
   function openToolsMenu() {
     const panel = _container?.querySelector("#tools-menu-panel");
     const backdrop = _container?.querySelector("#tools-menu-backdrop");
@@ -363,7 +336,6 @@ window.AppHeader = (function () {
     toggle.classList.add("active");
     haptic(6);
   }
-
   function closeToolsMenu() {
     const panel = _container?.querySelector("#tools-menu-panel");
     const backdrop = _container?.querySelector("#tools-menu-backdrop");
@@ -373,7 +345,6 @@ window.AppHeader = (function () {
     backdrop.classList.remove("active");
     toggle.classList.remove("active");
   }
-
   function toggleToolsMenu() {
     const panel = _container?.querySelector("#tools-menu-panel");
     if (!panel) return;
@@ -384,13 +355,11 @@ window.AppHeader = (function () {
   function renderToolsMenu() {
     const panel = _container?.querySelector("#tools-menu-panel");
     if (!panel) return;
-
     const phase = getTripPhase();
     const cb = _config.callbacks || {};
     const guest = isGuestUser();
     const currentUser = getCurrentUser();
 
-    // 進度清單
     const progressItems = [];
     const bookingP = getProgressData("booking");
     if (bookingP.total > 0) {
@@ -398,13 +367,9 @@ window.AppHeader = (function () {
     }
     if (!guest) {
       const equipP = getProgressData("equip");
-      if (equipP.total > 0) {
-        progressItems.push({ icon: "🎒", label: "我的裝備", done: equipP.done, total: equipP.total, action: "equip" });
-      }
+      if (equipP.total > 0) progressItems.push({ icon: "🎒", label: "我的裝備", done: equipP.done, total: equipP.total, action: "equip" });
       const shoppingP = getProgressData("shopping");
-      if (shoppingP.total > 0) {
-        progressItems.push({ icon: "🛍️", label: "我的購物", done: shoppingP.done, total: shoppingP.total, action: "shopping" });
-      }
+      if (shoppingP.total > 0) progressItems.push({ icon: "🛍️", label: "我的購物", done: shoppingP.done, total: shoppingP.total, action: "shopping" });
     }
 
     const progressHTML = progressItems.map(it => {
@@ -500,7 +465,6 @@ window.AppHeader = (function () {
     });
   }
 
-  // ---------- 公開 API ----------
   return {
     init(config) {
       _config = config;
@@ -536,7 +500,6 @@ window.AppHeader = (function () {
         <div class="tools-menu-panel" id="tools-menu-panel"></div>
       `;
 
-      // ✅ 行程速覽按鈕
       const overviewBtn = _container.querySelector("#app-header-overview");
       if (overviewBtn) {
         overviewBtn.addEventListener("click", (e) => {
@@ -547,7 +510,6 @@ window.AppHeader = (function () {
         });
       }
 
-      // 工具按鈕
       const toggleBtn = _container.querySelector("#tools-toggle");
       if (toggleBtn) {
         toggleBtn.addEventListener("click", (e) => {
@@ -556,13 +518,9 @@ window.AppHeader = (function () {
         });
       }
 
-      // 點 backdrop 關閉
       const backdrop = _container.querySelector("#tools-menu-backdrop");
-      if (backdrop) {
-        backdrop.addEventListener("click", () => closeToolsMenu());
-      }
+      if (backdrop) backdrop.addEventListener("click", () => closeToolsMenu());
 
-      // 點面板外部關閉（保險用）
       _docClickHandler = (e) => {
         const panel = _container?.querySelector("#tools-menu-panel");
         if (!panel || !panel.classList.contains("active")) return;
@@ -572,15 +530,11 @@ window.AppHeader = (function () {
       };
       document.addEventListener("click", _docClickHandler);
 
-      // ESC 關閉
-      _escKeyHandler = (e) => {
-        if (e.key === "Escape") closeToolsMenu();
-      };
+      _escKeyHandler = (e) => { if (e.key === "Escape") closeToolsMenu(); };
       document.addEventListener("keydown", _escKeyHandler);
 
       renderFocusCard();
 
-      // 統一 tick
       if (_tickTimer) clearInterval(_tickTimer);
       _tickTimer = setInterval(() => {
         const phase = getTripPhase();

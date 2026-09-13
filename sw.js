@@ -1,13 +1,12 @@
 /* ============================================================
- * Service Worker - v14（穩健版）
- * 修復：addAll 整批失敗問題，改為逐項快取
+ * Service Worker - v15（強制更新版）
  * 策略：
- *   - HTML / JS / CSS：Network First
- *   - 圖片 / 字體：Cache First
+ *   - HTML / JS / CSS：Network First（永遠拿最新）
+ *   - 圖片 / 字體：Cache First（省流量）
  *   - API：Network First
  * ============================================================ */
 
-const CACHE_NAME = 'tohoku-winter-trip-v14';
+const CACHE_NAME = 'tohoku-winter-trip-v15';  // ← 每次改版號 +1
 
 const ASSETS = [
   '/', '/index.html', '/ledger.html',
@@ -26,7 +25,6 @@ function isFreshResource(url, request) {
   return /\.(html|js|css|json)(\?|$)/i.test(url);
 }
 
-// ✅ 逐項快取：任何一個失敗都不會拖累其他
 async function precacheAssets() {
   const cache = await caches.open(CACHE_NAME);
   const results = await Promise.allSettled(
@@ -42,7 +40,6 @@ async function precacheAssets() {
 
 self.addEventListener('install', (e) => {
   e.waitUntil(precacheAssets());
-  // ✅ 讓新版 SW 立即接手，不等舊分頁關閉
   self.skipWaiting();
 });
 
@@ -61,15 +58,11 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = e.request.url;
 
-  // API：Network First
   if (NETWORK_FIRST_HOSTS.some(h => url.includes(h))) {
-    e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
-    );
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
     return;
   }
 
-  // HTML / JS / CSS：Network First
   if (isFreshResource(url, e.request)) {
     e.respondWith(
       fetch(e.request)
@@ -78,14 +71,11 @@ self.addEventListener('fetch', (e) => {
           caches.open(CACHE_NAME).then(c => c.put(e.request, clone)).catch(() => {});
           return response;
         })
-        .catch(() =>
-          caches.match(e.request).then(c => c || caches.match('/index.html'))
-        )
+        .catch(() => caches.match(e.request).then(c => c || caches.match('/index.html')))
     );
     return;
   }
 
-  // 其他：Cache First
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;

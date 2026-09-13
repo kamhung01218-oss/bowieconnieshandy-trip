@@ -151,8 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
   letter-spacing: 10px; text-align: center; font-size: 22px; font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
-
-/* Day Tabs 收合按鈕微調 */
 #btn-collapse-all {
   transition: background-color 0.2s, transform 0.1s;
 }
@@ -367,11 +365,12 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
+  <!-- ✅ 可拖動匯率 FAB -->
+  <div id="currency-fab" class="currency-fab" title="匯率換算（可拖動）">
+    <span class="currency-fab-icon">🪙</span>
+  </div>
+
   <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none"><span id="toast-icon">✅</span><span id="toast-message">複製成功！</span></div>
-<!-- ✅ 可拖動匯率 FAB -->
-<div id="currency-fab" class="currency-fab" title="匯率換算（可拖動）">
-  <span class="currency-fab-icon">🪙</span>
-</div>
 
   <nav class="bottom-nav">
     <button id="nav-itinerary-btn" onclick="switchMainTab('itinerary')" class="active"><span class="text-lg">🗺️</span><span>行程指南</span></button>
@@ -379,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <button id="nav-ledger-btn" onclick="switchMainTab('ledger')"><span class="text-lg">💰</span><span>隨行記帳本</span></button>
   </nav>
 
-  <!-- ✅ 匯率 Modal（原本懸浮面板改成 Modal） -->
+  <!-- 匯率 Modal -->
   <div id="currency-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeCurrencyModal()">
     <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-md w-full relative" onclick="event.stopPropagation()">
       <div class="modal-handle-area" data-drag-handle="currency-modal"><div class="modal-handle"></div></div>
@@ -975,7 +974,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const a = document.querySelector('.modal-overlay.active');
       if (!a) document.body.classList.remove('modal-open');
     }
-    // 相容舊呼叫
     function toggleCurrencyWidget() { openCurrencyModal(); }
     window.openCurrencyModal = openCurrencyModal;
     window.closeCurrencyModal = closeCurrencyModal;
@@ -987,42 +985,29 @@ document.addEventListener('DOMContentLoaded', () => {
     function showUndoToast(message, icon, onUndo) { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (!toast) return; const oldBtn = document.getElementById("toast-undo-btn"); if (oldBtn) oldBtn.remove(); m.innerText = message; i.innerText = icon; const btn = document.createElement("button"); btn.id = "toast-undo-btn"; btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto"; btn.textContent = "撤銷"; btn.onclick = (e) => { e.stopPropagation(); if (window._undoCallback) { window._undoCallback(); window._undoCallback = null; } const t = document.getElementById("toast"); if (t) { t.classList.remove("translate-y-0", "opacity-100"); t.classList.add("-translate-y-24", "opacity-0"); } if (window.toastTimeout) clearTimeout(window.toastTimeout); haptic(15); }; toast.appendChild(btn); window._undoCallback = onUndo; toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); if (window.toastTimeout) clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => { toast.classList.remove("translate-y-0", "opacity-100"); toast.classList.add("-translate-y-24", "opacity-0"); window._undoCallback = null; setTimeout(() => { const b = document.getElementById("toast-undo-btn"); if (b) b.remove(); }, 300); }, 5000); }
     function copyText(text) { try { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); } catch(e) { navigator.clipboard.writeText(text).catch(() => {}); } }
 
-    // ==================== 行前預訂（含航班、保險等） ====================
+    // ==================== 行前預訂 ====================
     const bookingList = [
-      // ✈️ 航班
       { id: "flight-outbound", category: "航班", label: "去程機票：香港 → 仙台 (SDJ)", icon: "✈️" },
       { id: "flight-inbound", category: "航班", label: "回程機票：仙台 (SDJ) → 香港", icon: "✈️" },
       { id: "flight-seat", category: "航班", label: "線上選位 / 加購行李", icon: "💺" },
       { id: "flight-checkin", category: "航班", label: "網路報到 + 下載登機證", icon: "🎫" },
-
-      // 🏨 住宿
       { id: "hotel-akiu", category: "住宿", label: "1/21 秋保溫泉 瑞鳳大飯店 (含自助晚餐)", icon: "🏨" },
       { id: "hotel-tendo", category: "住宿", label: "1/22-23 微笑之宿 瀧之湯 (含懷石晚餐)", icon: "🏨" },
       { id: "hotel-sendai", category: "住宿", label: "1/24-26 Hotel Grand Bach 仙台 (連住3晚)", icon: "🏨" },
-
-      // 🚗 租車
       { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
       { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
       { id: "car-pickup", category: "租車", label: "1/21 15:30 機場取車", icon: "⏰" },
       { id: "car-dropoff", category: "租車", label: "1/27 13:45 機場還車", icon: "⏰" },
-
-      // 🛡️ 保險
       { id: "insurance-travel", category: "保險", label: "旅遊平安險 / 意外險", icon: "🛡️" },
       { id: "insurance-medical", category: "保險", label: "海外突發疾病醫療險", icon: "🏥" },
       { id: "insurance-trip", category: "保險", label: "旅程不便險（班機/行李延誤）", icon: "🧳" },
       { id: "insurance-car", category: "保險", label: "租車免責補償 NOC / CDW", icon: "🚙" },
-
-      // 🎟️ 門票
       { id: "ticket-ginzan", category: "門票", label: "銀山溫泉 Fast Pass (1/8 23:00搶票)", icon: "🎟️" },
       { id: "ticket-zao", category: "門票", label: "藏王纜車優先票 (1/15 23:00搶票)", icon: "🎟️" },
       { id: "ticket-springvalley", category: "門票", label: "Spring Valley 雪之冒險王國 (1/24)", icon: "⛷️" },
       { id: "ticket-foxvillage", category: "門票", label: "狐狸村入場 (現場購票)", icon: "🦊" },
-
-      // 📶 通訊
       { id: "sim-esim", category: "通訊", label: "日本 eSIM / 上網卡", icon: "📶" },
       { id: "wifi-router", category: "通訊", label: "WiFi 分享器 (若需要)", icon: "📡" },
-
-      // 📋 其他
       { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/23 16:30)", icon: "♨️" },
       { id: "other-strawberry", category: "其他", label: "寒河江草莓園 (1/23 14:00)", icon: "🍓" },
       { id: "other-passport", category: "其他", label: "護照效期檢查 (需剩餘 6 個月以上)", icon: "🪪" },
@@ -1563,7 +1548,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==================== Service Worker ====================
-    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => { reg.addEventListener('updatefound', () => { const newWorker = reg.installing; if (!newWorker) return; newWorker.addEventListener('statechange', () => { if (newWorker.state === 'installed' && navigator.serviceWorker.controller) { showUpdateAvailable(newWorker); } }); }); setInterval(() => reg.update().catch(() => {}), 60 * 1000); }).catch(err => console.log('SW failed:', err)); }); let refreshing = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (refreshing) return; refreshing = true; window.location.reload(); }); }
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => { reg.update(); reg.addEventListener('updatefound', () => { const newWorker = reg.installing; if (!newWorker) return; newWorker.addEventListener('statechange', () => { if (newWorker.state === 'installed' && navigator.serviceWorker.controller) { showUpdateAvailable(newWorker); } }); }); setInterval(() => reg.update().catch(() => {}), 60 * 1000); }).catch(err => console.log('SW failed:', err)); }); let refreshing = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (refreshing) return; refreshing = true; window.location.reload(); }); }
     function showUpdateAvailable(worker) { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (!toast || !m || !i) return; const oldUpdateBtn = document.getElementById("update-btn"); if (oldUpdateBtn) oldUpdateBtn.remove(); i.innerText = "✨"; m.innerText = "有新版本可用"; const btn = document.createElement("button"); btn.id = "update-btn"; btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto"; btn.textContent = "立即更新"; btn.onclick = (e) => { e.stopPropagation(); worker.postMessage({ type: 'SKIP_WAITING' }); btn.textContent = "更新中..."; btn.disabled = true; haptic(15); }; toast.appendChild(btn); toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); }
     window.addEventListener('message', (event) => { if (event.data && event.data.type === 'closeExpenseModal') { const lc = document.getElementById('ledger-frame-container'); if (lc) { lc.style.cssText = ''; if (state.currentMainTab === 'ledger') { lc.classList.remove('hidden-view'); lc.classList.add('view-active'); } else { lc.classList.add('hidden-view'); lc.classList.remove('view-active'); } } } });
 
@@ -1586,183 +1571,178 @@ document.addEventListener('DOMContentLoaded', () => {
       }).catch(e => { showToast("❌ 同步失敗", "⚠️"); });
     }
     function releaseAdminDevice() { if (!confirm("確定要解除這台裝置的管理員身分嗎？")) return; localStorage.removeItem("tohoku_admin_unlocked"); renderBookingChecklist(); renderEquipChecklist(); showToast("👁️ 已轉為唯讀模式", "🔒"); haptic(15); }
-    function releaseAdminDevice() { if (!confirm("確定要解除這台裝置的管理員身分嗎？")) return; localStorage.removeItem("tohoku_admin_unlocked"); renderBookingChecklist(); renderEquipChecklist(); showToast("👁️ 已轉為唯讀模式", "🔒"); haptic(15); }
 
-  // ==================== ✅ 可拖動匯率 FAB ====================
-  (function setupDraggableCurrencyFab() {
-    const fab = document.getElementById('currency-fab');
-    if (!fab) return;
+    // ==================== ✅ 可拖動匯率 FAB ====================
+    (function setupDraggableCurrencyFab() {
+      const fab = document.getElementById('currency-fab');
+      if (!fab) return;
 
-    const FAB_SIZE = 56;
-    const PADDING = 12;
-    const SAFE_TOP = 12;
-    const SAFE_BOTTOM = 88; // bottom nav 高度 + buffer
-    const MOVE_THRESHOLD = 6;
-    const STORAGE_KEY = 'tohoku_currency_fab_pos';
+      const FAB_SIZE = 56;
+      const PADDING = 12;
+      const SAFE_TOP = 12;
+      const SAFE_BOTTOM = 88;
+      const MOVE_THRESHOLD = 6;
+      const STORAGE_KEY = 'tohoku_currency_fab_pos';
 
-    let isDragging = false;
-    let startX = 0, startY = 0;
-    let currentX = 0, currentY = 0;
-    let moved = false;
+      let isDragging = false;
+      let startX = 0, startY = 0;
+      let currentX = 0, currentY = 0;
+      let moved = false;
+      let hasCustomPosition = false;
 
-    // 取得安全邊界
-    function getBounds() {
-      return {
-        minX: PADDING,
-        maxX: window.innerWidth - FAB_SIZE - PADDING,
-        minY: SAFE_TOP,
-        maxY: window.innerHeight - SAFE_BOTTOM - FAB_SIZE
-      };
-    }
-
-    function clampPosition(x, y) {
-      const b = getBounds();
-      return {
-        x: Math.max(b.minX, Math.min(b.maxX, x)),
-        y: Math.max(b.minY, Math.min(b.maxY, y))
-      };
-    }
-
-    function setPosition(x, y) {
-      currentX = x;
-      currentY = y;
-      fab.style.left = x + 'px';
-      fab.style.top = y + 'px';
-    }
-
-    function getStoredPosition() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const pos = JSON.parse(saved);
-          if (typeof pos.x === 'number' && typeof pos.y === 'number') return pos;
+      function getBounds() {
+        return {
+          minX: PADDING,
+          maxX: window.innerWidth - FAB_SIZE - PADDING,
+          minY: SAFE_TOP,
+          maxY: window.innerHeight - SAFE_BOTTOM - FAB_SIZE
+        };
+      }
+      function clampPosition(x, y) {
+        const b = getBounds();
+        return {
+          x: Math.max(b.minX, Math.min(b.maxX, x)),
+          y: Math.max(b.minY, Math.min(b.maxY, y))
+        };
+      }
+      function switchToAbsolutePosition() {
+        if (hasCustomPosition) return;
+        const rect = fab.getBoundingClientRect();
+        currentX = rect.left;
+        currentY = rect.top;
+        fab.style.left = currentX + 'px';
+        fab.style.top = currentY + 'px';
+        fab.style.right = 'auto';
+        fab.style.bottom = 'auto';
+        hasCustomPosition = true;
+      }
+      function setPosition(x, y) {
+        currentX = x;
+        currentY = y;
+        fab.style.left = x + 'px';
+        fab.style.top = y + 'px';
+        fab.style.right = 'auto';
+        fab.style.bottom = 'auto';
+        hasCustomPosition = true;
+      }
+      function getStoredPosition() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const pos = JSON.parse(saved);
+            if (typeof pos.x === 'number' && typeof pos.y === 'number') return pos;
+          }
+        } catch (e) {}
+        return null;
+      }
+      function savePosition(x, y) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ x, y })); } catch(e) {}
+      }
+      function initPosition() {
+        const stored = getStoredPosition();
+        if (stored) {
+          const pos = clampPosition(stored.x, stored.y);
+          setPosition(pos.x, pos.y);
+        } else {
+          const rect = fab.getBoundingClientRect();
+          currentX = rect.left;
+          currentY = rect.top;
         }
-      } catch (e) {}
-      return null;
-    }
-
-    function getDefaultPosition() {
-      return {
-        x: window.innerWidth - FAB_SIZE - PADDING,
-        y: window.innerHeight - SAFE_BOTTOM - FAB_SIZE - PADDING
-      };
-    }
-
-    function savePosition(x, y) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ x, y })); } catch(e) {}
-    }
-
-    // 初始化位置
-    function initPosition() {
-      const stored = getStoredPosition();
-      const pos = stored ? clampPosition(stored.x, stored.y) : clampPosition(getDefaultPosition().x, getDefaultPosition().y);
-      setPosition(pos.x, pos.y);
-    }
-
-    // 吸附到最近的左右邊
-    function snapToEdge() {
-      const centerX = currentX + FAB_SIZE / 2;
-      const snapLeft = centerX < window.innerWidth / 2;
-      const targetX = snapLeft ? PADDING : window.innerWidth - FAB_SIZE - PADDING;
-      const clamped = clampPosition(targetX, currentY);
-
-      fab.classList.add('snapping');
-      setPosition(clamped.x, clamped.y);
-      savePosition(clamped.x, clamped.y);
-
-      setTimeout(() => fab.classList.remove('snapping'), 380);
-      haptic(8);
-    }
-
-    // Pointer 事件
-    fab.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      isDragging = true;
-      moved = false;
-      startX = e.clientX;
-      startY = e.clientY;
-      fab.classList.add('dragging');
-      try { fab.setPointerCapture(e.pointerId); } catch(err) {}
-    });
-
-    fab.addEventListener('pointermove', (e) => {
-      if (!isDragging) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) {
-        moved = true;
       }
-      if (moved) {
-        const clamped = clampPosition(currentX + dx, currentY + dy);
-        setPosition(clamped.x, clamped.y);
-        startX = e.clientX;
-        startY = e.clientY;
-      }
-    });
-
-    function onPointerUp(e) {
-      if (!isDragging) return;
-      isDragging = false;
-      fab.classList.remove('dragging');
-      try { fab.releasePointerCapture(e.pointerId); } catch(err) {}
-
-      if (moved) {
-        snapToEdge();
-      } else {
-        // 點擊（無移動）→ 開啟匯率 Modal
-        if (typeof window.openCurrencyModal === 'function') {
-          window.openCurrencyModal();
-        }
-        haptic(10);
-      }
-    }
-
-    fab.addEventListener('pointerup', onPointerUp);
-    fab.addEventListener('pointercancel', (e) => {
-      if (!isDragging) return;
-      isDragging = false;
-      fab.classList.remove('dragging');
-      try { fab.releasePointerCapture(e.pointerId); } catch(err) {}
-      snapToEdge();
-    });
-
-    // 視窗大小變化時重新計算
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        const clamped = clampPosition(currentX, currentY);
+      function snapToEdge() {
+        switchToAbsolutePosition();
+        const centerX = currentX + FAB_SIZE / 2;
+        const snapLeft = centerX < window.innerWidth / 2;
+        const targetX = snapLeft ? PADDING : window.innerWidth - FAB_SIZE - PADDING;
+        const clamped = clampPosition(targetX, currentY);
+        fab.classList.add('snapping');
         setPosition(clamped.x, clamped.y);
         savePosition(clamped.x, clamped.y);
-      }, 150);
-    });
+        setTimeout(() => fab.classList.remove('snapping'), 380);
+        haptic(8);
+      }
 
-    // 初始化
-    initPosition();
+      fab.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        moved = false;
+        switchToAbsolutePosition();
+        startX = e.clientX;
+        startY = e.clientY;
+        fab.classList.add('dragging');
+        try { fab.setPointerCapture(e.pointerId); } catch(err) {}
+      });
 
-    // 首次使用提示（只顯示一次）
-    const HINT_KEY = 'tohoku_fab_hint_shown';
-    if (!localStorage.getItem(HINT_KEY)) {
-      setTimeout(() => {
-        const hint = document.createElement('div');
-        hint.className = 'currency-fab-hint';
-        hint.textContent = '💡 可拖動我，點擊開啟匯率';
-        document.body.appendChild(hint);
-        // 定位到 FAB 上方
-        const rect = fab.getBoundingClientRect();
-        hint.style.left = Math.min(rect.left, window.innerWidth - 200) + 'px';
-        hint.style.top = (rect.top - 44) + 'px';
-        requestAnimationFrame(() => hint.classList.add('show'));
+      fab.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) {
+          moved = true;
+        }
+        if (moved) {
+          const clamped = clampPosition(currentX + dx, currentY + dy);
+          setPosition(clamped.x, clamped.y);
+          startX = e.clientX;
+          startY = e.clientY;
+        }
+      });
+
+      function onPointerUp(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        fab.classList.remove('dragging');
+        try { fab.releasePointerCapture(e.pointerId); } catch(err) {}
+        if (moved) {
+          snapToEdge();
+        } else {
+          if (typeof window.openCurrencyModal === 'function') window.openCurrencyModal();
+          haptic(10);
+        }
+      }
+      fab.addEventListener('pointerup', onPointerUp);
+      fab.addEventListener('pointercancel', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        fab.classList.remove('dragging');
+        try { fab.releasePointerCapture(e.pointerId); } catch(err) {}
+        if (moved) snapToEdge();
+      });
+
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (!hasCustomPosition) return;
+          const clamped = clampPosition(currentX, currentY);
+          setPosition(clamped.x, clamped.y);
+          savePosition(clamped.x, clamped.y);
+        }, 150);
+      });
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => { initPosition(); });
+      });
+
+      const HINT_KEY = 'tohoku_fab_hint_shown';
+      if (!localStorage.getItem(HINT_KEY)) {
         setTimeout(() => {
-          hint.classList.remove('show');
-          setTimeout(() => hint.remove(), 400);
-        }, 3500);
-        localStorage.setItem(HINT_KEY, '1');
-      }, 2000);
-    }
-  })();
-</script>
-</script>
+          const hint = document.createElement('div');
+          hint.className = 'currency-fab-hint';
+          hint.textContent = '💡 可拖動我，點擊開啟匯率';
+          document.body.appendChild(hint);
+          const rect = fab.getBoundingClientRect();
+          hint.style.left = Math.max(12, Math.min(rect.left - 60, window.innerWidth - 200)) + 'px';
+          hint.style.top = (rect.top - 44) + 'px';
+          requestAnimationFrame(() => hint.classList.add('show'));
+          setTimeout(() => {
+            hint.classList.remove('show');
+            setTimeout(() => hint.remove(), 400);
+          }, 3500);
+          localStorage.setItem(HINT_KEY, '1');
+        }, 2000);
+      }
+    })();
+  </script>
   <script src="./header.js"></script>
 </body>
 </html>
