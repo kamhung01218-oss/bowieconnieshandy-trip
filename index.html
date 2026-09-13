@@ -11,7 +11,6 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2744.png">
 
-<!-- ✅ 修復 #10：加入 preconnect 取代 CSS @import -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -37,7 +36,6 @@ tailwind.config = {
 }
 </script>
 <script>
-// ✅ 修復 #12：Firebase 設定抽成常數（與 ledger.html 統一）
 window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
   authDomain: "tohoku-winter-trip.firebaseapp.com",
@@ -71,7 +69,6 @@ try {
   window.dbRefError = err.message;
 }
 
-// ==================== 行前預訂同步 ====================
 async function syncDataToCloud() {
   if (!isAdminUnlocked()) { showToast("🔒 唯讀模式，無法寫入雲端！", "⚠️"); return; }
   if (typeof firebase === 'undefined' || !window.dbRef) { showToast("⏳ 雲端未連線", "⚠️"); return; }
@@ -95,7 +92,6 @@ async function syncDataToCloud() {
   }
 }
 
-// ==================== 即時監聽 ====================
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.dbRef) return;
   window.dbRef.onSnapshot(docSnap => {
@@ -121,6 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
           renderEquipChecklist();
           renderAllShoppingContent();
         }
+      }
+      // ✅ 同步雲端 PIN 碼
+      if (cloudData.userPins && typeof cloudData.userPins === 'object') {
+        cloudUserPins = cloudData.userPins;
       }
       saveLocalCheckedItems();
       restoreChecklistUI();
@@ -165,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="text-4xl mb-2">❄️</div>
         <h2 class="text-xl font-black text-slate-900">請選擇你的身份</h2>
         <p class="text-xs text-slate-500 mt-1">輸入 PIN 碼以進入你的專屬清單</p>
+        <p class="text-[10px] text-slate-400 mt-1.5 bg-slate-50 rounded-lg py-1 px-2 inline-block">💡 預設 PIN 碼：<span class="font-black text-sky-600">1234</span></p>
       </div>
 
       <div class="grid grid-cols-2 gap-3 mb-5" id="user-grid">
@@ -198,6 +199,89 @@ document.addEventListener('DOMContentLoaded', () => {
           <button onclick="cancelUserSelect()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition">取消</button>
         </div>
         <p id="pin-error" class="text-xs text-red-500 font-bold mt-2 text-center hidden">⚠️ PIN 碼錯誤，請重試</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ 帳戶設定 Modal -->
+  <div id="account-modal" class="fixed inset-0 z-[150] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative">
+      <button onclick="closeAccountModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">✕</button>
+
+      <div class="text-center mb-5">
+        <div id="account-avatar" class="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center text-white font-black text-2xl shadow-lg"></div>
+        <h2 id="account-username" class="text-lg font-black text-slate-900"></h2>
+        <p class="text-xs text-slate-500 mt-1">帳戶設定</p>
+      </div>
+
+      <div class="space-y-2">
+        <button onclick="openChangePinModal()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-left transition">
+          <span class="flex items-center gap-3">
+            <span class="text-xl">🔑</span>
+            <span>
+              <span class="block text-sm font-bold text-sky-900">修改 PIN 碼</span>
+              <span class="block text-[10px] text-sky-600 mt-0.5">更改登入密碼</span>
+            </span>
+          </span>
+          <span class="text-sky-400 text-lg">›</span>
+        </button>
+
+        <button onclick="doLogoutAndSwitch()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-left transition">
+          <span class="flex items-center gap-3">
+            <span class="text-xl">🔄</span>
+            <span>
+              <span class="block text-sm font-bold text-amber-900">切換身份</span>
+              <span class="block text-[10px] text-amber-600 mt-0.5">登出並選擇其他成員</span>
+            </span>
+          </span>
+          <span class="text-amber-400 text-lg">›</span>
+        </button>
+
+        <button onclick="closeAccountModal()" class="w-full px-4 py-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold text-sm transition">
+          取消
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ 修改 PIN Modal -->
+  <div id="change-pin-modal" class="fixed inset-0 z-[160] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative">
+      <button onclick="closeChangePinModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">✕</button>
+
+      <div class="text-center mb-5">
+        <div class="text-4xl mb-2">🔑</div>
+        <h2 class="text-lg font-black text-slate-900">修改 PIN 碼</h2>
+        <p class="text-xs text-slate-500 mt-1">為 <span id="change-pin-username" class="font-bold text-sky-600"></span> 設定新密碼</p>
+      </div>
+
+      <div class="space-y-3 mb-5">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">目前 PIN 碼</label>
+          <input id="pin-old" type="password" inputmode="text" autocomplete="off"
+                 class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-center tracking-widest font-black text-lg focus:outline-none focus:border-sky-500"
+                 placeholder="••••">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">新 PIN 碼（至少 4 個字元）</label>
+          <input id="pin-new" type="password" inputmode="text" autocomplete="off"
+                 class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-center tracking-widest font-black text-lg focus:outline-none focus:border-sky-500"
+                 placeholder="••••">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">確認新 PIN 碼</label>
+          <input id="pin-confirm" type="password" inputmode="text" autocomplete="off"
+                 onkeydown="if(event.key==='Enter')submitChangePin()"
+                 class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-center tracking-widest font-black text-lg focus:outline-none focus:border-sky-500"
+                 placeholder="••••">
+        </div>
+      </div>
+
+      <p id="change-pin-error" class="text-xs text-red-500 font-bold mb-3 text-center hidden"></p>
+
+      <div class="flex gap-2">
+        <button onclick="closeChangePinModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition">取消</button>
+        <button id="change-pin-submit-btn" onclick="submitChangePin()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3 rounded-xl transition active:scale-95">確認修改</button>
       </div>
     </div>
   </div>
@@ -335,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="password-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closePasswordModal()"><div class="modal-box bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative" onclick="event.stopPropagation()"><button onclick="closePasswordModal()" class="modal-close">✕</button><h2 class="text-xl font-black mb-2 flex items-center gap-2">🔒 輸入管理密碼</h2><p class="text-xs text-slate-500 mb-4">輸入密碼以解鎖「行前預訂」編輯權限</p><input id="password-input" type="password" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm mb-3" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')verifyPassword()"><div class="flex gap-2"><button onclick="verifyPassword()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">確認</button><button onclick="closePasswordModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl">取消</button></div><p id="password-error" class="text-xs text-red-500 font-bold mt-2 hidden">⚠️ 密碼錯誤</p></div></div>
 
   <script>
-    // ==================== ✅ 修復 #11：全域 escapeHtml 工具 ====================
+    // ==================== ✅ 全域 escapeHtml ====================
     function escapeHtml(str) {
       if (str == null) return '';
       return String(str).replace(/[&<>"']/g, c => ({
@@ -344,17 +428,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function escAttr(str) { return escapeHtml(str); }
 
+    // ==================== ✅ PIN 雜湊（SHA-256 + salt） ====================
+    const PIN_SALT = "tohoku2027_winter_";
+    async function hashPin(pin) {
+      try {
+        const data = new TextEncoder().encode(PIN_SALT + String(pin));
+        const hashBuf = await crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(hashBuf))
+          .map(b => b.toString(16).padStart(2, "0"))
+          .join("");
+      } catch(e) {
+        console.warn("crypto.subtle 不可用，使用 fallback");
+        let h = 0;
+        const s = PIN_SALT + String(pin);
+        for (let i = 0; i < s.length; i++) {
+          h = ((h << 5) - h) + s.charCodeAt(i);
+          h |= 0;
+        }
+        return "fb_" + Math.abs(h).toString(16);
+      }
+    }
+
+    // ==================== ✅ 驗證用戶 PIN ====================
+    async function verifyUserPinAsync(user, inputPin) {
+      // 1. 若雲端有該用戶的 hash → 比對 hash
+      if (cloudUserPins && cloudUserPins[user] && cloudUserPins[user].hash) {
+        const inputHash = await hashPin(inputPin);
+        return inputHash === cloudUserPins[user].hash;
+      }
+      // 2. Fallback：預設明文（首次使用、尚未改過密碼）
+      return USER_PINS[user] === inputPin;
+    }
+
+    // ==================== ✅ 從雲端載入 PIN ====================
+    async function fetchUserPinsFromCloud() {
+      try {
+        if (!window.dbRef) return {};
+        const docSnap = await window.dbRef.get();
+        if (docSnap.exists && docSnap.data().userPins) {
+          cloudUserPins = docSnap.data().userPins;
+          return cloudUserPins;
+        }
+      } catch(e) {
+        console.warn("[fetchUserPins] 讀取失敗:", e);
+      }
+      return {};
+    }
+
     // ==================== 全域變數 ====================
     let state = { currentMainTab: "itinerary", checkedItems: {} };
     let currentUser = null;
     let cloudUserData = {};
+    let cloudUserPins = {};  // ✅ 雲端 PIN 碼快取
     let exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
 
+    // ✅ 所有用戶預設 PIN 都係 1234
     const USER_PINS = {
-      "余生": "0621",
-      "bowie": "bowie",
-      "shandy": "shandy",
-      "connie": "connie"
+      "余生": "1234",
+      "bowie": "1234",
+      "shandy": "1234",
+      "connie": "1234"
     };
     const USER_COLORS = {
       "余生": "linear-gradient(135deg,#3b82f6,#1d4ed8)",
@@ -371,7 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const ZAO_TARGET = new Date("2027-01-15T23:00:00+08:00").getTime();
     const ADMIN_PASSWORD = "tohoku2027admin";
 
-    // ✅ 修復 #7：天氣座標依 Day 動態切換
     const WEATHER_LOCATIONS = {
       1: { name: "宮城仙台", lat: 38.2682, lon: 140.8694 },
       2: { name: "山形天童", lat: 38.3625, lon: 140.3694 },
@@ -389,7 +521,6 @@ document.addEventListener('DOMContentLoaded', () => {
       'equip-modal': { activeTab: 'all', expanded: {} }
     };
 
-    // ✅ 修復 #6：Lazy Render 記錄
     window._renderedDays = new Set();
 
     // ==================== 用戶登入系統 ====================
@@ -426,21 +557,44 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    function verifyUserPin() {
+    // ✅ 改為 async 驗證（支援雲端 hash）
+    async function verifyUserPin() {
       const input = document.getElementById('pin-input').value.trim();
-      const expected = USER_PINS[selectedUser];
-      if (input === expected) {
-        currentUser = selectedUser;
-        localStorage.setItem("tohoku_current_user", currentUser);
-        document.getElementById('user-modal').style.display = 'none';
-        document.getElementById('pin-error').classList.add('hidden');
-        showToast(`✅ 歡迎回來，${currentUser}！`, "👋");
-        haptic(15);
-        initAppAfterLogin();
-      } else {
-        document.getElementById('pin-error').classList.remove('hidden');
-        document.getElementById('pin-input').value = '';
-        haptic(50);
+      const inputField = document.getElementById('pin-input');
+      const errorEl = document.getElementById('pin-error');
+      const okBtn = document.querySelector('#pin-area button');
+
+      if (!input) { haptic(50); return; }
+
+      if (okBtn) { okBtn.disabled = true; okBtn.textContent = "驗證中..."; }
+
+      try {
+        if (!cloudUserPins || Object.keys(cloudUserPins).length === 0) {
+          await fetchUserPinsFromCloud();
+        }
+
+        const ok = await verifyUserPinAsync(selectedUser, input);
+
+        if (ok) {
+          currentUser = selectedUser;
+          localStorage.setItem("tohoku_current_user", currentUser);
+          document.getElementById('user-modal').style.display = 'none';
+          errorEl.classList.add('hidden');
+          showToast(`✅ 歡迎回來，${currentUser}！`, "👋");
+          haptic(15);
+          initAppAfterLogin();
+        } else {
+          errorEl.classList.remove('hidden');
+          inputField.value = '';
+          haptic(50);
+          setTimeout(() => inputField.focus(), 50);
+        }
+      } catch(e) {
+        console.error("[verifyUserPin]", e);
+        errorEl.textContent = "⚠️ 驗證失敗，請稍後再試";
+        errorEl.classList.remove('hidden');
+      } finally {
+        if (okBtn) { okBtn.disabled = false; okBtn.textContent = "確認"; }
       }
     }
 
@@ -453,14 +607,128 @@ document.addEventListener('DOMContentLoaded', () => {
       haptic(8);
     }
 
+    // ✅ switchUser 改為開啟帳戶設定
     function switchUser() {
-      if (!confirm(`確定要切換身份嗎？\n目前身份：${currentUser}`)) return;
-      localStorage.removeItem("tohoku_current_user");
-      currentUser = null;
-      selectedUser = null;
-      document.getElementById('user-modal').style.display = 'flex';
-      cancelUserSelect();
-      haptic(10);
+      openAccountModal();
+    }
+
+    // ✅ 實際執行登出
+    function doLogoutAndSwitch() {
+      closeAccountModal();
+      setTimeout(() => {
+        localStorage.removeItem("tohoku_current_user");
+        currentUser = null;
+        selectedUser = null;
+        document.getElementById('user-modal').style.display = 'flex';
+        cancelUserSelect();
+        haptic(10);
+      }, 150);
+    }
+
+    // ==================== ✅ 帳戶設定 Modal ====================
+    function openAccountModal() {
+      if (!currentUser) return;
+      const m = document.getElementById('account-modal');
+      if (!m) return;
+
+      const avatar = document.getElementById('account-avatar');
+      const nameEl = document.getElementById('account-username');
+
+      nameEl.textContent = currentUser;
+      if (currentUser === "訪客") {
+        avatar.textContent = "👤";
+        avatar.style.background = "linear-gradient(135deg, #94a3b8, #475569)";
+      } else {
+        avatar.textContent = currentUser[0].toUpperCase();
+        avatar.style.background = USER_COLORS[currentUser] || "linear-gradient(135deg,#64748b,#475569)";
+      }
+
+      m.classList.remove('hidden');
+      haptic(8);
+    }
+    function closeAccountModal() {
+      document.getElementById('account-modal').classList.add('hidden');
+      haptic(6);
+    }
+
+    // ==================== ✅ 修改 PIN Modal ====================
+    function openChangePinModal() {
+      if (!currentUser || currentUser === "訪客") {
+        showToast("👤 訪客無法設定 PIN 碼", "⚠️");
+        return;
+      }
+      closeAccountModal();
+      setTimeout(() => {
+        document.getElementById('change-pin-username').textContent = currentUser;
+        document.getElementById('pin-old').value = '';
+        document.getElementById('pin-new').value = '';
+        document.getElementById('pin-confirm').value = '';
+        document.getElementById('change-pin-error').classList.add('hidden');
+        const m = document.getElementById('change-pin-modal');
+        m.classList.remove('hidden');
+        setTimeout(() => document.getElementById('pin-old').focus(), 100);
+      }, 150);
+    }
+    function closeChangePinModal() {
+      document.getElementById('change-pin-modal').classList.add('hidden');
+      haptic(6);
+    }
+
+    // ==================== ✅ 提交修改 PIN ====================
+    async function submitChangePin() {
+      const oldPin = document.getElementById('pin-old').value.trim();
+      const newPin = document.getElementById('pin-new').value.trim();
+      const confirmPin = document.getElementById('pin-confirm').value.trim();
+      const errEl = document.getElementById('change-pin-error');
+      const submitBtn = document.getElementById('change-pin-submit-btn');
+
+      const showErr = (msg) => {
+        errEl.textContent = "⚠️ " + msg;
+        errEl.classList.remove('hidden');
+        haptic(50);
+      };
+
+      if (!oldPin) return showErr("請輸入目前 PIN 碼");
+      if (!newPin) return showErr("請輸入新 PIN 碼");
+      if (newPin.length < 4) return showErr("新 PIN 碼至少需 4 個字元");
+      if (newPin !== confirmPin) return showErr("兩次輸入的新 PIN 碼不一致");
+      if (newPin === oldPin) return showErr("新 PIN 碼不能與舊的相同");
+
+      const ok = await verifyUserPinAsync(currentUser, oldPin);
+      if (!ok) return showErr("目前 PIN 碼錯誤");
+
+      errEl.classList.add('hidden');
+      submitBtn.disabled = true;
+      submitBtn.textContent = "處理中...";
+      submitBtn.classList.add("opacity-60", "cursor-not-allowed");
+
+      try {
+        const newHash = await hashPin(newPin);
+
+        if (!window.dbRef) throw new Error("雲端未連線");
+        const docSnap = await window.dbRef.get();
+        const cloudData = docSnap.exists ? docSnap.data() : {};
+        const allPins = cloudData.userPins || {};
+        allPins[currentUser] = {
+          hash: newHash,
+          updatedAt: Date.now(),
+          updatedBy: currentUser
+        };
+
+        await window.dbRef.set({ userPins: allPins, updatedAt: Date.now() }, { merge: true });
+        cloudUserPins = allPins;
+
+        showToast("✅ PIN 碼已更新，下次登入請用新密碼", "🔑");
+        haptic(20);
+        closeChangePinModal();
+      } catch(e) {
+        console.error("[submitChangePin]", e);
+        showToast("❌ 更新失敗：" + (e.message || "請稍後再試"), "⚠️");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "確認修改";
+        submitBtn.classList.remove("opacity-60", "cursor-not-allowed");
+      }
     }
 
     function initAppAfterLogin() {
@@ -472,10 +740,8 @@ document.addEventListener('DOMContentLoaded', () => {
       fetchLiveRates();
       initSnowEffect();
 
-      // ✅ 修復 #4：使用新的 setupModalDrag（自動移除監聽器）
       setupModalDrag([ 'booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal' ]);
 
-      // ✅ 修復 #6：只渲染 Day 1，其餘按需 Lazy Render
       renderDayItinerary('day-section-1', winterItineraries[0]);
 
       setupImageFadeIn();
@@ -510,9 +776,8 @@ document.addEventListener('DOMContentLoaded', () => {
       updateSnowmanVisual();
       updateTodayButtonVisibility();
       setInterval(updateTodayButtonVisibility, 60 * 1000);
-
-      // ✅ 修復 #5：移除全域 MutationObserver
-      // 改為在需要的地方手動呼叫 setupImageFadeIn（見 renderDayItinerary 等）
+      // ✅ 主動載入雲端 PIN 碼
+      fetchUserPinsFromCloud().catch(() => {});
     }
 
     function updateUserBadge() {
@@ -572,7 +837,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function updateTodayButtonVisibility() { const btn = document.getElementById('btn-today'); if (!btn) return; const now = Date.now(); if (now >= TRIP_START && now <= TRIP_END) { btn.classList.remove('hidden'); } else { btn.classList.add('hidden'); } }
 
-    // ==================== ✅ 修復 #4：Modal 手勢關閉（監聽器不再洩漏） ====================
+    // ==================== Modal 手勢關閉 ====================
     function setupModalDrag(modals) {
       modals.forEach(id => {
         const modal = document.getElementById(id); if (!modal) return;
@@ -582,7 +847,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let startY = 0, currentY = 0, isDragging = false;
 
-        // ✅ 這些是「每個 modal 唯一」的監聽器，只在拖動時掛到 document，結束後立即移除
         const onMove = (e) => {
           if (!isDragging) return;
           currentY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -613,7 +877,6 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.style.opacity = '';
             setTimeout(() => box.classList.remove('snapping'), 300);
           }
-          // ✅ 移除臨時監聽器
           document.removeEventListener('mousemove', onMove);
           document.removeEventListener('mouseup', onEnd);
         };
@@ -624,7 +887,6 @@ document.addEventListener('DOMContentLoaded', () => {
           box.classList.add('dragging');
           box.classList.remove('snapping');
           haptic(5);
-          // ✅ 只在拖動開始時掛上 document 監聽器
           document.addEventListener('mousemove', onMove);
           document.addEventListener('mouseup', onEnd);
         };
@@ -830,11 +1092,9 @@ document.addEventListener('DOMContentLoaded', () => {
       saveUserData();
     }
     function openShoppingModal(eventTitle) {
-      // ✅ 修復 #2：現在從 data-title 傳入，不再有引號注入問題
       const m = document.getElementById('shopping-modal'); if (!m) return;
       m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open');
       const c = document.getElementById('shopping-content'); if (c) c.innerHTML = renderShoppingList(eventTitle);
-      // ✅ 修復 #5：手動觸發圖片淡入
       setTimeout(() => setupImageFadeIn(m), 50);
     }
     function closeShoppingModal() {
@@ -845,7 +1105,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window._lastActiveDay) {
         const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
         if (dayData) {
-          // ✅ 修復 #6：強制重新渲染當前 Day
           renderDayItinerary(`day-section-${dayData.day}`, dayData, true);
           document.querySelectorAll('.day-section').forEach(sec => { if (sec.id !== `day-section-${dayData.day}`) sec.classList.add('hidden'); });
           document.querySelectorAll("#day-tabs-container button").forEach(btn => { btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition"; });
@@ -865,7 +1124,6 @@ document.addEventListener('DOMContentLoaded', () => {
         html += `<div class="space-y-2 mb-4">`;
         items.forEach((item, index) => {
           const checked = item.planned ? 'checked' : '';
-          // ✅ 修復 #3：用戶輸入全部 escapeHtml
           html += `<div class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg"><input type="checkbox" ${checked} onchange="toggleShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" data-index="${index}" class="w-4 h-4 shrink-0"><div class="flex-1 min-w-0"><strong class="text-sm text-slate-800">${escapeHtml(item.name)}</strong>${item.category ? `<span class="text-[10px] text-slate-500 ml-2">${escapeHtml(item.category)}</span>` : ''}${item.note ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate">📝 ${escapeHtml(item.note)}</p>` : ''}</div><button onclick="deleteShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" data-index="${index}" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`;
         });
         html += `</div>`;
@@ -926,7 +1184,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const groupChecked = group.items.filter(i => i.planned).length; const groupTotal = group.items.length; const allDone = groupChecked === groupTotal; const safeTitle = escAttr(group.eventTitle);
         html += `<details class="mb-3 bg-white border ${allDone ? 'border-emerald-200' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden group" ${gIdx === 0 ? 'open' : ''}><summary class="cursor-pointer px-4 py-3 hover:bg-slate-50 transition-colors list-none flex items-center gap-3"><div class="shrink-0 w-10 h-10 rounded-full ${allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'} flex items-center justify-center text-xs font-black border-2 border-white shadow-sm">D${group.day}</div><div class="flex-1 min-w-0"><div class="text-[10px] font-bold text-sky-600 tracking-wide">${escapeHtml(group.dateLabel)}</div><div class="text-sm font-bold text-slate-800 truncate">${escapeHtml(group.eventTitle)}</div></div><div class="shrink-0 flex items-center gap-1.5"><span class="text-[10px] font-black ${allDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">${groupChecked}/${groupTotal}</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="border-t border-slate-100 bg-slate-50/50 p-3 space-y-1.5">`;
         group.items.forEach((item, idx) => {
-          // ✅ 修復 #3：用戶輸入全部 escapeHtml
           html += `<label class="flex items-center gap-2.5 p-2.5 bg-white border ${item.planned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} rounded-xl cursor-pointer transition-all hover:shadow-sm active:scale-[0.99]"><input type="checkbox" ${item.planned ? 'checked' : ''} data-event-title="${safeTitle}" data-index="${idx}" onchange="handleAllShoppingToggle(this)" class="w-4 h-4 shrink-0"><div class="flex-1 min-w-0"><div class="flex items-center gap-2"><strong class="text-[13px] ${item.planned ? 'text-slate-500 line-through' : 'text-slate-800'} truncate">${escapeHtml(item.name)}</strong>${item.category ? `<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">${escapeHtml(item.category)}</span>` : ''}</div>${item.note ? `<p class="text-[10px] text-slate-500 mt-0.5 truncate">📝 ${escapeHtml(item.note)}</p>` : ''}</div></label>`;
         });
         html += `<button onclick="jumpToEvent(${group.day}, ${group.eventIndex})" class="mt-2 w-full text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 py-2 rounded-lg transition active:scale-95">📍 前往行程查看</button></div></details>`;
@@ -951,7 +1208,7 @@ document.addEventListener('DOMContentLoaded', () => {
       haptic(8);
     }
 
-    // ==================== 天氣（✅ 修復 #7：依 Day 動態座標） ====================
+    // ==================== 天氣 ====================
     function weatherCodeToIcon(code) {
       if (code === 0) return "☀️";
       if (code < 5) return "⛅";
@@ -963,14 +1220,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const today = new Date();
       const tripStartDate = new Date(TRIP_START);
       const daysUntil = Math.floor((tripStartDate - today) / 86400000);
-      // 若旅行日期超出 API 預報範圍（16 天內），跳過
       if (daysUntil > 16) {
         const d = document.getElementById('weather-detail-content');
         if (d) d.innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">旅行日期尚遠，天氣預報將於出發前 16 天內顯示</div>';
         return;
       }
 
-      // 並行獲取每個 Day 的天氣
       const dayPromises = tripDates.map(async (dateStr, idx) => {
         const loc = WEATHER_LOCATIONS[idx + 1];
         try {
@@ -1000,10 +1255,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (r) window.weatherCache[r.dateStr] = { max: r.max, min: r.min, rain: r.rain, icon: r.icon, location: r.location, current: r.current };
       });
 
-      // 更新 UI
       if (window.AppHeader) window.AppHeader.render();
       if (window._lastActiveDay) {
-        // 重新渲染當前 Day 的天氣卡
         const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
         if (dayData) renderDayItinerary(`day-section-${dayData.day}`, dayData, true);
       }
@@ -1014,7 +1267,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const detail = document.getElementById('weather-detail-content');
       if (!detail) return;
       const today = new Date().toISOString().substring(0, 10);
-      // 找到今天對應的旅行 Day
       const todayIdx = tripDates.indexOf(today);
       const currentDayData = todayIdx >= 0 ? window.weatherCache[today] : null;
       const curLocName = todayIdx >= 0 ? WEATHER_LOCATIONS[todayIdx + 1].name : "宮城仙台";
@@ -1063,9 +1315,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================== 內容可折疊 ====================
     function toggleContent(day, index) { const wrapper = document.getElementById(`collapsible-${day}-${index}`); const btn = document.querySelector(`[data-expand-btn="${day}-${index}"]`); if (!wrapper) return; haptic(6); const isExpanded = wrapper.classList.toggle("expanded"); if (btn) { btn.classList.toggle("expanded", isExpanded); const label = btn.querySelector("span"); if (label) label.textContent = isExpanded ? "收合攻略" : "展開完整攻略"; } }
 
-    // ==================== ✅ 修復 #1：行程渲染（修正重複渲染） ====================
+    // ==================== 行程渲染 ====================
     function renderDayItinerary(sectionId, dayData, force = false) {
-      // ✅ 修復 #6：Lazy Render 支援
       if (!force && window._renderedDays.has(dayData.day)) return;
 
       const section = document.getElementById(sectionId); if (!section) return;
@@ -1083,7 +1334,6 @@ document.addEventListener('DOMContentLoaded', () => {
       let html = `<div class="mb-8"><div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-lg shadow-md shrink-0">${dayData.emoji}</div><div class="flex-1"><span class="text-[11px] font-bold text-sky-600 tracking-wider">${escapeHtml(dayData.dateLabel)}</span><h2 class="text-sm md:text-lg font-extrabold text-slate-800 leading-tight">${escapeHtml(dayData.title)}</h2>${dayData.subtitle ? `<p class="text-[10px] text-slate-500 mt-0.5">${escapeHtml(dayData.subtitle)}</p>` : ""}${weatherHtml}</div></div><button onclick="openVlogPlanModal(${dayData.day})" class="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-full shadow-sm shrink-0 ml-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></div><div class="timeline">`;
 
       dayData.events.forEach((event, index) => {
-        // ✅ 修復 #9：只有第一個事件預設展開，不再依賴 data.js 的 open
         const isOpen = index === 0 ? "open" : "";
         const tagHtml = event.tag ? `<span class="tag">${escapeHtml(event.tag.text)}</span>` : "";
         const timeParts = event.time.split(" - ");
@@ -1093,7 +1343,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const shoppingItems = loadShoppingItems(event.title);
         const shoppingBadge = shoppingItems.length > 0 ? ` <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">${shoppingItems.length}</span>` : '';
 
-        // ✅ 修復 #2：改用 data-event-title，避免注入
         const safeTitle = escAttr(event.title);
         const shootBtnHtml = `<div class="flex flex-wrap gap-1 mt-1"><button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button><button onclick="openShoppingModal(this.dataset.eventTitle)" data-event-title="${safeTitle}" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單${shoppingBadge}</button></div>`;
 
@@ -1103,14 +1352,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const savedDiary = localStorage.getItem(`diary_day_${dayData.day}_${currentUser || 'guest'}`) || "";
       html += `<div class="mt-4 mb-6 bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-200 rounded-2xl p-3"><div class="flex items-center gap-2 mb-1.5"><span class="text-base">📖</span><strong class="text-xs text-slate-800">今日旅行日記</strong><button onclick="saveDiary(${dayData.day})" class="ml-auto text-[10px] bg-sky-500 hover:bg-sky-600 text-white px-2 py-0.5 rounded font-bold transition">儲存</button></div><textarea id="diary-input-${dayData.day}" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-1.5 px-2.5 text-[11px] resize-none">${escapeHtml(savedDiary)}</textarea></div>`;
 
-      // ✅ 修復 #1：只加一次 </div></div>，並只賦值一次 innerHTML
       html += `</div></div>`;
       section.innerHTML = html;
 
-      // 圖片淡入
       setupImageFadeIn(section);
 
-      // ✅ 修復：為內容區的圖片加入燈箱
       section.querySelectorAll('.event-content-wrapper').forEach(wrapper => {
         const contentImgs = wrapper.querySelectorAll('.event-collapsible img');
         if (contentImgs.length === 0) return;
@@ -1122,7 +1368,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
 
-      // 計算展開按鈕
       setTimeout(() => {
         dayData.events.forEach((_, index) => {
           const wrapper = document.getElementById(`collapsible-${dayData.day}-${index}`);
@@ -1139,7 +1384,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }, 150);
 
-      // ✅ 標記已渲染
       window._renderedDays.add(dayData.day);
     }
 
@@ -1232,12 +1476,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================== 記帳本 ====================
     function openLedgerAdd() { const lc = document.getElementById('ledger-frame-container'); const iframe = document.getElementById('ledger-iframe'); if (lc && iframe) { haptic(12); lc.classList.remove('hidden-view'); lc.style.cssText = 'position: fixed; inset: 0; z-index: 9990; background: #f8fafc; overflow: auto;'; let attempts = 0; const tryOpen = () => { if (iframe.contentWindow && iframe.contentWindow.openExpenseModal) { iframe.contentWindow.openExpenseModal(); } else if (attempts < 10) { attempts++; setTimeout(tryOpen, 200); } else { showToast('記帳本載入失敗', '⚠️'); } }; tryOpen(); } }
 
-    // ==================== ✅ 修復 #6：切換 Day 時觸發 Lazy Render ====================
+    // ==================== 切換 Day ====================
     function switchDay(day) {
       window._lastActiveDay = day;
       haptic(6);
 
-      // ✅ Lazy Render：如果該 Day 尚未渲染，則渲染
       const dayData = winterItineraries.find(d => d.day === day);
       if (dayData && !window._renderedDays.has(day)) {
         renderDayItinerary(`day-section-${day}`, dayData);
@@ -1278,6 +1521,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cloudData.checkedItems) { state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking }; }
         if (Array.isArray(cloudData.customBookingItems)) { customBookingItems = cloudData.customBookingItems.slice(); localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems)); }
         if (cloudData.userData) { cloudUserData = cloudData.userData; }
+        if (cloudData.userPins) { cloudUserPins = cloudData.userPins; }
         saveLocalCheckedItems(); renderBookingChecklist(); renderEquipChecklist(); renderAllShoppingContent();
         showToast("✅ 已同步最新資料", "☁️"); haptic(10);
       }).catch(e => { showToast("❌ 同步失敗", "⚠️"); });
