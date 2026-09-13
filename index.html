@@ -297,9 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 
   <div id="app-root">
-  <header id="app-header" class="app-header"></header>
-  <div class="header-fade"></div>                              <!-- ← 新增這一行 -->
-  <div id="main-itinerary-view" class="view-container view-active">
+    <header id="app-header" class="app-header"></header>
+    <div class="header-fade"></div>
+    <div id="main-itinerary-view" class="view-container view-active">
       <main class="max-w-6xl mx-auto px-4 mt-4">
         <div class="space-y-6">
           <div class="sticky top-0 z-40 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-2.5 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
@@ -812,6 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
       updateSnowmanVisual();
       updateTodayButtonVisibility();
       setInterval(updateTodayButtonVisibility, 60 * 1000);
+      setInterval(updateTimelineStatus, 60000);
       fetchUserPinsFromCloud().catch(() => {});
     }
 
@@ -869,6 +870,43 @@ document.addEventListener('DOMContentLoaded', () => {
       haptic(12); setTimeout(() => { const tabs = document.querySelector('.day-tabs-wrapper'); if (tabs) tabs.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
     }
     function updateTodayButtonVisibility() { const btn = document.getElementById('btn-today'); if (!btn) return; const now = Date.now(); if (now >= TRIP_START && now <= TRIP_END) { btn.classList.remove('hidden'); } else { btn.classList.add('hidden'); } }
+
+    // ==================== ⭐ 時間軸狀態更新 ====================
+    function updateTimelineStatus() {
+      const now = Date.now();
+      document.querySelectorAll('.timeline-item[data-time]').forEach(item => {
+        const day = parseInt(item.dataset.day);
+        const startTime = item.dataset.time || '';
+        const endTime = item.dataset.endTime || '';
+        if (!tripDates[day - 1]) return;
+
+        const dateStr = tripDates[day - 1];
+        const [sh, sm] = startTime.split(':').map(Number);
+        if (isNaN(sh) || isNaN(sm)) return;
+
+        let eh = sh, em = sm;
+        if (endTime && endTime.trim() && endTime.trim() !== '-') {
+          const [h, m] = endTime.split(':').map(Number);
+          if (!isNaN(h) && !isNaN(m)) { eh = h; em = m; }
+        } else {
+          eh = sh + 2;
+          if (eh >= 24) { eh = 23; em = 59; }
+        }
+
+        const startTs = new Date(`${dateStr}T${String(sh).padStart(2,'0')}:${String(sm).padStart(2,'0')}:00+08:00`).getTime();
+        const endTs = new Date(`${dateStr}T${String(eh).padStart(2,'0')}:${String(em).padStart(2,'0')}:00+08:00`).getTime();
+
+        item.classList.remove('status-done', 'status-active', 'status-upcoming');
+
+        if (now > endTs) {
+          item.classList.add('status-done');
+        } else if (now >= startTs && now <= endTs) {
+          item.classList.add('status-active');
+        } else {
+          item.classList.add('status-upcoming');
+        }
+      });
+    }
 
     // ==================== Modal 手勢關閉 ====================
     function setupModalDrag(modals) {
@@ -1390,7 +1428,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const safeTitle = escAttr(event.title);
         const shootBtnHtml = `<div class="flex flex-wrap gap-1 mt-1"><button onclick="openShootTipsModal(${dayData.day}, ${index})" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button><button onclick="openShoppingModal(this.dataset.eventTitle)" data-event-title="${safeTitle}" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單${shoppingBadge}</button></div>`;
 
-        html += `<div class="timeline-item"><div class="timeline-node"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div><div class="timeline-card"><div class="timeline-time"><span><svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>${escapeHtml(startTime)}${endTime ? `<span class="mx-1 text-slate-400">–</span>${escapeHtml(endTime)}` : ""}</span></div><details ${isOpen} data-day="${dayData.day}" data-index="${index}" class="group glass-card rounded-2xl relative overflow-hidden event-card"><div class="itinerary-cat-strip"></div><summary class="flex items-start gap-3 p-3 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none pl-5"><div class="flex-1 min-w-0 pr-8"><div class="flex flex-wrap items-center gap-2 mb-1">${tagHtml}</div><h3 class="text-[13px] md:text-[15px] font-bold text-slate-800 leading-tight">${escapeHtml(event.title)}</h3>${shootBtnHtml}${event.location ? `<div class="text-[11px] text-slate-500 mt-0.5">📍 ${escapeHtml(event.location)}</div>` : ""}</div><div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="event-content-wrapper p-3 pt-0 pb-4 border-t border-slate-50/80 bg-slate-50/30">${event.img ? `<div class="mt-2 rounded-xl overflow-hidden shadow-sm cursor-pointer" onclick="openLightbox(['${escAttr(event.img)}'], 0)"><img src="${escAttr(event.img)}" alt="${escAttr(event.title)}" class="lazy-fade w-full h-32 object-cover" loading="lazy" decoding="async"></div>` : ''}${event.navUrl || event.title ? `<a href="${escAttr(event.navUrl || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(event.title))}" target="_blank" class="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-xs font-bold py-2 rounded-xl transition active:scale-95 shadow-sm mt-2 mb-2"><span>📍</span> 導航前往 ${escapeHtml(event.navName || "景點")}</a>` : '<div class="h-2"></div>'}<div class="event-collapsible" id="collapsible-${dayData.day}-${index}">${event.content}</div><button type="button" class="expand-btn hidden" data-expand-btn="${dayData.day}-${index}" onclick="toggleContent(${dayData.day}, ${index})"><span>展開完整攻略</span><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button></div></details></div></div>`;
+        html += `<div class="timeline-item" data-time="${escapeHtml(startTime)}" data-end-time="${escapeHtml(endTime)}" data-day="${dayData.day}"><div class="timeline-node"></div><div class="timeline-card"><details ${isOpen} data-day="${dayData.day}" data-index="${index}" class="group glass-card rounded-2xl relative overflow-hidden event-card"><div class="itinerary-cat-strip"></div><summary class="flex items-start gap-3 p-3 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none pl-5"><div class="flex-1 min-w-0 pr-8"><div class="flex flex-wrap items-center gap-2 mb-1"><span class="event-time-pill">🕐 ${escapeHtml(startTime)}${endTime ? '–' + escapeHtml(endTime) : ''}</span>${tagHtml}</div>
       });
 
       const savedDiary = localStorage.getItem(`diary_day_${dayData.day}_${currentUser || 'guest'}`) || "";
@@ -1426,6 +1464,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         });
+        updateTimelineStatus();
       }, 150);
 
       window._renderedDays.add(dayData.day);
@@ -1546,6 +1585,7 @@ document.addEventListener('DOMContentLoaded', () => {
           targetSection.style.transform = 'translateY(0)';
         });
       }
+      setTimeout(updateTimelineStatus, 50);
     }
 
     // ==================== Service Worker ====================
