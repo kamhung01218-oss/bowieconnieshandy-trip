@@ -81,6 +81,42 @@ body.modal-open #ledger-root { transform: scale(0.96); border-radius: 16px; filt
 body { overscroll-behavior-y: contain; touch-action: pan-y; }
 .glass-card { background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); border:1px solid rgba(186,230,253,0.6); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.05); }
 
+/* Loading overlay */
+#cloud-loading {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  transition: opacity 0.3s ease;
+}
+#cloud-loading.hidden-loading { opacity: 0; pointer-events: none; }
+.cloud-spinner {
+  width: 40px; height: 40px;
+  border: 4px solid rgba(2, 132, 199, 0.15);
+  border-top-color: #0284c7;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 寫入中指示器 */
+#sync-indicator {
+  position: fixed; top: 8px; right: 8px; z-index: 300;
+  background: rgba(2, 132, 199, 0.9);
+  color: white; font-size: 10px; font-weight: 700;
+  padding: 4px 10px; border-radius: 999px;
+  display: none; align-items: center; gap: 5px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+#sync-indicator.active { display: inline-flex; }
+#sync-indicator .dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: white; animation: pulse 0.8s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
   #snow-fall, #snow-fall * { display:none !important; }
@@ -93,6 +129,15 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
 
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
+  <!-- 雲端載入遮罩 -->
+  <div id="cloud-loading">
+    <div class="cloud-spinner"></div>
+    <p class="text-xs font-bold text-slate-600">☁️ 正在從雲端載入資料…</p>
+  </div>
+
+  <!-- 寫入中指示器 -->
+  <div id="sync-indicator"><span class="dot"></span><span>同步中…</span></div>
+
   <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！" style="left: 15px;">
     <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="snowGrad" cx="50%" cy="30%" r="60%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dbeafe"/></radialGradient><linearGradient id="hatGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient></defs><circle cx="32" cy="48" r="13" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/><circle cx="32" cy="30" r="10" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/><path d="M22 24 L42 24 L40 16 L24 16 Z" fill="url(#hatGrad)"/><rect x="26" y="14" width="12" height="3" rx="1.5" fill="#b91c1c"/><circle cx="32" cy="14" r="3" fill="#ef4444"/><path d="M26 34 Q32 38 38 34 L37 42 L27 42 Z" fill="#3b82f6"/><path d="M28 42 L28 48 L32 45 L36 48 L36 42" fill="#2563eb"/><circle cx="28" cy="28" r="2" fill="#1e293b"/><circle cx="36" cy="28" r="2" fill="#1e293b"/><ellipse cx="32" cy="31" rx="1.8" ry="3" fill="#f97316"/><path d="M26 35 Q32 40 38 35" stroke="#475569" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M22 32 L16 28" stroke="#92400e" stroke-width="2" stroke-linecap="round"/><path d="M42 32 L48 28" stroke="#92400e" stroke-width="2" stroke-linecap="round"/><ellipse cx="28" cy="45" rx="3" ry="1.5" fill="white" opacity="0.8"/></svg>
   </div>
@@ -100,7 +145,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
     <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="foxBody" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#fdba74"/><stop offset="100%" stop-color="#f97316"/></linearGradient><radialGradient id="foxCheek" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fecdd3"/><stop offset="100%" stop-color="#fda4af"/></radialGradient></defs><path d="M58 44 Q68 38 62 28 Q56 20 48 26 Q44 30 46 38 Q50 48 58 44 Z" fill="url(#foxBody)"/><path d="M58 44 Q64 42 62 34 Q58 28 52 32" fill="#fff" opacity="0.5"/><ellipse cx="34" cy="42" rx="20" ry="14" fill="url(#foxBody)"/><path d="M20 22 L16 10 L28 16 Z" fill="#f97316"/><path d="M20 22 L18 14 L26 18 Z" fill="#fed7aa"/><path d="M48 22 L52 10 L40 16 Z" fill="#f97316"/><path d="M48 22 L50 14 L42 18 Z" fill="#fed7aa"/><circle cx="34" cy="26" r="14" fill="url(#foxBody)"/><ellipse cx="27" cy="30" rx="6" ry="5" fill="url(#foxCheek)" opacity="0.7"/><ellipse cx="41" cy="30" rx="6" ry="5" fill="url(#foxCheek)" opacity="0.7"/><ellipse cx="29" cy="24" rx="3" ry="4" fill="#1e293b"/><ellipse cx="39" cy="24" rx="3" ry="4" fill="#1e293b"/><circle cx="30" cy="23" r="1.2" fill="white"/><circle cx="40" cy="23" r="1.2" fill="white"/><path d="M32 31 L36 31 L34 34 Z" fill="#1e293b"/><path d="M32 34 Q34 36 36 34" stroke="#1e293b" stroke-width="1.2" fill="none"/><path d="M26 48 Q28 54 24 56" stroke="#f97316" stroke-width="4" stroke-linecap="round"/><path d="M40 48 Q42 54 38 56" stroke="#f97316" stroke-width="4" stroke-linecap="round"/><ellipse cx="32" cy="40" rx="6" ry="2" fill="white" opacity="0.3"/></svg>
   </div>
 
-  <!-- 統一危險操作密碼彈窗 -->
+  <!-- 危險操作密碼彈窗 -->
   <div id="dangerous-password-modal" class="fixed inset-0 z-[200] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
       <h3 class="text-lg font-black mb-2 flex items-center gap-2">
@@ -120,8 +165,8 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
 
     <div class="bg-white border border-slate-200 p-2 rounded-2xl shadow-sm flex items-center justify-between gap-3">
       <div class="flex items-center gap-1.5 flex-wrap">
-        <span id="cloud-sync-badge" class="text-[10px] bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-sky-200">
-          <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span> 雲端連線
+        <span id="cloud-sync-badge" class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-slate-200">
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 連線中…
         </span>
         <span class="text-xs font-black text-slate-800">隨行記帳本</span>
         <span id="current-user-badge" class="text-[10px] px-2 py-0.5 rounded-full font-bold hidden"></span>
@@ -235,7 +280,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
           </div>
         </div>
         <div class="bg-sky-50 border border-sky-200 rounded-2xl p-3 text-[11px] text-sky-800 leading-relaxed">
-          ℹ️ 歷史記錄已同步到雲端，所有已登入成員均可查看。清空歷史需要管理員密碼。
+          ☁️ 所有資料即時同步至雲端。清空歷史需要管理員密碼。
         </div>
         <div class="space-y-2" id="history-list-container">
           <div class="text-slate-400 text-xs italic text-center py-12">尚無記錄</div>
@@ -337,17 +382,15 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
   </div>
 
   <script>
-    // ==================== 觸覺回饋 ====================
+    // ==================== 工具 ====================
     function haptic(ms = 10) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
-
-    // ==================== escapeHtml ====================
     function escapeHtml(str) {
       if (str == null) return '';
       return String(str).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
     }
     function escAttr(str) { return escapeHtml(str); }
 
-    // ==================== 權限系統（非訪客可寫） ====================
+    // ==================== 權限 ====================
     function getCurrentUser() {
       try {
         if (window.parent && window.parent !== window && window.parent.currentUser) {
@@ -364,10 +407,9 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       else showToast("🔒 請先登入身份才能修改", "⚠️");
     }
 
-    // ==================== 危險操作密碼驗證 ====================
+    // ==================== 危險操作密碼 ====================
     const DANGEROUS_PASSWORD = "admin2027";
     let _pendingDangerousAction = null;
-
     function ensureDangerousAccess(actionFn, title, desc) {
       if (!canWrite()) { showToast("🔒 請先登入身份", "⚠️"); return; }
       _pendingDangerousAction = actionFn;
@@ -386,9 +428,8 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       const input = document.getElementById('dangerous-password-input').value.trim();
       if (input === DANGEROUS_PASSWORD) {
         document.getElementById('dangerous-password-modal').classList.add('hidden');
-        showToast('✅ 驗證成功');
-        haptic(15);
-        if (_pendingDangerousAction) { const action = _pendingDangerousAction; _pendingDangerousAction = null; action(); }
+        showToast('✅ 驗證成功'); haptic(15);
+        if (_pendingDangerousAction) { const a = _pendingDangerousAction; _pendingDangerousAction = null; a(); }
       } else {
         document.getElementById('dangerous-password-error').classList.remove('hidden');
         document.getElementById('dangerous-password-input').value = '';
@@ -396,7 +437,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       }
     }
 
-    // ==================== Firebase 初始化 ====================
+    // ==================== Firebase ====================
     const firebaseConfig = (function() {
       try {
         if (window.parent && window.parent !== window && window.parent.FIREBASE_CONFIG) return window.parent.FIREBASE_CONFIG;
@@ -411,7 +452,6 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
         measurementId: "G-9EN9JG5F3F"
       };
     })();
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
@@ -423,34 +463,33 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
     let exchangeRates = { ...DEFAULT_RATES };
     const RATES_UPDATE_INTERVAL = 24 * 60 * 60 * 1000;
     let rateFetchAttempts = 0;
-
     async function fetchLiveRates() {
       try {
-        const response = await fetch('https://open.er-api.com/v6/latest/JPY');
-        const data = await response.json();
-        if (data && data.rates) {
+        const r = await fetch('https://open.er-api.com/v6/latest/JPY');
+        const d = await r.json();
+        if (d && d.rates) {
           exchangeRates.JPY = 1;
-          exchangeRates.HKD = 1 / data.rates.JPY * data.rates.HKD;
-          exchangeRates.TWD = 1 / data.rates.JPY * data.rates.TWD;
-          exchangeRates.USD = 1 / data.rates.JPY * data.rates.USD;
-          exchangeRates.CNY = 1 / data.rates.JPY * data.rates.CNY;
+          exchangeRates.HKD = 1 / d.rates.JPY * d.rates.HKD;
+          exchangeRates.TWD = 1 / d.rates.JPY * d.rates.TWD;
+          exchangeRates.USD = 1 / d.rates.JPY * d.rates.USD;
+          exchangeRates.CNY = 1 / d.rates.JPY * d.rates.CNY;
           localStorage.setItem('tohoku_exchange_rates', JSON.stringify({ rates: exchangeRates, updatedAt: Date.now() }));
           rateFetchAttempts = 0;
         }
       } catch(e) {
-        const cached = localStorage.getItem('tohoku_exchange_rates');
-        if (cached) { try { const d = JSON.parse(cached); if (d.rates) exchangeRates = d.rates; } catch(e2) {} }
+        const c = localStorage.getItem('tohoku_exchange_rates');
+        if (c) { try { const d = JSON.parse(c); if (d.rates) exchangeRates = d.rates; } catch(e2) {} }
         if (rateFetchAttempts < 3) { rateFetchAttempts++; setTimeout(fetchLiveRates, rateFetchAttempts * 2000); }
       }
     }
     function initExchangeRates() {
-      const cached = localStorage.getItem('tohoku_exchange_rates');
-      if (cached) { try { const d = JSON.parse(cached); if (d.rates) exchangeRates = d.rates; } catch(e) {} }
+      const c = localStorage.getItem('tohoku_exchange_rates');
+      if (c) { try { const d = JSON.parse(c); if (d.rates) exchangeRates = d.rates; } catch(e) {} }
       fetchLiveRates();
       setInterval(fetchLiveRates, RATES_UPDATE_INTERVAL);
     }
 
-    // ==================== 成員資料 ====================
+    // ==================== 成員 ====================
     const members = ["余生", "bowie", "shandy", "connie"];
     const memberSymbols = { "余生": "余", "bowie": "B", "shandy": "S", "connie": "C" };
     const memberStyle = {
@@ -460,25 +499,33 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       "connie": { badge:"bg-purple-100 text-purple-800 border-purple-200", solid:"bg-purple-500 text-white border-purple-600", soft:"bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100", text:"text-purple-600", avatar:"bg-purple-400" }
     };
 
-    // ==================== 全域狀態 ====================
-    let state = { viewingAs: members[0], activePayer: members[0], activeSplitWith: [...members], expenses: [], history: [] };
+    // ==================== ✅ 全新架構：state 只是雲端鏡像 ====================
+    let state = {
+      expenses: [],
+      history: [],
+      settlementStatus: {},
+      historyClearedAt: 0,
+      loaded: false  // 是否已完成首次雲端載入
+    };
     let editingExpenseId = null;
     let lastExpense = null;
-    let settlementStatus = JSON.parse(localStorage.getItem("settlement_status")) || {};
 
-    // ✅ 追蹤本地已刪但雲端尚未確認的帳單 ID（避免刪除被 echo 覆蓋）
-    let pendingDeletes = new Set(JSON.parse(localStorage.getItem('tohoku_pending_deletes') || '[]'));
-    function savePendingDeletes() {
-      localStorage.setItem('tohoku_pending_deletes', JSON.stringify([...pendingDeletes]));
+    // 用來追蹤當前是否有寫入進行中（顯示同步指示器）
+    let pendingWrites = 0;
+    function incPendingWrites() {
+      pendingWrites++;
+      document.getElementById('sync-indicator')?.classList.add('active');
+    }
+    function decPendingWrites() {
+      pendingWrites = Math.max(0, pendingWrites - 1);
+      if (pendingWrites === 0) {
+        setTimeout(() => {
+          if (pendingWrites === 0) document.getElementById('sync-indicator')?.classList.remove('active');
+        }, 300);
+      }
     }
 
-    // ✅ 歷史記錄清空時間戳（跨裝置同步）
-    let historyClearedAt = Number(localStorage.getItem('tohoku_history_cleared_at') || 0);
-    function saveHistoryClearedAt() {
-      localStorage.setItem('tohoku_history_cleared_at', String(historyClearedAt));
-    }
-
-    // ==================== 顯示當前用戶徽章 ====================
+    // ==================== 顯示用戶徽章 ====================
     function updateCurrentUserBadge() {
       const badge = document.getElementById('current-user-badge');
       if (!badge) return;
@@ -495,23 +542,22 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       }
     }
 
-    // ==================== 雲端同步 ====================
-    let _snapshotUnsub = null;
-
+    // ==================== 雲端狀態徽章 ====================
     function updateCloudBadge(isConnected) {
       const badge = document.getElementById("cloud-sync-badge");
       if (!badge) return;
       if (isConnected) {
         badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span> 雲端連線';
-        badge.classList.remove("bg-red-100","text-red-700","border-red-200");
+        badge.classList.remove("bg-red-100","text-red-700","border-red-200","bg-slate-100","text-slate-500","border-slate-200");
         badge.classList.add("bg-sky-100","text-sky-700","border-sky-200");
       } else {
         badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> 連線中斷';
-        badge.classList.remove("bg-sky-100","text-sky-700","border-sky-200");
+        badge.classList.remove("bg-sky-100","text-sky-700","border-sky-200","bg-slate-100","text-slate-500","border-slate-200");
         badge.classList.add("bg-red-100","text-red-700","border-red-200");
       }
     }
 
+    // ==================== 認證 + 監聽 ====================
     let _authPromise = null;
     const initAuth = async () => {
       if (_authPromise) return _authPromise;
@@ -523,152 +569,91 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
     };
     initAuth();
 
+    let _snapshotUnsub = null;
     auth.onAuthStateChanged(user => {
       if (!user) { initAuth().catch(() => {}); return; }
       updateCloudBadge(true);
       if (_snapshotUnsub) return;
 
       _snapshotUnsub = window.dbRef.onSnapshot(docSnap => {
-        if (!docSnap.exists) return;
-
-        // ✅ 跳過本地未確認寫入的快照，避免被自己的 echo 覆蓋（刪除不同步問題根因）
-        if (docSnap.metadata?.hasPendingWrites) return;
-
-        const cloudData = docSnap.data();
-
-        // ---------- 同步 historyClearedAt（取最新） ----------
-        if (cloudData.historyClearedAt && cloudData.historyClearedAt > historyClearedAt) {
-          historyClearedAt = cloudData.historyClearedAt;
-          saveHistoryClearedAt();
-        }
-
-        // ---------- Expenses 合併 ----------
-        if (cloudData && cloudData.expenses) {
-          const cloudExpenses = sanitizeExpenses(cloudData.expenses);
-
-          // ✅ 過濾掉本地正在刪除的項目（避免復活）
-          const afterDeletesFilter = cloudExpenses.filter(ce => !pendingDeletes.has(ce.id));
-
-          // ✅ 保留本地尚未同步的新增
-          const localPending = state.expenses.filter(le => le.pendingSync === true);
-          const pendingIds = new Set(localPending.map(p => p.id));
-          const cloudFiltered = afterDeletesFilter.filter(ce => !pendingIds.has(ce.id));
-
-          state.expenses = [...cloudFiltered, ...localPending];
-
-          // 去重
-          const uniqueMap = new Map();
-          state.expenses.forEach(item => uniqueMap.set(item.id, item));
-          state.expenses = Array.from(uniqueMap.values());
-
-          saveLocalExpenses();
-          updateLedgerUI();
-        }
-
-        // ---------- History 合併（只保留清空時間之後的） ----------
-        if (cloudData.history && Array.isArray(cloudData.history)) {
-          const cloudHistory = sanitizeHistory(cloudData.history);
-
-          // ✅ 只保留清空時間之後的雲端歷史
-          const validCloud = cloudHistory.filter(h => (h.timestamp || 0) > historyClearedAt);
-          const cloudIds = new Set(validCloud.map(h => h.id).filter(Boolean));
-
-          // ✅ 本地保留尚未同步的（且未被清空）
-          const localPending = state.history.filter(h =>
-            h.pendingSync &&
-            !cloudIds.has(h.id) &&
-            (h.timestamp || 0) > historyClearedAt
-          );
-
-          state.history = [...localPending, ...validCloud]
-            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-            .slice(0, 200);
-
-          saveLocalExpenses();
-          renderHistoryList();
-        }
-
-        // ---------- settlementStatus ----------
-        if (cloudData.settlementStatus && typeof cloudData.settlementStatus === 'object') {
-          settlementStatus = cloudData.settlementStatus;
-          localStorage.setItem("settlement_status", JSON.stringify(settlementStatus));
-          renderSuggestedSettlements();
-        }
-      }, err => updateCloudBadge(false));
-    });
-
-    // ✅ 同步到雲端（含 replaceHistory 模式用於清空歷史）
-    async function syncDataToCloud(mode = 'merge') {
-      try {
-        if (!auth.currentUser) return;
-
-        // ========== 模式：直接覆蓋（用於清空歷史） ==========
-        if (mode === 'replaceHistory') {
-          await window.dbRef.set({
-            expenses: state.expenses,
-            history: [],
-            historyClearedAt: historyClearedAt,
-            settlementStatus: settlementStatus,
-            updatedAt: Date.now()
-          }, { merge: true });
-
-          pendingDeletes.clear();
-          savePendingDeletes();
-          state.expenses.forEach(e => { e.pendingSync = false; });
-          saveLocalExpenses();
-          updateCloudBadge(true);
+        // 首次載入：若文件不存在則初始化
+        if (!docSnap.exists) {
+          window.dbRef.set({
+            expenses: [], history: [], settlementStatus: {},
+            historyClearedAt: 0, updatedAt: Date.now()
+          }).catch(e => console.warn("init failed:", e));
           return;
         }
 
-        // ========== 模式：合併（預設） ==========
-        const docSnap = await window.dbRef.get();
-        const cloudData = docSnap.exists ? docSnap.data() : {};
-        const cloudHistory = cloudData.history || [];
+        const data = docSnap.data();
 
-        // ✅ 只保留清空時間之後的雲端歷史
-        const validCloudHistory = sanitizeHistory(cloudHistory)
-          .filter(h => (h.timestamp || 0) > historyClearedAt);
+        // ✅ 直接用雲端資料覆蓋本地 state —— 唯一真相來源
+        state.expenses = sanitizeExpenses(data.expenses || []);
+        state.history = sanitizeHistory(data.history || []);
+        state.settlementStatus = data.settlementStatus || {};
+        state.historyClearedAt = data.historyClearedAt || 0;
+        state.loaded = true;
 
-        const localIds = new Set(state.history.map(h => h.id).filter(Boolean));
-        const mergedHistory = [
-          ...state.history,
-          ...validCloudHistory.filter(h => !localIds.has(h.id))
-        ]
-          .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-          .slice(0, 200);
+        // 隱藏載入遮罩
+        document.getElementById('cloud-loading')?.classList.add('hidden-loading');
 
-        await window.dbRef.set({
-          expenses: state.expenses,
-          history: mergedHistory,
-          historyClearedAt: historyClearedAt,
-          settlementStatus: settlementStatus,
-          updatedAt: Date.now()
-        }, { merge: true });
-
-        // ✅ 同步成功後清除 pendingDeletes
-        pendingDeletes.clear();
-        savePendingDeletes();
-
-        // 更新本地 state
-        state.history = mergedHistory;
-        state.history.forEach(h => { h.pendingSync = false; });
-        state.expenses.forEach(e => { e.pendingSync = false; });
-        saveLocalExpenses();
-        updateCloudBadge(true);
-      } catch(e) {
-        console.warn("[syncDataToCloud]", e);
+        // 重繪全部 UI
+        updateLedgerUI();
+      }, err => {
+        console.warn("[onSnapshot error]", err);
         updateCloudBadge(false);
+      });
+    });
+
+    // ==================== ✅ 核心：Transaction 讀-改-寫 ====================
+    /**
+     * 通用交易函式
+     * @param {Function} mutateFn - (currentData) => ({ 要更新的欄位 })
+     */
+    async function runTransaction(mutateFn) {
+      if (!canWrite()) throw new Error("NO_PERMISSION");
+      if (!auth.currentUser) await initAuth();
+      incPendingWrites();
+      try {
+        const result = await db.runTransaction(async (transaction) => {
+          const docRef = window.dbRef;
+          const docSnap = await transaction.get(docRef);
+          const current = docSnap.exists ? docSnap.data() : {
+            expenses: [], history: [], settlementStatus: {}, historyClearedAt: 0
+          };
+          const updates = mutateFn(current) || {};
+          updates.updatedAt = Date.now();
+          transaction.set(docRef, updates, { merge: true });
+          return updates;
+        });
+        return result;
+      } finally {
+        decPendingWrites();
       }
+    }
+
+    // ==================== 歷史記錄輔助 ====================
+    function createHistoryEntry(type, expenseRef, details) {
+      const u = getCurrentUser() || "未知";
+      return {
+        id: "h-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5),
+        type,
+        expenseId: expenseRef?.id || null,
+        expenseDesc: expenseRef?.desc || null,
+        actionBy: u,
+        actionSymbol: memberSymbols[u] || (u[0] || "?").toUpperCase(),
+        actionTime: new Date().toLocaleString("zh-HK"),
+        timestamp: Date.now(),
+        details
+      };
     }
 
     // ==================== 可折疊 ====================
     function toggleCollapsible(sectionId) {
-      const section = document.getElementById(sectionId);
-      const arrow = document.getElementById(sectionId + '-arrow');
-      if (!section || !arrow) return;
-      section.classList.toggle('collapsed');
-      section.classList.toggle('expanded');
-      arrow.style.transform = section.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
+      const s = document.getElementById(sectionId); const a = document.getElementById(sectionId + '-arrow');
+      if (!s || !a) return;
+      s.classList.toggle('collapsed'); s.classList.toggle('expanded');
+      a.style.transform = s.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
       haptic(5);
     }
 
@@ -858,47 +843,27 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       showToast("📋 已沿用上次記錄"); haptic(8);
     }
     function setCurrency(code) {
-      const currencySelect = document.getElementById("ledger-currency");
-      if (currencySelect) { currencySelect.value = code; updateCurrencyButtons(); updateEstimatedHKD(); }
+      const s = document.getElementById("ledger-currency");
+      if (s) { s.value = code; updateCurrencyButtons(); updateEstimatedHKD(); }
     }
     function updateCurrencyButtons() {
-      const currencySelect = document.getElementById("ledger-currency");
+      const s = document.getElementById("ledger-currency");
       document.querySelectorAll('.currency-btn').forEach(btn => {
-        btn.classList.toggle('active', currencySelect.value === btn.getAttribute('data-currency'));
+        btn.classList.toggle('active', s.value === btn.getAttribute('data-currency'));
       });
     }
     function updateEstimatedHKD() {
-      const amountInput = document.getElementById("ledger-amount");
-      const currencySelect = document.getElementById("ledger-currency");
-      const estText = document.getElementById("estimated-hkd-text");
-      if (!amountInput || !currencySelect || !estText) return;
-      const amount = parseFloat(amountInput.value.replace(/,/g, "")) || 0;
-      const rate = exchangeRates[currencySelect.value] || 0.052;
-      estText.innerText = `約合 ${(amount * rate).toFixed(2)} HKD`;
+      const a = document.getElementById("ledger-amount");
+      const c = document.getElementById("ledger-currency");
+      const t = document.getElementById("estimated-hkd-text");
+      if (!a || !c || !t) return;
+      const amount = parseFloat(a.value.replace(/,/g, "")) || 0;
+      const rate = exchangeRates[c.value] || 0.052;
+      t.innerText = `約合 ${(amount * rate).toFixed(2)} HKD`;
     }
 
-    // ==================== 新增歷史記錄輔助 ====================
-    function addHistoryEntry(type, expenseRef, details) {
-      const u = getCurrentUser() || "未知";
-      const entry = {
-        id: "h-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5),
-        type,
-        expenseId: expenseRef?.id || null,
-        expenseDesc: expenseRef?.desc || null,
-        actionBy: u,
-        actionSymbol: memberSymbols[u] || (u[0] || "?").toUpperCase(),
-        actionTime: new Date().toLocaleString("zh-HK"),
-        timestamp: Date.now(),
-        details,
-        pendingSync: true
-      };
-      state.history.unshift(entry);
-      if (state.history.length > 200) state.history = state.history.slice(0, 200);
-      return entry;
-    }
-
-    // ==================== 儲存支出 ====================
-    function saveExpense() {
+    // ==================== 儲存支出（Transaction） ====================
+    async function saveExpense() {
       const day = document.getElementById("ledger-day");
       const category = document.getElementById("ledger-category");
       const desc = document.getElementById("ledger-desc");
@@ -908,83 +873,101 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       const descValue = desc.value.trim();
       const amountValue = parseFloat(amount.value.replace(/,/g, ""));
       if (!descValue || isNaN(amountValue) || amountValue <= 0) { showToast("請輸入說明與金額", "⚠️"); haptic(50); return; }
-      ensureWriteAccess(() => {
-        const rate = exchangeRates[currency.value] || 0.052;
-        const now = Date.now();
-        const currentTime = new Date(now).toLocaleString("zh-HK");
-        const expenseData = {
-          day: parseInt(day.value), category: category.value, desc: descValue, remark, amount: amountValue,
-          currency: currency.value, amountInHKD: parseFloat((amountValue * rate).toFixed(2)),
-          payer: state.activePayer, splitWith: [...state.activeSplitWith],
-          createdAt: now, updatedAt: now, createdBy: state.activePayer, createdTime: currentTime, updatedBy: state.activePayer,
-          pendingSync: true
-        };
-        if (editingExpenseId) {
-          const index = state.expenses.findIndex(e => e.id === editingExpenseId);
-          if (index > -1) {
-            const oldDesc = state.expenses[index].desc;
-            addHistoryEntry("edit", { id: editingExpenseId, desc: oldDesc }, `修改了「${escapeHtml(oldDesc)}」`);
-            state.expenses[index] = { ...state.expenses[index], ...expenseData };
-            showToast("✅ 已更新支出");
+      if (!canWrite()) { showToast("🔒 請先登入身份才能修改", "⚠️"); return; }
+
+      const rate = exchangeRates[currency.value] || 0.052;
+      const now = Date.now();
+      const currentTime = new Date(now).toLocaleString("zh-HK");
+      const expenseData = {
+        day: parseInt(day.value), category: category.value, desc: descValue, remark, amount: amountValue,
+        currency: currency.value, amountInHKD: parseFloat((amountValue * rate).toFixed(2)),
+        payer: state.activePayer, splitWith: [...state.activeSplitWith],
+        createdAt: now, updatedAt: now, createdBy: state.activePayer, createdTime: currentTime, updatedBy: state.activePayer
+      };
+
+      const isEditing = !!editingExpenseId;
+      const editingId = editingExpenseId;
+
+      try {
+        await runTransaction(current => {
+          let expenses = [...(current.expenses || [])];
+          let history = [...(current.history || [])];
+          let newEntry;
+
+          if (isEditing) {
+            const idx = expenses.findIndex(e => e.id === editingId);
+            if (idx > -1) {
+              const old = expenses[idx];
+              history.unshift(createHistoryEntry("edit", old, `修改了「${escapeHtml(old.desc)}」`));
+              expenses[idx] = { ...old, ...expenseData };
+            }
+          } else {
+            newEntry = { id: "exp-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5), ...expenseData };
+            expenses.push(newEntry);
+            history.unshift(createHistoryEntry("add", newEntry, `新增了「${escapeHtml(newEntry.desc)}」(${newEntry.amount} ${newEntry.currency})`));
           }
-          editingExpenseId = null;
-        } else {
-          const expense = { id: "exp-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5), ...expenseData };
-          state.expenses.push(expense);
-          lastExpense = expense;
-          addHistoryEntry("add", expense, `新增了「${escapeHtml(expense.desc)}」(${expense.amount} ${expense.currency})`);
-          showToast("✅ 已新增支出");
-          showConfetti();
-        }
-        haptic(10);
-        saveLocalExpenses();
-        syncDataToCloud();
-        updateLedgerUI();
+
+          history = history.slice(0, 200);
+          return { expenses, history };
+        });
+
+        editingExpenseId = null;
         closeExpenseModal();
+        showToast(isEditing ? "✅ 已更新支出" : "✅ 已新增支出");
+        if (!isEditing) showConfetti();
+        haptic(10);
         setTimeout(() => {
           document.querySelector("#expense-modal h3").innerHTML = '<span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✏️</span> 記帳';
           document.getElementById("btn-save-expense").innerHTML = '<span>儲存</span><span class="text-lg">✓</span>';
         }, 300);
-      });
+      } catch(e) {
+        console.error("[saveExpense]", e);
+        if (e.message === "NO_PERMISSION") showToast("🔒 請先登入身份", "⚠️");
+        else showToast("❌ 儲存失敗，請稍後再試", "⚠️");
+      }
     }
 
-    // ==================== 刪除（含撤銷 + 同步修復） ====================
-    function deleteExpense(expenseId) {
+    // ==================== 刪除（Transaction） ====================
+    async function deleteExpense(expenseId) {
       ensureWriteAccess(async () => {
         const expense = state.expenses.find(e => e.id === expenseId);
         if (!expense) return;
-
-        const originalIndex = state.expenses.indexOf(expense);
         const snapshot = { ...expense };
 
-        // ✅ 標記為「刪除中」，onSnapshot 會過濾掉（避免復活）
-        pendingDeletes.add(expenseId);
-        savePendingDeletes();
+        try {
+          await runTransaction(current => {
+            const expenses = (current.expenses || []).filter(e => e.id !== expenseId);
+            let history = [...(current.history || [])];
+            history.unshift(createHistoryEntry("delete", snapshot, `刪除了「${escapeHtml(snapshot.desc)}」(${snapshot.amount} ${snapshot.currency})`));
+            history = history.slice(0, 200);
+            return { expenses, history };
+          });
 
-        const historyEntry = addHistoryEntry("delete", expense, `刪除了「${escapeHtml(expense.desc)}」(${expense.amount} ${expense.currency})`);
-        state.expenses = state.expenses.filter(e => e.id !== expenseId);
-        saveLocalExpenses();
-        updateLedgerUI();
+          showToast("🗑 已刪除");
+          haptic(10);
 
-        // ✅ 立即同步
-        await syncDataToCloud();
-
-        showUndoToast(`已刪除「${expense.desc}」`, "🗑", async () => {
-          // 撤銷：清除 pendingDeletes
-          pendingDeletes.delete(expenseId);
-          savePendingDeletes();
-
-          state.history = state.history.filter(h => h !== historyEntry);
-
-          // ✅ 還原時標記為 pendingSync，避免被雲端覆蓋
-          snapshot.pendingSync = true;
-          state.expenses.splice(Math.min(originalIndex, state.expenses.length), 0, snapshot);
-          saveLocalExpenses();
-          updateLedgerUI();
-
-          await syncDataToCloud();
-          showToast("✅ 已還原", "↩️");
-        });
+          // 撤銷：把 snapshot 加回去
+          showUndoToast(`已刪除「${expense.desc}」`, "🗑", async () => {
+            try {
+              await runTransaction(current => {
+                const expenses = [...(current.expenses || [])];
+                // 避免重複
+                if (expenses.some(e => e.id === snapshot.id)) return {};
+                expenses.push(snapshot);
+                let history = [...(current.history || [])];
+                history.unshift(createHistoryEntry("add", snapshot, `還原了「${escapeHtml(snapshot.desc)}」`));
+                history = history.slice(0, 200);
+                return { expenses, history };
+              });
+              showToast("✅ 已還原", "↩️");
+            } catch(e) {
+              showToast("❌ 還原失敗", "⚠️");
+            }
+          });
+        } catch(e) {
+          console.error("[deleteExpense]", e);
+          showToast("❌ 刪除失敗", "⚠️");
+        }
       });
     }
 
@@ -1010,7 +993,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       setTimeout(() => container.remove(), 3000);
     }
 
-    // ==================== 歷史記錄渲染 ====================
+    // ==================== 渲染歷史 ====================
     function renderHistoryList() {
       const container = document.getElementById("history-list-container");
       const countBadge = document.getElementById("history-count-badge");
@@ -1023,32 +1006,27 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
         const typeText = item.type === "add" ? "新增" : item.type === "edit" ? "修改" : item.type === "clear" ? "清空" : "刪除";
         const card = document.createElement("div");
         card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start gap-2";
-        card.innerHTML = `<span class="text-xl">${escapeHtml(item.actionSymbol || "📝")}</span><div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1 flex-wrap"><span class="text-[10px] font-black px-2 py-0.5 rounded-full ${typeColor}">${typeText}</span><span class="text-[10px] font-bold text-slate-700">${escapeHtml(item.actionBy)}</span><span class="text-[9px] text-slate-400">${escapeHtml(item.actionTime)}</span>${item.pendingSync ? '<span class="text-[9px] text-amber-500 font-bold">⏳ 同步中</span>' : ''}</div><p class="text-[11px] text-slate-600">${escapeHtml(item.details)}</p></div>`;
+        card.innerHTML = `<span class="text-xl">${escapeHtml(item.actionSymbol || "📝")}</span><div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1 flex-wrap"><span class="text-[10px] font-black px-2 py-0.5 rounded-full ${typeColor}">${typeText}</span><span class="text-[10px] font-bold text-slate-700">${escapeHtml(item.actionBy)}</span><span class="text-[9px] text-slate-400">${escapeHtml(item.actionTime)}</span></div><p class="text-[11px] text-slate-600">${escapeHtml(item.details)}</p></div>`;
         container.appendChild(card);
       });
     }
 
-    // ==================== 清空歷史記錄 ====================
+    // ==================== 清空歷史（Transaction） ====================
     function openClearHistoryConfirm() {
       if (!canWrite()) { showToast("🔒 請先登入身份", "⚠️"); return; }
       if (state.history.length === 0) { showToast("尚無歷史記錄", "ℹ️"); return; }
-
       const count = state.history.length;
-
       ensureDangerousAccess(async () => {
-        // ✅ 更新清空時間戳（跨裝置同步）
-        historyClearedAt = Date.now();
-        saveHistoryClearedAt();
-
-        state.history = [];
-        saveLocalExpenses();
-        renderHistoryList();
-
-        // ✅ 使用 replaceHistory 模式，直接清空雲端歷史
-        await syncDataToCloud('replaceHistory');
-
-        showToast(`🗑 已清空 ${count} 筆歷史紀錄`, "🗑");
-        haptic(20);
+        try {
+          await runTransaction(() => ({
+            history: [],
+            historyClearedAt: Date.now()
+          }));
+          showToast(`🗑 已清空 ${count} 筆歷史紀錄`);
+          haptic(20);
+        } catch(e) {
+          showToast("❌ 清空失敗", "⚠️");
+        }
       }, "清空歷史記錄", `即將刪除 ${count} 筆歷史記錄。此操作無法復原，請輸入管理員密碼。`);
     }
 
@@ -1198,7 +1176,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       _lastSettlements = settlements;
       const totalDebt = debtors.reduce((sum, d) => sum + d.amount, 0).toFixed(2);
       const totalCredit = creditors.reduce((sum, c) => sum + c.amount, 0).toFixed(2);
-      const settledCount = settlements.filter(s => settlementStatus[`${s.from}_${s.to}_${s.amount}`]).length;
+      const settledCount = settlements.filter(s => state.settlementStatus[`${s.from}_${s.to}_${s.amount}`]).length;
       const settledPercent = settlements.length > 0 ? Math.round((settledCount / settlements.length) * 100) : 0;
       document.getElementById("debt-total").innerText = `$${totalDebt}`;
       document.getElementById("credit-total").innerText = `$${totalCredit}`;
@@ -1211,27 +1189,35 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
         const fromSymbol = memberSymbols[s.from] || "";
         const toSymbol = memberSymbols[s.to] || "";
         const key = `${s.from}_${s.to}_${s.amount}`;
-        const isDone = settlementStatus[key] || false;
+        const isDone = state.settlementStatus[key] || false;
         container.innerHTML += `<div class="bg-slate-50 border ${isDone ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200'} p-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm hover:shadow-md transition"><div class="flex items-center gap-1.5 md:gap-2"><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${escapeHtml(s.from[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.from)} ${escapeHtml(fromSymbol)}</span></div><span class="text-slate-400 text-[10px] font-bold flex flex-col items-center px-1"><span>轉帳</span><span class="text-[8px] mt-0.5 text-slate-300">→</span></span><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${toStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${escapeHtml(s.to[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.to)} ${escapeHtml(toSymbol)}</span></div></div><div class="flex items-center gap-2"><div class="text-right"><span class="block text-[9px] text-slate-400 mb-0.5 font-medium">金額</span><strong class="text-sm md:text-base font-black ${isDone ? 'text-emerald-600 line-through' : 'text-rose-600'}">$${escapeHtml(s.amount)}</strong></div><button onclick="toggleSettlementDone('${escAttr(s.from)}','${escAttr(s.to)}','${escAttr(s.amount)}')" class="px-2 py-1 rounded-lg font-bold text-[10px] ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600 hover:bg-emerald-100 hover:text-emerald-700'} transition">${isDone ? '✓ 已還' : '標記已還'}</button></div></div>`;
       });
     }
 
-    function toggleSettlementDone(from, to, amount) {
-      const key = `${from}_${to}_${amount}`;
-      settlementStatus[key] = !settlementStatus[key];
-      localStorage.setItem("settlement_status", JSON.stringify(settlementStatus));
-      renderSuggestedSettlements();
-      syncDataToCloud();
-      showToast(settlementStatus[key] ? "✅ 已標記為已還款" : "🔁 已取消已還款");
-      haptic(10);
+    async function toggleSettlementDone(from, to, amount) {
+      ensureWriteAccess(async () => {
+        const key = `${from}_${to}_${amount}`;
+        const newValue = !state.settlementStatus[key];
+        try {
+          await runTransaction(current => {
+            const settlementStatus = { ...(current.settlementStatus || {}) };
+            settlementStatus[key] = newValue;
+            return { settlementStatus };
+          });
+          showToast(newValue ? "✅ 已標記為已還款" : "🔁 已取消已還款");
+          haptic(10);
+        } catch(e) {
+          showToast("❌ 操作失敗", "⚠️");
+        }
+      });
     }
+
     function resetSettlementStatus() {
       ensureDangerousAccess(async () => {
-        settlementStatus = {};
-        localStorage.removeItem("settlement_status");
-        renderSuggestedSettlements();
-        await syncDataToCloud();
-        showToast("🔄 已重置清償狀態");
+        try {
+          await runTransaction(() => ({ settlementStatus: {} }));
+          showToast("🔄 已重置清償狀態");
+        } catch(e) { showToast("❌ 失敗", "⚠️"); }
       }, "重置清償狀態", "即將清除所有「已還款」標記。請輸入管理員密碼。");
     }
     function copySettlementPlan() {
@@ -1239,8 +1225,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       let plan = "📋 建議還款 (HKD)\n=====================\n";
       _lastSettlements.forEach(s => { plan += `${s.from} → ${s.to} : $${s.amount}\n`; });
       plan += `\n共 ${_lastSettlements.length} 筆轉帳`;
-      copyText(plan);
-      showToast("📋 已複製還款計畫");
+      copyText(plan); showToast("📋 已複製還款計畫");
     }
     function changeViewAs(member) { state.viewingAs = member; renderExpensesList(); }
     function exportLedgerText() {
@@ -1267,8 +1252,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       const modal = document.getElementById("confirm-modal");
       backdrop.classList.remove("hidden"); modal.classList.remove("hidden"); modal.offsetWidth;
       backdrop.classList.remove("opacity-0"); modal.classList.remove("opacity-0","scale-95");
-      modal.classList.add("opacity-100","scale-100");
-      haptic(8);
+      modal.classList.add("opacity-100","scale-100"); haptic(8);
     }
     function closeConfirmModal() {
       const backdrop = document.getElementById("confirm-modal-backdrop");
@@ -1280,71 +1264,62 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
     function confirmAndClearExpenses() {
       closeConfirmModal();
       ensureDangerousAccess(async () => {
-        // 記錄一筆「清空」到歷史（在清空前）
-        addHistoryEntry("clear", null, `清空了所有記帳資料（原有 ${state.expenses.length} 筆）`);
-
-        state.expenses = [];
-        lastExpense = null;
-        settlementStatus = {};
-        pendingDeletes.clear();
-        savePendingDeletes();
-
-        saveLocalExpenses();
-        await syncDataToCloud();
-        updateLedgerUI();
-        showToast("🗑 已清空所有記帳", "🗑");
-        haptic(20);
+        try {
+          await runTransaction(current => {
+            const count = (current.expenses || []).length;
+            const historyEntry = createHistoryEntry("clear", null, `清空了所有記帳資料（原有 ${count} 筆）`);
+            const history = [historyEntry, ...(current.history || [])].slice(0, 200);
+            return { expenses: [], settlementStatus: {}, history };
+          });
+          showToast("🗑 已清空所有記帳"); haptic(20);
+        } catch(e) { showToast("❌ 清空失敗", "⚠️"); }
       }, "清空所有記帳", "此操作將刪除所有記帳與清償狀態，無法復原。請輸入管理員密碼。");
     }
 
-    // ==================== 動態角色 ====================
+    // ==================== 角色 / 雪花 ====================
     let characterTimeout = null;
     function spawnCharacters() {
       clearTimeout(characterTimeout);
-      const snowman = document.getElementById('snowman'); const fox = document.getElementById('fox');
-      if (!snowman || !fox) return;
-      snowman.classList.remove('show','greet'); fox.classList.remove('show','greet');
-      snowman.classList.add('hide'); fox.classList.add('hide');
+      const s = document.getElementById('snowman'); const f = document.getElementById('fox');
+      if (!s || !f) return;
+      s.classList.remove('show','greet'); f.classList.remove('show','greet');
+      s.classList.add('hide'); f.classList.add('hide');
       if (Math.random() < 0.5) { characterTimeout = setTimeout(spawnCharacters, Math.random() * 5000 + 4000); return; }
-      const character = Math.random() < 0.5 ? snowman : fox;
-      character.classList.remove('hide'); character.classList.add('show');
-      setTimeout(() => { character.classList.add('greet'); }, 600);
+      const c = Math.random() < 0.5 ? s : f;
+      c.classList.remove('hide'); c.classList.add('show');
+      setTimeout(() => { c.classList.add('greet'); }, 600);
       characterTimeout = setTimeout(() => {
-        character.classList.remove('show','greet'); character.classList.add('hide');
+        c.classList.remove('show','greet'); c.classList.add('hide');
         setTimeout(spawnCharacters, Math.random() * 5000 + 3000);
       }, 4000);
     }
-    function jump(characterId) {
-      const char = document.getElementById(characterId);
-      if (char) {
-        char.classList.add('jumping');
-        setTimeout(() => char.classList.remove('jumping'), 600);
-        haptic(10);
-        showToast(`你點了一下${characterId === 'snowman' ? '雪人' : '狐狸'}！`, "❄️");
+    function jump(id) {
+      const c = document.getElementById(id);
+      if (c) {
+        c.classList.add('jumping'); setTimeout(() => c.classList.remove('jumping'), 600); haptic(10);
+        showToast(`你點了一下${id === 'snowman' ? '雪人' : '狐狸'}！`, "❄️");
       }
     }
     function initRandomCharacters() { setTimeout(spawnCharacters, 2000); }
-
-    // ==================== 雪花 ====================
     function initSnowEffect() {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      const snowContainer = document.getElementById("snow-fall");
-      if (!snowContainer) return;
-      snowContainer.innerHTML = "";
+      const c = document.getElementById("snow-fall");
+      if (!c) return;
+      c.innerHTML = "";
       const count = window.innerWidth < 768 ? 15 : 30;
-      const animations = ["snowfall","snowfall-small","snowfall-medium","snowfall-large"];
+      const anims = ["snowfall","snowfall-small","snowfall-medium","snowfall-large"];
       const colors = ["#ffffff","#f0f9ff","#e0f2fe","#bae6fd","#ffffff"];
       for (let i = 0; i < count; i++) {
         const s = document.createElement("div");
         s.className = "snowflake";
         const size = Math.random() * 7 + 3;
-        s.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; opacity: ${Math.random() * 0.4 + 0.1}; animation: ${animations[Math.floor(Math.random() * animations.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%; box-shadow: 0 0 4px rgba(224, 242, 254, 0.8);`;
+        s.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; opacity: ${Math.random() * 0.4 + 0.1}; animation: ${anims[Math.floor(Math.random() * anims.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%; box-shadow: 0 0 4px rgba(224, 242, 254, 0.8);`;
         if (size > 8) s.style.boxShadow = "0 0 10px 2px rgba(255,255,255,0.4)";
-        snowContainer.appendChild(s);
+        c.appendChild(s);
       }
     }
 
-    // ==================== Modal 拖動關閉 ====================
+    // ==================== Modal 拖動 ====================
     (function setupExpenseModalDrag() {
       const modal = document.getElementById('expense-modal');
       const backdrop = document.getElementById('expense-modal-backdrop');
@@ -1391,19 +1366,33 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
     // ==================== Service Worker ====================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then(reg => { console.log('SW registered:', reg.scope); }).catch(err => console.log('SW failed:', err));
+        navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW registered:', reg.scope)).catch(err => console.log('SW failed:', err));
       });
     }
 
-    // ==================== 本地儲存 ====================
-    function saveLocalExpenses() {
-      localStorage.setItem("tohoku_expenses_2027", JSON.stringify(state.expenses));
-      localStorage.setItem("tohoku_history_2027", JSON.stringify(state.history));
-    }
-    function loadLocalExpenses() {
-      const saved = localStorage.getItem("tohoku_expenses_2027");
-      if (saved) { try { state.expenses = sanitizeExpenses(JSON.parse(saved)); } catch(e) { state.expenses = []; } }
-    }
+    // ==================== 清理（一次性） ====================
+    // 移除舊版本留下的 localStorage 資料，避免混淆
+    try {
+      localStorage.removeItem('tohoku_expenses_2027');
+      localStorage.removeItem('tohoku_history_2027');
+      localStorage.removeItem('settlement_status');
+      localStorage.removeItem('tohoku_pending_deletes');
+      localStorage.removeItem('tohoku_history_cleared_at');
+    } catch(e) {}
+
+    // ==================== 初始化 ====================
+    window.addEventListener("DOMContentLoaded", () => {
+      updateCurrentUserBadge();
+      initSnowEffect();
+      initRandomCharacters();
+      initExchangeRates();
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'tohoku_current_user') updateCurrentUserBadge();
+      });
+      setInterval(updateCurrentUserBadge, 2000);
+    });
+
+    // ==================== 資料清理 ====================
     function sanitizeExpenses(e) {
       return Array.isArray(e) ? e.filter(item => item !== null && typeof item === "object").map(item => ({
         ...item,
@@ -1421,8 +1410,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
         createdTime: item.createdTime || "",
         createdBy: item.createdBy || "",
         updatedAt: item.updatedAt || Date.now(),
-        updatedBy: item.updatedBy || "",
-        pendingSync: !!item.pendingSync
+        updatedBy: item.updatedBy || ""
       })) : [];
     }
     function sanitizeHistory(h) {
@@ -1436,27 +1424,9 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
         actionSymbol: item.actionSymbol || "?",
         actionTime: item.actionTime || "",
         timestamp: item.timestamp || Date.now(),
-        details: item.details || "",
-        pendingSync: !!item.pendingSync
+        details: item.details || ""
       })) : [];
     }
-
-    // ==================== 初始化 ====================
-    window.addEventListener("DOMContentLoaded", () => {
-      const savedHistory = localStorage.getItem("tohoku_history_2027");
-      if (savedHistory) { try { state.history = sanitizeHistory(JSON.parse(savedHistory)); } catch(e) { state.history = []; } }
-      loadLocalExpenses();
-      updateLedgerUI();
-      updateCurrentUserBadge();
-      initSnowEffect();
-      initRandomCharacters();
-      initExchangeRates();
-
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'tohoku_current_user') updateCurrentUserBadge();
-      });
-      setInterval(updateCurrentUserBadge, 2000);
-    });
   </script>
 </body>
 </html>
