@@ -297,8 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 
   <div id="app-root">
-    <header id="app-header" class="app-header"></header>
-    <div id="main-itinerary-view" class="view-container view-active">
+  <header id="app-header" class="app-header"></header>
+  <div class="header-fade"></div>                              <!-- ← 新增這一行 -->
+  <div id="main-itinerary-view" class="view-container view-active">
       <main class="max-w-6xl mx-auto px-4 mt-4">
         <div class="space-y-6">
           <div class="sticky top-0 z-40 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-2.5 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">

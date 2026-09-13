@@ -18,7 +18,21 @@ html {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
 }
-
+/* ========== Header 過渡帶 ========== */
+.header-fade {
+  height: 50px;
+  background: linear-gradient(
+    to bottom,
+    #0c1929 0%,
+    #14304d 25%,
+    #7dd3fc 65%,
+    #f0f9ff 100%
+  );
+  margin-top: -1px;
+  pointer-events: none;
+  position: relative;
+  z-index: 1;
+}
 body {
   font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
