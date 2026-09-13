@@ -118,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
           renderAllShoppingContent();
         }
       }
-      // ✅ 同步雲端 PIN 碼
       if (cloudData.userPins && typeof cloudData.userPins === 'object') {
         cloudUserPins = cloudData.userPins;
       }
@@ -203,17 +202,15 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <!-- ✅ 帳戶設定 Modal -->
+  <!-- 帳戶設定 Modal -->
   <div id="account-modal" class="fixed inset-0 z-[150] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative">
       <button onclick="closeAccountModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">✕</button>
-
       <div class="text-center mb-5">
         <div id="account-avatar" class="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center text-white font-black text-2xl shadow-lg"></div>
         <h2 id="account-username" class="text-lg font-black text-slate-900"></h2>
         <p class="text-xs text-slate-500 mt-1">帳戶設定</p>
       </div>
-
       <div class="space-y-2">
         <button onclick="openChangePinModal()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-left transition">
           <span class="flex items-center gap-3">
@@ -225,7 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
           </span>
           <span class="text-sky-400 text-lg">›</span>
         </button>
-
         <button onclick="doLogoutAndSwitch()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-left transition">
           <span class="flex items-center gap-3">
             <span class="text-xl">🔄</span>
@@ -236,49 +232,35 @@ document.addEventListener('DOMContentLoaded', () => {
           </span>
           <span class="text-amber-400 text-lg">›</span>
         </button>
-
-        <button onclick="closeAccountModal()" class="w-full px-4 py-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold text-sm transition">
-          取消
-        </button>
+        <button onclick="closeAccountModal()" class="w-full px-4 py-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold text-sm transition">取消</button>
       </div>
     </div>
   </div>
 
-  <!-- ✅ 修改 PIN Modal -->
+  <!-- 修改 PIN Modal -->
   <div id="change-pin-modal" class="fixed inset-0 z-[160] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative">
       <button onclick="closeChangePinModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">✕</button>
-
       <div class="text-center mb-5">
         <div class="text-4xl mb-2">🔑</div>
         <h2 class="text-lg font-black text-slate-900">修改 PIN 碼</h2>
         <p class="text-xs text-slate-500 mt-1">為 <span id="change-pin-username" class="font-bold text-sky-600"></span> 設定新密碼</p>
       </div>
-
       <div class="space-y-3 mb-5">
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">目前 PIN 碼</label>
-          <input id="pin-old" type="password" inputmode="text" autocomplete="off"
-                 class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-center tracking-widest font-black text-lg focus:outline-none focus:border-sky-500"
-                 placeholder="••••">
+          <input id="pin-old" type="password" inputmode="text" autocomplete="off" class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-center tracking-widest font-black text-lg focus:outline-none focus:border-sky-500" placeholder="••••">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">新 PIN 碼（至少 4 個字元）</label>
-          <input id="pin-new" type="password" inputmode="text" autocomplete="off"
-                 class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-center tracking-widest font-black text-lg focus:outline-none focus:border-sky-500"
-                 placeholder="••••">
+          <input id="pin-new" type="password" inputmode="text" autocomplete="off" class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-center tracking-widest font-black text-lg focus:outline-none focus:border-sky-500" placeholder="••••">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">確認新 PIN 碼</label>
-          <input id="pin-confirm" type="password" inputmode="text" autocomplete="off"
-                 onkeydown="if(event.key==='Enter')submitChangePin()"
-                 class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-center tracking-widest font-black text-lg focus:outline-none focus:border-sky-500"
-                 placeholder="••••">
+          <input id="pin-confirm" type="password" inputmode="text" autocomplete="off" onkeydown="if(event.key==='Enter')submitChangePin()" class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-center tracking-widest font-black text-lg focus:outline-none focus:border-sky-500" placeholder="••••">
         </div>
       </div>
-
       <p id="change-pin-error" class="text-xs text-red-500 font-bold mb-3 text-center hidden"></p>
-
       <div class="flex gap-2">
         <button onclick="closeChangePinModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition">取消</button>
         <button id="change-pin-submit-btn" onclick="submitChangePin()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3 rounded-xl transition active:scale-95">確認修改</button>
@@ -419,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="password-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closePasswordModal()"><div class="modal-box bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative" onclick="event.stopPropagation()"><button onclick="closePasswordModal()" class="modal-close">✕</button><h2 class="text-xl font-black mb-2 flex items-center gap-2">🔒 輸入管理密碼</h2><p class="text-xs text-slate-500 mb-4">輸入密碼以解鎖「行前預訂」編輯權限</p><input id="password-input" type="password" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm mb-3" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')verifyPassword()"><div class="flex gap-2"><button onclick="verifyPassword()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">確認</button><button onclick="closePasswordModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl">取消</button></div><p id="password-error" class="text-xs text-red-500 font-bold mt-2 hidden">⚠️ 密碼錯誤</p></div></div>
 
   <script>
-    // ==================== ✅ 全域 escapeHtml ====================
+    // ==================== escapeHtml ====================
     function escapeHtml(str) {
       if (str == null) return '';
       return String(str).replace(/[&<>"']/g, c => ({
@@ -428,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function escAttr(str) { return escapeHtml(str); }
 
-    // ==================== ✅ PIN 雜湊（SHA-256 + salt） ====================
+    // ==================== PIN 雜湊 ====================
     const PIN_SALT = "tohoku2027_winter_";
     async function hashPin(pin) {
       try {
@@ -449,18 +431,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // ==================== ✅ 驗證用戶 PIN ====================
     async function verifyUserPinAsync(user, inputPin) {
-      // 1. 若雲端有該用戶的 hash → 比對 hash
       if (cloudUserPins && cloudUserPins[user] && cloudUserPins[user].hash) {
         const inputHash = await hashPin(inputPin);
         return inputHash === cloudUserPins[user].hash;
       }
-      // 2. Fallback：預設明文（首次使用、尚未改過密碼）
       return USER_PINS[user] === inputPin;
     }
 
-    // ==================== ✅ 從雲端載入 PIN ====================
     async function fetchUserPinsFromCloud() {
       try {
         if (!window.dbRef) return {};
@@ -479,10 +457,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let state = { currentMainTab: "itinerary", checkedItems: {} };
     let currentUser = null;
     let cloudUserData = {};
-    let cloudUserPins = {};  // ✅ 雲端 PIN 碼快取
+    let cloudUserPins = {};
     let exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
 
-    // ✅ 所有用戶預設 PIN 都係 1234
     const USER_PINS = {
       "余生": "1234",
       "bowie": "1234",
@@ -557,7 +534,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // ✅ 改為 async 驗證（支援雲端 hash）
     async function verifyUserPin() {
       const input = document.getElementById('pin-input').value.trim();
       const inputField = document.getElementById('pin-input');
@@ -565,7 +541,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const okBtn = document.querySelector('#pin-area button');
 
       if (!input) { haptic(50); return; }
-
       if (okBtn) { okBtn.disabled = true; okBtn.textContent = "驗證中..."; }
 
       try {
@@ -607,12 +582,8 @@ document.addEventListener('DOMContentLoaded', () => {
       haptic(8);
     }
 
-    // ✅ switchUser 改為開啟帳戶設定
-    function switchUser() {
-      openAccountModal();
-    }
+    function switchUser() { openAccountModal(); }
 
-    // ✅ 實際執行登出
     function doLogoutAndSwitch() {
       closeAccountModal();
       setTimeout(() => {
@@ -625,15 +596,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 150);
     }
 
-    // ==================== ✅ 帳戶設定 Modal ====================
+    // ==================== 帳戶設定 Modal ====================
     function openAccountModal() {
       if (!currentUser) return;
       const m = document.getElementById('account-modal');
       if (!m) return;
-
       const avatar = document.getElementById('account-avatar');
       const nameEl = document.getElementById('account-username');
-
       nameEl.textContent = currentUser;
       if (currentUser === "訪客") {
         avatar.textContent = "👤";
@@ -642,7 +611,6 @@ document.addEventListener('DOMContentLoaded', () => {
         avatar.textContent = currentUser[0].toUpperCase();
         avatar.style.background = USER_COLORS[currentUser] || "linear-gradient(135deg,#64748b,#475569)";
       }
-
       m.classList.remove('hidden');
       haptic(8);
     }
@@ -651,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
       haptic(6);
     }
 
-    // ==================== ✅ 修改 PIN Modal ====================
+    // ==================== 修改 PIN Modal ====================
     function openChangePinModal() {
       if (!currentUser || currentUser === "訪客") {
         showToast("👤 訪客無法設定 PIN 碼", "⚠️");
@@ -674,7 +642,6 @@ document.addEventListener('DOMContentLoaded', () => {
       haptic(6);
     }
 
-    // ==================== ✅ 提交修改 PIN ====================
     async function submitChangePin() {
       const oldPin = document.getElementById('pin-old').value.trim();
       const newPin = document.getElementById('pin-new').value.trim();
@@ -704,7 +671,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         const newHash = await hashPin(newPin);
-
         if (!window.dbRef) throw new Error("雲端未連線");
         const docSnap = await window.dbRef.get();
         const cloudData = docSnap.exists ? docSnap.data() : {};
@@ -714,10 +680,8 @@ document.addEventListener('DOMContentLoaded', () => {
           updatedAt: Date.now(),
           updatedBy: currentUser
         };
-
         await window.dbRef.set({ userPins: allPins, updatedAt: Date.now() }, { merge: true });
         cloudUserPins = allPins;
-
         showToast("✅ PIN 碼已更新，下次登入請用新密碼", "🔑");
         haptic(20);
         closeChangePinModal();
@@ -763,7 +727,39 @@ document.addEventListener('DOMContentLoaded', () => {
             onOverview: () => openTripOverview(),
             onSwitchTab: (tab) => switchMainTab(tab),
             onScrollToDay: (day) => { switchDay(day); setTimeout(() => { const el = document.getElementById("day-section-" + day); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 120); },
-            getExpenseCount: () => { try { const s = localStorage.getItem("tohoku_expenses_2027"); return s ? JSON.parse(s).length : 0; } catch (e) { return 0; } }
+            getExpenseCount: () => { try { const s = localStorage.getItem("tohoku_expenses_2027"); return s ? JSON.parse(s).length : 0; } catch (e) { return 0; } },
+
+            // ✅ 進度回調（版面 E）
+            getBookingProgress: () => {
+              const all = [...bookingList, ...customBookingItems];
+              const done = all.filter(item => {
+                const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+                return state.checkedItems[key] === true;
+              }).length;
+              return { done, total: all.length };
+            },
+            getEquipProgress: () => {
+              if (!currentUser || currentUser === "訪客") return { done: 0, total: 0 };
+              const userData = getUserData();
+              const all = [...equipmentList, ...(userData.customEquip || [])];
+              const done = all.filter(item => {
+                const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
+                return userData.equipChecked[key] === true;
+              }).length;
+              return { done, total: all.length };
+            },
+            getShoppingProgress: () => {
+              if (!currentUser || currentUser === "訪客") return { done: 0, total: 0 };
+              const userData = getUserData();
+              let total = 0, done = 0;
+              Object.values(userData.shopping || {}).forEach(items => {
+                (items || []).forEach(item => {
+                  total++;
+                  if (item.planned) done++;
+                });
+              });
+              return { done, total };
+            }
           }
         });
       }
@@ -776,7 +772,6 @@ document.addEventListener('DOMContentLoaded', () => {
       updateSnowmanVisual();
       updateTodayButtonVisibility();
       setInterval(updateTodayButtonVisibility, 60 * 1000);
-      // ✅ 主動載入雲端 PIN 碼
       fetchUserPinsFromCloud().catch(() => {});
     }
 
@@ -796,7 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.updateUserBadge = updateUserBadge;
 
-    // ==================== 用戶資料讀取/寫入 ====================
+    // ==================== 用戶資料 ====================
     function getUserData() {
       if (!currentUser || currentUser === "訪客") return { equipChecked: {}, customEquip: [], shopping: {} };
       if (!cloudUserData[currentUser]) {
@@ -824,10 +819,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // ==================== 觸覺回饋 ====================
     function haptic(ms = 10) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
 
-    // ==================== 跳今天 ====================
     function scrollToToday() {
       const now = Date.now();
       if (now < TRIP_START) { switchDay(1); showToast("📅 行程尚未開始，已跳到 D1", "✈️"); }
@@ -914,7 +907,6 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => { hideView.classList.add('hidden-view'); hideView.classList.remove('view-exit-left', 'view-exit-right'); if (isGoingToLedger) { const iframe = document.getElementById("ledger-iframe"); if (iframe) iframe.style.height = "calc(100dvh - 60px)"; } }, 400);
     }
 
-    // ==================== 圖片淡入 ====================
     function setupImageFadeIn(container = document) { const imgs = container.querySelectorAll('img.lazy-fade:not(.loaded)'); imgs.forEach(img => { if (img.complete && img.naturalWidth > 0) img.classList.add('loaded'); else { img.addEventListener('load', () => img.classList.add('loaded'), { once: true }); img.addEventListener('error', () => { img.classList.add('loaded'); img.style.display = 'none'; }, { once: true }); } }); }
 
     // ==================== 管理員密碼 ====================
@@ -936,13 +928,57 @@ document.addEventListener('DOMContentLoaded', () => {
     function showUndoToast(message, icon, onUndo) { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (!toast) return; const oldBtn = document.getElementById("toast-undo-btn"); if (oldBtn) oldBtn.remove(); m.innerText = message; i.innerText = icon; const btn = document.createElement("button"); btn.id = "toast-undo-btn"; btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto"; btn.textContent = "撤銷"; btn.onclick = (e) => { e.stopPropagation(); if (window._undoCallback) { window._undoCallback(); window._undoCallback = null; } const t = document.getElementById("toast"); if (t) { t.classList.remove("translate-y-0", "opacity-100"); t.classList.add("-translate-y-24", "opacity-0"); } if (window.toastTimeout) clearTimeout(window.toastTimeout); haptic(15); }; toast.appendChild(btn); window._undoCallback = onUndo; toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); if (window.toastTimeout) clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => { toast.classList.remove("translate-y-0", "opacity-100"); toast.classList.add("-translate-y-24", "opacity-0"); window._undoCallback = null; setTimeout(() => { const b = document.getElementById("toast-undo-btn"); if (b) b.remove(); }, 300); }, 5000); }
     function copyText(text) { try { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); } catch(e) { navigator.clipboard.writeText(text).catch(() => {}); } }
 
-    // ==================== 行前預訂 ====================
-    const bookingList = [ { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" }, { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" }, { id: "car-pickup", category: "租車", label: "1/21 15:30 機場取車", icon: "⏰" }, { id: "car-dropoff", category: "租車", label: "1/27 13:45 機場還車", icon: "⏰" }, { id: "hotel-akiu", category: "住宿", label: "1/21 秋保溫泉 瑞鳳大飯店 (含自助晚餐)", icon: "🏨" }, { id: "hotel-tendo", category: "住宿", label: "1/22-23 微笑之宿 瀧之湯 (含懷石晚餐)", icon: "🏨" }, { id: "hotel-sendai", category: "住宿", label: "1/24-26 Hotel Grand Bach 仙台 (連住3晚)", icon: "🏨" }, { id: "ticket-ginzan", category: "門票", label: "銀山溫泉 Fast Pass (1/8 23:00搶票)", icon: "🎟️" }, { id: "ticket-zao", category: "門票", label: "藏王纜車優先票 (1/15 23:00搶票)", icon: "🎟️" }, { id: "ticket-springvalley", category: "門票", label: "Spring Valley 雪之冒險王國 (1/24)", icon: "⛷️" }, { id: "ticket-foxvillage", category: "門票", label: "狐狸村入場 (現場購票)", icon: "🦊" }, { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/23 16:30)", icon: "♨️" }, { id: "other-strawberry", category: "其他", label: "寒河江草莓園 (1/23 14:00)", icon: "🍓" } ];
+    // ==================== 行前預訂（含航班、保險等） ====================
+    const bookingList = [
+      // ✈️ 航班
+      { id: "flight-outbound", category: "航班", label: "去程機票：香港 → 仙台 (SDJ)", icon: "✈️" },
+      { id: "flight-inbound", category: "航班", label: "回程機票：仙台 (SDJ) → 香港", icon: "✈️" },
+      { id: "flight-seat", category: "航班", label: "線上選位 / 加購行李", icon: "💺" },
+      { id: "flight-checkin", category: "航班", label: "網路報到 + 下載登機證", icon: "🎫" },
+
+      // 🏨 住宿
+      { id: "hotel-akiu", category: "住宿", label: "1/21 秋保溫泉 瑞鳳大飯店 (含自助晚餐)", icon: "🏨" },
+      { id: "hotel-tendo", category: "住宿", label: "1/22-23 微笑之宿 瀧之湯 (含懷石晚餐)", icon: "🏨" },
+      { id: "hotel-sendai", category: "住宿", label: "1/24-26 Hotel Grand Bach 仙台 (連住3晚)", icon: "🏨" },
+
+      // 🚗 租車
+      { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
+      { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
+      { id: "car-pickup", category: "租車", label: "1/21 15:30 機場取車", icon: "⏰" },
+      { id: "car-dropoff", category: "租車", label: "1/27 13:45 機場還車", icon: "⏰" },
+
+      // 🛡️ 保險
+      { id: "insurance-travel", category: "保險", label: "旅遊平安險 / 意外險", icon: "🛡️" },
+      { id: "insurance-medical", category: "保險", label: "海外突發疾病醫療險", icon: "🏥" },
+      { id: "insurance-trip", category: "保險", label: "旅程不便險（班機/行李延誤）", icon: "🧳" },
+      { id: "insurance-car", category: "保險", label: "租車免責補償 NOC / CDW", icon: "🚙" },
+
+      // 🎟️ 門票
+      { id: "ticket-ginzan", category: "門票", label: "銀山溫泉 Fast Pass (1/8 23:00搶票)", icon: "🎟️" },
+      { id: "ticket-zao", category: "門票", label: "藏王纜車優先票 (1/15 23:00搶票)", icon: "🎟️" },
+      { id: "ticket-springvalley", category: "門票", label: "Spring Valley 雪之冒險王國 (1/24)", icon: "⛷️" },
+      { id: "ticket-foxvillage", category: "門票", label: "狐狸村入場 (現場購票)", icon: "🦊" },
+
+      // 📶 通訊
+      { id: "sim-esim", category: "通訊", label: "日本 eSIM / 上網卡", icon: "📶" },
+      { id: "wifi-router", category: "通訊", label: "WiFi 分享器 (若需要)", icon: "📡" },
+
+      // 📋 其他
+      { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/23 16:30)", icon: "♨️" },
+      { id: "other-strawberry", category: "其他", label: "寒河江草莓園 (1/23 14:00)", icon: "🍓" },
+      { id: "other-passport", category: "其他", label: "護照效期檢查 (需剩餘 6 個月以上)", icon: "🪪" },
+      { id: "other-visit-japan-web", category: "其他", label: "Visit Japan Web 登錄 + QR Code", icon: "📱" },
+      { id: "other-credit-card", category: "其他", label: "信用卡通知銀行 / 開通海外交易", icon: "💳" },
+      { id: "other-cash", category: "其他", label: "日幣現金準備 / 換匯", icon: "💴" }
+    ];
     let customBookingItems = [];
 
     function renderBookingChecklist() {
       const container = document.getElementById("booking-modal-inner"); if (!container) return;
-      const isAdmin = isAdminUnlocked(); const categories = ["租車", "住宿", "門票", "其他"]; const allItems = [...bookingList, ...customBookingItems]; const totalCount = allItems.length;
+      const isAdmin = isAdminUnlocked();
+      const categories = ["航班", "住宿", "租車", "保險", "門票", "通訊", "其他"];
+      const allItems = [...bookingList, ...customBookingItems];
+      const totalCount = allItems.length;
       const doneCount = allItems.filter(item => { const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`; return state.checkedItems[key] === true; }).length;
       const percent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0; const activeTab = modalUIState['booking-modal'].activeTab;
       const modeBanner = isAdmin ? `<div class="bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl p-3 mb-3 flex items-center gap-2.5"><span class="text-xl shrink-0">✏️</span><div class="flex-1 min-w-0"><div class="text-xs font-black text-emerald-800">編輯模式（管理員）</div><div class="text-[10px] text-emerald-600 leading-relaxed">你的修改會自動同步給所有裝置</div></div></div>` : `<div class="bg-gradient-to-r from-sky-50 to-blue-50 border-2 border-sky-200 rounded-xl p-3 mb-3 flex items-center gap-2.5"><span class="text-xl shrink-0">👁️</span><div class="flex-1 min-w-0"><div class="text-xs font-black text-sky-800">唯讀模式</div><div class="text-[10px] text-sky-600 leading-relaxed">資料由管理員同步，你只能查看</div></div><button onclick="forceSyncFromCloud()" class="text-[10px] bg-white hover:bg-sky-50 text-sky-700 border border-sky-300 px-2.5 py-1.5 rounded-lg font-bold shrink-0 transition active:scale-95 shadow-sm">🔄 重新同步</button></div>`;
@@ -962,7 +998,7 @@ document.addEventListener('DOMContentLoaded', () => {
         html += `</div></div></div>`;
       });
       if (isAdmin) {
-        html += `<div class="mt-5 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2">➕ 新增項目</h4><div class="flex gap-2"><input id="new-booking-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><select id="new-booking-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="租車">租車</option><option value="住宿">住宿</option><option value="門票">門票</option><option value="其他">其他</option></select><button onclick="addCustomBooking()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div><div class="flex gap-2 mt-4"><button onclick="checkAllBooking()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button><button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button><button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button></div><div class="mt-3 flex items-center justify-center gap-3 text-center flex-wrap"><button onclick="lockAdmin()" class="text-[10px] text-amber-600 hover:text-amber-800 underline">🔒 暫時鎖定</button><span class="text-[10px] text-slate-300">|</span><button onclick="releaseAdminDevice()" class="text-[10px] text-red-500 hover:text-red-700 underline">❌ 解除此裝置的管理員身分</button></div>`;
+        html += `<div class="mt-5 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2">➕ 新增項目</h4><div class="flex gap-2"><input id="new-booking-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><select id="new-booking-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="航班">航班</option><option value="住宿">住宿</option><option value="租車">租車</option><option value="保險">保險</option><option value="門票">門票</option><option value="通訊">通訊</option><option value="其他">其他</option></select><button onclick="addCustomBooking()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div><div class="flex gap-2 mt-4"><button onclick="checkAllBooking()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button><button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button><button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button></div><div class="mt-3 flex items-center justify-center gap-3 text-center flex-wrap"><button onclick="lockAdmin()" class="text-[10px] text-amber-600 hover:text-amber-800 underline">🔒 暫時鎖定</button><span class="text-[10px] text-slate-300">|</span><button onclick="releaseAdminDevice()" class="text-[10px] text-red-500 hover:text-red-700 underline">❌ 解除此裝置的管理員身分</button></div>`;
       } else {
         html += `<div class="mt-5 text-center"><button onclick="showPasswordModal()" class="text-[11px] bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 px-3 py-1.5 rounded-full font-bold transition">🔓 輸入密碼解鎖編輯</button><p class="text-[10px] text-slate-400 mt-2">🔒 目前為唯讀模式</p></div>`;
       }
@@ -976,12 +1012,13 @@ document.addEventListener('DOMContentLoaded', () => {
       saveLocalCheckedItems();
       syncDataToCloud();
       haptic(5);
+      if (window.AppHeader) window.AppHeader.render();
     }
-    function checkAllBooking() { if (!isAdminUnlocked()) return; [...bookingList, ...customBookingItems].forEach(item => { const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`; state.checkedItems[key] = true; }); saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist(); showToast("✅ 已全部勾選！"); }
-    function uncheckAllBooking() { if (!isAdminUnlocked()) return; [...bookingList, ...customBookingItems].forEach(item => { const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`; state.checkedItems[key] = false; }); saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist(); showToast("🧹 已清除所有勾選！"); }
-    function copyBookingList() { let text = "📌 行前預訂 Check List\n=====================\n"; ["租車", "住宿", "門票", "其他"].forEach(cat => { const items = bookingList.filter(i => i.category === cat); const customs = customBookingItems.filter(i => i.category === cat); const all = [...items, ...customs]; if (all.length === 0) return; text += `\n【${cat}】\n`; all.forEach(item => { const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`; text += `${state.checkedItems[key] ? "✅" : "⬜"} ${item.icon} ${item.label}\n`; }); }); copyText(text); showToast("📋 行前預訂清單已複製！"); }
-    function addCustomBooking() { if (!isAdminUnlocked()) return; const l = document.getElementById("new-booking-label"); const c = document.getElementById("new-booking-category"); const label = l.value.trim(); if (!label) { showToast("請輸入項目名稱", "⚠️"); return; } customBookingItems.push({ id: "custom-" + Date.now(), category: c.value, label, icon: "📌", isCustom: true }); saveCustomItems(); syncDataToCloud(); renderBookingChecklist(); l.value = ""; showToast("已新增項目！"); }
-    function deleteCustomBooking(id) { if (!isAdminUnlocked()) return; const originalIndex = customBookingItems.findIndex(i => i.id === id); if (originalIndex === -1) return; const snapshot = { ...customBookingItems[originalIndex] }; customBookingItems = customBookingItems.filter(i => i.id !== id); saveCustomItems(); syncDataToCloud(); renderBookingChecklist(); showUndoToast(`已刪除「${snapshot.label}」`, "🗑", () => { customBookingItems.splice(Math.min(originalIndex, customBookingItems.length), 0, snapshot); saveCustomItems(); syncDataToCloud(); renderBookingChecklist(); showToast("✅ 已還原", "↩️"); }); }
+    function checkAllBooking() { if (!isAdminUnlocked()) return; [...bookingList, ...customBookingItems].forEach(item => { const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`; state.checkedItems[key] = true; }); saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist(); showToast("✅ 已全部勾選！"); if (window.AppHeader) window.AppHeader.render(); }
+    function uncheckAllBooking() { if (!isAdminUnlocked()) return; [...bookingList, ...customBookingItems].forEach(item => { const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`; state.checkedItems[key] = false; }); saveLocalCheckedItems(); syncDataToCloud(); renderBookingChecklist(); showToast("🧹 已清除所有勾選！"); if (window.AppHeader) window.AppHeader.render(); }
+    function copyBookingList() { let text = "📌 行前預訂 Check List\n=====================\n"; ["航班", "住宿", "租車", "保險", "門票", "通訊", "其他"].forEach(cat => { const items = bookingList.filter(i => i.category === cat); const customs = customBookingItems.filter(i => i.category === cat); const all = [...items, ...customs]; if (all.length === 0) return; text += `\n【${cat}】\n`; all.forEach(item => { const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`; text += `${state.checkedItems[key] ? "✅" : "⬜"} ${item.icon} ${item.label}\n`; }); }); copyText(text); showToast("📋 行前預訂清單已複製！"); }
+    function addCustomBooking() { if (!isAdminUnlocked()) return; const l = document.getElementById("new-booking-label"); const c = document.getElementById("new-booking-category"); const label = l.value.trim(); if (!label) { showToast("請輸入項目名稱", "⚠️"); return; } customBookingItems.push({ id: "custom-" + Date.now(), category: c.value, label, icon: "📌", isCustom: true }); saveCustomItems(); syncDataToCloud(); renderBookingChecklist(); l.value = ""; showToast("已新增項目！"); if (window.AppHeader) window.AppHeader.render(); }
+    function deleteCustomBooking(id) { if (!isAdminUnlocked()) return; const originalIndex = customBookingItems.findIndex(i => i.id === id); if (originalIndex === -1) return; const snapshot = { ...customBookingItems[originalIndex] }; customBookingItems = customBookingItems.filter(i => i.id !== id); saveCustomItems(); syncDataToCloud(); renderBookingChecklist(); if (window.AppHeader) window.AppHeader.render(); showUndoToast(`已刪除「${snapshot.label}」`, "🗑", () => { customBookingItems.splice(Math.min(originalIndex, customBookingItems.length), 0, snapshot); saveCustomItems(); syncDataToCloud(); renderBookingChecklist(); if (window.AppHeader) window.AppHeader.render(); showToast("✅ 已還原", "↩️"); }); }
     function setModalTab(modalId, tab) { modalUIState[modalId].activeTab = tab; haptic(6); if (modalId === 'booking-modal') renderBookingChecklist(); else if (modalId === 'equip-modal') renderEquipChecklist(); }
     function toggleCategory(modalId, cat) { const expanded = modalUIState[modalId].expanded; expanded[cat] = expanded[cat] === false ? true : false; haptic(5); if (modalId === 'booking-modal') renderBookingChecklist(); else if (modalId === 'equip-modal') renderEquipChecklist(); }
 
@@ -991,12 +1028,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderEquipChecklist() {
       const container = document.getElementById("equip-modal-inner"); if (!container) return;
       if (!currentUser) { container.innerHTML = '<div class="text-center py-8 text-slate-500">請先登入身份</div>'; return; }
-
       if (currentUser === "訪客") {
         container.innerHTML = `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用專屬清單</p><p class="text-xs text-slate-500 leading-relaxed">請切換為家庭成員身份<br>才能建立自己的裝備清單</p></div>`;
         return;
       }
-
       const userData = getUserData();
       const customEquipItems = userData.customEquip || [];
       const categories = ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"];
@@ -1005,9 +1040,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const doneCount = allItems.filter(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; return userData.equipChecked[key] === true; }).length;
       const percent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
       const activeTab = modalUIState['equip-modal'].activeTab;
-
       const userBanner = `<div class="bg-gradient-to-r from-sky-50 to-indigo-50 border-2 border-sky-200 rounded-xl p-3 mb-3 flex items-center gap-2.5"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="flex-1 min-w-0"><div class="text-xs font-black text-sky-800">${escapeHtml(currentUser)} 的專屬裝備清單</div><div class="text-[10px] text-sky-600 leading-relaxed">只有你能看到和修改</div></div></div>`;
-
       let html = userBanner;
       html += `<div class="modal-progress-wrap"><div class="modal-progress-header"><span class="modal-progress-label">${percent === 100 ? '🎉 全部完成！' : '整體進度'}</span><span class="modal-progress-count">${doneCount} / ${totalCount}</span></div><div class="modal-progress-track"><div class="modal-progress-fill ${percent === 100 ? 'complete' : ''}" style="width:${percent}%"></div></div></div>`;
       html += `<div class="modal-tabs">`; const allDone = doneCount === totalCount && totalCount > 0;
@@ -1035,49 +1068,13 @@ document.addEventListener('DOMContentLoaded', () => {
       renderEquipChecklist();
       saveUserData();
       haptic(5);
+      if (window.AppHeader) window.AppHeader.render();
     }
-    function checkAllEquipment() {
-      if (!currentUser || currentUser === "訪客") return;
-      const userData = getUserData();
-      [...equipmentList, ...(userData.customEquip || [])].forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; userData.equipChecked[key] = true; });
-      renderEquipChecklist(); saveUserData(); showToast("✅ 已全部勾選！");
-    }
-    function uncheckAllEquipment() {
-      if (!currentUser || currentUser === "訪客") return;
-      const userData = getUserData();
-      [...equipmentList, ...(userData.customEquip || [])].forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; userData.equipChecked[key] = false; });
-      renderEquipChecklist(); saveUserData(); showToast("🧹 已清除所有勾選！");
-    }
-    function copyEquipmentList() {
-      if (!currentUser || currentUser === "訪客") return;
-      const userData = getUserData();
-      const customEquipItems = userData.customEquip || [];
-      let text = `🎒 ${currentUser} 的裝備清單 Check List\n=====================\n`;
-      ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"].forEach(cat => {
-        const items = equipmentList.filter(i => i.category === cat); const customs = customEquipItems.filter(i => i.category === cat); const all = [...items, ...customs]; if (all.length === 0) return;
-        text += `\n【${cat}】\n`;
-        all.forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; text += `${userData.equipChecked[key] ? "✅" : "⬜"} ${item.icon} ${item.label}\n`; });
-      });
-      copyText(text); showToast("📋 裝備清單已複製！");
-    }
-    function addCustomEquip() {
-      if (!currentUser || currentUser === "訪客") return;
-      const l = document.getElementById("new-equip-label"); const c = document.getElementById("new-equip-category");
-      const label = l.value.trim(); if (!label) { showToast("請輸入項目名稱", "⚠️"); return; }
-      const userData = getUserData();
-      userData.customEquip.push({ id: "custom-" + Date.now(), category: c.value, label, icon: "📦", isCustom: true });
-      renderEquipChecklist(); saveUserData(); l.value = ""; showToast("已新增項目！");
-    }
-    function deleteCustomEquip(id) {
-      if (!currentUser || currentUser === "訪客") return;
-      const userData = getUserData();
-      const originalIndex = userData.customEquip.findIndex(i => i.id === id);
-      if (originalIndex === -1) return;
-      const snapshot = { ...userData.customEquip[originalIndex] };
-      userData.customEquip = userData.customEquip.filter(i => i.id !== id);
-      renderEquipChecklist(); saveUserData();
-      showUndoToast(`已刪除「${snapshot.label}」`, "🗑", () => { const ud = getUserData(); ud.customEquip.splice(Math.min(originalIndex, ud.customEquip.length), 0, snapshot); renderEquipChecklist(); saveUserData(); showToast("✅ 已還原", "↩️"); });
-    }
+    function checkAllEquipment() { if (!currentUser || currentUser === "訪客") return; const userData = getUserData(); [...equipmentList, ...(userData.customEquip || [])].forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; userData.equipChecked[key] = true; }); renderEquipChecklist(); saveUserData(); showToast("✅ 已全部勾選！"); if (window.AppHeader) window.AppHeader.render(); }
+    function uncheckAllEquipment() { if (!currentUser || currentUser === "訪客") return; const userData = getUserData(); [...equipmentList, ...(userData.customEquip || [])].forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; userData.equipChecked[key] = false; }); renderEquipChecklist(); saveUserData(); showToast("🧹 已清除所有勾選！"); if (window.AppHeader) window.AppHeader.render(); }
+    function copyEquipmentList() { if (!currentUser || currentUser === "訪客") return; const userData = getUserData(); const customEquipItems = userData.customEquip || []; let text = `🎒 ${currentUser} 的裝備清單 Check List\n=====================\n`; ["重要證件", "保暖衣物", "電子與隨身", "小孩", "其他"].forEach(cat => { const items = equipmentList.filter(i => i.category === cat); const customs = customEquipItems.filter(i => i.category === cat); const all = [...items, ...customs]; if (all.length === 0) return; text += `\n【${cat}】\n`; all.forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; text += `${userData.equipChecked[key] ? "✅" : "⬜"} ${item.icon} ${item.label}\n`; }); }); copyText(text); showToast("📋 裝備清單已複製！"); }
+    function addCustomEquip() { if (!currentUser || currentUser === "訪客") return; const l = document.getElementById("new-equip-label"); const c = document.getElementById("new-equip-category"); const label = l.value.trim(); if (!label) { showToast("請輸入項目名稱", "⚠️"); return; } const userData = getUserData(); userData.customEquip.push({ id: "custom-" + Date.now(), category: c.value, label, icon: "📦", isCustom: true }); renderEquipChecklist(); saveUserData(); l.value = ""; showToast("已新增項目！"); if (window.AppHeader) window.AppHeader.render(); }
+    function deleteCustomEquip(id) { if (!currentUser || currentUser === "訪客") return; const userData = getUserData(); const originalIndex = userData.customEquip.findIndex(i => i.id === id); if (originalIndex === -1) return; const snapshot = { ...userData.customEquip[originalIndex] }; userData.customEquip = userData.customEquip.filter(i => i.id !== id); renderEquipChecklist(); saveUserData(); if (window.AppHeader) window.AppHeader.render(); showUndoToast(`已刪除「${snapshot.label}」`, "🗑", () => { const ud = getUserData(); ud.customEquip.splice(Math.min(originalIndex, ud.customEquip.length), 0, snapshot); renderEquipChecklist(); saveUserData(); if (window.AppHeader) window.AppHeader.render(); showToast("✅ 已還原", "↩️"); }); }
 
     // ==================== 購物清單 ====================
     function loadShoppingItems(eventTitle) {
@@ -1141,19 +1138,22 @@ document.addEventListener('DOMContentLoaded', () => {
       saveShoppingItems(t, items);
       document.getElementById('shopping-content').innerHTML = renderShoppingList(t);
       showToast("✅ 已新增購物項目"); haptic(10);
+      if (window.AppHeader) window.AppHeader.render();
     }
     function toggleShoppingItem(el) {
       const t = el.dataset.eventTitle;
       const i = parseInt(el.dataset.index);
       const items = loadShoppingItems(t); items[i].planned = !items[i].planned; saveShoppingItems(t, items);
       document.getElementById('shopping-content').innerHTML = renderShoppingList(t); haptic(5);
+      if (window.AppHeader) window.AppHeader.render();
     }
     function deleteShoppingItem(btn) {
       const t = btn.dataset.eventTitle;
       const i = parseInt(btn.dataset.index);
       const items = loadShoppingItems(t); const snapshot = { ...items[i] }; items.splice(i, 1); saveShoppingItems(t, items);
       document.getElementById('shopping-content').innerHTML = renderShoppingList(t);
-      showUndoToast(`已刪除「${snapshot.name}」`, "🗑", () => { const cur = loadShoppingItems(t); cur.splice(Math.min(i, cur.length), 0, snapshot); saveShoppingItems(t, cur); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); showToast("✅ 已還原", "↩️"); });
+      if (window.AppHeader) window.AppHeader.render();
+      showUndoToast(`已刪除「${snapshot.name}」`, "🗑", () => { const cur = loadShoppingItems(t); cur.splice(Math.min(i, cur.length), 0, snapshot); saveShoppingItems(t, cur); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); if (window.AppHeader) window.AppHeader.render(); showToast("✅ 已還原", "↩️"); });
     }
 
     // ==================== 購物清單總覽 ====================
@@ -1190,7 +1190,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       container.innerHTML = html;
     }
-    function handleAllShoppingToggle(el) { const eventTitle = el.dataset.eventTitle; const index = parseInt(el.dataset.index); const items = loadShoppingItems(eventTitle); if (!items[index]) return; items[index].planned = !items[index].planned; saveShoppingItems(eventTitle, items); renderAllShoppingContent(); haptic(5); }
+    function handleAllShoppingToggle(el) { const eventTitle = el.dataset.eventTitle; const index = parseInt(el.dataset.index); const items = loadShoppingItems(eventTitle); if (!items[index]) return; items[index].planned = !items[index].planned; saveShoppingItems(eventTitle, items); renderAllShoppingContent(); haptic(5); if (window.AppHeader) window.AppHeader.render(); }
     function jumpToEvent(day, eventIndex) {
       closeAllShoppingModal();
       switchDay(day);
@@ -1312,7 +1312,6 @@ document.addEventListener('DOMContentLoaded', () => {
       container.innerHTML = `<div class="overview-timeline">${days.map(d => `<div class="overview-day"><div class="overview-day-marker" style="background:${d.color}">${d.day}</div><div class="overview-day-content"><div class="overview-day-title">${d.emoji} ${d.title}</div><div class="overview-day-desc">${d.desc}</div></div></div>`).join('')}</div>`;
     }
 
-    // ==================== 內容可折疊 ====================
     function toggleContent(day, index) { const wrapper = document.getElementById(`collapsible-${day}-${index}`); const btn = document.querySelector(`[data-expand-btn="${day}-${index}"]`); if (!wrapper) return; haptic(6); const isExpanded = wrapper.classList.toggle("expanded"); if (btn) { btn.classList.toggle("expanded", isExpanded); const label = btn.querySelector("span"); if (label) label.textContent = isExpanded ? "收合攻略" : "展開完整攻略"; } }
 
     // ==================== 行程渲染 ====================
@@ -1391,7 +1390,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function collapseAllItineraries() { const details = document.querySelectorAll('details.event-card[open]'); const btnIcon = document.getElementById('collapse-icon'); haptic(8); if (details.length > 0) { details.forEach(detail => detail.open = false); if (btnIcon) btnIcon.textContent = '⬇️'; showToast("✅ 已收合所有行程", "⬆️"); } else { document.querySelectorAll('details.event-card').forEach(detail => detail.open = true); if (btnIcon) btnIcon.textContent = '⬆️'; showToast("✅ 已展開所有行程", "⬇️"); } }
 
-    // ==================== 圖片燈箱 ====================
+    // ==================== 燈箱 ====================
     let lightboxImages = [], lightboxIndex = 0;
     function openLightbox(images, index) { lightboxImages = images || []; lightboxIndex = index || 0; const lb = document.getElementById("lightbox"); const img = document.getElementById("lightbox-img"); if (lightboxImages.length === 0) return; img.src = lightboxImages[lightboxIndex]; document.getElementById("lightbox-caption").innerText = `${lightboxIndex + 1} / ${lightboxImages.length}`; lb.classList.add("active"); document.body.style.overflow = "hidden"; }
     function closeLightbox() { document.getElementById("lightbox").classList.remove("active"); document.body.style.overflow = ""; }
@@ -1422,7 +1421,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const c = document.getElementById("snow-fall"); if (!c) return; c.innerHTML = ""; const count = window.innerWidth < 768 ? 20 : 40; const anims = ["snowfall", "snowfall-small", "snowfall-medium", "snowfall-large"]; const colors = ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#ffffff"]; for (let i = 0; i < count; i++) { const f = document.createElement("div"); f.className = "snowflake"; const size = Math.random() * 7 + 3; f.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; animation: ${anims[Math.floor(Math.random() * anims.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%;`; c.appendChild(f); }
     }
 
-    // ==================== Modal 開啟/關閉 ====================
+    // ==================== Modal 開關 ====================
     function showModal(id) { const overlay = document.getElementById(id); if (overlay) { overlay.classList.add('active'); overlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; document.body.classList.add('modal-open'); haptic(8); } }
     function hideModal(id) { const overlay = document.getElementById(id); if (overlay) { overlay.classList.remove('active'); setTimeout(() => { overlay.style.display = 'none'; }, 300); const anyOpen = document.querySelector('.modal-overlay.active'); if (!anyOpen) { document.body.style.overflow = ''; document.body.classList.remove('modal-open'); } } }
     function toggleBookingModal() { const modal = document.getElementById('booking-modal'); if (modal.classList.contains('hidden')) { showModal('booking-modal'); modal.classList.remove('hidden'); renderBookingChecklist(); } else { hideModal('booking-modal'); setTimeout(() => modal.classList.add('hidden'), 300); } }
@@ -1449,24 +1448,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================== 拍攝靈感 ====================
     function openShootTipsModal(day, eventIndex) { const dayData = winterItineraries.find(d => d.day === day); if (!dayData) return; const event = dayData.events[eventIndex]; if (!event) return; const tips = shootTips[event.title]; const content = document.getElementById("shoot-tips-content"); let html = ""; if (tips) { const pa = tips["拍照建議"] || ""; html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3><p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(pa)}</p></div>`; if (tips["參考照片"] && tips["參考照片"].length > 0) { const imgHtml = tips["參考照片"].map(url => `<img src="${escAttr(url)}" class="lazy-fade w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" onclick="openLightbox(['${escAttr(url)}'], 0)" loading="lazy" decoding="async">`).join(""); html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3><div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div></div>`; } html += `<details class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-3"><summary class="cursor-pointer text-sm font-black text-slate-700 mb-2">📸 展開詳細拍攝建議</summary><div class="space-y-3 mt-2">`; if (tips["Pocket 3 參數"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3"><h3 class="text-sm font-black text-sky-800 mb-1">📸 Pocket 3 參數</h3><p class="text-sm text-slate-700">${escapeHtml(tips["Pocket 3 參數"])}</p></div>`; if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3><ul class="list-disc pl-4 space-y-1">${tips["Vlog 必拍鏡頭"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; if (tips["最佳拍攝時間"] || tips["拍攝時長"]) { let ti = ""; if (tips["最佳拍攝時間"]) ti += `<span class="block mb-1">⏰ ${escapeHtml(tips["最佳拍攝時間"])}</span>`; if (tips["拍攝時長"]) ti += `<span class="block">⏳ ${escapeHtml(tips["拍攝時長"])}</span>`; html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3"><h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3><p class="text-sm text-slate-700">${ti}</p></div>`; } if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3><ul class="list-disc pl-4 space-y-1">${tips["拍攝角度"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3"><h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3><ul class="list-disc pl-4 space-y-1">${tips["人物動作建議"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; html += `</div></details>`; } else { html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議。</div>`; } content.innerHTML = html; showModal('shoot-tips-modal'); document.getElementById('shoot-tips-modal').classList.remove('hidden'); setTimeout(() => setupImageFadeIn(content), 50); }
     function closeShootTipsModal() { hideModal('shoot-tips-modal'); setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300); }
-    function openCommonTipsModal() {
-      const m = document.getElementById('common-tips-modal');
-      if (!m) return;
-      m.style.display = 'flex';
-      m.classList.add('active');
-      document.body.classList.add('modal-open');
-      const c = document.getElementById('common-tips-content');
-      if (c && typeof shootTipsCommon !== 'undefined') {
-        let html = '';
-        Object.keys(shootTipsCommon).forEach(title => {
-          const tips = shootTipsCommon[title];
-          html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4"><h3 class="text-sm font-black text-slate-800 mb-2">${escapeHtml(title)}</h3>`;
-          if (tips['拍照建議']) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${escapeHtml(tips['拍照建議'])}</div>`;
-          html += `</div>`;
-        });
-        c.innerHTML = html;
-      }
-    }
+    function openCommonTipsModal() { const m = document.getElementById('common-tips-modal'); if (!m) return; m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); const c = document.getElementById('common-tips-content'); if (c && typeof shootTipsCommon !== 'undefined') { let html = ''; Object.keys(shootTipsCommon).forEach(title => { const tips = shootTipsCommon[title]; html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4"><h3 class="text-sm font-black text-slate-800 mb-2">${escapeHtml(title)}</h3>`; if (tips['拍照建議']) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${escapeHtml(tips['拍照建議'])}</div>`; html += `</div>`; }); c.innerHTML = html; } }
     function closeCommonTipsModal() { const m = document.getElementById('common-tips-modal'); if (m) { m.classList.remove('active'); setTimeout(() => m.style.display = 'none', 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
 
     // ==================== Vlog 構思 ====================
@@ -1523,6 +1505,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cloudData.userData) { cloudUserData = cloudData.userData; }
         if (cloudData.userPins) { cloudUserPins = cloudData.userPins; }
         saveLocalCheckedItems(); renderBookingChecklist(); renderEquipChecklist(); renderAllShoppingContent();
+        if (window.AppHeader) window.AppHeader.render();
         showToast("✅ 已同步最新資料", "☁️"); haptic(10);
       }).catch(e => { showToast("❌ 同步失敗", "⚠️"); });
     }
