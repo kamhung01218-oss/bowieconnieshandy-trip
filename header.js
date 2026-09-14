@@ -1,8 +1,8 @@
 /* ============================================================
- * AppHeader v4.4
- * - 品牌列：❄️ 標題 + [📋 速覽 (琥珀高亮)] + [⚙️ 工具]
- * - 首次訪問速覽按鈕帶紅點提示，點擊後消失
- * - Focus Card（出發前）第一顆 CTA = 行程速覽
+ * AppHeader v5.0
+ * - 品牌列：❄️ 標題 + [📋 速覽 (琥珀高亮+紅點)] + [⚙️ 工具 (白底實心)]
+ * - Focus Card：出發前/中/後皆有「行程速覽」主 CTA
+ * - 工具選單：快速操作區、進度膠囊徽章、搶票倒數徽章
  * - 匯率：可拖動 FAB（獨立元件，見 index.html）
  * ============================================================ */
 
@@ -104,7 +104,7 @@ window.AppHeader = (function () {
           <span class="progress-bar-mini">
             <span class="progress-bar-mini-fill" style="width:${percent}%"></span>
           </span>
-          <span class="progress-count">${done ? '✓ ' : ''}${p.done}/${p.total}</span>
+          <span class="progress-count">${p.done}/${p.total}</span>
           <span class="progress-arrow">›</span>
         </button>
       `;
@@ -117,6 +117,23 @@ window.AppHeader = (function () {
   }
   function getCurrentUser() {
     try { return localStorage.getItem("tohoku_current_user") || ""; } catch(e) { return ""; }
+  }
+
+  function getTicketCountdown() {
+    const now = Date.now();
+    const ginzan = _config.ginzanTarget - now;
+    const zao = _config.zaoTarget - now;
+    const candidates = [];
+    if (ginzan > 0) candidates.push(ginzan);
+    if (zao > 0) candidates.push(zao);
+    if (candidates.length === 0) return null;
+    const nearest = Math.min(...candidates);
+    const days = Math.floor(nearest / 86400000);
+    if (days > 0) return `${days}天`;
+    const hours = Math.floor(nearest / 3600000);
+    if (hours > 0) return `${hours}時`;
+    const mins = Math.max(1, Math.floor(nearest / 60000));
+    return `${mins}分`;
   }
 
   function updateCountdownNumbers() {
@@ -380,6 +397,7 @@ window.AppHeader = (function () {
     const guest = isGuestUser();
     const currentUser = getCurrentUser();
 
+    // -------- 我的清單項目 --------
     const progressItems = [];
     const bookingP = getProgressData("booking");
     if (bookingP.total > 0) {
@@ -397,27 +415,43 @@ window.AppHeader = (function () {
       return `<button type="button" class="tools-item ${done ? 'complete' : ''}" data-tool-action="${it.action}">
         <span class="tools-item-icon">${it.icon}</span>
         <span class="tools-item-label">${escapeHtml(it.label)}</span>
-        <span class="tools-item-progress">${done ? '✓ ' : ''}${it.done}/${it.total}</span>
+        <span class="tools-item-progress ${done ? 'done' : ''}">${done ? '✓ ' : ''}${it.done}/${it.total}</span>
         <span class="tools-item-arrow">›</span>
       </button>`;
     }).join("");
 
     const isConnected = _syncConnected;
+    const ticketCd = getTicketCountdown();
 
     panel.innerHTML = `
       ${progressItems.length > 0 ? `
         <div class="tools-section">
-          <div class="tools-section-label">我的清單</div>
+          <div class="tools-section-label"><span>📊</span> 我的清單</div>
           ${progressHTML}
         </div>
       ` : ""}
 
       <div class="tools-section">
-        <div class="tools-section-label">攻略參考</div>
+        <div class="tools-section-label"><span>⚡</span> 快速操作</div>
+        <button type="button" class="tools-item" data-tool-action="overview">
+          <span class="tools-item-icon">📋</span>
+          <span class="tools-item-label">行程速覽</span>
+          <span class="tools-item-arrow">›</span>
+        </button>
+        <button type="button" class="tools-item" data-tool-action="ledger">
+          <span class="tools-item-icon">📝</span>
+          <span class="tools-item-label">快速記帳</span>
+          <span class="tools-item-arrow">›</span>
+        </button>
+      </div>
+
+      <div class="tools-section">
+        <div class="tools-section-label"><span>📚</span> 攻略參考</div>
         ${phase !== "after" ? `
           <button type="button" class="tools-item" data-tool-action="ticket">
             <span class="tools-item-icon">⚔️</span>
             <span class="tools-item-label">搶票攻略</span>
+            ${ticketCd ? `<span class="tools-item-tag hot">⏰ ${ticketCd}</span>` : ""}
             <span class="tools-item-arrow">›</span>
           </button>
         ` : ""}
@@ -439,7 +473,7 @@ window.AppHeader = (function () {
       </div>
 
       <div class="tools-section">
-        <div class="tools-section-label">帳戶</div>
+        <div class="tools-section-label"><span>⚙️</span> 帳戶</div>
         <button type="button" class="tools-item" data-tool-action="ledger">
           <span class="tools-item-icon">💰</span>
           <span class="tools-item-label">隨行記帳本</span>
@@ -447,7 +481,7 @@ window.AppHeader = (function () {
         </button>
         ${currentUser ? `
           <button type="button" class="tools-item" data-tool-action="account">
-            <span class="tools-item-icon">${guest ? "👤" : "⚙️"}</span>
+            <span class="tools-item-icon">${guest ? "👤" : "🙋"}</span>
             <span class="tools-item-label">${escapeHtml(currentUser)} · 帳戶設定</span>
             <span class="tools-item-arrow">›</span>
           </button>
@@ -475,7 +509,7 @@ window.AppHeader = (function () {
             drive: cb.onDrive,
             shoot: cb.onShoot,
             weather: cb.onWeather,
-            overview: cb.onOverview,
+            overview: () => { markOverviewSeen(); cb.onOverview && cb.onOverview(); },
             ledger: () => cb.onSwitchTab && cb.onSwitchTab("ledger"),
             account: () => { if (typeof window.switchUser === "function") window.switchUser(); }
           };
@@ -509,7 +543,8 @@ window.AppHeader = (function () {
               ${showOverviewDot ? '<span class="overview-cta-dot" aria-hidden="true"></span>' : ''}
             </button>
             <button type="button" id="tools-toggle" class="tools-toggle" title="工具選單">
-              <span class="icon-gear">⚙️</span>
+              <span class="tools-toggle-icon icon-gear">⚙️</span>
+              <span class="tools-toggle-text">工具</span>
             </button>
           </div>
         </div>
