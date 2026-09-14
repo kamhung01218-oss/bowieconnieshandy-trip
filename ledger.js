@@ -1,5 +1,5 @@
 /* ============================================================
- * ledger.js — 隨行記帳本主邏輯 v2.0（拆檔版）
+ * ledger.js — 隨行記帳本主邏輯 v2.4（修復溢出）
  * ============================================================ */
 'use strict';
 
@@ -142,7 +142,7 @@ const WEEK_NAMES = ["日","一","二","三","四","五","六"];
 let selectedCategory = '餐飲';
 function setCategory(cat) {
   selectedCategory = cat;
-  document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.cat === cat));
+  document.querySelectorAll('.cat-btn-compact').forEach(btn => btn.classList.toggle('active', btn.dataset.cat === cat));
   const sel = document.getElementById('ledger-category');
   if (sel) sel.value = cat;
   haptic(5);
@@ -150,52 +150,28 @@ function setCategory(cat) {
 function initCategoryGrid() { setCategory('餐飲'); }
 
 let selectedPaymentMethod = '現金';
-function setPaymentMethod(m) {
-  selectedPaymentMethod = m;
-  document.querySelectorAll('.pay-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.method === m));
-  haptic(5);
-}
-function initPaymentMethodGrid() { setPaymentMethod('現金'); }
 
 /* ============================================================
  * 八、快速記帳模板
  * ============================================================ */
 const expenseTemplates = [
-  { label: "🍽️ 午餐", desc: "午餐", category: "餐飲", splitPreset: "all" },
-  { label: "🍽️ 晚餐", desc: "晚餐", category: "餐飲", splitPreset: "all" },
-  { label: "🍜 拉麵", desc: "拉麵", category: "餐飲", splitPreset: "all" },
-  { label: "☕ 咖啡", desc: "咖啡點心", category: "餐飲", splitPreset: "adults" },
-  { label: "🛒 超商", desc: "便利商店", category: "其他", splitPreset: "all" },
-  { label: "⛽ 加油", desc: "加油", category: "交通", splitPreset: "all" },
-  { label: "🅿️ 停車", desc: "停車費", category: "交通", splitPreset: "all" },
-  { label: "🛣️ 過路費", desc: "高速公路過路費", category: "交通", splitPreset: "all" },
-  { label: "🎟️ 門票", desc: "門票", category: "門票/活動", splitPreset: "all" },
-  { label: "🛍️ 購物", desc: "購物", category: "購物", splitPreset: "all" },
-  { label: "🏨 住宿", desc: "住宿", category: "住宿", splitPreset: "all" },
-  { label: "🎁 伴手禮", desc: "伴手禮", category: "購物", splitPreset: "all" }
+  { label: "🍽️ 午餐", desc: "午餐", category: "餐飲" },
+  { label: "🍽️ 晚餐", desc: "晚餐", category: "餐飲" },
+  { label: "🍜 拉麵", desc: "拉麵", category: "餐飲" },
+  { label: "☕ 咖啡", desc: "咖啡點心", category: "餐飲" },
+  { label: "🛒 超商", desc: "便利商店", category: "其他" },
+  { label: "⛽ 加油", desc: "加油", category: "交通" },
+  { label: "🅿️ 停車", desc: "停車費", category: "交通" },
+  { label: "🛣️ 過路費", desc: "高速公路過路費", category: "交通" },
+  { label: "🎟️ 門票", desc: "門票", category: "門票/活動" },
+  { label: "🛍️ 購物", desc: "購物", category: "購物" },
+  { label: "🏨 住宿", desc: "住宿", category: "住宿" },
+  { label: "🎁 伴手禮", desc: "伴手禮", category: "購物" }
 ];
-function renderTemplatesGrid() {
-  const grid = document.getElementById('templates-grid');
-  if (!grid) return;
-  grid.innerHTML = expenseTemplates.map((t, i) =>
-    `<button type="button" class="template-btn" data-template-idx="${i}">${escapeHtml(t.label)}</button>`
-  ).join('');
-  grid.querySelectorAll('.template-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const t = expenseTemplates[parseInt(btn.dataset.templateIdx)];
-      if (!t) return;
-      applyTemplate(t);
-    });
-  });
-}
 function applyTemplate(t) {
   document.getElementById('ledger-desc').value = t.desc;
   setCategory(t.category);
-  if (t.splitPreset === 'adults') {
-    state.activeSplitWith = members.map(m => ({ name: m, amount: 0 }));
-  } else if (t.splitPreset === 'all') {
-    state.activeSplitWith = members.map(m => ({ name: m, amount: 0 }));
-  }
+  state.activeSplitWith = members.map(m => ({ name: m, amount: 0 }));
   state.customSplitEnabled = false;
   document.getElementById('custom-split-toggle')?.classList.remove('active');
   document.getElementById('custom-split-inputs')?.classList.add('hidden');
@@ -631,19 +607,21 @@ function openExpenseModal() {
   modal.classList.remove("translate-y-full","md:translate-y-8","md:scale-95","opacity-0");
   modal.classList.add("translate-y-0","md:translate-y-0","md:scale-100","opacity-100");
   document.body.classList.add("modal-open");
+  
   const daySelect = document.getElementById("ledger-day");
   if (activeFilters.day !== 0) daySelect.value = activeFilters.day;
+  
   if (!editingExpenseId) {
     setCategory('餐飲');
-    setPaymentMethod('現金');
+    document.getElementById('payment-method-select').value = '現金';
     state.activePayer = getCurrentUser() || members[0];
     state.activeSplitWith = members.map(m => ({ name: m, amount: 0 }));
     state.customSplitEnabled = false;
     document.getElementById('custom-split-toggle')?.classList.remove('active');
     document.getElementById('custom-split-inputs')?.classList.add('hidden');
   }
+  
   renderLedgerSelectors();
-  updateCurrencyButtons();
   updateEstimatedHKD();
   haptic(8);
 }
@@ -674,7 +652,7 @@ function openEditExpenseModal(expenseId) {
     editingExpenseId = expenseId;
     document.getElementById("ledger-day").value = expense.day;
     setCategory(expense.category);
-    setPaymentMethod(expense.paymentMethod || '現金');
+    document.getElementById("payment-method-select").value = expense.paymentMethod || '現金';
     document.getElementById("ledger-desc").value = expense.desc;
     document.getElementById("ledger-remark").value = expense.remark || "";
     document.getElementById("ledger-amount").value = expense.amount;
@@ -682,9 +660,10 @@ function openEditExpenseModal(expenseId) {
     state.activePayer = expense.payer;
     state.activeSplitWith = normalizeSplitWith(expense.splitWith, expense.amountInHKD);
     state.customSplitEnabled = Array.isArray(expense.splitWith) && expense.splitWith.length > 0 && typeof expense.splitWith[0] === 'object' && expense.splitWith.some(s => s.amount !== expense.amountInHKD / expense.splitWith.length);
+    
     renderLedgerSelectors();
-    updateCurrencyButtons();
     updateEstimatedHKD();
+    
     const backdrop = document.getElementById("expense-modal-backdrop");
     const modal = document.getElementById("expense-modal");
     backdrop.classList.remove("hidden"); modal.classList.remove("hidden"); modal.offsetWidth;
@@ -745,17 +724,12 @@ function renderLedgerSelectors() {
   if (customInputs) {
     if (state.customSplitEnabled) {
       customInputs.classList.remove('hidden');
-      const amt = parseFloat(document.getElementById('ledger-amount').value) || 0;
-      const cur = document.getElementById('ledger-currency').value;
-      const rate = exchangeRates[cur] || 0.052;
-      const totalHKD = round2(amt * rate);
-      let sumAmount = state.activeSplitWith.reduce((s, x) => s + (Number(x.amount) || 0), 0);
       customInputs.innerHTML = state.activeSplitWith.map(s => {
         const style = memberStyle[s.name] || memberStyle["余生"];
         return `<div class="flex items-center gap-2">
           <div class="w-6 h-6 rounded-full ${style.avatar} text-white flex items-center justify-center text-[10px] font-black shrink-0">${escapeHtml(s.name[0].toUpperCase())}</div>
           <span class="text-[11px] font-bold text-slate-700 w-14 shrink-0">${escapeHtml(s.name)}</span>
-          <input type="number" inputmode="decimal" step="1" min="0" data-split-name="${escAttr(s.name)}" value="${s.amount || 0}" class="flex-1 border border-slate-300 bg-white rounded-lg py-1.5 px-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+          <input type="number" inputmode="decimal" step="1" min="0" data-split-name="${escAttr(s.name)}" value="${s.amount || 0}" class="flex-1 min-w-0 border border-slate-300 bg-white rounded-lg py-1.5 px-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500/50">
           <span class="text-[10px] text-slate-400 font-bold w-6 shrink-0">HKD</span>
         </div>`;
       }).join('');
@@ -810,7 +784,6 @@ function toggleCustomSplit() {
   const btn = document.getElementById('custom-split-toggle');
   if (btn) btn.classList.toggle('active', state.customSplitEnabled);
   if (state.customSplitEnabled) {
-    // 進入自訂模式時，先平均分配一次
     const amt = parseFloat(document.getElementById('ledger-amount').value) || 0;
     const cur = document.getElementById('ledger-currency').value;
     const rate = exchangeRates[cur] || 0.052;
@@ -823,7 +796,6 @@ function toggleCustomSplit() {
 }
 function setSplitPreset(preset) {
   if (preset === 'all') state.activeSplitWith = members.map(m => ({ name: m, amount: 0 }));
-  else if (preset === 'adults') state.activeSplitWith = members.map(m => ({ name: m, amount: 0 })); // 全部大人（4人都是大人）
   state.customSplitEnabled = false;
   document.getElementById('custom-split-toggle')?.classList.remove('active');
   document.getElementById('custom-split-inputs')?.classList.add('hidden');
@@ -834,7 +806,7 @@ function useLastExpense() {
   if (!lastExpense) { showToast("尚無上次記錄", "⚠️"); return; }
   document.getElementById("ledger-day").value = lastExpense.day;
   setCategory(lastExpense.category);
-  setPaymentMethod(lastExpense.paymentMethod || '現金');
+  document.getElementById("payment-method-select").value = lastExpense.paymentMethod || '現金';
   document.getElementById("ledger-desc").value = lastExpense.desc;
   document.getElementById("ledger-remark").value = lastExpense.remark || "";
   document.getElementById("ledger-amount").value = lastExpense.amount;
@@ -845,19 +817,8 @@ function useLastExpense() {
   document.getElementById('custom-split-toggle')?.classList.remove('active');
   document.getElementById('custom-split-inputs')?.classList.add('hidden');
   renderLedgerSelectors();
-  updateCurrencyButtons();
   updateEstimatedHKD();
   showToast("📋 已沿用上次記錄"); haptic(8);
-}
-function setCurrency(code) {
-  const s = document.getElementById("ledger-currency");
-  if (s) { s.value = code; updateCurrencyButtons(); updateEstimatedHKD(); }
-}
-function updateCurrencyButtons() {
-  const s = document.getElementById("ledger-currency");
-  document.querySelectorAll('.currency-btn').forEach(btn => {
-    btn.classList.toggle('active', s.value === btn.getAttribute('data-currency'));
-  });
 }
 function updateEstimatedHKD() {
   const a = document.getElementById("ledger-amount");
@@ -868,9 +829,7 @@ function updateEstimatedHKD() {
   const rate = exchangeRates[c.value] || 0.052;
   t.innerText = `約合 ${(amount * rate).toFixed(2)} HKD`;
   updateCustomSplitHint();
-  // 若在自訂模式，金額變更時同步均分
   if (state.customSplitEnabled && amount > 0 && state.activeSplitWith.length > 0) {
-    // 只在還沒手動編輯時才重新均分
     if (!state._customSplitTouched) {
       const totalHKD = round2(amount * rate);
       const share = round2(totalHKD / state.activeSplitWith.length);
@@ -898,7 +857,6 @@ async function saveExpense() {
   const rate = exchangeRates[currency.value] || 0.052;
   const amountInHKD = round2(amountValue * rate);
 
-  // 組裝 splitWith（HKD）
   let splitWith;
   if (state.customSplitEnabled) {
     const sum = state.activeSplitWith.reduce((s, x) => s + (Number(x.amount) || 0), 0);
@@ -1095,7 +1053,7 @@ function renderCharts() {
 }
 
 /* ============================================================
- * 二十八、列表渲染（含滑動刪除）
+ * 二十八、列表渲染（無滑動刪除）
  * ============================================================ */
 function renderExpensesList() {
   const container = document.getElementById("records-list-container");
@@ -1175,96 +1133,38 @@ function renderExpensesList() {
       const customSplitTag = splitArr.some((s, i) => i > 0 && Math.abs(s.amount - splitArr[0].amount) > 0.01) ? `<span class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-black">自訂分攤</span>` : '';
 
       const card = document.createElement("div");
-      card.className = "swipe-container";
+      card.className = `relative ${cardBg} p-2 pl-4 rounded-xl border ${cardBorder} flex justify-between items-center text-xs transition shadow-sm hover:shadow`;
       card.innerHTML = `
-        <button class="swipe-delete" data-delete-id="${escAttr(expense.id)}">
-          <span style="font-size:16px">🗑</span>
-          <span>刪除</span>
-        </button>
-        <div class="swipe-content ${cardBg} p-2 pl-4 rounded-xl border ${cardBorder} flex justify-between items-center text-xs transition shadow-sm hover:shadow">
-          <div class="cat-strip ${catColor}"></div>
-          <div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
-            <div class="w-8 h-8 rounded-full ${payerStyle.avatar} text-white font-black flex items-center justify-center shrink-0 border-2 border-white shadow-sm text-sm">${escapeHtml(expense.payer[0].toUpperCase())}</div>
-            <div class="space-y-0.5 flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <strong class="text-slate-900 text-[13px] truncate">${escapeHtml(expense.desc)}</strong>
-                <span class="text-[10px]">${escapeHtml(symbol)}</span>
-              </div>
-              <div class="flex items-center gap-1.5 text-[10px] text-slate-500 flex-wrap mt-0.5">
-                <span class="bg-white/80 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-medium">${escapeHtml(expense.category)}</span>
-                ${payMethodHtml}
-                ${customSplitTag}
-                <span class="flex items-center gap-1">付: <span class="${payerStyle.badge} px-1.5 py-0.5 rounded font-bold border">${escapeHtml(expense.payer)}</span></span>
-                <span class="text-slate-400">🕘 ${escapeHtml(timeStr)}</span>
-              </div>
-              ${remarkHtml}
+        <div class="cat-strip ${catColor}"></div>
+        <div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
+          <div class="w-8 h-8 rounded-full ${payerStyle.avatar} text-white font-black flex items-center justify-center shrink-0 border-2 border-white shadow-sm text-sm">${escapeHtml(expense.payer[0].toUpperCase())}</div>
+          <div class="space-y-0.5 flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <strong class="text-slate-900 text-[13px] truncate">${escapeHtml(expense.desc)}</strong>
+              <span class="text-[10px]">${escapeHtml(symbol)}</span>
             </div>
+            <div class="flex items-center gap-1.5 text-[10px] text-slate-500 flex-wrap mt-0.5">
+              <span class="bg-white/80 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-medium">${escapeHtml(expense.category)}</span>
+              ${payMethodHtml}
+              ${customSplitTag}
+              <span class="flex items-center gap-1">付: <span class="${payerStyle.badge} px-1.5 py-0.5 rounded font-bold border">${escapeHtml(expense.payer)}</span></span>
+              <span class="text-slate-400">🕘 ${escapeHtml(timeStr)}</span>
+            </div>
+            ${remarkHtml}
           </div>
-          <div class="text-right flex items-center gap-2 shrink-0 pl-2">
-            <div class="flex flex-col items-end justify-center h-full">${balanceHtml}<span class="text-[9px] text-slate-400 font-medium mt-0.5" title="原幣 ${expense.amount} ${expense.currency}">合: $${expense.amountInHKD.toFixed(1)}</span></div>
-            <div class="flex flex-col gap-1">
-              <button onclick="openEditExpenseModal('${expense.id}')" class="text-slate-300 hover:text-sky-500 p-1.5 transition bg-white/50 hover:bg-white rounded-lg border border-slate-100 shadow-sm" title="編輯">✏️</button>
-              <button onclick="deleteExpense('${expense.id}')" class="text-slate-300 hover:text-red-500 p-1.5 transition bg-white/50 hover:bg-white rounded-lg border border-slate-100 shadow-sm" title="刪除">🗑</button>
-            </div>
+        </div>
+        <div class="text-right flex items-center gap-2 shrink-0 pl-2">
+          <div class="flex flex-col items-end justify-center h-full">${balanceHtml}<span class="text-[9px] text-slate-400 font-medium mt-0.5" title="原幣 ${expense.amount} ${expense.currency}">合: $${expense.amountInHKD.toFixed(1)}</span></div>
+          <div class="flex flex-col gap-1">
+            <button onclick="openEditExpenseModal('${expense.id}')" class="text-slate-300 hover:text-sky-500 p-1.5 transition bg-white/50 hover:bg-white rounded-lg border border-slate-100 shadow-sm" title="編輯">✏️</button>
+            <button onclick="deleteExpense('${expense.id}')" class="text-slate-300 hover:text-red-500 p-1.5 transition bg-white/50 hover:bg-white rounded-lg border border-slate-100 shadow-sm" title="刪除">🗑</button>
           </div>
         </div>
       `;
-      // 綁定滑動
-      setupSwipeToDelete(card);
-      // 綁定刪除按鈕
-      const delBtn = card.querySelector('.swipe-delete');
-      if (delBtn) delBtn.addEventListener('click', () => deleteExpense(expense.id));
       fragment.appendChild(card);
     });
   });
   container.appendChild(fragment);
-}
-
-/* 滑動刪除 */
-function setupSwipeToDelete(container) {
-  const content = container.querySelector('.swipe-content');
-  if (!content) return;
-  let startX = 0, startY = 0, isDragging = false, isOpen = false;
-  const MAX_OFFSET = -80;
-  content.addEventListener('touchstart', (e) => {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    isDragging = false;
-  }, { passive: true });
-  content.addEventListener('touchmove', (e) => {
-    const dx = e.touches[0].clientX - startX;
-    const dy = e.touches[0].clientY - startY;
-    if (!isDragging && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) isDragging = true;
-    if (isDragging) {
-      const base = isOpen ? MAX_OFFSET : 0;
-      const offset = Math.max(MAX_OFFSET, Math.min(0, base + dx));
-      content.style.transition = 'none';
-      content.style.transform = `translateX(${offset}px)`;
-    }
-  }, { passive: true });
-  content.addEventListener('touchend', () => {
-    if (!isDragging) return;
-    isDragging = false;
-    const style = content.style.transform || '';
-    const m = style.match(/-?\d+\.?\d*/);
-    const offset = m ? parseFloat(m[0]) : 0;
-    content.style.transition = 'transform 0.2s ease';
-    if (offset < MAX_OFFSET / 2) {
-      content.style.transform = `translateX(${MAX_OFFSET}px)`;
-      isOpen = true;
-    } else {
-      content.style.transform = 'translateX(0)';
-      isOpen = false;
-    }
-  });
-  // 點擊其他區域時關閉
-  content.addEventListener('click', () => {
-    if (isOpen) {
-      content.style.transition = 'transform 0.2s ease';
-      content.style.transform = 'translateX(0)';
-      isOpen = false;
-    }
-  });
 }
 
 /* ============================================================
@@ -1333,11 +1233,11 @@ function renderSuggestedSettlements() {
   _lastSettlements = settlements;
   const totalDebt = debtors.reduce((sum, d) => sum + d.amount, 0).toFixed(2);
   const totalCredit = creditors.reduce((sum, c) => sum + c.amount, 0).toFixed(2);
-  const settledCount = settlements.filter(s => state.settlementStatus[`${s.from}_${s.to}_${s.amount}`]).length;
-  const settledPercent = settlements.length > 0 ? Math.round((settledCount / settlements.length) * 100) : 0;
+  
   document.getElementById("debt-total").innerText = `$${totalDebt}`;
   document.getElementById("credit-total").innerText = `$${totalCredit}`;
-  document.getElementById("settled-total").innerText = `${settledPercent}%`;
+  document.getElementById("settled-total").innerText = `${settlements.length} 筆`;
+  
   if (badge) {
     if (settlements.length > 0) { badge.innerText = settlements.length; badge.classList.remove("hidden"); }
     else badge.classList.add("hidden");
@@ -1346,38 +1246,17 @@ function renderSuggestedSettlements() {
     container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-8">🎉 所有帳目都已平衡！</div>';
     return;
   }
+  
   settlements.forEach(s => {
     const fromStyle = memberStyle[s.from] || memberStyle["余生"];
     const toStyle = memberStyle[s.to] || memberStyle["余生"];
     const fromSymbol = memberSymbols[s.from] || "";
     const toSymbol = memberSymbols[s.to] || "";
-    const key = `${s.from}_${s.to}_${s.amount}`;
-    const isDone = state.settlementStatus[key] || false;
-    container.innerHTML += `<div class="bg-slate-50 border ${isDone ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200'} p-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm hover:shadow-md transition"><div class="flex items-center gap-1.5 md:gap-2"><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${escapeHtml(s.from[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.from)} ${escapeHtml(fromSymbol)}</span></div><span class="text-slate-400 text-[10px] font-bold flex flex-col items-center px-1"><span>轉帳</span><span class="text-[8px] mt-0.5 text-slate-300">→</span></span><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${toStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${escapeHtml(s.to[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.to)} ${escapeHtml(toSymbol)}</span></div></div><div class="flex items-center gap-2"><div class="text-right"><span class="block text-[9px] text-slate-400 mb-0.5 font-medium">金額</span><strong class="text-sm md:text-base font-black ${isDone ? 'text-emerald-600 line-through' : 'text-rose-600'}">$${escapeHtml(s.amount)}</strong></div><button onclick="toggleSettlementDone('${escAttr(s.from)}','${escAttr(s.to)}','${escAttr(s.amount)}')" class="px-2 py-1 rounded-lg font-bold text-[10px] ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600 hover:bg-emerald-100 hover:text-emerald-700'} transition">${isDone ? '✓ 已還' : '標記已還'}</button></div></div>`;
+    container.innerHTML += `<div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-center justify-between text-xs shadow-sm"><div class="flex items-center gap-1.5 md:gap-2"><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${escapeHtml(s.from[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.from)} ${escapeHtml(fromSymbol)}</span></div><span class="text-slate-400 text-[10px] font-bold flex flex-col items-center px-1"><span>轉帳</span><span class="text-[8px] mt-0.5 text-slate-300">→</span></span><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${toStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${escapeHtml(s.to[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.to)} ${escapeHtml(toSymbol)}</span></div></div><div class="text-right"><span class="block text-[9px] text-slate-400 mb-0.5 font-medium">金額</span><strong class="text-sm md:text-base font-black text-rose-600">$${escapeHtml(s.amount)}</strong></div></div>`;
   });
 }
-async function toggleSettlementDone(from, to, amount) {
-  ensureWriteAccess(async () => {
-    const key = `${from}_${to}_${amount}`;
-    const newValue = !state.settlementStatus[key];
-    try {
-      await runTransaction(current => {
-        const settlementStatus = { ...(current.settlementStatus || {}) };
-        settlementStatus[key] = newValue;
-        return { settlementStatus };
-      });
-      showToast(newValue ? "✅ 已標記為已還款" : "🔁 已取消已還款"); haptic(10);
-    } catch (e) { showToast("❌ 操作失敗", "⚠️"); }
-  });
-}
-function resetSettlementStatus() {
-  ensureDangerousAccess(async () => {
-    try {
-      await runTransaction(() => ({ settlementStatus: {} }));
-      showToast("🔄 已重置清償狀態");
-    } catch (e) { showToast("❌ 失敗", "⚠️"); }
-  }, "重置清償狀態", "即將清除所有「已還款」標記。請輸入管理員密碼。");
-}
+function toggleSettlementDone() { showToast("ℹ️ 無需標記，資料為即時計算", "ℹ️"); }
+
 function copySettlementPlan() {
   if (!_lastSettlements || _lastSettlements.length === 0) { showToast("目前沒有待還款計畫", "⚠️"); return; }
   let plan = "📋 建議還款 (HKD)\n=====================\n";
@@ -1436,7 +1315,6 @@ function exportCSV() {
     const s = String(cell == null ? "" : cell);
     return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   }).join(",")).join("\r\n");
-  // 加上 BOM 讓 Excel 正確顯示中文
   const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1642,15 +1520,14 @@ window.addEventListener("DOMContentLoaded", () => {
   initTheme();
   updateCurrentUserBadge();
   initCategoryGrid();
-  initPaymentMethodGrid();
-  renderTemplatesGrid();
   initSnowEffect();
   initRandomCharacters();
   initExchangeRates();
-  // 付款方式按鈕綁定
-  document.querySelectorAll('.pay-btn').forEach(btn => {
-    btn.addEventListener('click', () => setPaymentMethod(btn.dataset.method));
-  });
+  // 付款方式下拉選單監聽
+  const paySelect = document.getElementById('payment-method-select');
+  if (paySelect) {
+    paySelect.addEventListener('change', (e) => { selectedPaymentMethod = e.target.value; haptic(5); });
+  }
   window.addEventListener('storage', (e) => {
     if (e.key === 'tohoku_current_user') updateCurrentUserBadge();
   });
@@ -1658,7 +1535,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
- * 三十九、全域匯出（HTML onclick 會用到）
+ * 三十九、全域匯出
  * ============================================================ */
 window.openExpenseModal = openExpenseModal;
 window.closeExpenseModal = closeExpenseModal;
@@ -1666,7 +1543,6 @@ window.openEditExpenseModal = openEditExpenseModal;
 window.saveExpense = saveExpense;
 window.deleteExpense = deleteExpense;
 window.setCategory = setCategory;
-window.setCurrency = setCurrency;
 window.updateEstimatedHKD = updateEstimatedHKD;
 window.toggleCollapsible = toggleCollapsible;
 window.toggleFilter = toggleFilter;
@@ -1679,7 +1555,6 @@ window.openConfirmModal = openConfirmModal;
 window.closeConfirmModal = closeConfirmModal;
 window.confirmAndClearExpenses = confirmAndClearExpenses;
 window.toggleSettlementDone = toggleSettlementDone;
-window.resetSettlementStatus = resetSettlementStatus;
 window.copySettlementPlan = copySettlementPlan;
 window.openClearHistoryConfirm = openClearHistoryConfirm;
 window.verifyDangerousPassword = verifyDangerousPassword;

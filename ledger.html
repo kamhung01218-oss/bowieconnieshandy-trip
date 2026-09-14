@@ -100,7 +100,7 @@
     </div>
   </div>
 
-  <!-- 預算進度條（有設定才顯示） -->
+  <!-- 預算進度條 -->
   <div id="budget-bar" class="budget-bar hidden">
     <div class="budget-header">
       <span class="budget-label">💰 預算 <strong id="budget-total-text">$0</strong></span>
@@ -204,13 +204,12 @@
       <div class="grid grid-cols-3 gap-2">
         <div class="bg-red-50 border border-red-200 p-2 rounded-xl text-center"><span class="text-[10px] text-red-600 block">待還總額</span><strong id="debt-total" class="text-sm text-red-600">$0.00</strong></div>
         <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-xl text-center"><span class="text-[10px] text-emerald-600 block">應收總額</span><strong id="credit-total" class="text-sm text-emerald-600">$0.00</strong></div>
-        <div class="bg-sky-50 border border-sky-200 p-2 rounded-xl text-center"><span class="text-[10px] text-sky-600 block">已清償</span><strong id="settled-total" class="text-sm text-sky-600">0%</strong></div>
+        <div class="bg-sky-50 border border-sky-200 p-2 rounded-xl text-center"><span class="text-[10px] text-sky-600 block">結算筆數</span><strong id="settled-total" class="text-sm text-sky-600">0 筆</strong></div>
       </div>
       <div class="flex gap-2">
         <button onclick="copySettlementPlan()" class="flex-1 py-2 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl text-xs font-bold border border-sky-200 transition">📋 複製還款計畫</button>
-        <button onclick="resetSettlementStatus()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 transition">🔄 重置清償狀態</button>
       </div>
-      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-900 leading-relaxed">💡 依據每位成員的墊付與應分，自動計算最少的轉帳次數，點擊「標記已還」即可記錄清償進度。</div>
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-900 leading-relaxed">💡 旅行期間先記錄，回港後一次結算。系統已自動計算最少轉帳次數。</div>
       <div class="space-y-2" id="suggested-settle-container"></div>
     </div>
 
@@ -231,125 +230,140 @@
   </div>
 </div>
 
-<!-- 記帳 Modal -->
+<!-- 記帳 Modal (精簡版，完全修復橫向溢出) -->
 <div id="expense-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeExpenseModal()"></div>
-<div id="expense-modal" class="fixed bottom-0 left-0 right-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-full md:max-w-lg bg-white rounded-t-3xl md:rounded-3xl shadow-2xl z-[70] transform translate-y-full md:translate-y-8 md:scale-95 opacity-0 hidden transition-all duration-300 flex flex-col max-h-[92vh] md:max-h-[85vh]">
+<div id="expense-modal" class="fixed bottom-0 left-0 right-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-full md:max-w-lg bg-white rounded-t-3xl md:rounded-3xl shadow-2xl z-[70] transform translate-y-full md:translate-y-8 md:scale-95 opacity-0 hidden transition-all duration-300 flex flex-col max-h-[92vh] md:max-h-[85vh] overflow-hidden">
   <div class="shrink-0 flex justify-center pt-3 pb-2 md:hidden cursor-grab active:cursor-grabbing" id="expense-modal-handle">
     <div class="w-12 h-1.5 bg-slate-300 rounded-full transition-all active:scale-x-110"></div>
   </div>
   <div class="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100">
     <h3 class="text-lg font-black text-slate-900 flex items-center gap-2"><span class="bg-sky-100 text-sky-700 w-8 h-8 rounded-full flex items-center justify-center text-base">✏️</span> 記帳</h3>
     <div class="flex items-center gap-2">
-      <button id="btn-save-expense" onclick="saveExpense()" class="bg-sky-600 hover:bg-sky-700 text-white font-black py-2 px-4 rounded-xl shadow-sm transition active:scale-95 text-sm flex items-center gap-1.5"><span>儲存</span><span class="text-lg">✓</span></button>
+      <button id="btn-save-expense" onclick="saveExpense()" class="bg-sky-600 hover:bg-sky-700 text-white font-black py-2 px-5 rounded-xl shadow-sm transition active:scale-95 text-sm flex items-center gap-1.5"><span>儲存</span><span class="text-lg">✓</span></button>
       <button onclick="closeExpenseModal()" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
     </div>
   </div>
-  <div class="flex-1 overflow-y-auto p-6 pb-24 space-y-4 scrollbar-none bg-slate-50/50">
+  
+  <div class="flex-1 overflow-y-auto p-4 md:p-6 pb-24 space-y-5 scrollbar-none bg-slate-50/50 w-full">
 
-    <!-- 快速模板 -->
-    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
-      <label class="block text-xs font-bold text-slate-600 mb-2">⚡ 快速模板</label>
-      <div id="templates-grid" class="grid grid-cols-3 md:grid-cols-4 gap-1.5"></div>
+    <!-- 快速模板 (單行橫向滑動，移除負邊距) -->
+    <div class="flex gap-2 overflow-x-auto scrollbar-none pb-1 w-full">
+      <button type="button" class="template-pill" data-template-idx="0">🍽️ 午餐</button>
+      <button type="button" class="template-pill" data-template-idx="1">🍽️ 晚餐</button>
+      <button type="button" class="template-pill" data-template-idx="2">🍜 拉麵</button>
+      <button type="button" class="template-pill" data-template-idx="3">☕ 咖啡</button>
+      <button type="button" class="template-pill" data-template-idx="4">🛒 超商</button>
+      <button type="button" class="template-pill" data-template-idx="5">⛽ 加油</button>
+      <button type="button" class="template-pill" data-template-idx="6">🅿️ 停車</button>
+      <button type="button" class="template-pill" data-template-idx="7">🛣️ 過路費</button>
+      <button type="button" class="template-pill" data-template-idx="8">🎟️ 門票</button>
+      <button type="button" class="template-pill" data-template-idx="9">🛍️ 購物</button>
+      <button type="button" class="template-pill" data-template-idx="10">🏨 住宿</button>
+      <button type="button" class="template-pill" data-template-idx="11">🎁 伴手禮</button>
     </div>
 
-    <!-- 付款人 -->
-    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
-      <label class="block text-xs font-bold text-slate-600 mb-2">👤 誰先付款？</label>
-      <div class="grid grid-cols-4 gap-1.5" id="payer-grid"></div>
-    </div>
-
-    <!-- 日期 -->
-    <div>
-      <label class="block text-xs font-bold text-slate-600 mb-1">📅 日期</label>
-      <select id="ledger-day" class="block w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50">
-        <option value="1">Day 1 (1/21)</option><option value="2">Day 2 (1/22)</option><option value="3">Day 3 (1/23)</option><option value="4">Day 4 (1/24)</option><option value="5">Day 5 (1/25)</option><option value="6">Day 6 (1/26)</option><option value="7">Day 7 (1/27)</option>
-      </select>
-    </div>
-
-    <!-- 類別 -->
-    <div>
-      <label class="block text-xs font-bold text-slate-600 mb-1.5">📂 類別</label>
-      <div class="grid grid-cols-3 gap-1.5" id="category-grid">
-        <button type="button" onclick="setCategory('餐飲')" data-cat="餐飲" class="cat-btn"><span class="cat-icon">🍽️</span><span>餐飲</span></button>
-        <button type="button" onclick="setCategory('交通')" data-cat="交通" class="cat-btn"><span class="cat-icon">🚗</span><span>交通</span></button>
-        <button type="button" onclick="setCategory('住宿')" data-cat="住宿" class="cat-btn"><span class="cat-icon">🏨</span><span>住宿</span></button>
-        <button type="button" onclick="setCategory('購物')" data-cat="購物" class="cat-btn"><span class="cat-icon">🛍️</span><span>購物</span></button>
-        <button type="button" onclick="setCategory('門票/活動')" data-cat="門票/活動" class="cat-btn"><span class="cat-icon">🎟️</span><span>門票/活動</span></button>
-        <button type="button" onclick="setCategory('其他')" data-cat="其他" class="cat-btn"><span class="cat-icon">📦</span><span>其他</span></button>
-      </div>
-      <select id="ledger-category" class="hidden">
-        <option value="餐飲">餐飲</option><option value="交通">交通</option><option value="住宿">住宿</option><option value="購物">購物</option><option value="門票/活動">門票/活動</option><option value="其他">其他</option>
-      </select>
-    </div>
-
-    <!-- 付款方式 -->
-    <div>
-      <label class="block text-xs font-bold text-slate-600 mb-1.5">💳 付款方式</label>
-      <div class="grid grid-cols-4 gap-1.5" id="payment-method-grid">
-        <button type="button" data-method="現金" class="pay-btn">💵<span>現金</span></button>
-        <button type="button" data-method="信用卡" class="pay-btn">💳<span>信用卡</span></button>
-        <button type="button" data-method="IC卡" class="pay-btn">📱<span>IC卡</span></button>
-        <button type="button" data-method="PayPay" class="pay-btn">🅿️<span>PayPay</span></button>
-      </div>
-    </div>
-
-    <!-- 說明 -->
-    <div>
-      <label class="block text-xs font-bold text-slate-600 mb-1">📝 說明</label>
-      <input id="ledger-desc" placeholder="例如：晚餐" class="w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50">
-    </div>
-
-    <!-- 金額 -->
-    <div>
-      <label class="block text-xs font-bold text-slate-600 mb-1">💰 金額</label>
-      <input id="ledger-amount" inputmode="decimal" oninput="updateEstimatedHKD()" placeholder="0.00" class="w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
-      <div class="mt-2 flex gap-1.5" id="currency-buttons">
-        <button type="button" onclick="setCurrency('JPY')" class="currency-btn" data-currency="JPY">¥ JPY</button>
-        <button type="button" onclick="setCurrency('HKD')" class="currency-btn" data-currency="HKD">$ HKD</button>
-        <button type="button" onclick="setCurrency('TWD')" class="currency-btn" data-currency="TWD">$ TWD</button>
-        <button type="button" onclick="setCurrency('USD')" class="currency-btn" data-currency="USD">$ USD</button>
-      </div>
-    </div>
-    <select id="ledger-currency" class="hidden">
-      <option value="JPY">JPY</option><option value="HKD">HKD</option><option value="TWD">TWD</option><option value="USD">USD</option>
-    </select>
-
-    <!-- 備註 -->
-    <div>
-      <label class="block text-xs font-bold text-slate-600 mb-1">📌 備註（可留空）</label>
-      <textarea id="ledger-remark" rows="2" placeholder="例如：xx餐廳、四人份、使用現金…" class="block w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none"></textarea>
-    </div>
-
-    <!-- 約合 HKD -->
-    <div class="bg-white border border-slate-200 rounded-xl shadow-sm">
-      <div class="flex items-center justify-between px-3 py-2.5 cursor-pointer" onclick="toggleCollapsible('amount-section')">
-        <label class="text-xs font-bold text-slate-600">📊 約合 HKD</label>
-        <span class="text-[10px] text-slate-400 transition-transform" id="amount-section-arrow">▼</span>
-      </div>
-      <div id="amount-section" class="collapsible-section collapsed px-3 pb-3">
-        <div class="text-right"><span id="estimated-hkd-text" class="text-xs text-sky-600 font-bold bg-sky-50 px-2 py-0.5 rounded border border-sky-100">約合 0.00 HKD</span></div>
-      </div>
-    </div>
-
-    <!-- 分攤 -->
-    <div class="bg-white border border-slate-200 rounded-xl shadow-sm">
-      <div class="flex items-center justify-between px-3 py-2.5">
-        <label class="text-xs font-bold text-slate-600">👥 分擔成員</label>
-        <div class="flex items-center gap-2">
-          <span id="split-sum-hint" class="text-[10px] font-bold text-slate-400"></span>
-          <button type="button" id="custom-split-toggle" onclick="toggleCustomSplit()" class="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-0.5 rounded transition">✏️ 自訂</button>
+    <!-- 核心輸入區 -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-4">
+      <!-- 金額與幣別 -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">💰 金額</label>
+        <div class="flex gap-2 w-full">
+          <select id="ledger-currency" class="w-[70px] shrink-0 border border-slate-300 bg-white rounded-xl py-2.5 px-1 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+            <option value="JPY">¥ JPY</option>
+            <option value="HKD">$ HKD</option>
+            <option value="TWD">$ TWD</option>
+            <option value="USD">$ USD</option>
+          </select>
+          <input id="ledger-amount" inputmode="decimal" oninput="updateEstimatedHKD()" placeholder="0" class="flex-1 min-w-0 border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-lg font-black text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/50 text-right">
+        </div>
+        <div class="mt-1 text-right">
+          <span id="estimated-hkd-text" class="text-[11px] text-sky-600 font-bold bg-sky-50 px-2 py-0.5 rounded border border-sky-100">約合 0.00 HKD</span>
         </div>
       </div>
-      <div id="split-section" class="px-3 pb-3">
-        <div class="flex gap-1 mb-2" id="split-presets">
-          <button type="button" onclick='setSplitPreset("all")' class="text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 px-2 py-1 rounded">全部</button>
-          <button type="button" onclick='setSplitPreset("adults")' class="text-[10px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 px-2 py-1 rounded">僅大人</button>
-          <button type="button" onclick="useLastExpense()" class="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded">沿用上次</button>
+
+      <!-- 說明 -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1">📝 說明</label>
+        <input id="ledger-desc" placeholder="例如：晚餐" class="w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+      </div>
+
+      <!-- 類別 (改為 3 列，絕不擠壓) -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">📂 類別</label>
+        <div class="grid grid-cols-3 gap-2" id="category-grid">
+          <button type="button" onclick="setCategory('餐飲')" data-cat="餐飲" class="cat-btn-compact">🍽️<span>餐飲</span></button>
+          <button type="button" onclick="setCategory('交通')" data-cat="交通" class="cat-btn-compact">🚗<span>交通</span></button>
+          <button type="button" onclick="setCategory('住宿')" data-cat="住宿" class="cat-btn-compact">🏨<span>住宿</span></button>
+          <button type="button" onclick="setCategory('購物')" data-cat="購物" class="cat-btn-compact">🛍️<span>購物</span></button>
+          <button type="button" onclick="setCategory('門票/活動')" data-cat="門票/活動" class="cat-btn-compact">🎟️<span>門票</span></button>
+          <button type="button" onclick="setCategory('其他')" data-cat="其他" class="cat-btn-compact">📦<span>其他</span></button>
         </div>
-        <div class="grid grid-cols-4 gap-1.5 p-2 bg-white border border-slate-200 rounded-xl" id="splitters-grid"></div>
-        <div id="custom-split-inputs" class="hidden mt-2 space-y-1.5"></div>
+        <select id="ledger-category" class="hidden">
+          <option value="餐飲">餐飲</option><option value="交通">交通</option><option value="住宿">住宿</option><option value="購物">購物</option><option value="門票/活動">門票/活動</option><option value="其他">其他</option>
+        </select>
       </div>
     </div>
+
+    <!-- 進階設定 (折疊) -->
+    <details class="bg-white border border-slate-200 rounded-2xl shadow-sm group">
+      <summary class="flex items-center justify-between px-4 py-3 cursor-pointer list-none select-none">
+        <span class="text-xs font-bold text-slate-600">⚙️ 進階設定（付款人、分攤、日期、備註）</span>
+        <span class="text-slate-400 transition-transform group-open:rotate-180">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 border-t border-slate-100 pt-3 w-full">
+        
+        <!-- 日期與付款方式 -->
+        <div class="grid grid-cols-2 gap-3 w-full">
+          <div class="min-w-0">
+            <label class="block text-xs font-bold text-slate-600 mb-1">📅 日期</label>
+            <select id="ledger-day" class="block w-full border border-slate-300 bg-white rounded-xl py-2 px-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50 truncate">
+              <option value="1">Day 1 (1/21)</option><option value="2">Day 2 (1/22)</option><option value="3">Day 3 (1/23)</option><option value="4">Day 4 (1/24)</option><option value="5">Day 5 (1/25)</option><option value="6">Day 6 (1/26)</option><option value="7">Day 7 (1/27)</option>
+            </select>
+          </div>
+          <div class="min-w-0">
+            <label class="block text-xs font-bold text-slate-600 mb-1">💳 付款方式</label>
+            <select id="payment-method-select" class="block w-full border border-slate-300 bg-white rounded-xl py-2 px-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50 truncate">
+              <option value="現金">💵 現金</option>
+              <option value="信用卡">💳 信用卡</option>
+              <option value="IC卡">📱 IC卡</option>
+              <option value="PayPay">🅿️ PayPay</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 付款人 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">👤 誰先付款？</label>
+          <div class="grid grid-cols-4 gap-1.5" id="payer-grid"></div>
+        </div>
+
+        <!-- 分攤成員 -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold text-slate-600">👥 分擔成員</label>
+            <button type="button" id="custom-split-toggle" onclick="toggleCustomSplit()" class="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-0.5 rounded transition">✏️ 自訂金額</button>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5 mb-2" id="splitters-grid"></div>
+          <div id="custom-split-inputs" class="hidden space-y-1.5 mt-2"></div>
+          <div class="flex justify-between items-center mt-2">
+            <span id="split-sum-hint" class="text-[10px] font-bold text-slate-400"></span>
+            <button type="button" onclick='setSplitPreset("all")' class="text-[10px] font-bold text-sky-600 hover:text-sky-800 underline">全部均分</button>
+          </div>
+        </div>
+
+        <!-- 備註 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">📌 備註</label>
+          <textarea id="ledger-remark" rows="2" placeholder="例如：xx餐廳、四人份…" class="block w-full border border-slate-300 bg-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none"></textarea>
+        </div>
+      </div>
+    </details>
+
+    <!-- 用上次記錄按鈕 (放在底部) -->
+    <div class="text-center pt-2">
+      <button type="button" onclick="useLastExpense()" class="text-[11px] font-bold text-slate-400 hover:text-sky-600 underline">📋 沿用上一次的記錄</button>
+    </div>
+
   </div>
 </div>
 
