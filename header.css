@@ -1,6 +1,6 @@
 /* ============================================================
- * AppHeader 雪地清爽版 v6.0
- * 淺藍漸層 Header + 白色焦點卡
+ * AppHeader 雪地清爽版 v6.1
+ * 淺藍漸層 Header + 白色焦點卡 + 琥珀高亮「行程速覽」
  * ============================================================ */
 
 :root {
@@ -24,6 +24,10 @@
 
   --line-soft: #e2e8f0;
   --line-sky: rgba(186, 230, 253, 0.6);
+
+  --amber-cta-1: #fbbf24;
+  --amber-cta-2: #f59e0b;
+  --amber-cta-3: #ea580c;
 }
 
 /* ============================================================
@@ -104,10 +108,13 @@
 .app-header .brand-actions {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
+/* ============================================================
+ * ⚙️ 工具選單按鈕（次要，維持玻璃感）
+ * ============================================================ */
 .app-header .tools-toggle {
   display: inline-flex;
   align-items: center;
@@ -146,6 +153,97 @@
 }
 .app-header .tools-toggle.active .icon-gear {
   transform: rotate(90deg);
+}
+
+/* ============================================================
+ * ⭐ 行程速覽 CTA（琥珀色高亮按鈕）
+ * ============================================================ */
+.app-header .overview-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg,
+    var(--amber-cta-1) 0%,
+    var(--amber-cta-2) 50%,
+    var(--amber-cta-3) 100%);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: overview-cta-breathe 2.4s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-header .overview-cta-icon {
+  font-size: 14px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.app-header .overview-cta-text {
+  font-size: 11px;
+  font-weight: 900;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+}
+
+.app-header .overview-cta:active {
+  transform: scale(0.94);
+  animation: none;
+}
+
+.app-header .overview-cta:hover {
+  background: linear-gradient(135deg,
+    #fcd34d 0%,
+    var(--amber-cta-1) 50%,
+    #f97316 100%);
+}
+
+/* 呼吸光暈 */
+@keyframes overview-cta-breathe {
+  0%, 100% {
+    box-shadow:
+      0 4px 14px rgba(245, 158, 11, 0.45),
+      0 1px 3px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 0 0 0 rgba(251, 191, 36, 0.55);
+  }
+  50% {
+    box-shadow:
+      0 4px 14px rgba(245, 158, 11, 0.65),
+      0 1px 3px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 0 0 7px rgba(251, 191, 36, 0);
+  }
+}
+
+/* 首次訪問紅點 */
+.app-header .overview-cta-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.8);
+  animation: overview-dot-pulse 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes overview-dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: 0.85; }
 }
 
 /* ============================================================
@@ -737,6 +835,8 @@
   .app-header .brand-bar { padding: 0 24px; }
   .app-header .countdown-value { font-size: 28px; }
   .app-header .countdown-unit { font-size: 12px; }
+  .app-header .overview-cta { height: 36px; padding: 0 14px 0 12px; }
+  .app-header .overview-cta-text { font-size: 12px; }
 }
 
 @media (max-width: 360px) {
@@ -751,6 +851,26 @@
     width: calc(100vw - 24px);
     right: 12px;
   }
+  /* 極窄螢幕：速覽按鈕進一步縮小 */
+  .app-header .overview-cta {
+    height: 30px;
+    padding: 0 10px 0 8px;
+    gap: 4px;
+  }
+  .app-header .overview-cta-icon { font-size: 12px; }
+  .app-header .overview-cta-text { font-size: 10px; }
+  .app-header .overview-cta-dot { width: 7px; height: 7px; }
+}
+
+/* 若標題過長，允許「速覽」按鈕先壓縮間距 */
+@media (max-width: 340px) {
+  .app-header .overview-cta-text { display: none; }
+  .app-header .overview-cta {
+    padding: 0 10px;
+    width: 34px;
+    justify-content: center;
+  }
+  .app-header .overview-cta-icon { font-size: 15px; }
 }
 
 /* ============================================================
@@ -761,7 +881,9 @@
   .app-header .focus-progress-fill::after,
   .app-header .focus-label::before,
   .app-header .tools-sync-dot,
-  .app-header .countdown-value.tick {
+  .app-header .countdown-value.tick,
+  .app-header .overview-cta,
+  .app-header .overview-cta-dot {
     animation: none !important;
   }
   .app-header .tools-toggle .icon-gear {

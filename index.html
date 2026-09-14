@@ -486,8 +486,20 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="all-shopping-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeAllShoppingModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="all-shopping-modal"><div class="modal-handle"></div></div><button onclick="closeAllShoppingModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🛍️</span> 我的購物清單</h2><div id="all-shopping-content"></div></div></div></div>
   <div id="password-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closePasswordModal()"><div class="modal-box bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative" onclick="event.stopPropagation()"><button onclick="closePasswordModal()" class="modal-close">✕</button><h2 class="text-xl font-black mb-2 flex items-center gap-2">🔒 輸入管理密碼</h2><p class="text-xs text-slate-500 mb-4">輸入密碼以解鎖「行前預訂」編輯權限</p><input id="password-input" type="password" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm mb-3" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')verifyPassword()"><div class="flex gap-2"><button onclick="verifyPassword()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">確認</button><button onclick="closePasswordModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl">取消</button></div><p id="password-error" class="text-xs text-red-500 font-bold mt-2 hidden">⚠️ 密碼錯誤</p></div></div>
 
-  <!-- ✅ 主應用邏輯（已從 index.html 抽出） -->
-  <script src="./app.js"></script>
+  <!-- ============================================================ -->
+  <!-- 主應用邏輯（已拆分為三個檔案，載入順序不可調換） -->
+  <!-- ============================================================ -->
+
+  <!-- 1️⃣ 核心：工具函數、用戶認證、全域狀態、彈窗系統、匯率、Toast、燈箱、角色、Service Worker、可拖動 FAB -->
+  <script src="./app-core.js"></script>
+
+  <!-- 2️⃣ 清單：行前預訂、裝備、購物清單、購物總覽（依賴 app-core.js） -->
+  <script src="./app-lists.js"></script>
+
+  <!-- 3️⃣ 行程：天氣、行程渲染、圖片輪播、各項攻略 Modal、行程切換（依賴 app-core.js 與 app-lists.js） -->
+  <script src="./app-itinerary.js"></script>
+
+  <!-- 4️⃣ 頂部 Header 元件 -->
   <script src="./header.js"></script>
 </body>
 </html>

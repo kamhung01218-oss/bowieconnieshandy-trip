@@ -1,6 +1,8 @@
 /* ============================================================
- * AppHeader v4.3
- * - 品牌列：❄️ 標題 + [📋 速覽] + [⚙️ 工具]
+ * AppHeader v4.4
+ * - 品牌列：❄️ 標題 + [📋 速覽 (琥珀高亮)] + [⚙️ 工具]
+ * - 首次訪問速覽按鈕帶紅點提示，點擊後消失
+ * - Focus Card（出發前）第一顆 CTA = 行程速覽
  * - 匯率：可拖動 FAB（獨立元件，見 index.html）
  * ============================================================ */
 
@@ -14,6 +16,8 @@ window.AppHeader = (function () {
   let _lastDuringRender = 0;
   let _docClickHandler = null;
   let _escKeyHandler = null;
+
+  const OVERVIEW_SEEN_KEY = 'tohoku_overview_seen';
 
   function getTripPhase() {
     const now = Date.now();
@@ -210,9 +214,16 @@ window.AppHeader = (function () {
                 </div>
               </div>
             ` : ""}
-            <div class="focus-cta-row">
-              <button type="button" class="focus-cta focus-cta-primary" data-action="shopping"><span>🛍️</span> 購物清單</button>
-              <button type="button" class="focus-cta focus-cta-secondary" data-action="ticket"><span>⚔️</span> 搶票攻略</button>
+            <div class="focus-cta-row" style="flex-wrap:wrap">
+              <button type="button" class="focus-cta focus-cta-primary" data-action="overview" style="flex:1 1 100%">
+                <span>📋</span> 行程速覽
+              </button>
+              <button type="button" class="focus-cta focus-cta-secondary" data-action="shopping" style="flex:1">
+                <span>🛍️</span> 購物
+              </button>
+              <button type="button" class="focus-cta focus-cta-secondary" data-action="ticket" style="flex:1">
+                <span>⚔️</span> 搶票
+              </button>
             </div>
           </div>
         `;
@@ -267,7 +278,7 @@ window.AppHeader = (function () {
             <div class="focus-progress-label">今日進度 ${progress}% · 已完成 ${doneEvents} / ${totalEvents} 個行程</div>
             ${progressRows}
             <div class="focus-cta-row">
-              <button type="button" class="focus-cta focus-cta-primary" data-action="scrollToDay"><span>📋</span> 查看今日行程</button>
+              <button type="button" class="focus-cta focus-cta-primary" data-action="overview"><span>📋</span> 行程速覽</button>
               ${nextEvt && nextEvt.navUrl
                 ? `<a href="${escapeHtml(nextEvt.navUrl)}" target="_blank" class="focus-cta focus-cta-secondary"><span>📍</span> 導航</a>`
                 : `<button type="button" class="focus-cta focus-cta-secondary" data-action="weather"><span>⛅</span> 天氣</button>`}
@@ -312,7 +323,7 @@ window.AppHeader = (function () {
           case "shopping":     cb.onShopping && cb.onShopping();   break;
           case "ticket":       cb.onTicket && cb.onTicket();       break;
           case "weather":      cb.onWeather && cb.onWeather();     break;
-          case "overview":     cb.onOverview && cb.onOverview();   break;
+          case "overview":     markOverviewSeen(); cb.onOverview && cb.onOverview(); break;
           case "switchLedger": cb.onSwitchTab && cb.onSwitchTab("ledger"); break;
           case "scrollToDay": {
             const idx = getCurrentDayIndex();
@@ -323,6 +334,15 @@ window.AppHeader = (function () {
         }
       });
     });
+  }
+
+  function markOverviewSeen() {
+    try { localStorage.setItem(OVERVIEW_SEEN_KEY, '1'); } catch (e) {}
+    const dot = _container?.querySelector('.overview-cta-dot');
+    if (dot) dot.remove();
+  }
+  function hasSeenOverview() {
+    try { return localStorage.getItem(OVERVIEW_SEEN_KEY) === '1'; } catch (e) { return false; }
   }
 
   function openToolsMenu() {
@@ -474,6 +494,8 @@ window.AppHeader = (function () {
       _nextEventStartMs = null;
       _lastDuringRender = 0;
 
+      const showOverviewDot = !hasSeenOverview();
+
       _container.innerHTML = `
         <div class="brand-bar">
           <div class="brand-title-wrap">
@@ -481,8 +503,10 @@ window.AppHeader = (function () {
             <span class="brand-title">東北冬季親子自駕 2027</span>
           </div>
           <div class="brand-actions">
-            <button type="button" id="app-header-overview" class="tools-toggle" title="行程速覽">
-              <span>📋</span>
+            <button type="button" id="app-header-overview" class="overview-cta" title="行程速覽">
+              <span class="overview-cta-icon">📋</span>
+              <span class="overview-cta-text">速覽</span>
+              ${showOverviewDot ? '<span class="overview-cta-dot" aria-hidden="true"></span>' : ''}
             </button>
             <button type="button" id="tools-toggle" class="tools-toggle" title="工具選單">
               <span class="icon-gear">⚙️</span>
@@ -504,9 +528,10 @@ window.AppHeader = (function () {
       if (overviewBtn) {
         overviewBtn.addEventListener("click", (e) => {
           e.stopPropagation();
+          markOverviewSeen();
           const cb = _config.callbacks || {};
           if (cb.onOverview) cb.onOverview();
-          haptic(6);
+          haptic(10);
         });
       }
 
