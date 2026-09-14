@@ -1,21 +1,48 @@
 /* ============================================================
- * AppHeader 樣式 v4.3
- * - 品牌列：📋 速覽 + ⚙️ 工具（🪙 匯率改為可拖動 FAB）
- * - 焦點卡片：倒數 / 進度列表 / 任務 / CTA
+ * AppHeader 雪地清爽版 v6.0
+ * 淺藍漸層 Header + 白色焦點卡
  * ============================================================ */
 
 :root {
   --app-header-safe-top: env(safe-area-inset-top, 0px);
+
+  --snow-bg-1: #f0f9ff;
+  --snow-bg-2: #e0f2fe;
+  --card-bg: #ffffff;
+
+  --sky-primary: #0284c7;
+  --sky-primary-dark: #0369a1;
+  --sky-deep: #0c4a6e;
+  --sky-light: #bae6fd;
+  --sky-lighter: #e0f2fe;
+  --sky-accent: #0ea5e9;
+
+  --text-main: #1e293b;
+  --text-soft: #475569;
+  --text-mute: #64748b;
+  --text-faint: #94a3b8;
+
+  --line-soft: #e2e8f0;
+  --line-sky: rgba(186, 230, 253, 0.6);
 }
 
+/* ============================================================
+ * 主體（淺藍漸層）
+ * ============================================================ */
 .app-header {
   position: relative;
-  background: #0c1929;
+  background: linear-gradient(180deg,
+    #0284c7 0%,
+    #0ea5e9 35%,
+    #7dd3fc 70%,
+    #bae6fd 100%);
   color: white;
   overflow: hidden;
   padding-top: var(--app-header-safe-top);
-  box-shadow: 0 4px 20px rgba(12, 25, 41, 0.15);
+  box-shadow: 0 4px 20px rgba(2, 132, 199, 0.2);
 }
+
+/* 背景雪景圖 */
 .app-header::before {
   content: '';
   position: absolute;
@@ -23,210 +50,347 @@
   background-image: url('https://images.unsplash.com/photo-1418985991508-e47386d96a71?q=80&w=2000&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
-  opacity: 0.28;
+  opacity: 0.12;
   pointer-events: none;
+  mix-blend-mode: screen;
 }
+
+/* 漸層疊加 */
 .app-header::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(12,25,41,0.88) 0%, rgba(12,45,72,0.72) 50%, rgba(30,27,75,0.9) 100%);
+  background: radial-gradient(ellipse at top right,
+    rgba(125, 211, 252, 0.4) 0%,
+    transparent 60%);
   pointer-events: none;
 }
+
 .app-header > * { position: relative; z-index: 1; }
 
-/* ---------- 品牌列 ---------- */
+/* ============================================================
+ * 品牌列
+ * ============================================================ */
 .app-header .brand-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 16px; height: 48px;
-  max-width: 72rem; margin: 0 auto; gap: 8px;
-}
-.app-header .brand-title-wrap {
-  display: flex; align-items: center; gap: 8px;
-  min-width: 0; flex: 1;
-}
-.app-header .brand-title {
-  font-size: 13px; font-weight: 900;
-  letter-spacing: -0.01em;
-  text-shadow: 0 1px 8px rgba(0,0,0,0.4);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.app-header .brand-actions {
-  display: flex; align-items: center; gap: 5px; flex-shrink: 0;
-}
-.app-header .tools-toggle {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: white; font-size: 16px; cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 0; line-height: 1; flex-shrink: 0;
-}
-.app-header .tools-toggle:active { background: rgba(255,255,255,0.22); transform: scale(0.9); }
-.app-header .tools-toggle:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); }
-.app-header .tools-toggle.active {
-  background: rgba(56, 189, 248, 0.25);
-  border-color: rgba(56, 189, 248, 0.5);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-}
-.app-header .tools-toggle .icon-gear { display: inline-block; transition: transform 0.4s ease; }
-.app-header .tools-toggle.active .icon-gear { transform: rotate(90deg); }
-
-/* ---------- 焦點卡片 ---------- */
-.app-header .focus-card {
-  margin: 0 16px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
   max-width: 72rem;
-  margin-left: auto; margin-right: auto;
+  margin: 0 auto;
+  gap: 8px;
+}
+
+.app-header .brand-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.app-header .brand-title {
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 8px rgba(2, 132, 199, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #ffffff;
+}
+
+.app-header .brand-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.app-header .tools-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.app-header .tools-toggle:active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.9);
+}
+.app-header .tools-toggle:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.app-header .tools-toggle.active {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+.app-header .tools-toggle .icon-gear {
+  display: inline-block;
+  transition: transform 0.4s ease;
+}
+.app-header .tools-toggle.active .icon-gear {
+  transform: rotate(90deg);
+}
+
+/* ============================================================
+ * 焦點卡片（白色）
+ * ============================================================ */
+.app-header .focus-card {
+  margin: 0 16px 20px;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
   padding: 0 16px;
   animation: app-header-focus-fade 0.4s ease;
 }
+
 @keyframes app-header-focus-fade {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
 .app-header .focus-inner {
   position: relative;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px; padding: 16px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+  background: #ffffff;
+  border: 1px solid rgba(186, 230, 253, 0.8);
+  border-radius: 20px;
+  padding: 18px 18px 16px;
+  box-shadow:
+    0 4px 16px rgba(2, 132, 199, 0.15),
+    0 12px 32px -12px rgba(2, 132, 199, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
   overflow: hidden;
 }
-.app-header .focus-inner::before {
-  content: '';
-  position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-  background:
-    radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.18) 0%, transparent 40%),
-    radial-gradient(circle at 70% 80%, rgba(167, 139, 250, 0.14) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.06) 0%, transparent 55%);
-  animation: aurora-rotate 25s linear infinite;
-  pointer-events: none; z-index: 0;
+
+.app-header .focus-inner::before { display: none; }
+.app-header .focus-inner::after { display: none; }
+
+.app-header .focus-inner > * {
+  position: relative;
+  z-index: 1;
 }
-@keyframes aurora-rotate {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.1); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-.app-header .focus-inner > * { position: relative; z-index: 1; }
+
+/* ============================================================
+ * 標籤 / 標題
+ * ============================================================ */
 .app-header .focus-label {
-  font-size: 10px; font-weight: 800;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  color: #7dd3fc; margin-bottom: 8px;
-  display: flex; align-items: center; gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sky-primary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .app-header .focus-label::before {
-  content: ''; width: 4px; height: 4px; border-radius: 50%;
-  background: #38bdf8; box-shadow: 0 0 8px #38bdf8;
+  content: '';
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--sky-primary);
+  box-shadow: 0 0 8px var(--sky-primary);
   animation: app-header-pulse 1.5s infinite;
 }
-.app-header .focus-title { font-size: 16px; font-weight: 900; letter-spacing: -0.01em; line-height: 1.3; }
-.app-header .focus-subtitle { font-size: 11px; color: #94a3b8; margin-top: 2px; }
 
-/* ---------- 倒數網格 ---------- */
-.app-header .countdown-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 6px; margin-top: 4px;
+.app-header .focus-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
 }
+
+.app-header .focus-subtitle {
+  font-size: 11px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+
+/* ============================================================
+ * 倒數格子（白色小卡）
+ * ============================================================ */
+.app-header .countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+}
+
 .app-header .countdown-cell {
   position: relative;
-  background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%);
-  border: 1px solid rgba(125, 211, 252, 0.18);
-  border-radius: 14px; padding: 10px 2px;
-  text-align: center; overflow: hidden;
+  background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+  border: 1px solid var(--sky-light);
+  border-radius: 14px;
+  padding: 10px 2px;
+  text-align: center;
+  overflow: hidden;
   transition: border-color 0.3s;
 }
 .app-header .countdown-cell::before {
-  content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(125, 211, 252, 0.7), transparent);
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
 }
+
 .app-header .countdown-value {
-  position: relative; z-index: 1; display: block;
-  font-size: 24px; font-weight: 900;
+  position: relative;
+  z-index: 1;
+  display: block;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 26px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em; line-height: 1;
-  background: linear-gradient(180deg, #ffffff 0%, #7dd3fc 100%);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 2px 12px rgba(56, 189, 248, 0.35);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--sky-deep);
 }
+
 .app-header .countdown-unit {
-  position: relative; z-index: 1; display: block;
-  font-size: 11px; font-weight: 900; color: #7dd3fc;
-  margin-top: 5px; letter-spacing: 0.1em;
-  text-shadow: 0 0 8px rgba(56, 189, 248, 0.5); opacity: 0.9;
+  position: relative;
+  z-index: 1;
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--sky-primary);
+  margin-top: 5px;
+  letter-spacing: 0.1em;
 }
+
 .app-header .countdown-cell[data-cell-block="seconds"] .countdown-value {
-  background: linear-gradient(180deg, #ffffff 0%, #a78bfa 100%);
-  -webkit-background-clip: text; background-clip: text;
-  text-shadow: 0 2px 12px rgba(167, 139, 250, 0.5);
+  color: #8b5cf6;
 }
 .app-header .countdown-cell[data-cell-block="seconds"] .countdown-unit {
-  color: #c4b5fd; text-shadow: 0 0 8px rgba(167, 139, 250, 0.5);
+  color: #a78bfa;
 }
-.app-header .countdown-value.tick { animation: countdown-tick 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.app-header .countdown-value.tick {
+  animation: countdown-tick 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 @keyframes countdown-tick {
   0% { transform: scale(1); }
-  40% { transform: scale(1.15); filter: brightness(1.3); }
+  40% { transform: scale(1.15); filter: brightness(1.2); }
   100% { transform: scale(1); }
 }
 
-/* ---------- 進度條 ---------- */
+/* ============================================================
+ * 進度條
+ * ============================================================ */
 .app-header .focus-progress-row { margin-top: 14px; }
+
 .app-header .focus-progress-track {
-  height: 5px; background: rgba(255,255,255,0.08);
-  border-radius: 999px; overflow: hidden; position: relative;
+  height: 6px;
+  background: var(--sky-lighter);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
 }
 .app-header .focus-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #a78bfa 100%);
-  border-radius: 999px; transition: width 0.8s ease;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
-  position: relative; overflow: hidden;
+  border-radius: 999px;
+  transition: width 0.8s ease;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+  position: relative;
+  overflow: hidden;
 }
 .app-header .focus-progress-fill::after {
-  content: ''; position: absolute; top: 0; left: -30%; width: 30%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-  animation: progress-shimmer 2.5s ease-in-out infinite;
+  content: '';
+  position: absolute;
+  top: 0; left: -30%;
+  width: 30%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  animation: progress-shimmer 3.5s ease-in-out infinite;
 }
 @keyframes progress-shimmer { 0% { left: -30%; } 100% { left: 130%; } }
+
 .app-header .focus-progress-label {
-  font-size: 10px; color: #94a3b8; text-align: center;
-  margin-top: 6px; font-weight: 700; letter-spacing: 0.02em;
+  font-size: 10px;
+  color: var(--text-mute);
+  text-align: center;
+  margin-top: 6px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
-/* ---------- 進度列表 ---------- */
+/* ============================================================
+ * 進度列表
+ * ============================================================ */
 .app-header .progress-list {
   margin-top: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #f8fbff;
+  border: 1px solid var(--line-sky);
   border-radius: 14px;
   padding: 6px;
-  display: flex; flex-direction: column; gap: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
+
 .app-header .progress-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 10px; border-radius: 10px;
-  cursor: pointer; transition: all 0.2s;
-  border: none; background: transparent;
-  color: white; text-align: left; width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  text-align: left;
+  width: 100%;
 }
-.app-header .progress-item:active { background: rgba(255, 255, 255, 0.1); transform: scale(0.98); }
-.app-header .progress-item:hover { background: rgba(255, 255, 255, 0.08); }
-.app-header .progress-icon { font-size: 16px; flex-shrink: 0; width: 22px; text-align: center; }
+.app-header .progress-item:active {
+  background: var(--sky-lighter);
+  transform: scale(0.98);
+}
+.app-header .progress-item:hover { background: var(--sky-lighter); }
+
+.app-header .progress-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+}
+
 .app-header .progress-label {
-  font-size: 12px; font-weight: 700;
-  color: #e2e8f0; flex-shrink: 0;
-  min-width: 76px; white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+  flex-shrink: 0;
+  min-width: 76px;
+  white-space: nowrap;
 }
+
 .app-header .progress-bar-mini {
-  flex: 1; height: 5px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 999px; overflow: hidden; position: relative;
+  flex: 1;
+  height: 5px;
+  background: var(--sky-lighter);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
 }
 .app-header .progress-bar-mini-fill {
-  height: 100%; border-radius: 999px;
+  height: 100%;
+  border-radius: 999px;
   background: linear-gradient(90deg, #38bdf8, #6366f1);
   transition: width 0.6s ease;
   box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
@@ -235,99 +399,196 @@
   background: linear-gradient(90deg, #34d399, #10b981);
   box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
 }
-.app-header .progress-item.done .progress-label { color: #a7f3d0; }
+.app-header .progress-item.done .progress-label { color: #059669; }
+
 .app-header .progress-count {
-  font-size: 11px; font-weight: 900;
+  font-size: 11px;
+  font-weight: 900;
   font-variant-numeric: tabular-nums;
-  color: #7dd3fc; flex-shrink: 0;
-  min-width: 44px; text-align: right;
+  color: var(--sky-primary);
+  flex-shrink: 0;
+  min-width: 44px;
+  text-align: right;
 }
-.app-header .progress-item.done .progress-count { color: #6ee7b7; }
+.app-header .progress-item.done .progress-count { color: #059669; }
+
 .app-header .progress-arrow {
-  font-size: 14px; color: #64748b;
-  flex-shrink: 0; transition: transform 0.2s, color 0.2s;
+  font-size: 14px;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  transition: transform 0.2s, color 0.2s;
 }
-.app-header .progress-item:active .progress-arrow { transform: translateX(2px); color: #38bdf8; }
+.app-header .progress-item:active .progress-arrow {
+  transform: translateX(2px);
+  color: var(--sky-primary);
+}
 
-/* ---------- 任務卡片 ---------- */
+/* ============================================================
+ * 任務卡片
+ * ============================================================ */
 .app-header .focus-task {
-  display: flex; align-items: center; gap: 8px;
-  background: rgba(251, 191, 36, 0.12);
-  border: 1px solid rgba(251, 191, 36, 0.25);
-  border-radius: 12px; padding: 8px 10px; margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin-top: 10px;
 }
+
 .app-header .focus-task-icon { font-size: 16px; flex-shrink: 0; }
-.app-header .focus-task-text { font-size: 11px; font-weight: 700; color: #fde68a; line-height: 1.4; }
 
-/* ---------- 天氣網格 ---------- */
+.app-header .focus-task-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: #92400e;
+  line-height: 1.4;
+}
+
+/* ============================================================
+ * 天氣格子
+ * ============================================================ */
 .app-header .focus-weather-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 8px; margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
 }
-.app-header .focus-weather-cell {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px; padding: 8px 10px;
-}
-.app-header .focus-weather-cell .label {
-  font-size: 9px; color: #94a3b8;
-  font-weight: 700; letter-spacing: 0.05em;
-}
-.app-header .focus-weather-cell .value { font-size: 14px; font-weight: 900; margin-top: 1px; }
 
-/* ---------- CTA 按鈕 ---------- */
-.app-header .focus-cta {
-  display: inline-flex; align-items: center; justify-content: center;
-  gap: 6px; padding: 10px 14px; border-radius: 12px;
-  font-size: 12px; font-weight: 800;
-  transition: all 0.2s; flex: 1; cursor: pointer;
-  text-decoration: none; border: none;
+.app-header .focus-weather-cell {
+  background: #f8fbff;
+  border: 1px solid var(--line-sky);
+  border-radius: 12px;
+  padding: 8px 10px;
 }
+
+.app-header .focus-weather-cell .label {
+  font-size: 9px;
+  color: var(--text-mute);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+.app-header .focus-weather-cell .value {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--text-main);
+  margin-top: 1px;
+}
+
+/* ============================================================
+ * CTA 按鈕
+ * ============================================================ */
+.app-header .focus-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  transition: all 0.2s;
+  flex: 1;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+}
+
 .app-header .focus-cta-primary {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  background: linear-gradient(135deg, #0ea5e9, var(--sky-primary));
   color: white;
   box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
 }
-.app-header .focus-cta-primary:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3); }
+.app-header .focus-cta-primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+}
+
 .app-header .focus-cta-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: white;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid var(--sky-light);
+  color: var(--sky-primary-dark);
 }
-.app-header .focus-cta-secondary:active { background: rgba(255, 255, 255, 0.18); transform: scale(0.97); }
-.app-header .focus-cta-row { display: flex; gap: 8px; margin-top: 12px; }
+.app-header .focus-cta-secondary:active {
+  background: var(--sky-lighter);
+  transform: scale(0.97);
+}
 
-/* ---------- 統計 ---------- */
+.app-header .focus-cta-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ============================================================
+ * 統計格子
+ * ============================================================ */
 .app-header .focus-stats {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 6px; margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 10px;
 }
-.app-header .focus-stat {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 10px; padding: 8px 6px; text-align: center;
-}
-.app-header .focus-stat .num { font-size: 16px; font-weight: 900; color: #7dd3fc; font-variant-numeric: tabular-nums; }
-.app-header .focus-stat .lbl { font-size: 9px; color: #94a3b8; font-weight: 700; margin-top: 1px; }
 
-/* ---------- 載入動畫 ---------- */
-.app-header .focus-loading { display: flex; align-items: center; justify-content: center; padding: 16px 0; }
+.app-header .focus-stat {
+  background: #f8fbff;
+  border: 1px solid var(--line-sky);
+  border-radius: 10px;
+  padding: 8px 6px;
+  text-align: center;
+}
+.app-header .focus-stat .num {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--sky-primary);
+  font-variant-numeric: tabular-nums;
+}
+.app-header .focus-stat .lbl {
+  font-size: 9px;
+  color: var(--text-mute);
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+/* ============================================================
+ * 載入動畫
+ * ============================================================ */
+.app-header .focus-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+}
 .app-header .focus-spinner {
-  border: 3px solid rgba(255,255,255,0.1);
-  border-top-color: #7dd3fc;
-  border-radius: 50%; width: 24px; height: 24px;
+  border: 3px solid var(--sky-lighter);
+  border-top-color: var(--sky-primary);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
   animation: app-header-spin 0.8s linear infinite;
 }
 @keyframes app-header-spin { to { transform: rotate(360deg); } }
 
-/* ---------- 工具菜單 ---------- */
+/* ============================================================
+ * 工具菜單
+ * ============================================================ */
 .app-header .tools-menu-backdrop {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(12, 25, 41, 0.55);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(12, 25, 41, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
 }
-.app-header .tools-menu-backdrop.active { opacity: 1; pointer-events: auto; }
+.app-header .tools-menu-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .app-header .tools-menu-panel {
   position: fixed;
   top: calc(var(--app-header-safe-top) + 54px);
@@ -335,73 +596,149 @@
   width: 300px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 90px);
-  overflow-y: auto; -webkit-overflow-scrolling: touch;
-  background: linear-gradient(180deg, #0f1d2e 0%, #0a1520 100%);
-  border: 1px solid rgba(125, 211, 252, 0.2);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  background: #ffffff;
+  border: 1px solid var(--line-sky);
   border-radius: 18px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+  box-shadow:
+    0 20px 50px rgba(2, 132, 199, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.5);
   z-index: 201;
-  opacity: 0; transform: translateY(-8px) scale(0.95);
+  opacity: 0;
+  transform: translateY(-8px) scale(0.95);
   transform-origin: top right;
   pointer-events: none;
   transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
   padding: 6px;
+
   scrollbar-width: thin;
-  scrollbar-color: rgba(125,211,252,0.3) transparent;
+  scrollbar-color: var(--sky-light) transparent;
 }
-.app-header .tools-menu-panel.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+.app-header .tools-menu-panel.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
 .app-header .tools-menu-panel::-webkit-scrollbar { width: 4px; }
-.app-header .tools-menu-panel::-webkit-scrollbar-thumb { background: rgba(125, 211, 252, 0.3); border-radius: 2px; }
+.app-header .tools-menu-panel::-webkit-scrollbar-thumb {
+  background: var(--sky-light);
+  border-radius: 2px;
+}
 .app-header .tools-menu-panel::-webkit-scrollbar-track { background: transparent; }
+
+.app-header .tools-menu-panel::before { display: none; }
+
 .app-header .tools-section { padding: 4px 0; }
-.app-header .tools-section:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.06); }
+.app-header .tools-section:not(:last-child) {
+  border-bottom: 1px solid var(--line-soft);
+}
+
 .app-header .tools-section-label {
-  font-size: 9px; font-weight: 800; letter-spacing: 0.12em;
-  color: #64748b; padding: 8px 12px 4px; text-transform: uppercase;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+  padding: 8px 12px 4px;
+  text-transform: uppercase;
 }
+
 .app-header .tools-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: 10px;
-  border: none; background: transparent;
-  color: #e2e8f0; font-size: 13px; font-weight: 700;
-  width: 100%; text-align: left; cursor: pointer;
-  transition: all 0.15s; font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
 }
-.app-header .tools-item:hover { background: rgba(255, 255, 255, 0.06); }
-.app-header .tools-item:active { background: rgba(255, 255, 255, 0.1); transform: scale(0.98); }
-.app-header .tools-item-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
-.app-header .tools-item-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.app-header .tools-item:hover { background: var(--sky-lighter); }
+.app-header .tools-item:active {
+  background: var(--sky-light);
+  transform: scale(0.98);
+}
+
+.app-header .tools-item-icon {
+  font-size: 16px;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.app-header .tools-item-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .app-header .tools-item-progress {
-  font-size: 11px; font-weight: 900;
-  color: #7dd3fc; font-variant-numeric: tabular-nums; flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--sky-primary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
-.app-header .tools-item.complete .tools-item-progress { color: #34d399; }
+.app-header .tools-item.complete .tools-item-progress { color: #059669; }
 .app-header .tools-item-arrow {
-  font-size: 14px; color: #475569; flex-shrink: 0;
+  font-size: 14px;
+  color: var(--text-faint);
+  flex-shrink: 0;
   transition: transform 0.15s, color 0.15s;
 }
-.app-header .tools-item:active .tools-item-arrow { transform: translateX(2px); color: #38bdf8; }
+.app-header .tools-item:active .tools-item-arrow {
+  transform: translateX(2px);
+  color: var(--sky-primary);
+}
+
 .app-header .tools-sync-status {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 12px; font-size: 11px; font-weight: 700; color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-mute);
 }
 .app-header .tools-sync-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: #34d399; box-shadow: 0 0 6px #34d399;
-  animation: app-header-pulse 2s infinite; flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 6px #34d399;
+  animation: app-header-pulse 2s infinite;
+  flex-shrink: 0;
 }
 .app-header .tools-sync-status.disconnected .tools-sync-dot {
-  background: #f87171; box-shadow: 0 0 6px #f87171; animation: none;
+  background: #f87171;
+  box-shadow: 0 0 6px #f87171;
+  animation: none;
 }
 .app-header .tools-sync-status.disconnected { color: #fca5a5; }
 
-/* ---------- 響應式 ---------- */
+@keyframes app-header-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ============================================================
+ * 響應式
+ * ============================================================ */
 @media (min-width: 1024px) {
   .app-header .focus-card { padding: 0 24px; }
   .app-header .brand-bar { padding: 0 24px; }
   .app-header .countdown-value { font-size: 28px; }
   .app-header .countdown-unit { font-size: 12px; }
 }
+
 @media (max-width: 360px) {
   .app-header .countdown-value { font-size: 22px; }
   .app-header .countdown-unit { font-size: 10px; }
@@ -410,10 +747,15 @@
   .app-header .tools-toggle { width: 30px; height: 30px; font-size: 14px; }
   .app-header .brand-actions { gap: 4px; }
   .app-header .progress-label { min-width: 60px; font-size: 11px; }
-  .app-header .tools-menu-panel { width: calc(100vw - 24px); right: 12px; }
+  .app-header .tools-menu-panel {
+    width: calc(100vw - 24px);
+    right: 12px;
+  }
 }
 
-/* ---------- 無障礙 ---------- */
+/* ============================================================
+ * 無障礙
+ * ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   .app-header .focus-inner::before,
   .app-header .focus-progress-fill::after,
@@ -422,17 +764,16 @@
   .app-header .countdown-value.tick {
     animation: none !important;
   }
-  .app-header .tools-toggle .icon-gear { transition: none !important; }
+  .app-header .tools-toggle .icon-gear {
+    transition: none !important;
+  }
 }
 
 /* ============================================================
  * ✅ 可拖動匯率 FAB
- * 預設位置：右下角（CSS 定義，就算 JS 沒跑也看得到）
- * 拖動後：吸附最近左右邊，位置存 localStorage
  * ============================================================ */
 .currency-fab {
   position: fixed;
-  /* 預設位置 — 就算 JS 沒跑也能看到 */
   right: 16px;
   bottom: calc(68px + env(safe-area-inset-bottom, 0px) + 16px);
   width: 56px;
@@ -462,7 +803,7 @@
   font-size: 24px;
   line-height: 1;
   pointer-events: none;
-  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2));
 }
 .currency-fab:hover:not(.dragging) {
   background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
@@ -490,7 +831,6 @@
     background 0.2s;
 }
 
-/* 長按提示（拖動時的光圈） */
 .currency-fab::after {
   content: '';
   position: absolute;
@@ -510,7 +850,6 @@
   50% { transform: scale(1.15); opacity: 0.2; }
 }
 
-/* 首次提示 */
 .currency-fab-hint {
   position: fixed;
   z-index: 9996;
@@ -525,9 +864,12 @@
   transform: translateY(4px);
   transition: opacity 0.3s, transform 0.3s;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
-.currency-fab-hint.show { opacity: 1; transform: translateY(0); }
+.currency-fab-hint.show {
+  opacity: 1;
+  transform: translateY(0);
+}
 .currency-fab-hint::after {
   content: '';
   position: absolute;
@@ -538,4 +880,20 @@
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-top: 6px solid rgba(12, 25, 41, 0.92);
+}
+
+/* ============================================================
+ * 手機效能優化
+ * ============================================================ */
+@media (max-width: 768px) {
+  .app-header .tools-menu-backdrop {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(12, 25, 41, 0.6);
+  }
+  .app-header .tools-toggle {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.22);
+  }
 }

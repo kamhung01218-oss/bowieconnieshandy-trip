@@ -11,7 +11,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
@@ -19,15 +19,37 @@
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
 
 <style>
-:root { --safe-area-bottom: env(safe-area-inset-bottom, 0px); }
+:root {
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --snow-bg-1: #f0f9ff;
+  --snow-bg-2: #e0f2fe;
+  --card-bg: #ffffff;
+  --sky-primary: #0284c7;
+  --sky-primary-dark: #0369a1;
+  --sky-deep: #0c4a6e;
+  --sky-light: #bae6fd;
+  --sky-lighter: #e0f2fe;
+  --sky-accent: #0ea5e9;
+  --text-main: #1e293b;
+  --text-soft: #475569;
+  --text-mute: #64748b;
+  --text-faint: #94a3b8;
+  --line-soft: #e2e8f0;
+  --line-sky: rgba(186, 230, 253, 0.6);
+  --font-num: 'Playfair Display', Georgia, serif;
+}
+
 body{
   font-family:'Noto Sans TC',sans-serif;
   -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-  background: linear-gradient(180deg, #f0f9ff 0%, #ecfeff 40%, #f8fafc 100%);
-  color: #1e293b; min-height: 100vh;
+  background: linear-gradient(180deg, var(--snow-bg-1) 0%, var(--snow-bg-2) 30%, #f8fafc 100%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  min-height: 100vh;
   padding-bottom: calc(16px + var(--safe-area-bottom));
   -webkit-tap-highlight-color: transparent;
-  overscroll-behavior-y: contain; touch-action: pan-y;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease;
 }
 button, a { touch-action: manipulation; user-select: none; }
@@ -37,13 +59,15 @@ button:active { transform: scale(0.96); transition: transform 0.05s; }
 body.modal-open { overflow: hidden; }
 body.modal-open #ledger-root { transform: scale(0.96); border-radius: 16px; filter: brightness(0.95); }
 
-.snowflake { position:absolute; top:-10px; border-radius:50%; pointer-events:none; will-change:transform,opacity; animation:snowfall linear infinite; background:#e0f2fe; box-shadow:0 0 5px rgba(224,242,254,0.8); }
-@keyframes snowfall { 0%{transform:translateY(0) rotate(0deg);opacity:1;} 100%{transform:translateY(110vh) rotate(360deg);opacity:0.5;} }
-@keyframes snowfall-small { 0%{transform:translateY(0);opacity:1;} 100%{transform:translateY(100vh) rotate(180deg);opacity:0.3;} }
-@keyframes snowfall-medium { 0%{transform:translateY(0);opacity:1;} 100%{transform:translateY(90vh) rotate(270deg);opacity:0.5;} }
-@keyframes snowfall-large { 0%{transform:translateY(0);opacity:1;} 100%{transform:translateY(80vh) rotate(360deg);opacity:0.7;} }
+/* 雪花 */
+.snowflake { position:absolute; top:-10px; border-radius:50%; pointer-events:none; will-change:transform,opacity; animation:snowfall linear infinite; background:#ffffff; box-shadow:0 0 4px rgba(255,255,255,0.9); opacity:0.7; }
+@keyframes snowfall { 0%{transform:translateY(0) rotate(0deg);opacity:0.7;} 100%{transform:translateY(110vh) rotate(360deg);opacity:0.4;} }
+@keyframes snowfall-small { 0%{transform:translateY(0);opacity:0.7;} 100%{transform:translateY(100vh) rotate(180deg);opacity:0.4;} }
+@keyframes snowfall-medium { 0%{transform:translateY(0);opacity:0.7;} 100%{transform:translateY(90vh) rotate(270deg);opacity:0.4;} }
+@keyframes snowfall-large { 0%{transform:translateY(0);opacity:0.7;} 100%{transform:translateY(80vh) rotate(360deg);opacity:0.4;} }
 
-.walking-character { position:fixed; bottom:10px !important; z-index:9998; cursor:pointer; opacity:0; transform:translateY(50px) scale(0.8); transition:all 0.5s ease; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+/* 走路角色 */
+.walking-character { position:fixed; bottom:10px !important; z-index:9998; cursor:pointer; opacity:0; transform:translateY(50px) scale(0.8); transition:all 0.5s ease; filter:drop-shadow(0 4px 8px rgba(2, 132, 199, 0.25)); }
 .walking-character svg { width:45px; height:45px; }
 .walking-character.show { opacity:1; transform:translateY(0) scale(1); }
 .walking-character.hide { opacity:0; transform:translateY(50px) scale(0.8); }
@@ -79,93 +103,102 @@ body.modal-open #ledger-root { transform: scale(0.96); border-radius: 16px; filt
 #toast-undo-btn { animation:toast-btn-in 0.25s ease; }
 @keyframes toast-btn-in { from{opacity:0;transform:translateX(-6px);} to{opacity:1;transform:translateX(0);} }
 body { overscroll-behavior-y: contain; touch-action: pan-y; }
-.glass-card { background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); border:1px solid rgba(186,230,253,0.6); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.05); }
+.glass-card { background:rgba(255,255,255,0.92); backdrop-filter:blur(12px); border:1px solid rgba(186,230,253,0.6); border-radius:16px; box-shadow:0 4px 20px rgba(2,132,199,0.06); }
 
 /* Loading overlay */
-#cloud-loading {
-  position: fixed; inset: 0; z-index: 500;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 12px;
-  transition: opacity 0.3s ease;
-}
+#cloud-loading { position: fixed; inset: 0; z-index: 500; background: rgba(240,249,255,0.9); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; transition: opacity 0.3s ease; }
 #cloud-loading.hidden-loading { opacity: 0; pointer-events: none; }
-.cloud-spinner {
-  width: 40px; height: 40px;
-  border: 4px solid rgba(2, 132, 199, 0.15);
-  border-top-color: #0284c7;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
+.cloud-spinner { width: 40px; height: 40px; border: 4px solid rgba(2, 132, 199, 0.15); border-top-color: #0284c7; border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* 寫入中指示器 */
-#sync-indicator {
-  position: fixed; top: 8px; right: 8px; z-index: 300;
-  background: rgba(2, 132, 199, 0.9);
-  color: white; font-size: 10px; font-weight: 700;
-  padding: 4px 10px; border-radius: 999px;
-  display: none; align-items: center; gap: 5px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
+#sync-indicator { position: fixed; top: 8px; right: 8px; z-index: 300; background: rgba(2, 132, 199, 0.9); color: white; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 999px; display: none; align-items: center; gap: 5px; backdrop-filter: blur(8px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 #sync-indicator.active { display: inline-flex; }
-#sync-indicator .dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: white; animation: pulse 0.8s ease-in-out infinite;
-}
+#sync-indicator .dot { width: 5px; height: 5px; border-radius: 50%; background: white; animation: pulse 0.8s ease-in-out infinite; }
 @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 
-/* ========== ✅ 新增：Day 分組樣式 ========== */
-.day-group-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 10px; margin: 10px 0 6px;
-  background: linear-gradient(135deg, #eff6ff, #dbeafe);
-  border-radius: 10px;
-  border-left: 4px solid #0284c7;
-  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08);
-}
+/* Day 分組標題 */
+.day-group-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; margin: 10px 0 6px; background: linear-gradient(135deg, #eff6ff, #dbeafe); border-radius: 10px; border-left: 4px solid #0284c7; box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08); }
 .day-group-header:first-child { margin-top: 0; }
-.day-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px; border-radius: 8px;
-  background: linear-gradient(135deg, #0284c7, #0369a1);
-  color: white; font-size: 11px; font-weight: 900;
-  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
-  flex-shrink: 0;
-}
-.day-subtotal {
-  font-size: 13px; font-weight: 900; color: #0369a1;
-  font-variant-numeric: tabular-nums;
-  background: rgba(255,255,255,0.7);
-  padding: 3px 9px; border-radius: 999px;
-  border: 1px solid #bae6fd;
-}
+.day-badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-size: 11px; font-weight: 900; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25); flex-shrink: 0; }
+.day-subtotal { font-size: 13px; font-weight: 900; color: #0369a1; font-variant-numeric: tabular-nums; background: rgba(255,255,255,0.7); padding: 3px 9px; border-radius: 999px; border: 1px solid #bae6fd; }
 
-/* ========== ✅ 新增：類別網格樣式 ========== */
-.cat-btn {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px; padding: 9px 4px;
-  border-radius: 10px;
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
-  color: #64748b;
-  font-size: 11px; font-weight: 800;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  min-height: 52px;
-}
+/* 類別網格 */
+.cat-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 9px 4px; border-radius: 10px; background: #f8fafc; border: 1.5px solid #e2e8f0; color: #64748b; font-size: 11px; font-weight: 800; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; min-height: 52px; }
 .cat-btn .cat-icon { font-size: 18px; line-height: 1; }
 .cat-btn:active { transform: scale(0.94); }
-.cat-btn.active {
-  background: linear-gradient(135deg, #0284c7, #0369a1);
-  color: white;
-  border-color: #0284c7;
-  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3);
-  transform: translateY(-1px);
-}
+.cat-btn.active { background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border-color: #0284c7; box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3); transform: translateY(-1px); }
 .cat-btn.active .cat-icon { filter: drop-shadow(0 1px 3px rgba(0,0,0,0.2)); }
+
+/* 雪地覆蓋 */
+#ledger-root .bg-white { background: #ffffff; }
+#ledger-root .bg-white.border.border-slate-200 { border-color: rgba(186,230,253,0.6); border-radius: 16px; box-shadow: 0 4px 20px rgba(2,132,199,0.06); }
+#ledger-root #cloud-sync-badge { background: #f8fbff; border-color: #bae6fd; color: #0284c7; }
+#ledger-root #cloud-sync-badge .bg-sky-500 { background: #0284c7; }
+#ledger-root button[onclick="openExpenseModal()"] { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4); }
+
+#ledger-root .grid.grid-cols-3 > div:nth-child(1) { background: linear-gradient(135deg, #0284c7 0%, #0c4a6e 100%); }
+#ledger-root .grid.grid-cols-3 > div:nth-child(2) { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); }
+#ledger-root .grid.grid-cols-3 > div:nth-child(3) { background: linear-gradient(135deg, #475569 0%, #1e293b 100%); }
+
+#ledger-root .border-b.border-slate-200.bg-slate-50 { background: #f8fbff; border-bottom: 1px solid #e2e8f0; }
+#ledger-root #tab-records-btn.bg-white, #ledger-root #tab-balances-btn.bg-white, #ledger-root #tab-suggested-btn.bg-white, #ledger-root #tab-history-btn.bg-white { background: #ffffff; color: #0284c7; }
+
+#ledger-root .filter-btn { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+#ledger-root .filter-btn.bg-sky-600 { background: #0284c7 !important; color: white !important; border-color: #0284c7 !important; }
+
+#ledger-root #search-input, #ledger-root #sort-select { background: #ffffff; border-color: #e2e8f0; color: #1e293b; }
+#ledger-root #search-input:focus, #ledger-root #sort-select:focus { border-color: #0284c7; box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15); }
+#ledger-root #ledger-view-as { color: #0284c7; }
+
+#ledger-root button[onclick="exportLedgerText()"] { background: #0284c7; color: white; }
+#ledger-root button[onclick="openConfirmModal()"] { color: #dc2626; border-color: #fecaca; }
+#ledger-root button[onclick="openConfirmModal()"]:hover { background: #dc2626; color: white; border-color: #dc2626; }
+
+#subview-balances thead tr { border-bottom: 1px solid #e2e8f0; }
+#subview-balances thead th { color: #64748b; }
+
+#subview-suggested .bg-red-50 { background: #fef2f2; border-color: #fecaca; }
+#subview-suggested .bg-red-50 strong { color: #dc2626; }
+#subview-suggested .bg-emerald-50 { background: #ecfdf5; border-color: #a7f3d0; }
+#subview-suggested .bg-emerald-50 strong { color: #059669; }
+#subview-suggested .bg-sky-50 { background: #f0f9ff; border-color: #bae6fd; }
+#subview-suggested .bg-sky-50 strong { color: #0284c7; }
+#subview-suggested button[onclick="copySettlementPlan()"] { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+#subview-suggested button[onclick="resetSettlementStatus()"] { background: #f8fafc; color: #64748b; border-color: #e2e8f0; }
+#subview-suggested .bg-amber-50 { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+
+#subview-history .bg-sky-50 { background: #f0f9ff; border: 1px solid #bae6fd; color: #0c4a6e; }
+#history-list-container .bg-emerald-100 { background: #ecfdf5; color: #059669; }
+#history-list-container .bg-amber-100 { background: #fef3c7; color: #b45309; }
+#history-list-container .bg-sky-100 { background: #e0f2fe; color: #0369a1; }
+#history-list-container .bg-red-100 { background: #fee2e2; color: #b91c1c; }
+
+/* 支出彈窗 */
+#expense-modal { background: #ffffff; }
+#expense-modal .border-b.border-slate-100 { border-bottom: 1px solid #e2e8f0; }
+#expense-modal .bg-slate-50\/50 { background: #f8fbff; }
+#expense-modal .bg-white { background: #ffffff; border-color: #e2e8f0; }
+#expense-modal input, #expense-modal select, #expense-modal textarea { background: #ffffff; border: 1px solid #cbd5e1; color: #1e293b; }
+#expense-modal input:focus, #expense-modal select:focus, #expense-modal textarea:focus { border-color: #0284c7; box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15); }
+#expense-modal #btn-save-expense { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4); }
+#expense-modal button[onclick="closeExpenseModal()"] { background: #f1f5f9; color: #64748b; }
+#expense-modal #estimated-hkd-text { background: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
+
+/* 確認彈窗 */
+#confirm-modal { background: #ffffff; }
+#confirm-modal button[onclick="closeConfirmModal()"] { background: #f1f5f9; color: #475569; }
+#confirm-modal button[onclick="confirmAndClearExpenses()"] { background: #dc2626; color: white; }
+
+/* 危險操作密碼彈窗 */
+#dangerous-password-modal .bg-white { background: #ffffff; }
+#dangerous-password-modal input { background: #ffffff; border: 1px solid #cbd5e1; }
+#dangerous-password-modal input:focus { border-color: #0284c7; box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15); }
+#dangerous-password-modal button[onclick="verifyDangerousPassword()"] { background: #0284c7; }
+#dangerous-password-modal button[onclick="closeDangerousPasswordModal()"] { background: #f1f5f9; color: #475569; }
+
+/* Toast */
+#toast { background: rgba(15, 23, 42, 0.95); }
+#toast-undo-btn { background: rgba(255, 255, 255, 0.2); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
@@ -175,13 +208,13 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
 }
 </style>
 </head>
-<body class="text-slate-800 relative">
+<body class="relative">
 
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
   <div id="cloud-loading">
     <div class="cloud-spinner"></div>
-    <p class="text-xs font-bold text-slate-600">☁️ 正在從雲端載入資料…</p>
+    <p class="text-xs font-bold text-sky-700">☁️ 正在從雲端載入資料…</p>
   </div>
 
   <div id="sync-indicator"><span class="dot"></span><span>同步中…</span></div>
@@ -567,7 +600,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       "connie": { badge:"bg-purple-100 text-purple-800 border-purple-200", solid:"bg-purple-500 text-white border-purple-600", soft:"bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100", text:"text-purple-600", avatar:"bg-purple-400" }
     };
 
-    // ==================== ✅ 類別狀態 ====================
+    // ==================== 類別狀態 ====================
     let selectedCategory = '餐飲';
     function setCategory(cat) {
       selectedCategory = cat;
@@ -586,7 +619,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
     const TRIP_DATES = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27"];
     const WEEK_NAMES = ["日", "一", "二", "三", "四", "五", "六"];
 
-    // ==================== 全域狀態（雲端鏡像） ====================
+    // ==================== 全域狀態 ====================
     let state = {
       expenses: [],
       history: [],
@@ -1051,7 +1084,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       const container = document.createElement('div');
       container.className = 'confetti-container';
       document.body.appendChild(container);
-      const colors = ['#f43f5e','#f97316','#facc15','#4ade80','#38bdf8','#a78bfa','#fb7185'];
+      const colors = ['#0ea5e9','#38bdf8','#7dd3fc','#bae6fd','#a78bfa','#f472b6','#facc15'];
       for (let i = 0; i < 50; i++) {
         const piece = document.createElement('div');
         piece.className = 'confetti-piece';
@@ -1134,7 +1167,7 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       renderHistoryList();
     }
 
-    // ==================== 列表渲染（✅ Day 分組） ====================
+    // ==================== 列表渲染 ====================
     function renderExpensesList() {
       const container = document.getElementById("records-list-container");
       if (!container) return;
@@ -1442,13 +1475,11 @@ body { overscroll-behavior-y: contain; touch-action: pan-y; }
       c.innerHTML = "";
       const count = window.innerWidth < 768 ? 15 : 30;
       const anims = ["snowfall","snowfall-small","snowfall-medium","snowfall-large"];
-      const colors = ["#ffffff","#f0f9ff","#e0f2fe","#bae6fd","#ffffff"];
       for (let i = 0; i < count; i++) {
         const s = document.createElement("div");
         s.className = "snowflake";
         const size = Math.random() * 7 + 3;
-        s.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; background: ${colors[Math.floor(Math.random() * colors.length)]}; opacity: ${Math.random() * 0.4 + 0.1}; animation: ${anims[Math.floor(Math.random() * anims.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s; border-radius: 50%; box-shadow: 0 0 4px rgba(224, 242, 254, 0.8);`;
-        if (size > 8) s.style.boxShadow = "0 0 10px 2px rgba(255,255,255,0.4)";
+        s.style.cssText = `left: ${Math.random() * 100}%; width: ${size}px; height: ${size}px; opacity: ${Math.random() * 0.4 + 0.3}; animation: ${anims[Math.floor(Math.random() * anims.length)]} ${Math.random() * 12 + 8}s linear infinite; animation-delay: ${Math.random() * -12}s;`;
         c.appendChild(s);
       }
     }
