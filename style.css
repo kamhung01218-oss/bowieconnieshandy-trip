@@ -1693,3 +1693,35 @@ details.event-card:not([open]) .event-content-wrapper {
     display: none;
   }
 }
+/* ============================================================
+ * 🪙 快速金額按鈕
+ * ============================================================ */
+.quick-amt {
+  padding: 10px 4px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  color: #475569;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: 'Playfair Display', 'Noto Sans TC', Georgia, serif;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+}
+.quick-amt:active {
+  transform: scale(0.94);
+  background: #f1f5f9;
+}
+.quick-amt:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+.quick-amt-hkd {
+  border-color: #bae6fd;
+  color: #0369a1;
+}
+.quick-amt-hkd:hover {
+  border-color: #7dd3fc;
+  background: #f0f9ff;
+}

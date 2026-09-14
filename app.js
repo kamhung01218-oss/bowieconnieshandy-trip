@@ -1,9 +1,11 @@
 /* ============================================================
- * app.js — v6.0
- * - 米紙手帳風格 → 雪地清爽版
+ * app.js — v7.0
+ * - 雪地清爽版
  * - 改密碼 Bug 修正
  * - 自動包裝迷你卡片
  * - 多圖景點橫滑輪播
+ * - 匯率試算修正（用 HKD 匯率）
+ * - 新增 swapCurrency 交換按鈕
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -542,16 +544,95 @@ function closePasswordModal() { const m = document.getElementById("password-moda
 function verifyPassword() { const input = document.getElementById("password-input").value.trim(); if (input === ADMIN_PASSWORD) { localStorage.setItem("tohoku_admin_unlocked", "true"); closePasswordModal(); renderBookingChecklist(); renderEquipChecklist(); showToast("✅ 已解鎖管理權限"); haptic(15); } else { document.getElementById("password-error").classList.remove("hidden"); document.getElementById("password-input").value = ''; haptic(50); } }
 function lockAdmin() { localStorage.removeItem("tohoku_admin_unlocked"); renderBookingChecklist(); renderEquipChecklist(); showToast("🔒 已鎖定管理權限"); }
 
-async function fetchLiveRates() { try { const response = await fetch('https://open.er-api.com/v6/latest/JPY'); const data = await response.json(); if (data && data.rates) { exchangeRates.JPY = 1; exchangeRates.HKD = 1 / data.rates.JPY * data.rates.HKD; exchangeRates.TWD = 1 / data.rates.JPY * data.rates.TWD; exchangeRates.USD = 1 / data.rates.JPY * data.rates.USD; exchangeRates.CNY = 1 / data.rates.JPY * data.rates.CNY; localStorage.setItem('tohoku_exchange_rates', JSON.stringify({ rates: exchangeRates, updatedAt: Date.now() })); updateRateHud(); } } catch(e) { const cached = localStorage.getItem('tohoku_exchange_rates'); if (cached) { try { const c = JSON.parse(cached); if (c.rates) exchangeRates = c.rates; } catch(e2) {} } } }
-function updateRateHud() { const t = document.getElementById("rate-hint-text"); if (t) t.innerText = `目前匯率：1 JPY ≈ ${exchangeRates.HKD.toFixed(3)} HKD`; }
-function openCurrencyModal() { const m = document.getElementById('currency-modal'); if (!m) return; m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); updateRateHud(); haptic(8); }
-function closeCurrencyModal() { const m = document.getElementById('currency-modal'); if (!m) return; m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); }
+// ==================== 匯率 ====================
+async function fetchLiveRates() {
+  try {
+    const response = await fetch('https://open.er-api.com/v6/latest/JPY');
+    const data = await response.json();
+    if (data && data.rates) {
+      exchangeRates.JPY = 1;
+      exchangeRates.HKD = 1 / data.rates.JPY * data.rates.HKD;
+      exchangeRates.TWD = 1 / data.rates.JPY * data.rates.TWD;
+      exchangeRates.USD = 1 / data.rates.JPY * data.rates.USD;
+      exchangeRates.CNY = 1 / data.rates.JPY * data.rates.CNY;
+      localStorage.setItem('tohoku_exchange_rates', JSON.stringify({ rates: exchangeRates, updatedAt: Date.now() }));
+      updateRateHud();
+    }
+  } catch(e) {
+    const cached = localStorage.getItem('tohoku_exchange_rates');
+    if (cached) { try { const c = JSON.parse(cached); if (c.rates) exchangeRates = c.rates; } catch(e2) {} }
+  }
+}
+function updateRateHud() {
+  const t = document.getElementById("rate-hint-text");
+  if (t) t.innerText = `1 JPY ≈ ${exchangeRates.HKD.toFixed(3)} HKD`;
+}
+function openCurrencyModal() {
+  const m = document.getElementById('currency-modal');
+  if (!m) return;
+  m.style.display = 'flex';
+  m.classList.add('active');
+  document.body.classList.add('modal-open');
+  updateRateHud();
+  haptic(8);
+}
+function closeCurrencyModal() {
+  const m = document.getElementById('currency-modal');
+  if (!m) return;
+  m.classList.remove('active');
+  setTimeout(() => { m.style.display = 'none'; }, 300);
+  const a = document.querySelector('.modal-overlay.active');
+  if (!a) document.body.classList.remove('modal-open');
+}
 function toggleCurrencyWidget() { openCurrencyModal(); }
 window.openCurrencyModal = openCurrencyModal;
 window.closeCurrencyModal = closeCurrencyModal;
-function convertCurrency(type) { const hkdInput = document.getElementById("calc-hkd"); const jpyInput = document.getElementById("calc-jpy"); if (!hkdInput || !jpyInput) return; if (type === "clear") { hkdInput.value = ""; jpyInput.value = ""; return; } const rate = exchangeRates.JPY || 0.052; if (type === "jpy") { const jpy = parseFloat(jpyInput.value); hkdInput.value = (isNaN(jpy) || jpy === 0) ? "" : (jpy * rate).toFixed(2); } else if (type === "hkd") { const hkd = parseFloat(hkdInput.value); jpyInput.value = (isNaN(hkd) || hkd === 0) ? "" : Math.round(hkd / rate); } }
-function quickConvert(currency, amount) { const input = document.getElementById("calc-" + currency); if (input) { input.value = amount; convertCurrency(currency); } }
 
+function convertCurrency(type) {
+  const hkdInput = document.getElementById("calc-hkd");
+  const jpyInput = document.getElementById("calc-jpy");
+  if (!hkdInput || !jpyInput) return;
+  if (type === "clear") {
+    jpyInput.value = "";
+    hkdInput.value = "";
+    return;
+  }
+  const rate = exchangeRates.HKD || 0.052;
+  if (type === "jpy") {
+    const jpy = parseFloat(jpyInput.value.replace(/,/g, ""));
+    hkdInput.value = (isNaN(jpy) || jpy === 0) ? "" : (jpy * rate).toFixed(2);
+  } else if (type === "hkd") {
+    const hkd = parseFloat(hkdInput.value.replace(/,/g, ""));
+    jpyInput.value = (isNaN(hkd) || hkd === 0) ? "" : Math.round(hkd / rate).toString();
+  }
+}
+window.convertCurrency = convertCurrency;
+
+function swapCurrency() {
+  const hkdInput = document.getElementById("calc-hkd");
+  const jpyInput = document.getElementById("calc-jpy");
+  if (!hkdInput || !jpyInput) return;
+  const hkdValue = parseFloat(hkdInput.value);
+  if (!isNaN(hkdValue) && hkdValue !== 0) {
+    jpyInput.value = Math.round(hkdValue / (exchangeRates.HKD || 0.052)).toString();
+    convertCurrency("jpy");
+  } else {
+    jpyInput.focus();
+  }
+  haptic(8);
+}
+window.swapCurrency = swapCurrency;
+
+function quickConvert(currency, amount) {
+  const input = document.getElementById("calc-" + currency);
+  if (!input) return;
+  input.value = amount.toString();
+  convertCurrency(currency);
+  haptic(6);
+}
+window.quickConvert = quickConvert;
+
+// ==================== Toast ====================
 function showToast(message, icon = "✅") { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (toast && m && i) { const oldBtn = document.getElementById("toast-undo-btn"); if (oldBtn) oldBtn.remove(); window._undoCallback = null; m.innerText = message; i.innerText = icon; toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); if (window.toastTimeout) clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => { toast.classList.remove("translate-y-0", "opacity-100"); toast.classList.add("-translate-y-24", "opacity-0"); }, 3000); } }
 function showUndoToast(message, icon, onUndo) { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (!toast) return; const oldBtn = document.getElementById("toast-undo-btn"); if (oldBtn) oldBtn.remove(); m.innerText = message; i.innerText = icon; const btn = document.createElement("button"); btn.id = "toast-undo-btn"; btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto"; btn.textContent = "撤銷"; btn.onclick = (e) => { e.stopPropagation(); if (window._undoCallback) { window._undoCallback(); window._undoCallback = null; } const t = document.getElementById("toast"); if (t) { t.classList.remove("translate-y-0", "opacity-100"); t.classList.add("-translate-y-24", "opacity-0"); } if (window.toastTimeout) clearTimeout(window.toastTimeout); haptic(15); }; toast.appendChild(btn); window._undoCallback = onUndo; toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); if (window.toastTimeout) clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => { toast.classList.remove("translate-y-0", "opacity-100"); toast.classList.add("-translate-y-24", "opacity-0"); window._undoCallback = null; setTimeout(() => { const b = document.getElementById("toast-undo-btn"); if (b) b.remove(); }, 300); }, 5000); }
 function copyText(text) { try { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); } catch(e) { navigator.clipboard.writeText(text).catch(() => {}); } }
@@ -840,7 +921,6 @@ function buildShootBtnHtml(day, index, eventTitle, shoppingCount) {
   return html;
 }
 
-// ✅ 新：支援多圖輪播
 function buildEventImage(imgUrl, eventTitle, images) {
   if (images && Array.isArray(images) && images.length > 1) {
     return buildImageCarousel(images, eventTitle);
@@ -854,11 +934,9 @@ function buildEventImage(imgUrl, eventTitle, images) {
   return html;
 }
 
-// ✅ 新：橫滑輪播
 function buildImageCarousel(images, eventTitle) {
   var safeAlt = escAttr(eventTitle);
   var carouselId = 'carousel-' + Math.random().toString(36).substr(2, 8);
-
   var html = '<div class="event-image-carousel mt-2 rounded-xl overflow-hidden shadow-sm" data-carousel-id="' + carouselId + '">';
   html += '<div class="carousel-track" id="' + carouselId + '" data-count="' + images.length + '">';
   images.forEach(function(url, i) {
@@ -966,7 +1044,6 @@ function buildSingleEventHtml(dayData, event, index) {
   var timeStamp = buildTimePill(startTime, endTime);
   var tagHtml = buildTagHtml(event.tag);
   var shootBtnHtml = buildShootBtnHtml(dayData.day, index, event.title, shoppingItems.length);
-  // ✅ 加 event.images
   var imageHtml = buildEventImage(event.img, event.title, event.images);
   var navBtnHtml = buildEventNavBtn(event.navUrl, event.title, event.navName);
 
@@ -1228,12 +1305,71 @@ function renderDriveContent() { const container = document.getElementById('drive
 
 function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">首選方案</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/8 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>1/8 22:55 設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 15:30-19:15 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/15 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
 
-function openShootTipsModal(day, eventIndex) { const dayData = winterItineraries.find(d => d.day === day); if (!dayData) return; const event = dayData.events[eventIndex]; if (!event) return; const tips = shootTips[event.title]; const content = document.getElementById("shoot-tips-content"); let html = ""; if (tips) { const pa = tips["拍照建議"] || ""; html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3><p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(pa)}</p></div>`; if (tips["參考照片"] && tips["參考照片"].length > 0) { const imgHtml = tips["參考照片"].map(url => `<img src="${escAttr(url)}" class="lazy-fade w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" onclick="openLightbox(['${escAttr(url)}'], 0)" loading="lazy" decoding="async">`).join(""); html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3><div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div></div>`; } html += `<details class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-3"><summary class="cursor-pointer text-sm font-black text-slate-700 mb-2">📸 展開詳細拍攝建議</summary><div class="space-y-3 mt-2">`; if (tips["Pocket 3 參數"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3"><h3 class="text-sm font-black text-sky-800 mb-1">📸 Pocket 3 參數</h3><p class="text-sm text-slate-700">${escapeHtml(tips["Pocket 3 參數"])}</p></div>`; if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3><ul class="list-disc pl-4 space-y-1">${tips["Vlog 必拍鏡頭"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; if (tips["最佳拍攝時間"] || tips["拍攝時長"]) { let ti = ""; if (tips["最佳拍攝時間"]) ti += `<span class="block mb-1">⏰ ${escapeHtml(tips["最佳拍攝時間"])}</span>`; if (tips["拍攝時長"]) ti += `<span class="block">⏳ ${escapeHtml(tips["拍攝時長"])}</span>`; html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3"><h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3><p class="text-sm text-slate-700">${ti}</p></div>`; } if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3><ul class="list-disc pl-4 space-y-1">${tips["拍攝角度"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3"><h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3><ul class="list-disc pl-4 space-y-1">${tips["人物動作建議"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; html += `</div></details>`; } else { html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議。</div>`; } content.innerHTML = html; showModal('shoot-tips-modal'); document.getElementById('shoot-tips-modal').classList.remove('hidden'); setTimeout(() => setupImageFadeIn(content), 50); }
+// ==================== 拍攝靈感 ====================
+function openShootTipsModal(day, eventIndex) {
+  const dayData = winterItineraries.find(d => d.day === day);
+  if (!dayData) return;
+  const event = dayData.events[eventIndex];
+  if (!event) return;
+  const tips = shootTips[event.title];
+  const content = document.getElementById("shoot-tips-content");
+  let html = "";
+  if (tips) {
+    const pa = tips["拍照建議"] || "";
+    html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3><p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(pa)}</p></div>`;
+    if (tips["參考照片"] && tips["參考照片"].length > 0) {
+      const imgHtml = tips["參考照片"].map(url => `<img src="${escAttr(url)}" class="lazy-fade w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" onclick="openLightbox(['${escAttr(url)}'], 0)" loading="lazy" decoding="async">`).join("");
+      html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3><div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div></div>`;
+    }
+    html += `<details class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-3"><summary class="cursor-pointer text-sm font-black text-slate-700 mb-2">📸 展開詳細拍攝建議</summary><div class="space-y-3 mt-2">`;
+    if (tips["Pocket 3 參數"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3"><h3 class="text-sm font-black text-sky-800 mb-1">📸 Pocket 3 參數</h3><p class="text-sm text-slate-700">${escapeHtml(tips["Pocket 3 參數"])}</p></div>`;
+    if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3><ul class="list-disc pl-4 space-y-1">${tips["Vlog 必拍鏡頭"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
+    if (tips["最佳拍攝時間"] || tips["拍攝時長"]) { let ti = ""; if (tips["最佳拍攝時間"]) ti += `<span class="block mb-1">⏰ ${escapeHtml(tips["最佳拍攝時間"])}</span>`; if (tips["拍攝時長"]) ti += `<span class="block">⏳ ${escapeHtml(tips["拍攝時長"])}</span>`; html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3"><h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3><p class="text-sm text-slate-700">${ti}</p></div>`; }
+    if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3><ul class="list-disc pl-4 space-y-1">${tips["拍攝角度"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
+    if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3"><h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3><ul class="list-disc pl-4 space-y-1">${tips["人物動作建議"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
+    html += `</div></details>`;
+  } else {
+    html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議。</div>`;
+  }
+  content.innerHTML = html;
+  showModal('shoot-tips-modal');
+  document.getElementById('shoot-tips-modal').classList.remove('hidden');
+  setTimeout(() => setupImageFadeIn(content), 50);
+}
 function closeShootTipsModal() { hideModal('shoot-tips-modal'); setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300); }
-function openCommonTipsModal() { const m = document.getElementById('common-tips-modal'); if (!m) return; m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); const c = document.getElementById('common-tips-content'); if (c && typeof shootTipsCommon !== 'undefined') { let html = ''; Object.keys(shootTipsCommon).forEach(title => { const tips = shootTipsCommon[title]; html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4"><h3 class="text-sm font-black text-slate-800 mb-2">${escapeHtml(title)}</h3>`; if (tips['拍照建議']) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${escapeHtml(tips['拍照建議'])}</div>`; html += `</div>`; }); c.innerHTML = html; } }
+
+function openCommonTipsModal() {
+  const m = document.getElementById('common-tips-modal'); if (!m) return;
+  m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open');
+  const c = document.getElementById('common-tips-content');
+  if (c && typeof shootTipsCommon !== 'undefined') {
+    let html = '';
+    Object.keys(shootTipsCommon).forEach(title => {
+      const tips = shootTipsCommon[title];
+      html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4"><h3 class="text-sm font-black text-slate-800 mb-2">${escapeHtml(title)}</h3>`;
+      if (tips['拍照建議']) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${escapeHtml(tips['拍照建議'])}</div>`;
+      html += `</div>`;
+    });
+    c.innerHTML = html;
+  }
+}
 function closeCommonTipsModal() { const m = document.getElementById('common-tips-modal'); if (m) { m.classList.remove('active'); setTimeout(() => m.style.display = 'none', 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
 
-function openVlogPlanModal(day) { const plan = vlogPlan["D" + day]; const content = document.getElementById("vlog-plan-content"); let html = ""; if (plan) { if (plan["整支Vlog構思"]) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎬 整支 Vlog 構思</h3><p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(plan["整支Vlog構思"])}</p></div>`; if (plan["人物構圖"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-sky-800 mb-2">🧍 人物構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["人物構圖"].map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; if (plan["風景構圖"]) html += `<div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-teal-800 mb-2">🏞️ 風景構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["風景構圖"].map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`; } else { html = `<div class="text-center py-8 text-slate-500 text-sm">暫時未填寫今天的 Vlog 構思。</div>`; } content.innerHTML = html; showModal('vlog-plan-modal'); document.getElementById('vlog-plan-modal').classList.remove('hidden'); }
+function openVlogPlanModal(day) {
+  const plan = vlogPlan["D" + day];
+  const content = document.getElementById("vlog-plan-content");
+  let html = "";
+  if (plan) {
+    if (plan["整支Vlog構思"]) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎬 整支 Vlog 構思</h3><p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(plan["整支Vlog構思"])}</p></div>`;
+    if (plan["人物構圖"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-sky-800 mb-2">🧍 人物構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["人物構圖"].map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
+    if (plan["風景構圖"]) html += `<div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-teal-800 mb-2">🏞️ 風景構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["風景構圖"].map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
+  } else {
+    html = `<div class="text-center py-8 text-slate-500 text-sm">暫時未填寫今天的 Vlog 構思。</div>`;
+  }
+  content.innerHTML = html;
+  showModal('vlog-plan-modal');
+  document.getElementById('vlog-plan-modal').classList.remove('hidden');
+}
 function closeVlogPlanModal() { hideModal('vlog-plan-modal'); setTimeout(() => document.getElementById('vlog-plan-modal').classList.add('hidden'), 300); }
 
 function openLedgerAdd() { const lc = document.getElementById('ledger-frame-container'); const iframe = document.getElementById('ledger-iframe'); if (lc && iframe) { haptic(12); lc.classList.remove('hidden-view'); lc.style.cssText = 'position: fixed; inset: 0; z-index: 9990; background: #f0f9ff; overflow: auto;'; let attempts = 0; const tryOpen = () => { if (iframe.contentWindow && iframe.contentWindow.openExpenseModal) { iframe.contentWindow.openExpenseModal(); } else if (attempts < 10) { attempts++; setTimeout(tryOpen, 200); } else { showToast('記帳本載入失敗', '⚠️'); } }; tryOpen(); } }
