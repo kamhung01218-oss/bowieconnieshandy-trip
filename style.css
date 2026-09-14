@@ -1574,7 +1574,101 @@ details.event-card:not([open]) .event-content-wrapper {
     -webkit-backdrop-filter: none !important;
   }
 }
+/* ============================================================
+ * 🎠 圖片輪播（多圖景點）
+ * ============================================================ */
+.event-image-carousel {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  overflow: hidden;
+}
 
+.carousel-track {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+}
+.carousel-track::-webkit-scrollbar { display: none; }
+
+.carousel-img {
+  flex-shrink: 0;
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.carousel-indicator {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: white;
+  font-family: var(--font-num);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.carousel-current { color: #ffffff; }
+.carousel-sep { color: rgba(255,255,255,0.5); font-size: 10px; }
+.carousel-total { color: rgba(255,255,255,0.75); }
+
+.carousel-hint {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.carousel-hint-left { left: 8px; padding-right: 2px; }
+.carousel-hint-right { right: 8px; padding-left: 2px; }
+
+@media (max-width: 768px) {
+  .carousel-img { height: 150px; }
+  .carousel-indicator { font-size: 10px; padding: 2px 8px; bottom: 8px; right: 8px; }
+  .carousel-hint { width: 22px; height: 22px; font-size: 14px; }
+}
+@media (max-width: 380px) {
+  .carousel-img { height: 130px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carousel-track { scroll-behavior: auto; }
+}
 /* ============================================================
  * 無障礙
  * ============================================================ */

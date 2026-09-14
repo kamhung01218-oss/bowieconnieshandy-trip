@@ -474,100 +474,95 @@ const winterItineraries = [
           </div>
         `
       },
-      {
-        time: "09:20 - 12:30",
-        title: "搭乘雙段纜車登頂 ➔ 觀賞震撼「藏王樹冰」",
-        tag: { text: "❄️ 樹冰奇景", class: "tag-sky" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=Zao+Ropeway",
-        navName: "藏王索道",
-        priority: "must",
-        open: true,
-        content: `
-          <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
-            <p class="mb-2"><strong>09:20–09:50 購票搭車：</strong>至【藏王索道】兌換或購買往返纜車票。</p>
-            <details class="bg-sky-50/80 border border-sky-200 rounded-xl shadow-sm mb-2 group/inner">
-              <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-sky-900 hover:bg-sky-100 flex justify-between items-center transition-colors">
-                <span class="flex items-center gap-1.5"><span class="text-base">📸</span> 藏王樹冰實景照片集（左右滑動查看更多）</span>
-                <span class="text-[10px] text-sky-500 transition-transform group-open/inner:rotate-180">▼</span>
-              </summary>
-              <div class="p-3.5 border-t border-sky-200/50 flex gap-2 overflow-x-auto scrollbar-none snap-x">
-                <img src="https://hk.wamazing.com/media/wp-content/uploads/sites/5/2023/09/zaoujuhyou_pixta_73308950_M.jpg.webp" class="w-64 h-40 object-cover rounded-lg shrink-0 snap-center" alt="藏王樹冰">
-                <img src="https://wp-odai.wamazing.com/media/wp-content/uploads/sites/2/2023/09/zaoujuhyou_pixta_85145645_M.jpg.webp" class="w-64 h-40 object-cover rounded-lg shrink-0 snap-center" alt="藏王纜車">
-                <img src="https://wp-odai.wamazing.com/media/wp-content/uploads/sites/2/2023/09/zaoujuhyou_pixta_73182403_M.jpg.webp" class="w-64 h-40 object-cover rounded-lg shrink-0 snap-center" alt="藏王雪景">
-                <img src="https://wp-odai.wamazing.com/media/wp-content/uploads/sites/2/2023/09/zaoujuhyou_zao_17.jpg.webp" class="w-64 h-40 object-cover rounded-lg shrink-0 snap-center" alt="藏王樹冰">
-              </div>
-            </details>
-            <details class="bg-rose-50/80 border border-rose-200 rounded-xl shadow-sm mb-2 group/inner">
-              <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-rose-900 hover:bg-rose-100 flex justify-between items-center transition-colors">
-                <span class="flex items-center gap-1.5"><span class="text-base">🎟️</span> 【極重要】優先票搶票作戰</span>
-                <span class="text-[10px] text-rose-500 transition-transform group-open/inner:rotate-180">▼</span>
-              </summary>
-              <div class="p-3.5 border-t border-rose-200/50 text-xs text-slate-700 space-y-3">
-                <div class="bg-white/80 p-2.5 rounded-lg border border-rose-100">
-                  <strong class="text-rose-800 block mb-1">1️⃣ 提早註冊 Asoview!</strong>
-                  <p class="text-[11px] leading-relaxed">提前至 Asoview! 網站完成註冊並綁定信用卡，避免搶票時卡在驗證。</p>
-                </div>
-                <div class="bg-white/80 p-2.5 rounded-lg border border-rose-100 relative overflow-hidden">
-                  <div class="absolute right-0 top-0 bottom-0 w-1 bg-rose-500"></div>
-                  <strong class="text-rose-800 block mb-1 flex items-center gap-1"><span>⏰</span> 2️⃣ 設定搶票鬧鐘 (1月15日 22:55)</strong>
-                  <p class="text-[11px] leading-relaxed">系統於搭乘日 <strong class="text-rose-600">前 7 天日本時間 00:00</strong> 釋出。您的搭乘日是 1/23，開賣時間為 <strong class="text-rose-600">香港時間 1/15 晚上 23:00</strong>。</p>
-                </div>
-                <div class="bg-white/80 p-2.5 rounded-lg border border-rose-100">
-                  <strong class="text-rose-800 block mb-1">3️⃣ 鎖定最早時段</strong>
-                  <p class="text-[11px] leading-relaxed">開賣後直接鎖定 <strong class="text-rose-600">08:30 或 09:00</strong> 結帳。週六優先票通常 5 分鐘內秒殺！(往年參考：成人 ¥5,500 / 兒童 ¥3,500)</p>
-                </div>
-              </div>
-            </details>
-            <details class="bg-indigo-50/80 border border-indigo-200 rounded-xl shadow-sm mb-2 group/inner">
-              <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-indigo-900 hover:bg-indigo-100 flex justify-between items-center transition-colors">
-                <span class="flex items-center gap-1.5"><span class="text-base">🚠</span> 纜車搭乘與避堵策略</span>
-                <span class="text-[10px] text-indigo-500 transition-transform group-open/inner:rotate-180">▼</span>
-              </summary>
-              <div class="p-3.5 border-t border-indigo-200/50 text-xs text-slate-700 space-y-1.5">
-                <ul class="list-disc pl-4 space-y-1.5">
-                  <li><strong class="text-indigo-700">優先票限制：</strong>只保證<strong class="text-rose-600">「第一段上山」</strong>免排隊。半山腰轉乘及整趟下山都需與一般遊客排隊。</li>
-                  <li><strong class="text-slate-700">車廂擁擠：</strong>車廂內常塞滿滑雪客，長輩可能需站立 10-15 分鐘。</li>
-                  <li><strong class="text-indigo-700">避堵技巧：</strong>坐第一班纜車 (約 8:15 發車) 基本免排隊。建議路線：<strong>先直達山頂</strong>，下山時再停半山腰「樹冰高原站」拍照錯峰。</li>
-                </ul>
-              </div>
-            </details>
-            <details class="bg-amber-50/80 border border-amber-200 rounded-xl shadow-sm mb-2 group/inner">
-              <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-amber-900 hover:bg-amber-100 flex justify-between items-center transition-colors">
-                <span class="flex items-center gap-1.5"><span class="text-base">⚠️</span> 【保命級】長輩幼兒安全守則</span>
-                <span class="text-[10px] text-amber-500 transition-transform group-open/inner:rotate-180">▼</span>
-              </summary>
-              <div class="p-3.5 border-t border-amber-200/50 text-xs text-slate-700 space-y-2.5">
-                <div class="flex items-start gap-2">
-                  <span class="text-base shrink-0">🥶</span>
-                  <div><strong class="block text-slate-800 mb-0.5">拒絕皮膚外露 (防凍傷)</strong><p class="text-[11px] leading-relaxed">山頂體感常逼近 -20℃。4歲小孩必備：蓋耳毛帽、高領圍脖/面罩、包覆性護目鏡。不能有一絲皮膚暴露。</p></div>
-                </div>
-                <div class="flex items-start gap-2">
-                  <span class="text-base shrink-0">⛸️</span>
-                  <div><strong class="block text-slate-800 mb-0.5">小心天然溜冰場</strong><p class="text-[11px] leading-relaxed">前往地藏菩薩的積雪常被踩成堅硬冰面。長輩與小孩強烈建議套上<strong class="text-rose-600">簡易冰爪</strong>，大人務必緊牽小孩。</p></div>
-                </div>
-                <div class="flex items-start gap-2">
-                  <span class="text-base shrink-0">🏃‍♂️</span>
-                  <div><strong class="block text-slate-800 mb-0.5">隨時準備撤退</strong><p class="text-[11px] leading-relaxed">若出站發現能見度極低或風雪打臉會痛，請果斷留在室內暖氣區或展望台，<strong class="text-rose-600">千萬不要勉強走到戶外</strong>。</p></div>
-                </div>
-              </div>
-            </details>
-            <details class="bg-teal-50/80 border border-teal-200 rounded-xl shadow-sm mb-2 group/inner">
-              <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-teal-900 hover:bg-teal-100 flex justify-between items-center transition-colors">
-                <span class="flex items-center gap-1.5"><span class="text-base">📸</span> 拍照與遊玩亮點</span>
-                <span class="text-[10px] text-teal-500 transition-transform group-open/inner:rotate-180">▼</span>
-              </summary>
-              <div class="p-3.5 border-t border-teal-200/50 text-xs text-slate-700 space-y-1.5">
-                <ul class="list-disc pl-4 space-y-1">
-                  <li><strong>推薦路線：</strong>山麓站 ➔ 樹冰高原站(換乘) ➔ 地藏山頂站 ➔ 原路返回 (全程約 2 小時)。</li>
-                  <li><strong>必打卡機位：</strong>纜車前進方向的靠窗位 (俯瞰樹冰林) / 山頂地藏菩薩像 / 「Restaurant Sancho」山頂餐廳落地窗前。</li>
-                  <li><strong>天氣確認：</strong>出發前務必看天氣預報，晴天（藍鳥天）景色最佳。</li>
-                  <li><strong>備妥現金：</strong>山上部分小攤和扭蛋機只收現金。</li>
-                </ul>
-              </div>
-            </details>
-            <p class="text-[11px] text-rose-600 font-bold bg-rose-50 p-1.5 rounded mt-2">⚠️ 山頂極致保暖：地藏山頂站氣溫常低至 -10℃ 且風勢強勁。請幫 4 歲小朋友穿齊發熱衣、羽絨、防水雪褲與防風毛帽。</p>
+    {
+  time: "09:20 - 12:30",
+  title: "搭乘雙段纜車登頂 ➔ 觀賞震撼「藏王樹冰」",
+  img: "https://hk.wamazing.com/media/wp-content/uploads/sites/5/2023/09/zaoujuhyou_pixta_73308950_M.jpg.webp",
+  images: [
+    "https://hk.wamazing.com/media/wp-content/uploads/sites/5/2023/09/zaoujuhyou_pixta_73308950_M.jpg.webp",
+    "https://wp-odai.wamazing.com/media/wp-content/uploads/sites/2/2023/09/zaoujuhyou_pixta_85145645_M.jpg.webp",
+    "https://wp-odai.wamazing.com/media/wp-content/uploads/sites/2/2023/09/zaoujuhyou_pixta_73182403_M.jpg.webp",
+    "https://wp-odai.wamazing.com/media/wp-content/uploads/sites/2/2023/09/zaoujuhyou_zao_17.jpg.webp"
+  ],
+  tag: { text: "❄️ 樹冰奇景", class: "tag-sky" },
+  navUrl: "https://www.google.com/maps/search/?api=1&query=Zao+Ropeway",
+  navName: "藏王索道",
+  priority: "must",
+  open: true,
+  content: `
+    <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
+      <p class="mb-2"><strong>09:20–09:50 購票搭車：</strong>至【藏王索道】兌換或購買往返纜車票。</p>
+      <details class="bg-rose-50/80 border border-rose-200 rounded-xl shadow-sm mb-2 group/inner">
+        <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-rose-900 hover:bg-rose-100 flex justify-between items-center transition-colors">
+          <span class="flex items-center gap-1.5"><span class="text-base">🎟️</span> 【極重要】優先票搶票作戰</span>
+          <span class="text-[10px] text-rose-500 transition-transform group-open/inner:rotate-180">▼</span>
+        </summary>
+        <div class="p-3.5 border-t border-rose-200/50 text-xs text-slate-700 space-y-3">
+          <div class="bg-white/80 p-2.5 rounded-lg border border-rose-100">
+            <strong class="text-rose-800 block mb-1">1️⃣ 提早註冊 Asoview!</strong>
+            <p class="text-[11px] leading-relaxed">提前至 Asoview! 網站完成註冊並綁定信用卡，避免搶票時卡在驗證。</p>
           </div>
-        `
+          <div class="bg-white/80 p-2.5 rounded-lg border border-rose-100 relative overflow-hidden">
+            <div class="absolute right-0 top-0 bottom-0 w-1 bg-rose-500"></div>
+            <strong class="text-rose-800 block mb-1 flex items-center gap-1"><span>⏰</span> 2️⃣ 設定搶票鬧鐘 (1月15日 22:55)</strong>
+            <p class="text-[11px] leading-relaxed">系統於搭乘日 <strong class="text-rose-600">前 7 天日本時間 00:00</strong> 釋出。您的搭乘日是 1/23，開賣時間為 <strong class="text-rose-600">香港時間 1/15 晚上 23:00</strong>。</p>
+          </div>
+          <div class="bg-white/80 p-2.5 rounded-lg border border-rose-100">
+            <strong class="text-rose-800 block mb-1">3️⃣ 鎖定最早時段</strong>
+            <p class="text-[11px] leading-relaxed">開賣後直接鎖定 <strong class="text-rose-600">08:30 或 09:00</strong> 結帳。週六優先票通常 5 分鐘內秒殺！(往年參考：成人 ¥5,500 / 兒童 ¥3,500)</p>
+          </div>
+        </div>
+      </details>
+      <details class="bg-indigo-50/80 border border-indigo-200 rounded-xl shadow-sm mb-2 group/inner">
+        <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-indigo-900 hover:bg-indigo-100 flex justify-between items-center transition-colors">
+          <span class="flex items-center gap-1.5"><span class="text-base">🚠</span> 纜車搭乘與避堵策略</span>
+          <span class="text-[10px] text-indigo-500 transition-transform group-open/inner:rotate-180">▼</span>
+        </summary>
+        <div class="p-3.5 border-t border-indigo-200/50 text-xs text-slate-700 space-y-1.5">
+          <ul class="list-disc pl-4 space-y-1.5">
+            <li><strong class="text-indigo-700">優先票限制：</strong>只保證<strong class="text-rose-600">「第一段上山」</strong>免排隊。半山腰轉乘及整趟下山都需與一般遊客排隊。</li>
+            <li><strong class="text-slate-700">車廂擁擠：</strong>車廂內常塞滿滑雪客，長輩可能需站立 10-15 分鐘。</li>
+            <li><strong class="text-indigo-700">避堵技巧：</strong>坐第一班纜車 (約 8:15 發車) 基本免排隊。建議路線：<strong>先直達山頂</strong>，下山時再停半山腰「樹冰高原站」拍照錯峰。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="bg-amber-50/80 border border-amber-200 rounded-xl shadow-sm mb-2 group/inner">
+        <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-amber-900 hover:bg-amber-100 flex justify-between items-center transition-colors">
+          <span class="flex items-center gap-1.5"><span class="text-base">⚠️</span> 【保命級】長輩幼兒安全守則</span>
+          <span class="text-[10px] text-amber-500 transition-transform group-open/inner:rotate-180">▼</span>
+        </summary>
+        <div class="p-3.5 border-t border-amber-200/50 text-xs text-slate-700 space-y-2.5">
+          <div class="flex items-start gap-2">
+            <span class="text-base shrink-0">🥶</span>
+            <div><strong class="block text-slate-800 mb-0.5">拒絕皮膚外露 (防凍傷)</strong><p class="text-[11px] leading-relaxed">山頂體感常逼近 -20℃。4歲小孩必備：蓋耳毛帽、高領圍脖/面罩、包覆性護目鏡。不能有一絲皮膚暴露。</p></div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-base shrink-0">⛸️</span>
+            <div><strong class="block text-slate-800 mb-0.5">小心天然溜冰場</strong><p class="text-[11px] leading-relaxed">前往地藏菩薩的積雪常被踩成堅硬冰面。長輩與小孩強烈建議套上<strong class="text-rose-600">簡易冰爪</strong>，大人務必緊牽小孩。</p></div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-base shrink-0">🏃‍♂️</span>
+            <div><strong class="block text-slate-800 mb-0.5">隨時準備撤退</strong><p class="text-[11px] leading-relaxed">若出站發現能見度極低或風雪打臉會痛，請果斷留在室內暖氣區或展望台，<strong class="text-rose-600">千萬不要勉強走到戶外</strong>。</p></div>
+          </div>
+        </div>
+      </details>
+      <details class="bg-teal-50/80 border border-teal-200 rounded-xl shadow-sm mb-2 group/inner">
+        <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-teal-900 hover:bg-teal-100 flex justify-between items-center transition-colors">
+          <span class="flex items-center gap-1.5"><span class="text-base">📸</span> 拍照與遊玩亮點</span>
+          <span class="text-[10px] text-teal-500 transition-transform group-open/inner:rotate-180">▼</span>
+        </summary>
+        <div class="p-3.5 border-t border-teal-200/50 text-xs text-slate-700 space-y-1.5">
+          <ul class="list-disc pl-4 space-y-1">
+            <li><strong>推薦路線：</strong>山麓站 ➔ 樹冰高原站(換乘) ➔ 地藏山頂站 ➔ 原路返回 (全程約 2 小時)。</li>
+            <li><strong>必打卡機位：</strong>纜車前進方向的靠窗位 (俯瞰樹冰林) / 山頂地藏菩薩像 / 「Restaurant Sancho」山頂餐廳落地窗前。</li>
+            <li><strong>天氣確認：</strong>出發前務必看天氣預報，晴天（藍鳥天）景色最佳。</li>
+            <li><strong>備妥現金：</strong>山上部分小攤和扭蛋機只收現金。</li>
+          </ul>
+        </div>
+      </details>
+      <p class="text-[11px] text-rose-600 font-bold bg-rose-50 p-1.5 rounded mt-2">⚠️ 山頂極致保暖：地藏山頂站氣溫常低至 -10℃ 且風勢強勁。請幫 4 歲小朋友穿齊發熱衣、羽絨、防水雪褲與防風毛帽。</p>
+    </div>
+  `
       },
       {
         time: "12:30 - 14:00",
@@ -823,68 +818,63 @@ const winterItineraries = [
         `
       },
       {
-        time: "09:30 - 12:00",
-        title: "出發與【宮城藏王狐狸村】雪地互動",
-        tag: { text: "🦊 萌寵互動", class: "tag-sky" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=Miyagi+Zao+Fox+Village",
-        navName: "狐狸村",
-        priority: "must",
-        open: true,
-        content: `
-          <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
-            <p><strong>開車抵達狐狸村。</strong>4 歲小朋友必須由家長<strong class="text-rose-700">全程緊牽手</strong>，絕對禁止觸摸放養區狐狸。</p>
-            <details class="bg-sky-50/80 border border-sky-200 rounded-xl shadow-sm mb-2 group/inner">
-              <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-sky-900 hover:bg-sky-100 flex justify-between items-center transition-colors">
-                <span class="flex items-center gap-1.5"><span class="text-base">📸</span> 狐狸村實景照片集（左右滑動查看更多）</span>
-                <span class="text-[10px] text-sky-500 transition-transform group-open/inner:rotate-180">▼</span>
-              </summary>
-              <div class="p-3.5 border-t border-sky-200/50 flex gap-2 overflow-x-auto scrollbar-none snap-x">
-                <img src="https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-0946-3472.jpg" class="w-64 h-40 object-cover rounded-lg shrink-0 snap-center" alt="狐狸村">
-                <img src="https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1004-3540.jpg" class="w-64 h-40 object-cover rounded-lg shrink-0 snap-center" alt="狐狸村">
-                <img src="https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1011-3570.jpg" class="w-64 h-40 object-cover rounded-lg shrink-0 snap-center" alt="狐狸村">
-                <img src="https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1031-3635.jpg" class="w-64 h-40 object-cover rounded-lg shrink-0 snap-center" alt="狐狸村">
-              </div>
-            </details>
-            <details class="bg-rose-50/80 border border-rose-200 rounded-xl shadow-sm mb-2 group/inner">
-              <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-rose-900 hover:bg-rose-100 flex justify-between items-center transition-colors">
-                <span class="flex items-center gap-1.5"><span class="text-base">🚨</span> 4 歲幼兒安全守則</span>
-                <span class="text-[10px] text-rose-500 transition-transform group-open/inner:rotate-180">▼</span>
-              </summary>
-              <div class="p-3.5 border-t border-rose-200/50 text-xs text-slate-700 space-y-2">
-                <ul class="list-disc pl-4 space-y-1.5">
-                  <li><strong class="text-rose-700">全程緊牽：</strong>家長需一對一牽牢，嚴禁奔跑、蹲下或伸手摸狐狸（會被咬傷）。</li>
-                  <li><strong class="text-rose-700">穿著禁忌：</strong>嚴禁飄逸長裙、吊繩、流蘇，以及會發出沙沙聲的黑色塑膠袋。</li>
-                  <li><strong class="text-rose-700">餵食規定：</strong>只能在指定「高台區」拋擲專用飼料，嚴禁私自手餵。</li>
-                </ul>
-              </div>
-            </details>
-            <details class="bg-teal-50/80 border border-teal-200 rounded-xl shadow-sm mb-2 group/inner">
-              <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-teal-900 hover:bg-teal-100 flex justify-between items-center transition-colors">
-                <span class="flex items-center gap-1.5"><span class="text-base">🚗</span> 自駕與時間規劃</span>
-                <span class="text-[10px] text-teal-500 transition-transform group-open/inner:rotate-180">▼</span>
-              </summary>
-              <div class="p-3.5 border-t border-teal-200/50 text-xs text-slate-700 space-y-2">
-                <ul class="list-disc pl-4 space-y-1.5">
-                  <li><strong class="text-teal-700">抵達時間：</strong>建議 <strong>09:30 - 10:00</strong> 抵達（狐狸活動力最強、停車位充足）。</li>
-                  <li><strong class="text-teal-700">雪地駕駛：</strong>山路極易結冰，務必使用 4WD + 雪胎，下坡善用低速檔（L/2檔）。</li>
-                </ul>
-              </div>
-            </details>
-            <details class="bg-amber-50/80 border border-amber-200 rounded-xl shadow-sm mb-2 group/inner">
-              <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-amber-900 hover:bg-amber-100 flex justify-between items-center transition-colors">
-                <span class="flex items-center gap-1.5"><span class="text-base">📸</span> 體驗與實用貼心提醒</span>
-                <span class="text-[10px] text-amber-500 transition-transform group-open/inner:rotate-180">▼</span>
-              </summary>
-              <div class="p-3.5 border-t border-amber-200/50 text-xs text-slate-700 space-y-2">
-                <ul class="list-disc pl-4 space-y-1.5">
-                  <li><strong class="text-amber-700">抱狐狸體驗：</strong>僅限國中以上（約 ¥700/次），4 歲幼兒無法參加，可在旁拍照。</li>
-                  <li><strong class="text-amber-700">無法使用推車：</strong>園區多為雪地坡道與階梯，推車完全推不動，需全程步行。</li>
-                  <li><strong class="text-amber-700">停留時間：</strong>預留 <strong>1.5～2 小時</strong> 即非常充裕，結束後可順路下山吃白石溫麵。</li>
-                </ul>
-              </div>
-            </details>
-          </div>
-        `
+  time: "09:30 - 12:00",
+  title: "出發與【宮城藏王狐狸村】雪地互動",
+  img: "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-0946-3472.jpg",
+  images: [
+    "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-0946-3472.jpg",
+    "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1004-3540.jpg",
+    "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1011-3570.jpg",
+    "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1031-3635.jpg"
+  ],
+  tag: { text: "🦊 萌寵互動", class: "tag-sky" },
+  navUrl: "https://www.google.com/maps/search/?api=1&query=Miyagi+Zao+Fox+Village",
+  navName: "狐狸村",
+  priority: "must",
+  open: true,
+  content: `
+    <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
+      <p><strong>開車抵達狐狸村。</strong>4 歲小朋友必須由家長<strong class="text-rose-700">全程緊牽手</strong>，絕對禁止觸摸放養區狐狸。</p>
+      <details class="bg-rose-50/80 border border-rose-200 rounded-xl shadow-sm mb-2 group/inner">
+        <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-rose-900 hover:bg-rose-100 flex justify-between items-center transition-colors">
+          <span class="flex items-center gap-1.5"><span class="text-base">🚨</span> 4 歲幼兒安全守則</span>
+          <span class="text-[10px] text-rose-500 transition-transform group-open/inner:rotate-180">▼</span>
+        </summary>
+        <div class="p-3.5 border-t border-rose-200/50 text-xs text-slate-700 space-y-2">
+          <ul class="list-disc pl-4 space-y-1.5">
+            <li><strong class="text-rose-700">全程緊牽：</strong>家長需一對一牽牢，嚴禁奔跑、蹲下或伸手摸狐狸（會被咬傷）。</li>
+            <li><strong class="text-rose-700">穿著禁忌：</strong>嚴禁飄逸長裙、吊繩、流蘇，以及會發出沙沙聲的黑色塑膠袋。</li>
+            <li><strong class="text-rose-700">餵食規定：</strong>只能在指定「高台區」拋擲專用飼料，嚴禁私自手餵。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="bg-teal-50/80 border border-teal-200 rounded-xl shadow-sm mb-2 group/inner">
+        <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-teal-900 hover:bg-teal-100 flex justify-between items-center transition-colors">
+          <span class="flex items-center gap-1.5"><span class="text-base">🚗</span> 自駕與時間規劃</span>
+          <span class="text-[10px] text-teal-500 transition-transform group-open/inner:rotate-180">▼</span>
+        </summary>
+        <div class="p-3.5 border-t border-teal-200/50 text-xs text-slate-700 space-y-2">
+          <ul class="list-disc pl-4 space-y-1.5">
+            <li><strong class="text-teal-700">抵達時間：</strong>建議 <strong>09:30 - 10:00</strong> 抵達（狐狸活動力最強、停車位充足）。</li>
+            <li><strong class="text-teal-700">雪地駕駛：</strong>山路極易結冰，務必使用 4WD + 雪胎，下坡善用低速檔（L/2檔）。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="bg-amber-50/80 border border-amber-200 rounded-xl shadow-sm mb-2 group/inner">
+        <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-amber-900 hover:bg-amber-100 flex justify-between items-center transition-colors">
+          <span class="flex items-center gap-1.5"><span class="text-base">📸</span> 體驗與實用貼心提醒</span>
+          <span class="text-[10px] text-amber-500 transition-transform group-open/inner:rotate-180">▼</span>
+        </summary>
+        <div class="p-3.5 border-t border-amber-200/50 text-xs text-slate-700 space-y-2">
+          <ul class="list-disc pl-4 space-y-1.5">
+            <li><strong class="text-amber-700">抱狐狸體驗：</strong>僅限國中以上（約 ¥700/次），4 歲幼兒無法參加，可在旁拍照。</li>
+            <li><strong class="text-amber-700">無法使用推車：</strong>園區多為雪地坡道與階梯，推車完全推不動，需全程步行。</li>
+            <li><strong class="text-amber-700">停留時間：</strong>預留 <strong>1.5～2 小時</strong> 即非常充裕，結束後可順路下山吃白石溫麵。</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+  `
       },
       {
         time: "12:15 - 13:45",
