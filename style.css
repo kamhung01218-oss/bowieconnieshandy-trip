@@ -1,5 +1,5 @@
 /* ============================================================
- * style.css — v9.1 雪地清爽版（戶外強光優化）
+ * style.css — v9.0 雪地清爽版
  * 淺藍漸層 + 白色卡片 + 藍色主色
  * ============================================================ */
 
@@ -23,11 +23,10 @@
   --sky-lighter: #e0f2fe;
   --sky-accent: #0ea5e9;
 
-  /* 文字對比度優化（雪地反光下更清晰） */
-  --text-main: #0f172a;
-  --text-soft: #334155;
-  --text-mute: #475569;
-  --text-faint: #64748b;
+  --text-main: #1e293b;
+  --text-soft: #475569;
+  --text-mute: #64748b;
+  --text-faint: #94a3b8;
 
   --line-soft: #e2e8f0;
   --line-sky: rgba(186, 230, 253, 0.6);
@@ -55,7 +54,6 @@ body {
   line-height: 1.65;
   padding-bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 50px);
   -webkit-tap-highlight-color: transparent;
-  overflow-x: hidden; /* 防止全局橫向溢出 */
 }
 
 button, a {
@@ -996,13 +994,6 @@ body.modal-open #app-root {
 #schedule-container button[onclick*="openVlogPlanModal"] {
   background: linear-gradient(135deg, #38bdf8, var(--sky-primary)) !important;
   border-radius: 50% !important;
-}
-
-/* ========== 戶外強光閱讀優化 ========== */
-#schedule-container h2, 
-#schedule-container h3 {
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
-  letter-spacing: -0.01em;
 }
 
 /* ========== Tag 標籤 ========== */
