@@ -1,7 +1,7 @@
 /* ============================================================
- * app-core.js — v7.0
- * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
- *       燈箱、角色、Service Worker、可拖動 FAB
+ * app-core.js  v7.1
+ * Toast
+ *       Service Worker FAB
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -13,7 +13,7 @@ function escapeHtml(str) {
 }
 function escAttr(str) { return escapeHtml(str); }
 
-// ==================== PIN 雜湊 ====================
+// ==================== PIN  ====================
 const PIN_SALT = "tohoku2027_winter_";
 async function hashPin(pin) {
   try {
@@ -60,20 +60,20 @@ async function fetchUserPinsFromCloud() {
   return {};
 }
 
-// ==================== 全域變數 ====================
+// ====================  ====================
 let state = { currentMainTab: "itinerary", checkedItems: {} };
 let currentUser = null;
 let cloudUserData = {};
 let cloudUserPins = {};
 let exchangeRates = { JPY: 0.052, HKD: 1, TWD: 0.24, CNY: 1.1, USD: 7.8 };
 
-const USER_PINS = { "余生": "1234", "bowie": "1234", "shandy": "1234", "connie": "1234" };
+const USER_PINS = { "": "1234", "bowie": "1234", "shandy": "1234", "connie": "1234" };
 const USER_COLORS = {
-  "余生": "linear-gradient(135deg,#3b82f6,#1d4ed8)",
+  "": "linear-gradient(135deg,#3b82f6,#1d4ed8)",
   "bowie": "linear-gradient(135deg,#f472b6,#db2777)",
   "shandy": "linear-gradient(135deg,#34d399,#059669)",
   "connie": "linear-gradient(135deg,#a78bfa,#7c3aed)",
-  "訪客": "linear-gradient(135deg,#94a3b8,#475569)"
+  "": "linear-gradient(135deg,#94a3b8,#475569)"
 };
 
 const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27"];
@@ -88,7 +88,7 @@ if (!window.weatherCache) window.weatherCache = {};
 
 window._renderedDays = new Set();
 
-// ==================== 用戶登入 ====================
+// ====================  ====================
 let selectedUser = null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -97,11 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('#user-grid .user-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       selectedUser = btn.dataset.user;
-      if (selectedUser === "訪客") {
-        currentUser = "訪客";
-        localStorage.setItem("tohoku_current_user", "訪客");
+      if (selectedUser === "") {
+        currentUser = "";
+        localStorage.setItem("tohoku_current_user", "");
         document.getElementById('user-modal').style.display = 'none';
-        showToast("👤 歡迎，訪客！", "👋");
+        showToast(" ", "");
         haptic(15);
         initAppAfterLogin();
         return;
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   const savedUser = localStorage.getItem("tohoku_current_user");
-  if (savedUser && (savedUser === "訪客" || USER_PINS[savedUser])) {
+  if (savedUser && (savedUser === "" || USER_PINS[savedUser])) {
     currentUser = savedUser;
     document.getElementById('user-modal').style.display = 'none';
     initAppAfterLogin();
@@ -125,7 +125,7 @@ async function verifyUserPin() {
   const errorEl = document.getElementById('pin-error');
   const okBtn = document.querySelector('#pin-area button');
   if (!input) { haptic(50); return; }
-  if (okBtn) { okBtn.disabled = true; okBtn.textContent = "驗證中..."; }
+  if (okBtn) { okBtn.disabled = true; okBtn.textContent = "..."; }
   try {
     const ok = await verifyUserPinAsync(selectedUser, input, true);
     if (ok) {
@@ -133,7 +133,7 @@ async function verifyUserPin() {
       localStorage.setItem("tohoku_current_user", currentUser);
       document.getElementById('user-modal').style.display = 'none';
       errorEl.classList.add('hidden');
-      showToast(`✅ 歡迎回來，${currentUser}！`, "👋");
+      showToast(` ${currentUser}`, "");
       haptic(15);
       initAppAfterLogin();
     } else {
@@ -143,10 +143,10 @@ async function verifyUserPin() {
       setTimeout(() => inputField.focus(), 50);
     }
   } catch(e) {
-    errorEl.textContent = "⚠️ 驗證失敗，請稍後再試";
+    errorEl.textContent = " ";
     errorEl.classList.remove('hidden');
   } finally {
-    if (okBtn) { okBtn.disabled = false; okBtn.textContent = "確認"; }
+    if (okBtn) { okBtn.disabled = false; okBtn.textContent = ""; }
   }
 }
 
@@ -181,8 +181,8 @@ function openAccountModal() {
   const avatar = document.getElementById('account-avatar');
   const nameEl = document.getElementById('account-username');
   nameEl.textContent = currentUser;
-  if (currentUser === "訪客") {
-    avatar.textContent = "👤";
+  if (currentUser === "") {
+    avatar.textContent = "";
     avatar.style.background = "linear-gradient(135deg, #94a3b8, #475569)";
   } else {
     avatar.textContent = currentUser[0].toUpperCase();
@@ -197,8 +197,8 @@ function closeAccountModal() {
 }
 
 function openChangePinModal() {
-  if (!currentUser || currentUser === "訪客") {
-    showToast("👤 訪客無法設定 PIN 碼", "⚠️");
+  if (!currentUser || currentUser === "") {
+    showToast("  PIN ", "");
     return;
   }
   closeAccountModal();
@@ -226,24 +226,24 @@ async function submitChangePin() {
   const submitBtn = document.getElementById('change-pin-submit-btn');
 
   const showErr = (msg) => {
-    errEl.textContent = "⚠️ " + msg;
+    errEl.textContent = " " + msg;
     errEl.classList.remove('hidden');
     haptic(50);
   };
 
-  if (!oldPin) return showErr("請輸入目前 PIN 碼");
-  if (!newPin) return showErr("請輸入新 PIN 碼");
-  if (newPin.length < 4) return showErr("新 PIN 碼至少需 4 個字元");
-  if (newPin !== confirmPin) return showErr("兩次輸入的新 PIN 碼不一致");
-  if (newPin === oldPin) return showErr("新 PIN 碼不能與舊的相同");
+  if (!oldPin) return showErr(" PIN ");
+  if (!newPin) return showErr(" PIN ");
+  if (newPin.length < 4) return showErr(" PIN  4 ");
+  if (newPin !== confirmPin) return showErr(" PIN ");
+  if (newPin === oldPin) return showErr(" PIN ");
 
   errEl.classList.add('hidden');
   submitBtn.disabled = true;
-  submitBtn.textContent = "驗證中...";
+  submitBtn.textContent = "...";
   submitBtn.classList.add("opacity-60", "cursor-not-allowed");
 
   try {
-    if (!window.dbRef) throw new Error("雲端未連線");
+    if (!window.dbRef) throw new Error("");
     const docSnap = await window.dbRef.get();
     const cloudData = docSnap.exists ? docSnap.data() : {};
     const allPins = cloudData.userPins || {};
@@ -257,32 +257,32 @@ async function submitChangePin() {
     }
 
     if (!oldPinOk) {
-      showErr("目前 PIN 碼錯誤");
+      showErr(" PIN ");
       submitBtn.disabled = false;
-      submitBtn.textContent = "確認修改";
+      submitBtn.textContent = "";
       submitBtn.classList.remove("opacity-60", "cursor-not-allowed");
       return;
     }
 
-    submitBtn.textContent = "更新中...";
+    submitBtn.textContent = "...";
     const newHash = await hashPin(newPin);
     allPins[currentUser] = { hash: newHash, updatedAt: Date.now(), updatedBy: currentUser };
     await window.dbRef.set({ userPins: allPins, updatedAt: Date.now() }, { merge: true });
     cloudUserPins = allPins;
 
-    showToast("✅ PIN 碼已更新，下次登入請用新密碼", "🔑");
+    showToast(" PIN ", "");
     haptic(20);
     closeChangePinModal();
   } catch(e) {
-    showToast("❌ 更新失敗：" + (e.message || "請稍後再試"), "⚠️");
+    showToast(" " + (e.message || ""), "");
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = "確認修改";
+    submitBtn.textContent = "";
     submitBtn.classList.remove("opacity-60", "cursor-not-allowed");
   }
 }
 
-// ==================== 應用初始化 ====================
+// ====================  ====================
 function initAppAfterLogin() {
   updateUserBadge();
   loadCustomItems();
@@ -325,7 +325,7 @@ function initAppAfterLogin() {
           return { done, total: all.length };
         },
         getEquipProgress: () => {
-          if (!currentUser || currentUser === "訪客") return { done: 0, total: 0 };
+          if (!currentUser || currentUser === "") return { done: 0, total: 0 };
           const userData = getUserData();
           const all = [...equipmentList, ...(userData.customEquip || [])];
           const done = all.filter(item => {
@@ -335,7 +335,7 @@ function initAppAfterLogin() {
           return { done, total: all.length };
         },
         getShoppingProgress: () => {
-          if (!currentUser || currentUser === "訪客") return { done: 0, total: 0 };
+          if (!currentUser || currentUser === "") return { done: 0, total: 0 };
           const userData = getUserData();
           let total = 0, done = 0;
           Object.values(userData.shopping || {}).forEach(items => {
@@ -384,7 +384,7 @@ function updateUserBadge() {
     if (!badge || !avatarEl || !nameEl || !currentUser) return;
     nameEl.textContent = currentUser;
     nameEl.style.color = "white";
-    avatarEl.textContent = currentUser === "訪客" ? "👤" : currentUser[0].toUpperCase();
+    avatarEl.textContent = currentUser === "" ? "" : currentUser[0].toUpperCase();
     avatarEl.style.background = USER_COLORS[currentUser] || "linear-gradient(135deg,#64748b,#475569)";
     badge.style.display = 'inline-flex';
     badge.style.alignItems = 'center';
@@ -393,7 +393,7 @@ function updateUserBadge() {
 window.updateUserBadge = updateUserBadge;
 
 function getUserData() {
-  if (!currentUser || currentUser === "訪客") return { equipChecked: {}, customEquip: [], shopping: {} };
+  if (!currentUser || currentUser === "") return { equipChecked: {}, customEquip: [], shopping: {} };
   if (!cloudUserData[currentUser]) cloudUserData[currentUser] = { equipChecked: {}, customEquip: [], shopping: {} };
   const u = cloudUserData[currentUser];
   if (!u.equipChecked) u.equipChecked = {};
@@ -403,24 +403,24 @@ function getUserData() {
 }
 
 async function saveUserData() {
-  if (!currentUser || currentUser === "訪客") return;
-  if (typeof firebase === 'undefined' || !window.dbRef) { showToast("⏳ 雲端未連線", "⚠️"); return; }
+  if (!currentUser || currentUser === "") return;
+  if (typeof firebase === 'undefined' || !window.dbRef) { showToast(" ", ""); return; }
   try {
     const docSnap = await window.dbRef.get();
     const cloudData = docSnap.exists ? docSnap.data() : {};
     const allUserData = cloudData.userData || {};
     allUserData[currentUser] = { ...getUserData(), updatedAt: Date.now() };
     await window.dbRef.set({ userData: allUserData, updatedAt: Date.now() }, { merge: true });
-  } catch (e) { showToast("❌ 儲存失敗：" + e.message, "⚠️"); }
+  } catch (e) { showToast(" " + e.message, ""); }
 }
 
 function haptic(ms = 10) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
 
 function scrollToToday() {
   const now = Date.now();
-  if (now < TRIP_START) { switchDay(1); showToast("📅 行程尚未開始，已跳到 D1", "✈️"); }
-  else if (now > TRIP_END) { switchDay(7); showToast("📅 行程已結束，已跳到 D7", "🏁"); }
-  else { for (let i = 0; i < tripDates.length; i++) { const dayStart = new Date(tripDates[i] + "T00:00:00+08:00").getTime(); const dayEnd = new Date(tripDates[i] + "T23:59:59+08:00").getTime(); if (now >= dayStart && now <= dayEnd) { switchDay(i + 1); showToast(`📅 已跳到 Day ${i + 1}`, "📍"); break; } } }
+  if (now < TRIP_START) { switchDay(1); showToast("  D1", ""); }
+  else if (now > TRIP_END) { switchDay(7); showToast("  D7", ""); }
+  else { for (let i = 0; i < tripDates.length; i++) { const dayStart = new Date(tripDates[i] + "T00:00:00+08:00").getTime(); const dayEnd = new Date(tripDates[i] + "T23:59:59+08:00").getTime(); if (now >= dayStart && now <= dayEnd) { switchDay(i + 1); showToast(`  Day ${i + 1}`, ""); break; } } }
   haptic(12); setTimeout(() => { const tabs = document.querySelector('.day-tabs-wrapper'); if (tabs) tabs.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
 }
 function updateTodayButtonVisibility() { const btn = document.getElementById('btn-today'); if (!btn) return; const now = Date.now(); if (now >= TRIP_START && now <= TRIP_END) btn.classList.remove('hidden'); else btn.classList.add('hidden'); }
@@ -538,10 +538,10 @@ function setupImageFadeIn(container = document) { const imgs = container.querySe
 function isAdminUnlocked() { return localStorage.getItem("tohoku_admin_unlocked") === "true"; }
 function showPasswordModal() { const m = document.getElementById("password-modal"); m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); document.getElementById("password-error").classList.add('hidden'); document.getElementById("password-input").value = ''; setTimeout(() => document.getElementById("password-input").focus(), 100); }
 function closePasswordModal() { const m = document.getElementById("password-modal"); m.classList.remove('active'); setTimeout(() => m.style.display = 'none', 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); }
-function verifyPassword() { const input = document.getElementById("password-input").value.trim(); if (input === ADMIN_PASSWORD) { localStorage.setItem("tohoku_admin_unlocked", "true"); closePasswordModal(); renderBookingChecklist(); renderEquipChecklist(); showToast("✅ 已解鎖管理權限"); haptic(15); } else { document.getElementById("password-error").classList.remove("hidden"); document.getElementById("password-input").value = ''; haptic(50); } }
-function lockAdmin() { localStorage.removeItem("tohoku_admin_unlocked"); renderBookingChecklist(); renderEquipChecklist(); showToast("🔒 已鎖定管理權限"); }
+function verifyPassword() { const input = document.getElementById("password-input").value.trim(); if (input === ADMIN_PASSWORD) { localStorage.setItem("tohoku_admin_unlocked", "true"); closePasswordModal(); renderBookingChecklist(); renderEquipChecklist(); showToast(" "); haptic(15); } else { document.getElementById("password-error").classList.remove("hidden"); document.getElementById("password-input").value = ''; haptic(50); } }
+function lockAdmin() { localStorage.removeItem("tohoku_admin_unlocked"); renderBookingChecklist(); renderEquipChecklist(); showToast(" "); }
 
-// ==================== 匯率 ====================
+// ====================  ====================
 async function fetchLiveRates() {
   try {
     const response = await fetch('https://open.er-api.com/v6/latest/JPY');
@@ -562,7 +562,7 @@ async function fetchLiveRates() {
 }
 function updateRateHud() {
   const t = document.getElementById("rate-hint-text");
-  if (t) t.innerText = `1 JPY ≈ ${exchangeRates.HKD.toFixed(3)} HKD`;
+  if (t) t.innerText = `1 JPY  ${exchangeRates.HKD.toFixed(3)} HKD`;
 }
 function openCurrencyModal() {
   const m = document.getElementById('currency-modal');
@@ -630,11 +630,52 @@ function quickConvert(currency, amount) {
 window.quickConvert = quickConvert;
 
 // ==================== Toast ====================
-function showToast(message, icon = "✅") { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (toast && m && i) { const oldBtn = document.getElementById("toast-undo-btn"); if (oldBtn) oldBtn.remove(); window._undoCallback = null; m.innerText = message; i.innerText = icon; toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); if (window.toastTimeout) clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => { toast.classList.remove("translate-y-0", "opacity-100"); toast.classList.add("-translate-y-24", "opacity-0"); }, 3000); } }
-function showUndoToast(message, icon, onUndo) { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (!toast) return; const oldBtn = document.getElementById("toast-undo-btn"); if (oldBtn) oldBtn.remove(); m.innerText = message; i.innerText = icon; const btn = document.createElement("button"); btn.id = "toast-undo-btn"; btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto"; btn.textContent = "撤銷"; btn.onclick = (e) => { e.stopPropagation(); if (window._undoCallback) { window._undoCallback(); window._undoCallback = null; } const t = document.getElementById("toast"); if (t) { t.classList.remove("translate-y-0", "opacity-100"); t.classList.add("-translate-y-24", "opacity-0"); } if (window.toastTimeout) clearTimeout(window.toastTimeout); haptic(15); }; toast.appendChild(btn); window._undoCallback = onUndo; toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); if (window.toastTimeout) clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => { toast.classList.remove("translate-y-0", "opacity-100"); toast.classList.add("-translate-y-24", "opacity-0"); window._undoCallback = null; setTimeout(() => { const b = document.getElementById("toast-undo-btn"); if (b) b.remove(); }, 300); }, 5000); }
+function showToast(message, icon = "") { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (toast && m && i) { const oldBtn = document.getElementById("toast-undo-btn"); if (oldBtn) oldBtn.remove(); window._undoCallback = null; m.innerText = message; i.innerText = icon; toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); if (window.toastTimeout) clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => { toast.classList.remove("translate-y-0", "opacity-100"); toast.classList.add("-translate-y-24", "opacity-0"); }, 3000); } }
+function showUndoToast(message, icon, onUndo) { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (!toast) return; const oldBtn = document.getElementById("toast-undo-btn"); if (oldBtn) oldBtn.remove(); m.innerText = message; i.innerText = icon; const btn = document.createElement("button"); btn.id = "toast-undo-btn"; btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto"; btn.textContent = ""; btn.onclick = (e) => { e.stopPropagation(); if (window._undoCallback) { window._undoCallback(); window._undoCallback = null; } const t = document.getElementById("toast"); if (t) { t.classList.remove("translate-y-0", "opacity-100"); t.classList.add("-translate-y-24", "opacity-0"); } if (window.toastTimeout) clearTimeout(window.toastTimeout); haptic(15); }; toast.appendChild(btn); window._undoCallback = onUndo; toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); if (window.toastTimeout) clearTimeout(window.toastTimeout); window.toastTimeout = setTimeout(() => { toast.classList.remove("translate-y-0", "opacity-100"); toast.classList.add("-translate-y-24", "opacity-0"); window._undoCallback = null; setTimeout(() => { const b = document.getElementById("toast-undo-btn"); if (b) b.remove(); }, 300); }, 5000); }
 function copyText(text) { try { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); } catch(e) { navigator.clipboard.writeText(text).catch(() => {}); } }
 
-// ==================== 燈箱 ====================
+// ====================  ====================
+function openMap(url, title) {
+  haptic(5);
+  const query = encodeURIComponent(title || '');
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const fallbackUrl = url || `https://www.google.com/maps/search/?api=1&query=${query}`;
+
+  if (isIOS) {
+    //  Apple  Google Maps App
+    window.location.href = `maps://?q=${query}`;
+    //  1  App 
+    setTimeout(() => {
+      if (!document.hidden) {
+        window.open(fallbackUrl, '_blank');
+      }
+    }, 1000);
+  } else {
+    // Android  App
+    window.open(fallbackUrl, '_blank');
+  }
+}
+window.openMap = openMap;
+
+// ====================  ====================
+window.scrollToTop = function() {
+  haptic(10);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('btn-scroll-top');
+  if (!btn) return;
+  if (window.scrollY > 300) {
+    btn.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+    btn.classList.add('opacity-100', 'translate-y-0');
+  } else {
+    btn.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+    btn.classList.remove('opacity-100', 'translate-y-0');
+  }
+}, { passive: true });
+
+// ====================  ====================
 let lightboxImages = [], lightboxIndex = 0;
 function openLightbox(images, index) { lightboxImages = images || []; lightboxIndex = index || 0; const lb = document.getElementById("lightbox"); const img = document.getElementById("lightbox-img"); if (lightboxImages.length === 0) return; img.src = lightboxImages[lightboxIndex]; document.getElementById("lightbox-caption").innerText = `${lightboxIndex + 1} / ${lightboxImages.length}`; lb.classList.add("active"); document.body.style.overflow = "hidden"; }
 function closeLightbox() { document.getElementById("lightbox").classList.remove("active"); document.body.style.overflow = ""; }
@@ -646,7 +687,7 @@ window.openLightbox = openLightbox;
 window.closeLightbox = closeLightbox;
 window.changeLightbox = changeLightbox;
 
-// ==================== 歡迎 / 角色 ====================
+// ====================  /  ====================
 function closeWelcomeModal(skipForever = false) { const m = document.getElementById("welcome-modal"); if (m) { m.style.opacity = "0"; setTimeout(() => { m.style.display = "none"; }, 300); } if (skipForever) localStorage.setItem("tohoku_welcome_dismissed", "true"); haptic(10); }
 function checkWelcomeModal() { if (localStorage.getItem("tohoku_welcome_dismissed") === "true") { const m = document.getElementById("welcome-modal"); if (m) m.style.display = "none"; } }
 let characterTimeout = null;
@@ -663,7 +704,7 @@ function spawnCharacters() {
   setTimeout(() => c.classList.add('greet'), 600);
   characterTimeout = setTimeout(() => { c.classList.remove('show', 'greet'); c.classList.add('hide'); setTimeout(spawnCharacters, Math.random() * 8000 + 6000); }, 3500);
 }
-function jump(id) { const c = document.getElementById(id); if (c) { c.classList.add('jumping'); setTimeout(() => c.classList.remove('jumping'), 600); haptic(10); if (id === 'snowman') { snowmanProgress = Math.min(snowmanProgress + 1, 5); localStorage.setItem("snowman_progress", JSON.stringify(snowmanProgress)); updateSnowmanVisual(); snowParticles(); showToast(`雪人成長度：${snowmanProgress}/5！`, "⛄"); } else showToast(`你點了一下狐狸！`, "🦊"); } }
+function jump(id) { const c = document.getElementById(id); if (c) { c.classList.add('jumping'); setTimeout(() => c.classList.remove('jumping'), 600); haptic(10); if (id === 'snowman') { snowmanProgress = Math.min(snowmanProgress + 1, 5); localStorage.setItem("snowman_progress", JSON.stringify(snowmanProgress)); updateSnowmanVisual(); snowParticles(); showToast(`${snowmanProgress}/5`, ""); } else showToast(``, ""); } }
 function updateSnowmanVisual() { const s = document.getElementById("snowman"); if (!s) return; let color = "#ef4444"; if (snowmanProgress >= 1) color = "#f97316"; if (snowmanProgress >= 2) color = "#facc15"; if (snowmanProgress >= 3) color = "#4ade80"; if (snowmanProgress >= 4) color = "#38bdf8"; if (snowmanProgress >= 5) color = "#a78bfa"; const hp = s.querySelector('#hatGrad stop:first-child'); if (hp) hp.setAttribute('stop-color', color); }
 function initRandomCharacters() { setTimeout(spawnCharacters, 2000); }
 function snowParticles() { const p = document.createElement("div"); p.className = "particle"; const colors = ["#ffffff", "#e0f2fe", "#bae6fd", "#38bdf8", "#a78bfa"]; for (let i = 0; i < 30; i++) { const el = document.createElement("div"); el.style.width = `${Math.random() * 10 + 5}px`; el.style.height = el.style.width; el.style.background = colors[Math.floor(Math.random() * colors.length)]; el.style.left = `${Math.random() * 100}vw`; el.style.top = `${Math.random() * 20 - 10}vh`; el.style.opacity = Math.random(); el.style.animation = `snowfall ${Math.random() * 3 + 2}s linear forwards`; p.appendChild(el); } document.body.appendChild(p); setTimeout(() => p.remove(), 5000); }
@@ -697,7 +738,7 @@ function initSnowEffect() {
   }
 }
 
-// ==================== 彈窗顯示/隱藏 ====================
+// ==================== / ====================
 function showModal(id) { const overlay = document.getElementById(id); if (overlay) { overlay.classList.add('active'); overlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; document.body.classList.add('modal-open'); haptic(8); } }
 function hideModal(id) { const overlay = document.getElementById(id); if (overlay) { overlay.classList.remove('active'); setTimeout(() => { overlay.style.display = 'none'; }, 300); const anyOpen = document.querySelector('.modal-overlay.active'); if (!anyOpen) { document.body.style.overflow = ''; document.body.classList.remove('modal-open'); } } }
 window.showModal = showModal;
@@ -705,16 +746,16 @@ window.hideModal = hideModal;
 
 // ==================== Service Worker ====================
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => { reg.update(); reg.addEventListener('updatefound', () => { const newWorker = reg.installing; if (!newWorker) return; newWorker.addEventListener('statechange', () => { if (newWorker.state === 'installed' && navigator.serviceWorker.controller) { showUpdateAvailable(newWorker); } }); }); setInterval(() => reg.update().catch(() => {}), 60 * 1000); }).catch(err => console.log('SW failed:', err)); }); let refreshing = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (refreshing) return; refreshing = true; window.location.reload(); }); }
-function showUpdateAvailable(worker) { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (!toast || !m || !i) return; const oldUpdateBtn = document.getElementById("update-btn"); if (oldUpdateBtn) oldUpdateBtn.remove(); i.innerText = "✨"; m.innerText = "有新版本可用"; const btn = document.createElement("button"); btn.id = "update-btn"; btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto"; btn.textContent = "立即更新"; btn.onclick = (e) => { e.stopPropagation(); worker.postMessage({ type: 'SKIP_WAITING' }); btn.textContent = "更新中..."; btn.disabled = true; haptic(15); }; toast.appendChild(btn); toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); }
+function showUpdateAvailable(worker) { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (!toast || !m || !i) return; const oldUpdateBtn = document.getElementById("update-btn"); if (oldUpdateBtn) oldUpdateBtn.remove(); i.innerText = ""; m.innerText = ""; const btn = document.createElement("button"); btn.id = "update-btn"; btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto"; btn.textContent = ""; btn.onclick = (e) => { e.stopPropagation(); worker.postMessage({ type: 'SKIP_WAITING' }); btn.textContent = "..."; btn.disabled = true; haptic(15); }; toast.appendChild(btn); toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); }
 
 window.addEventListener('message', (event) => { if (event.data && event.data.type === 'closeExpenseModal') { const lc = document.getElementById('ledger-frame-container'); if (lc) { lc.style.cssText = ''; if (state.currentMainTab === 'ledger') { lc.classList.remove('hidden-view'); lc.classList.add('view-active'); } else { lc.classList.add('hidden-view'); lc.classList.remove('view-active'); } } } });
 
-// ==================== 雲端同步 ====================
+// ====================  ====================
 function forceSyncFromCloud() {
-  if (!window.dbRef) { showToast("⚠️ 未連線", "⚠️"); return; }
-  showToast("🔄 同步中...", "☁️"); haptic(8);
+  if (!window.dbRef) { showToast(" ", ""); return; }
+  showToast(" ...", ""); haptic(8);
   window.dbRef.get().then(docSnap => {
-    if (!docSnap.exists) { showToast("📭 雲端尚無資料", "📭"); return; }
+    if (!docSnap.exists) { showToast(" ", ""); return; }
     const cloudData = docSnap.data();
     const localNonBooking = {};
     Object.keys(state.checkedItems).forEach(k => { if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) { localNonBooking[k] = state.checkedItems[k]; } });
@@ -724,12 +765,12 @@ function forceSyncFromCloud() {
     if (cloudData.userPins) { cloudUserPins = cloudData.userPins; }
     saveLocalCheckedItems(); renderBookingChecklist(); renderEquipChecklist(); renderAllShoppingContent();
     if (window.AppHeader) window.AppHeader.render();
-    showToast("✅ 已同步最新資料", "☁️"); haptic(10);
-  }).catch(e => { showToast("❌ 同步失敗", "⚠️"); });
+    showToast(" ", ""); haptic(10);
+  }).catch(e => { showToast(" ", ""); });
 }
-function releaseAdminDevice() { if (!confirm("確定要解除這台裝置的管理員身分嗎？")) return; localStorage.removeItem("tohoku_admin_unlocked"); renderBookingChecklist(); renderEquipChecklist(); showToast("👁️ 已轉為唯讀模式", "🔒"); haptic(15); }
+function releaseAdminDevice() { if (!confirm("")) return; localStorage.removeItem("tohoku_admin_unlocked"); renderBookingChecklist(); renderEquipChecklist(); showToast(" ", ""); haptic(15); }
 
-// ==================== 可拖動匯率 FAB ====================
+// ====================  FAB ====================
 (function setupDraggableCurrencyFab() {
   const fab = document.getElementById('currency-fab');
   if (!fab) return;
@@ -752,5 +793,5 @@ function releaseAdminDevice() { if (!confirm("確定要解除這台裝置的管�
   window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (!hasCustomPosition) return; const clamped = clampPosition(currentX, currentY); setPosition(clamped.x, clamped.y); savePosition(clamped.x, clamped.y); }, 150); });
   requestAnimationFrame(() => { requestAnimationFrame(() => { initPosition(); }); });
   const HINT_KEY = 'tohoku_fab_hint_shown';
-  if (!localStorage.getItem(HINT_KEY)) { setTimeout(() => { const hint = document.createElement('div'); hint.className = 'currency-fab-hint'; hint.textContent = '💡 可拖動我，點擊開啟匯率'; document.body.appendChild(hint); const rect = fab.getBoundingClientRect(); hint.style.left = Math.max(12, Math.min(rect.left - 60, window.innerWidth - 200)) + 'px'; hint.style.top = (rect.top - 44) + 'px'; requestAnimationFrame(() => hint.classList.add('show')); setTimeout(() => { hint.classList.remove('show'); setTimeout(() => hint.remove(), 400); }, 3500); localStorage.setItem(HINT_KEY, '1'); }, 2000); }
+  if (!localStorage.getItem(HINT_KEY)) { setTimeout(() => { const hint = document.createElement('div'); hint.className = 'currency-fab-hint'; hint.textContent = ' '; document.body.appendChild(hint); const rect = fab.getBoundingClientRect(); hint.style.left = Math.max(12, Math.min(rect.left - 60, window.innerWidth - 200)) + 'px'; hint.style.top = (rect.top - 44) + 'px'; requestAnimationFrame(() => hint.classList.add('show')); setTimeout(() => { hint.classList.remove('show'); setTimeout(() => hint.remove(), 400); }, 3500); localStorage.setItem(HINT_KEY, '1'); }, 2000); }
 })();

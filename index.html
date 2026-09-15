@@ -371,6 +371,11 @@ document.addEventListener('DOMContentLoaded', () => {
     <span class="currency-fab-icon">🪙</span>
   </div>
 
+  <!-- 👇 新增：一鍵回頂部按鈕 -->
+  <button id="btn-scroll-top" onclick="scrollToTop()" class="fixed bottom-[calc(68px+env(safe-area-inset-bottom,0px)+76px)] right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md text-sky-600 border border-sky-100 shadow-lg flex items-center justify-center z-[9997] transition-all duration-300 opacity-0 translate-y-4 pointer-events-none" title="回到頂部">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+  </button>
+
   <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none"><span id="toast-icon">✅</span><span id="toast-message">複製成功！</span></div>
 
   <nav class="bottom-nav">

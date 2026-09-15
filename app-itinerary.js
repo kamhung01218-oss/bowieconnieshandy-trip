@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v7.0
+ * app-itinerary.js — v7.1
  * 行程：天氣、行程渲染、輪播、各項攻略 Modal、行程切換
  * ============================================================ */
 
@@ -131,10 +131,15 @@ window.openLightboxCarousel = openLightboxCarousel;
 
 function buildEventNavBtn(navUrl, eventTitle, navName) {
   var url = navUrl;
-  if (!url && eventTitle) { url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(eventTitle); }
+  if (!url && eventTitle) {
+    url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(eventTitle);
+  }
   if (!url) return '<div class="h-2"></div>';
   var label = navName || '景點';
-  var html = '<a href="' + escAttr(url) + '" target="_blank" class="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-xs font-bold py-2 rounded-xl transition active:scale-95 shadow-sm mt-2 mb-2">';
+  var safeTitle = escAttr(eventTitle);
+  var safeUrl = escAttr(url);
+
+  var html = '<a href="' + safeUrl + '" onclick="event.preventDefault(); openMap(\'' + safeUrl + '\', \'' + safeTitle + '\')" class="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-xs font-bold py-2 rounded-xl transition active:scale-95 shadow-sm mt-2 mb-2">';
   html += '<span>📍</span> 導航前往 ' + escapeHtml(label);
   html += '</a>';
   return html;
@@ -147,8 +152,7 @@ function renderDayItinerary(sectionId, dayData, force) {
   if (!section) return;
   var dateStr = tripDates[dayData.day - 1];
   var weatherInfo = window.weatherCache[dateStr] || null;
-  var weatherHtml = buildWeatherHtml(dateStr, weatherInfo);
-  var headerHtml = buildDayHeaderHtml(dayData, weatherHtml);
+  var headerHtml = buildDayHeaderHtml(dayData, weatherInfo);
   var eventsHtml = buildEventsHtml(dayData);
   var diaryHtml = buildDiaryHtml(dayData);
   section.innerHTML = '<div class="mb-8">' + headerHtml + '<div class="timeline">' + eventsHtml + '</div>' + diaryHtml + '</div>';
@@ -163,25 +167,7 @@ function renderDayItinerary(sectionId, dayData, force) {
   window._renderedDays.add(dayData.day);
 }
 
-function buildWeatherHtml(dateStr, weatherInfo) {
-  if (!weatherInfo) return '';
-  var icon = weatherInfo.icon; var max = weatherInfo.max; var min = weatherInfo.min; var rain = weatherInfo.rain; var location = weatherInfo.location || '';
-  var advice = '🧥 偏涼，外套防風防水';
-  if (min < -5) advice = '❄️ 極寒！羽絨+雪靴+毛帽必備';
-  else if (min < 0) advice = '🧣 寒冷，圍巾手套不可少';
-  if (rain > 50) advice = advice + '，攜帶雨具⚠️';
-  var html = '<div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card">';
-  html += '<span class="text-base">' + icon + '</span>';
-  html += '<span class="font-bold text-sky-700">' + dateStr.substring(5) + ' ' + location + ' 天氣：</span>';
-  html += '<span>最高 ' + max + '° / 最低 ' + min + '°</span>';
-  html += '<span class="text-slate-400">|</span>';
-  html += '<span class="text-slate-500">💧 ' + rain + '%</span>';
-  html += '<span class="ml-auto font-bold text-slate-600">' + advice + '</span>';
-  html += '</div>';
-  return html;
-}
-
-function buildDayHeaderHtml(dayData, weatherHtml) {
+function buildDayHeaderHtml(dayData, weatherInfo) {
   var html = '<div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center">';
   html += '<div class="flex items-center gap-2.5">';
   html += '<div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-lg shadow-md shrink-0">' + dayData.emoji + '</div>';
@@ -189,7 +175,22 @@ function buildDayHeaderHtml(dayData, weatherHtml) {
   html += '<span class="text-[11px] font-bold text-sky-600 tracking-wider">' + escapeHtml(dayData.dateLabel) + '</span>';
   html += '<h2 class="text-sm md:text-lg font-extrabold text-slate-800 leading-tight">' + escapeHtml(dayData.title) + '</h2>';
   if (dayData.subtitle) { html += '<p class="text-[10px] text-slate-500 mt-0.5">' + escapeHtml(dayData.subtitle) + '</p>'; }
-  html += weatherHtml;
+
+  // 👇 新增：天氣即時小標籤
+  if (weatherInfo) {
+    var advice = '🧥 防風';
+    if (weatherInfo.min < -5) advice = '❄️ 極寒';
+    else if (weatherInfo.min < 0) advice = '🧣 寒冷';
+    if (weatherInfo.rain > 50) advice += ' 帶雨具';
+    html += `<div class="mt-1.5 inline-flex items-center gap-1.5 bg-sky-50 border border-sky-200 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-sky-800 shadow-sm">`;
+    html += `<span>${weatherInfo.icon}</span>`;
+    html += `<span>${weatherInfo.min}°~${weatherInfo.max}°</span>`;
+    html += `<span class="text-slate-300">|</span>`;
+    html += `<span class="text-slate-600">${advice}</span>`;
+    html += `</div>`;
+  }
+  // 👆 新增結束
+
   html += '</div></div>';
   html += '<button onclick="openVlogPlanModal(' + dayData.day + ')" class="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-full shadow-sm shrink-0 ml-2">';
   html += '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.16 4h3.68a2 2 0 011.664.89l.812 1.22A2 2 0 0018 7h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>';
