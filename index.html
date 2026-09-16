@@ -246,8 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="text-center mb-5">
         <div class="text-4xl mb-2">❄️</div>
         <h2 class="text-xl font-black text-slate-900">請選擇你的身份</h2>
-        <p class="text-xs text-slate-500 mt-1">輸入 PIN 碼以進入你的專屬清單</p>
-        <p class="text-[10px] text-slate-400 mt-1.5 bg-slate-50 rounded-lg py-1 px-2 inline-block">💡 預設 PIN 碼：<span class="font-black text-sky-600">1234</span></p>
+    <p class="text-xs text-slate-500 mt-1">輸入 PIN 碼以進入你的專屬清單</p>
+<p class="text-[10px] text-slate-400 mt-1.5 bg-slate-50 rounded-lg py-1 px-2 inline-block">💡 首次使用請輸入家庭成員提供的 PIN 碼</p>
       </div>
 
       <div class="grid grid-cols-2 gap-3 mb-5" id="user-grid">
@@ -280,8 +280,12 @@ document.addEventListener('DOMContentLoaded', () => {
           <button onclick="verifyUserPin()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3 rounded-xl transition active:scale-95">確認</button>
           <button onclick="cancelUserSelect()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition">取消</button>
         </div>
-        <p id="pin-error" class="text-xs text-red-500 font-bold mt-2 text-center hidden">⚠️ PIN 碼錯誤，請重試</p>
-      </div>
+          <p id="pin-error" class="text-xs text-red-500 font-bold mt-2 text-center hidden">⚠️ PIN 碼錯誤，請重試</p>
+  <p class="text-[10px] text-slate-400 mt-3 text-center leading-relaxed">
+    忘記 PIN 碼？<br>
+    請聯絡家庭管理員協助重置
+  </p>
+</div>
     </div>
   </div>
 
