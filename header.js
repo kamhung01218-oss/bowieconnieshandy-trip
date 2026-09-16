@@ -1,7 +1,7 @@
 /* ============================================================
- * AppHeader v5.1
- * - 品牌列：❄️ 標題 + [📋 速覽] + [⚙️ 工具]
- * - Focus Card：出發前/中/後
+ * AppHeader v5.3
+ * - 品牌列：❄️ 標題 + [⛅ 天氣] + [⚙️ 工具]
+ * - Focus Card：出發前/中/後（保留行程速覽大按鈕）
  * - 工具選單：快速操作、顯示與安全（主題/緊急資訊）、進度膠囊、搶票倒數
  * ============================================================ */
 
@@ -15,8 +15,6 @@ window.AppHeader = (function () {
   let _lastDuringRender = 0;
   let _docClickHandler = null;
   let _escKeyHandler = null;
-
-  const OVERVIEW_SEEN_KEY = 'tohoku_overview_seen';
 
   function getTripPhase() {
     const now = Date.now();
@@ -339,7 +337,7 @@ window.AppHeader = (function () {
           case "shopping":     cb.onShopping && cb.onShopping();   break;
           case "ticket":       cb.onTicket && cb.onTicket();       break;
           case "weather":      cb.onWeather && cb.onWeather();     break;
-          case "overview":     markOverviewSeen(); cb.onOverview && cb.onOverview(); break;
+          case "overview":     cb.onOverview && cb.onOverview();   break;
           case "switchLedger": cb.onSwitchTab && cb.onSwitchTab("ledger"); break;
           case "scrollToDay": {
             const idx = getCurrentDayIndex();
@@ -350,15 +348,6 @@ window.AppHeader = (function () {
         }
       });
     });
-  }
-
-  function markOverviewSeen() {
-    try { localStorage.setItem(OVERVIEW_SEEN_KEY, '1'); } catch (e) {}
-    const dot = _container?.querySelector('.overview-cta-dot');
-    if (dot) dot.remove();
-  }
-  function hasSeenOverview() {
-    try { return localStorage.getItem(OVERVIEW_SEEN_KEY) === '1'; } catch (e) { return false; }
   }
 
   function openToolsMenu() {
@@ -523,7 +512,7 @@ window.AppHeader = (function () {
             drive: cb.onDrive,
             shoot: cb.onShoot,
             weather: cb.onWeather,
-            overview: () => { markOverviewSeen(); cb.onOverview && cb.onOverview(); },
+            overview: () => { cb.onOverview && cb.onOverview(); },
             ledger: () => cb.onSwitchTab && cb.onSwitchTab("ledger"),
             account: () => { if (typeof window.switchUser === "function") window.switchUser(); },
             theme: () => { if (typeof window.toggleAppTheme === "function") window.toggleAppTheme(); },
@@ -544,8 +533,6 @@ window.AppHeader = (function () {
       _nextEventStartMs = null;
       _lastDuringRender = 0;
 
-      const showOverviewDot = !hasSeenOverview();
-
       _container.innerHTML = `
         <div class="brand-bar">
           <div class="brand-title-wrap">
@@ -553,10 +540,9 @@ window.AppHeader = (function () {
             <span class="brand-title">東北冬季親子自駕 2027</span>
           </div>
           <div class="brand-actions">
-            <button type="button" id="app-header-overview" class="overview-cta" title="行程速覽">
-              <span class="overview-cta-icon">📋</span>
-              <span class="overview-cta-text">速覽</span>
-              ${showOverviewDot ? '<span class="overview-cta-dot" aria-hidden="true"></span>' : ''}
+            <button type="button" id="app-header-weather" class="overview-cta" title="天氣預報">
+              <span class="overview-cta-icon">⛅</span>
+              <span class="overview-cta-text">天氣</span>
             </button>
             <button type="button" id="tools-toggle" class="tools-toggle" title="工具選單">
               <span class="tools-toggle-icon icon-gear">⚙️</span>
@@ -575,13 +561,12 @@ window.AppHeader = (function () {
         <div class="tools-menu-panel" id="tools-menu-panel"></div>
       `;
 
-      const overviewBtn = _container.querySelector("#app-header-overview");
-      if (overviewBtn) {
-        overviewBtn.addEventListener("click", (e) => {
+      const weatherBtn = _container.querySelector("#app-header-weather");
+      if (weatherBtn) {
+        weatherBtn.addEventListener("click", (e) => {
           e.stopPropagation();
-          markOverviewSeen();
           const cb = _config.callbacks || {};
-          if (cb.onOverview) cb.onOverview();
+          if (cb.onWeather) cb.onWeather();
           haptic(10);
         });
       }
