@@ -1,7 +1,7 @@
 /* ============================================================
- * app-core.js — v7.1
+ * app-core.js — v7.2
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
- *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部
+ *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -99,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
       selectedUser = btn.dataset.user;
       if (selectedUser === "訪客") {
         currentUser = "訪客";
+        window.currentUser = "訪客";
         localStorage.setItem("tohoku_current_user", "訪客");
         document.getElementById('user-modal').style.display = 'none';
         showToast("👤 歡迎，訪客！", "👋");
@@ -114,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const savedUser = localStorage.getItem("tohoku_current_user");
   if (savedUser && (savedUser === "訪客" || USER_PINS[savedUser])) {
     currentUser = savedUser;
+    window.currentUser = savedUser;
     document.getElementById('user-modal').style.display = 'none';
     initAppAfterLogin();
   }
@@ -130,6 +132,7 @@ async function verifyUserPin() {
     const ok = await verifyUserPinAsync(selectedUser, input, true);
     if (ok) {
       currentUser = selectedUser;
+      window.currentUser = selectedUser;
       localStorage.setItem("tohoku_current_user", currentUser);
       document.getElementById('user-modal').style.display = 'none';
       errorEl.classList.add('hidden');
@@ -167,6 +170,7 @@ function doLogoutAndSwitch() {
   setTimeout(() => {
     localStorage.removeItem("tohoku_current_user");
     currentUser = null;
+    window.currentUser = null;
     selectedUser = null;
     document.getElementById('user-modal').style.display = 'flex';
     cancelUserSelect();
@@ -284,6 +288,9 @@ async function submitChangePin() {
 
 // ==================== 應用初始化 ====================
 function initAppAfterLogin() {
+  // ⭐ 套用已儲存的主題
+  applyAppTheme(localStorage.getItem(APP_THEME_KEY) || 'light');
+
   updateUserBadge();
   loadCustomItems();
   const saved = localStorage.getItem("tohoku_checked_items");
@@ -416,6 +423,48 @@ async function saveUserData() {
 
 function haptic(ms = 10) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
 
+// ==================== ⭐ 主題切換 ====================
+const APP_THEME_KEY = 'tohoku_theme';
+
+function applyAppTheme(theme) {
+  theme = (theme === 'dark') ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', theme);
+  if (document.body) document.body.setAttribute('data-theme', theme);
+  try { localStorage.setItem(APP_THEME_KEY, theme); } catch (e) {}
+  syncThemeToLedger(theme);
+}
+
+function syncThemeToLedger(theme) {
+  const iframe = document.getElementById('ledger-iframe');
+  if (iframe && iframe.contentWindow) {
+    try {
+      iframe.contentWindow.postMessage({ type: 'setTheme', theme }, '*');
+    } catch (e) {}
+  }
+}
+
+function toggleAppTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = (cur === 'dark') ? 'light' : 'dark';
+  applyAppTheme(next);
+  haptic(8);
+  if (typeof showToast === 'function') {
+    showToast(next === 'dark' ? '已切換為深色模式' : '已切換為淺色模式',
+              next === 'dark' ? '🌙' : '☀️');
+  }
+}
+
+window.toggleAppTheme = toggleAppTheme;
+window.applyAppTheme = applyAppTheme;
+
+// 監聽 iframe 就緒事件 → 主動推送主題
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'ledgerReady') {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    syncThemeToLedger(cur);
+  }
+});
+
 function scrollToToday() {
   const now = Date.now();
   if (now < TRIP_START) { switchDay(1); showToast("📅 行程尚未開始，已跳到 D1", "✈️"); }
@@ -530,7 +579,16 @@ function switchMainTab(tab) {
   hideView.classList.remove('view-active'); hideView.classList.add(isGoingToLedger ? 'view-exit-left' : 'view-exit-right');
   showView.classList.remove('hidden-view'); showView.classList.add(isGoingToLedger ? 'view-enter-from-right' : 'view-enter-from-left');
   void showView.offsetWidth; requestAnimationFrame(() => { showView.classList.remove('view-enter-from-right', 'view-enter-from-left'); showView.classList.add('view-active'); });
-  setTimeout(() => { hideView.classList.add('hidden-view'); hideView.classList.remove('view-exit-left', 'view-exit-right'); if (isGoingToLedger) { const iframe = document.getElementById("ledger-iframe"); if (iframe) iframe.style.height = "calc(100dvh - 60px)"; } }, 400);
+  setTimeout(() => {
+    hideView.classList.add('hidden-view'); hideView.classList.remove('view-exit-left', 'view-exit-right');
+    if (isGoingToLedger) {
+      const iframe = document.getElementById("ledger-iframe");
+      if (iframe) iframe.style.height = "calc(100dvh - 60px)";
+      // ⭐ 切換到記帳本時，主動同步主題
+      const cur = document.documentElement.getAttribute('data-theme') || 'light';
+      syncThemeToLedger(cur);
+    }
+  }, 400);
 }
 
 function setupImageFadeIn(container = document) { const imgs = container.querySelectorAll('img.lazy-fade:not(.loaded)'); imgs.forEach(img => { if (img.complete && img.naturalWidth > 0) img.classList.add('loaded'); else { img.addEventListener('load', () => img.classList.add('loaded'), { once: true }); img.addEventListener('error', () => { img.classList.add('loaded'); img.style.display = 'none'; }, { once: true }); } }); }
@@ -825,4 +883,134 @@ window.scrollToTop = scrollToTop;
   window.addEventListener('resize', onScroll, { passive: true });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
   update();
+})();
+// ==================== 📲 PWA 安裝引導 ====================
+(function setupInstallPrompt() {
+  const btn = document.getElementById('install-app-btn');
+  if (!btn) return;
+
+  let deferredPrompt = null;
+
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  // 已安裝 → 直接隱藏按鈕
+  if (isStandalone) {
+    btn.style.display = 'none';
+    return;
+  }
+
+  // Android / 桌面 Chrome：攔截系統提示，改用自訂按鈕
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    btn.style.display = 'inline-flex';
+  });
+
+  // iOS Safari：永遠顯示（因為 iOS 沒有 beforeinstallprompt）
+  if (isIOS) {
+    btn.style.display = 'inline-flex';
+  }
+
+  // 安裝成功後隱藏
+  window.addEventListener('appinstalled', () => {
+    btn.style.display = 'none';
+    if (typeof showToast === 'function') showToast('🎉 已安裝到桌面！', '📲');
+  });
+
+  // 全域觸發函數（給 HTML 的 onclick 呼叫）
+  window.triggerInstall = async function () {
+    if (typeof haptic === 'function') haptic(10);
+
+    // 情況 1：Android / 桌面 → 呼叫系統安裝視窗
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      if (outcome === 'accepted') {
+        if (typeof showToast === 'function') showToast('🎉 已安裝到桌面！', '📲');
+      }
+      return;
+    }
+
+    // 情況 2：iOS → 顯示圖解引導
+    if (isIOS) {
+      showIOSInstallGuide();
+      return;
+    }
+
+    // 情況 3：其他（例如 App 內建瀏覽器）
+    if (typeof showToast === 'function') {
+      showToast('請用 Chrome 或 Safari 開啟本頁', '⚠️');
+    }
+  };
+
+  // iOS 專屬：三步圖解彈窗
+  function showIOSInstallGuide() {
+    const modal = document.createElement('div');
+    modal.style.cssText = [
+      'position:fixed', 'inset:0', 'z-index:99999',
+      'background:rgba(0,0,0,0.75)',
+      'backdrop-filter:blur(8px)',
+      '-webkit-backdrop-filter:blur(8px)',
+      'display:flex', 'align-items:center', 'justify-content:center',
+      'padding:20px',
+      'animation:ios-guide-fadein 0.2s ease'
+    ].join(';');
+
+    modal.innerHTML = `
+      <div style="
+        background:#fff; border-radius:20px; padding:24px;
+        max-width:340px; width:100%; text-align:center;
+        box-shadow:0 20px 60px rgba(0,0,0,0.4);
+        font-family:-apple-system,BlinkMacSystemFont,'Noto Sans TC',sans-serif;
+      ">
+        <div style="font-size:48px; margin-bottom:8px;">📲</div>
+        <h3 style="font-size:18px; font-weight:900; margin-bottom:16px; color:#0f172a;">
+          安裝到 iPhone 桌面
+        </h3>
+        <div style="text-align:left; font-size:14px; line-height:2; color:#334155;">
+          <div style="margin-bottom:8px;">
+            <span style="display:inline-block; width:28px;">1️⃣</span>
+            點底部 <b style="color:#0284c7;">分享圖示 ⬆️</b>
+          </div>
+          <div style="margin-bottom:8px;">
+            <span style="display:inline-block; width:28px;">2️⃣</span>
+            往下滑找 <b style="color:#0284c7;">「加入主畫面」</b>
+          </div>
+          <div>
+            <span style="display:inline-block; width:28px;">3️⃣</span>
+            點右上 <b style="color:#0284c7;">「加入」</b>
+          </div>
+        </div>
+        <button id="ios-guide-close" style="
+          margin-top:20px; width:100%; padding:12px;
+          background:linear-gradient(135deg,#0ea5e9,#0284c7);
+          color:#fff; font-weight:900; font-size:14px;
+          border:none; border-radius:12px; cursor:pointer;
+          -webkit-tap-highlight-color:transparent;
+        ">知道了</button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeBtn = modal.querySelector('#ios-guide-close');
+    closeBtn.addEventListener('click', () => {
+      modal.style.opacity = '0';
+      modal.style.transition = 'opacity 0.2s';
+      setTimeout(() => modal.remove(), 200);
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.2s';
+        setTimeout(() => modal.remove(), 200);
+      }
+    });
+  }
 })();
