@@ -1,9 +1,8 @@
 /* ============================================================
- * AppHeader v5.2
+ * AppHeader v5.1
  * - 品牌列：❄️ 標題 + [📋 速覽] + [⚙️ 工具]
  * - Focus Card：出發前/中/後
- * - 工具選單：快速操作、顯示與安全、進度膠囊、搶票倒數
- * - 效能優化：分頁隱藏不跑計時器、內容相同不重繪
+ * - 工具選單：快速操作、顯示與安全（主題/緊急資訊）、進度膠囊、搶票倒數
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -324,9 +323,6 @@ window.AppHeader = (function () {
         `;
       }
 
-      // ⭐ 若內容完全一樣，不重繪
-      if (focusEl._lastHTML === innerHTML) return;
-      focusEl._lastHTML = innerHTML;
       focusEl.innerHTML = innerHTML;
       bindFocusActions(focusEl, cb);
       if (phase === "during") { updateNextEventCountdown(); _lastDuringRender = Date.now(); }
@@ -401,6 +397,7 @@ window.AppHeader = (function () {
     const currentUser = getCurrentUser();
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
 
+    // -------- 我的清單項目 --------
     const progressItems = [];
     const bookingP = getProgressData("booking");
     if (bookingP.total > 0) {
@@ -616,14 +613,13 @@ window.AppHeader = (function () {
 
       if (_tickTimer) clearInterval(_tickTimer);
       _tickTimer = setInterval(() => {
-        if (document.hidden) return;
         const phase = getTripPhase();
         if (phase !== _lastRenderedPhase) { renderFocusCard(); return; }
         if (phase === "before") updateCountdownNumbers();
         if (phase === "during") {
           updateNextEventCountdown();
           const now = Date.now();
-          if (now - _lastDuringRender >= 120000) {
+          if (now - _lastDuringRender >= 60000) {
             _lastDuringRender = now;
             renderFocusCard();
           }

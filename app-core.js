@@ -1,9 +1,7 @@
 /* ============================================================
- * app-core.js — v7.3
+ * app-core.js — v7.1
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
- *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、
- *       深色模式、緊急資訊
- * 效能優化：雪花減量、捲動偵測、返回頂部節流
+ *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -286,7 +284,6 @@ async function submitChangePin() {
 
 // ==================== 應用初始化 ====================
 function initAppAfterLogin() {
-  initAppTheme();
   updateUserBadge();
   loadCustomItems();
   const saved = localStorage.getItem("tohoku_checked_items");
@@ -294,15 +291,9 @@ function initAppAfterLogin() {
   fetchLiveRates();
   initSnowEffect();
 
-  setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal', 'emergency-modal']);
+  setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal']);
 
-  const savedDay = parseInt(localStorage.getItem('tohoku_last_day')) || 1;
-  if (savedDay >= 1 && savedDay <= winterItineraries.length) {
-    window._lastActiveDay = savedDay;
-  } else {
-    window._lastActiveDay = 1;
-  }
-  renderDayItinerary(`day-section-${window._lastActiveDay}`, winterItineraries[window._lastActiveDay - 1]);
+  renderDayItinerary('day-section-1', winterItineraries[0]);
   setupImageFadeIn();
 
   if (window.AppHeader) {
@@ -362,7 +353,6 @@ function initAppAfterLogin() {
   renderEquipChecklist();
   renderAllShoppingContent();
   updateSnowmanVisual();
-  if (window.updateDayProgressDots) window.updateDayProgressDots();
   startMainTick();
 }
 
@@ -501,8 +491,7 @@ function setupModalDrag(modals) {
             'common-tips-modal': window.closeCommonTipsModal,
             'shopping-modal': window.closeShoppingModal,
             'all-shopping-modal': window.closeAllShoppingModal,
-            'currency-modal': window.closeCurrencyModal,
-            'emergency-modal': window.closeEmergencyModal
+            'currency-modal': window.closeCurrencyModal
           };
           if (closers[id]) closers[id]();
           box.style.transform = ''; modal.style.opacity = '';
@@ -541,17 +530,7 @@ function switchMainTab(tab) {
   hideView.classList.remove('view-active'); hideView.classList.add(isGoingToLedger ? 'view-exit-left' : 'view-exit-right');
   showView.classList.remove('hidden-view'); showView.classList.add(isGoingToLedger ? 'view-enter-from-right' : 'view-enter-from-left');
   void showView.offsetWidth; requestAnimationFrame(() => { showView.classList.remove('view-enter-from-right', 'view-enter-from-left'); showView.classList.add('view-active'); });
-  setTimeout(() => {
-    hideView.classList.add('hidden-view'); hideView.classList.remove('view-exit-left', 'view-exit-right');
-    if (isGoingToLedger) {
-      const theme = document.documentElement.getAttribute('data-theme') || 'light';
-      const iframe = document.getElementById("ledger-iframe");
-      if (iframe) {
-        iframe.style.height = "calc(100dvh - 60px)";
-        try { iframe.contentWindow.postMessage({ type: 'setTheme', theme }, '*'); } catch(e) {}
-      }
-    }
-  }, 400);
+  setTimeout(() => { hideView.classList.add('hidden-view'); hideView.classList.remove('view-exit-left', 'view-exit-right'); if (isGoingToLedger) { const iframe = document.getElementById("ledger-iframe"); if (iframe) iframe.style.height = "calc(100dvh - 60px)"; } }, 400);
 }
 
 function setupImageFadeIn(container = document) { const imgs = container.querySelectorAll('img.lazy-fade:not(.loaded)'); imgs.forEach(img => { if (img.complete && img.naturalWidth > 0) img.classList.add('loaded'); else { img.addEventListener('load', () => img.classList.add('loaded'), { once: true }); img.addEventListener('error', () => { img.classList.add('loaded'); img.style.display = 'none'; }, { once: true }); } }); }
@@ -690,32 +669,23 @@ function initRandomCharacters() { setTimeout(spawnCharacters, 2000); }
 function snowParticles() { const p = document.createElement("div"); p.className = "particle"; const colors = ["#ffffff", "#e0f2fe", "#bae6fd", "#38bdf8", "#a78bfa"]; for (let i = 0; i < 30; i++) { const el = document.createElement("div"); el.style.width = `${Math.random() * 10 + 5}px`; el.style.height = el.style.width; el.style.background = colors[Math.floor(Math.random() * colors.length)]; el.style.left = `${Math.random() * 100}vw`; el.style.top = `${Math.random() * 20 - 10}vh`; el.style.opacity = Math.random(); el.style.animation = `snowfall ${Math.random() * 3 + 2}s linear forwards`; p.appendChild(el); } document.body.appendChild(p); setTimeout(() => p.remove(), 5000); }
 window.jump = jump;
 
-// ⭐ 效能優化版雪花
 function initSnowEffect() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const c = document.getElementById("snow-fall");
   if (!c) return;
   c.innerHTML = "";
-  const w = window.innerWidth;
-  const isLowEnd = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
-                   || (navigator.deviceMemory && navigator.deviceMemory <= 2);
-  let count;
-  if (isLowEnd) count = 4;
-  else if (w < 480) count = 6;
-  else if (w < 768) count = 8;
-  else count = 14;
+  const isMobile = window.innerWidth < 768;
+  const isLowEnd = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
+  const count = isLowEnd ? 8 : (isMobile ? 14 : 22);
   const anims = ["snowfall", "snowfall-small"];
   const colors = ["#ffffff", "#f0f9ff"];
-  const frag = document.createDocumentFragment();
   for (let i = 0; i < count; i++) {
     const f = document.createElement("div");
     f.className = "snowflake";
     const size = Math.random() * 6 + 3;
     f.style.cssText = `left:${Math.random()*100}%;width:${size}px;height:${size}px;background:${colors[i%2]};animation:${anims[i%2]} ${Math.random()*10+10}s linear infinite;animation-delay:${Math.random()*-12}s;`;
-    frag.appendChild(f);
+    c.appendChild(f);
   }
-  c.appendChild(frag);
-
   if (!window._snowVisibilityBound) {
     window._snowVisibilityBound = true;
     document.addEventListener('visibilitychange', () => {
@@ -724,16 +694,6 @@ function initSnowEffect() {
       const state = document.hidden ? 'paused' : 'running';
       sf.querySelectorAll('.snowflake').forEach(el => { el.style.animationPlayState = state; });
     });
-
-    // ⭐ 捲動中暫停角色動畫
-    let scrollIdleTimer = null;
-    document.addEventListener('scroll', () => {
-      document.body.classList.add('is-scrolling');
-      clearTimeout(scrollIdleTimer);
-      scrollIdleTimer = setTimeout(() => {
-        document.body.classList.remove('is-scrolling');
-      }, 150);
-    }, { passive: true });
   }
 }
 
@@ -795,130 +755,7 @@ function releaseAdminDevice() { if (!confirm("確定要解除這台裝置的管�
   if (!localStorage.getItem(HINT_KEY)) { setTimeout(() => { const hint = document.createElement('div'); hint.className = 'currency-fab-hint'; hint.textContent = '💡 可拖動我，點擊開啟匯率'; document.body.appendChild(hint); const rect = fab.getBoundingClientRect(); hint.style.left = Math.max(12, Math.min(rect.left - 60, window.innerWidth - 200)) + 'px'; hint.style.top = (rect.top - 44) + 'px'; requestAnimationFrame(() => hint.classList.add('show')); setTimeout(() => { hint.classList.remove('show'); setTimeout(() => hint.remove(), 400); }, 3500); localStorage.setItem(HINT_KEY, '1'); }, 2000); }
 })();
 
-// ==================== ⭐ 主題切換（主站深色模式） ====================
-const THEME_KEY = 'tohoku_theme';
-
-function initAppTheme() {
-  const saved = localStorage.getItem(THEME_KEY) || 'light';
-  applyAppTheme(saved);
-}
-
-function applyAppTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  document.body.setAttribute('data-theme', theme);
-  const icon = document.getElementById('theme-menu-icon');
-  if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
-  const label = document.getElementById('theme-menu-label');
-  if (label) label.textContent = theme === 'dark' ? '淺色模式' : '深色模式';
-  const iframe = document.getElementById('ledger-iframe');
-  if (iframe && iframe.contentWindow) {
-    try { iframe.contentWindow.postMessage({ type: 'setTheme', theme }, '*'); } catch(e) {}
-  }
-}
-
-function toggleAppTheme() {
-  const cur = document.documentElement.getAttribute('data-theme') || 'light';
-  const next = cur === 'dark' ? 'light' : 'dark';
-  applyAppTheme(next);
-  localStorage.setItem(THEME_KEY, next);
-  haptic(8);
-  showToast(next === 'dark' ? '🌙 已切換深色模式' : '☀️ 已切換淺色模式');
-  if (window.AppHeader) window.AppHeader.render();
-}
-window.toggleAppTheme = toggleAppTheme;
-
-// ==================== ⭐ 緊急資訊 Modal ====================
-function openEmergencyModal() {
-  const m = document.getElementById('emergency-modal');
-  if (!m) return;
-  renderEmergencyContent();
-  m.style.display = 'flex';
-  m.classList.add('active');
-  document.body.classList.add('modal-open');
-  haptic(8);
-}
-function closeEmergencyModal() {
-  const m = document.getElementById('emergency-modal');
-  if (!m) return;
-  m.classList.remove('active');
-  setTimeout(() => { m.style.display = 'none'; }, 300);
-  const a = document.querySelector('.modal-overlay.active');
-  if (!a) document.body.classList.remove('modal-open');
-}
-window.openEmergencyModal = openEmergencyModal;
-window.closeEmergencyModal = closeEmergencyModal;
-
-function renderEmergencyContent() {
-  const c = document.getElementById('emergency-content');
-  if (!c || typeof EMERGENCY_DATA === 'undefined') return;
-  const D = EMERGENCY_DATA;
-
-  const hotlineHTML = D.hotlines.map(h => `
-    <a href="tel:${h.tel.replace(/[^0-9+#]/g, '')}" class="emergency-call-btn">
-      <span class="emergency-call-icon">${h.icon}</span>
-      <div class="emergency-call-info">
-        <span class="emergency-call-label">${h.label}</span>
-        <span class="emergency-call-desc">${h.desc || ''}</span>
-      </div>
-      <span class="emergency-call-tel">${h.tel}</span>
-    </a>
-  `).join('');
-
-  const hotelsHTML = D.hotels.map(h => `
-    <a href="tel:${h.tel.replace(/[^0-9+#]/g, '')}" class="emergency-hotel-row">
-      <div class="emergency-hotel-day">${h.day}<br><span>${h.date}</span></div>
-      <div class="emergency-hotel-info">
-        <div class="emergency-hotel-name">${h.name}</div>
-        <div class="emergency-hotel-note">${h.note || ''}</div>
-      </div>
-      <div class="emergency-hotel-tel">📞 ${h.tel}</div>
-    </a>
-  `).join('');
-
-  const transportHTML = D.transport.map(t => `
-    <a href="tel:${t.tel.replace(/[^0-9+#]/g, '')}" class="emergency-call-btn small">
-      <span class="emergency-call-icon">${t.icon}</span>
-      <div class="emergency-call-info">
-        <span class="emergency-call-label">${t.label}</span>
-        <span class="emergency-call-desc">${t.desc || ''}</span>
-      </div>
-      <span class="emergency-call-tel">${t.tel}</span>
-    </a>
-  `).join('');
-
-  const guidesHTML = D.guides.map((g, i) => `
-    <details class="emergency-guide ${i === 0 ? 'open' : ''}">
-      <summary><span>${g.icon}</span> ${g.label}</summary>
-      <ol class="emergency-steps">
-        ${g.steps.map(s => `<li>${s}</li>`).join('')}
-      </ol>
-    </details>
-  `).join('');
-
-  c.innerHTML = `
-    <div class="emergency-section">
-      <div class="emergency-section-title">🆘 緊急熱線（點擊直接撥號）</div>
-      ${hotlineHTML}
-    </div>
-    <div class="emergency-section">
-      <div class="emergency-section-title">🏨 住宿電話</div>
-      ${hotelsHTML}
-    </div>
-    <div class="emergency-section">
-      <div class="emergency-section-title">🚗 租車 / 醫療</div>
-      ${transportHTML}
-    </div>
-    <div class="emergency-section">
-      <div class="emergency-section-title">📋 應變指南</div>
-      ${guidesHTML}
-    </div>
-    <div class="emergency-tip">
-      💡 建議截圖存到手機相簿，深山自駕時無訊號也能查看
-    </div>
-  `;
-}
-
-// ==================== ⭐ 返回頂部（IG 風格 + 節流優化） ====================
+// ==================== ⭐ 返回頂部（IG 風格） ====================
 function scrollToTop() {
   try {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -944,7 +781,6 @@ window.scrollToTop = scrollToTop;
 
   let ticking = false;
   let scrollingTimer = null;
-  let lastUpdate = 0;
 
   function getScrollY() {
     return window.scrollY
@@ -962,11 +798,6 @@ window.scrollToTop = scrollToTop;
   }
 
   function update() {
-    // ⭐ 節流：圓環最多每 80ms 更新一次
-    const now = performance.now();
-    if (now - lastUpdate < 80) { ticking = false; return; }
-    lastUpdate = now;
-
     const y = getScrollY();
     const max = getMaxScroll();
 

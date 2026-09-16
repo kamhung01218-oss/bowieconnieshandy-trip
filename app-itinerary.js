@@ -1,8 +1,7 @@
 /* ============================================================
- * app-itinerary.js — v7.3
+ * app-itinerary.js — v7.2
  * 行程：天氣（含氣候參考 / 日出日落）、行程渲染、輪播、
  *       各項攻略 Modal、行程切換、快速跳轉圓點
- * 效能優化：天氣更新只改一個條、Modal 沒開不運算
  * ============================================================ */
 
 // ==================== 天氣 ====================
@@ -32,6 +31,7 @@ async function fetchWeatherData() {
   const dayPromises = tripDates.map(async (dateStr, idx) => {
     const loc = WEATHER_LOCATIONS[idx + 1];
 
+    // 超過 16 天：氣候平均值
     if (tooFar) {
       return {
         dateStr, location: loc.name,
@@ -43,6 +43,7 @@ async function fetchWeatherData() {
       };
     }
 
+    // 16 天內：真實預報
     try {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=Asia%2FTokyo&start_date=${dateStr}&end_date=${dateStr}`;
       const res = await fetch(url);
@@ -80,41 +81,16 @@ async function fetchWeatherData() {
     }
   });
   if (window.AppHeader) window.AppHeader.render();
-
-  // ⭐ 只更新天氣條，不重建整個 section
   if (window._lastActiveDay) {
     const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
-    if (dayData) {
-      const dateStr = tripDates[dayData.day - 1];
-      const weatherInfo = window.weatherCache[dateStr] || null;
-      const newWeatherHtml = buildWeatherHtml(dateStr, weatherInfo);
-      const section = document.getElementById(`day-section-${dayData.day}`);
-      if (section && newWeatherHtml) {
-        const existing = section.querySelector('.weather-card');
-        if (existing) {
-          const wrapper = document.createElement('div');
-          wrapper.innerHTML = newWeatherHtml;
-          const newNode = wrapper.firstElementChild;
-          if (newNode) existing.replaceWith(newNode);
-        }
-      }
-    }
+    if (dayData) renderDayItinerary(`day-section-${dayData.day}`, dayData, true);
   }
-
-  // ⭐ 天氣 Modal 開著才更新內容
-  const weatherModal = document.getElementById('weather-modal');
-  if (weatherModal && !weatherModal.classList.contains('hidden')) {
-    renderWeatherDetail();
-  }
+  renderWeatherDetail();
 }
 
 function renderWeatherDetail() {
   const detail = document.getElementById('weather-detail-content');
   if (!detail) return;
-
-  // ⭐ Modal 沒開就跳過
-  const modal = document.getElementById('weather-modal');
-  if (!modal || modal.classList.contains('hidden')) return;
 
   const today = new Date().toISOString().substring(0, 10);
   const todayIdx = tripDates.indexOf(today);
@@ -671,7 +647,7 @@ function toggleTicketModal() { const modal = document.getElementById('ticket-mod
 function closeTicketModal() { hideModal('ticket-modal'); setTimeout(() => document.getElementById('ticket-modal').classList.add('hidden'), 300); if (window._ticketTimer) clearInterval(window._ticketTimer); }
 function openTripOverview() { const m = document.getElementById('trip-overview-modal'); if (m) { m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); renderTripOverview(); } }
 function closeTripOverview() { const m = document.getElementById('trip-overview-modal'); if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
-function openWeatherModal() { const modal = document.getElementById('weather-modal'); showModal('weather-modal'); modal.classList.remove('hidden'); document.getElementById('weather-detail-content').innerHTML = ''; fetchWeatherData().then(() => { renderWeatherDetail(); }); }
+function openWeatherModal() { const modal = document.getElementById('weather-modal'); showModal('weather-modal'); modal.classList.remove('hidden'); document.getElementById('weather-detail-content').innerHTML = ''; fetchWeatherData(); }
 function closeWeatherModal() { hideModal('weather-modal'); setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300); }
 
 // 讓 app-core 的 setupModalDrag 可以從 window 找到
