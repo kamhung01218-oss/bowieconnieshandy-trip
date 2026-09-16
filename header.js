@@ -1,9 +1,8 @@
 /* ============================================================
- * AppHeader v5.0
- * - 品牌列：❄️ 標題 + [📋 速覽 (琥珀高亮+紅點)] + [⚙️ 工具 (白底實心)]
- * - Focus Card：出發前/中/後皆有「行程速覽」主 CTA
- * - 工具選單：快速操作區、進度膠囊徽章、搶票倒數徽章
- * - 匯率：可拖動 FAB（獨立元件，見 index.html）
+ * AppHeader v5.1
+ * - 品牌列：❄️ 標題 + [📋 速覽] + [⚙️ 工具]
+ * - Focus Card：出發前/中/後
+ * - 工具選單：快速操作、顯示與安全（主題/緊急資訊）、進度膠囊、搶票倒數
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -396,6 +395,7 @@ window.AppHeader = (function () {
     const cb = _config.callbacks || {};
     const guest = isGuestUser();
     const currentUser = getCurrentUser();
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
 
     // -------- 我的清單項目 --------
     const progressItems = [];
@@ -441,6 +441,20 @@ window.AppHeader = (function () {
         <button type="button" class="tools-item" data-tool-action="ledger">
           <span class="tools-item-icon">📝</span>
           <span class="tools-item-label">快速記帳</span>
+          <span class="tools-item-arrow">›</span>
+        </button>
+      </div>
+
+      <div class="tools-section">
+        <div class="tools-section-label"><span>🎨</span> 顯示與安全</div>
+        <button type="button" class="tools-item" data-tool-action="theme">
+          <span class="tools-item-icon" id="theme-menu-icon">${currentTheme === 'dark' ? '☀️' : '🌙'}</span>
+          <span class="tools-item-label" id="theme-menu-label">${currentTheme === 'dark' ? '淺色模式' : '深色模式'}</span>
+          <span class="tools-item-arrow">›</span>
+        </button>
+        <button type="button" class="tools-item" data-tool-action="emergency">
+          <span class="tools-item-icon">🆘</span>
+          <span class="tools-item-label">緊急資訊</span>
           <span class="tools-item-arrow">›</span>
         </button>
       </div>
@@ -511,7 +525,9 @@ window.AppHeader = (function () {
             weather: cb.onWeather,
             overview: () => { markOverviewSeen(); cb.onOverview && cb.onOverview(); },
             ledger: () => cb.onSwitchTab && cb.onSwitchTab("ledger"),
-            account: () => { if (typeof window.switchUser === "function") window.switchUser(); }
+            account: () => { if (typeof window.switchUser === "function") window.switchUser(); },
+            theme: () => { if (typeof window.toggleAppTheme === "function") window.toggleAppTheme(); },
+            emergency: () => { if (typeof window.openEmergencyModal === "function") window.openEmergencyModal(); }
           };
           if (map[action]) map[action]();
         }, 180);

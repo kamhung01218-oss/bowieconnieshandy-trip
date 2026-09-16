@@ -1,62 +1,171 @@
 /* ============================================================
- * app-itinerary.js — v7.0
- * 行程：天氣、行程渲染、輪播、各項攻略 Modal、行程切換
+ * app-itinerary.js — v7.2
+ * 行程：天氣（含氣候參考 / 日出日落）、行程渲染、輪播、
+ *       各項攻略 Modal、行程切換、快速跳轉圓點
  * ============================================================ */
 
 // ==================== 天氣 ====================
 const WEATHER_LOCATIONS = {
-  1: { name: "宮城仙台", lat: 38.2682, lon: 140.8694 },
-  2: { name: "山形天童", lat: 38.3625, lon: 140.3694 },
-  3: { name: "山形藏王", lat: 38.1656, lon: 140.3986 },
-  4: { name: "宮城泉", lat: 38.3189, lon: 140.8831 },
-  5: { name: "宮城白石", lat: 38.0022, lon: 140.6197 },
-  6: { name: "宮城仙台", lat: 38.2682, lon: 140.8694 },
-  7: { name: "宮城仙台", lat: 38.2682, lon: 140.8694 }
+  1: { name: "宮城仙台", lat: 38.2682, lon: 140.8694, climate: { max: 5, min: -1, rain: 30 } },
+  2: { name: "山形天童", lat: 38.3625, lon: 140.3694, climate: { max: 4, min: -2, rain: 35 } },
+  3: { name: "山形藏王", lat: 38.1656, lon: 140.3986, climate: { max: 0, min: -6, rain: 40 } },
+  4: { name: "宮城泉", lat: 38.3189, lon: 140.8831, climate: { max: 5, min: -1, rain: 30 } },
+  5: { name: "宮城白石", lat: 38.0022, lon: 140.6197, climate: { max: 4, min: -2, rain: 30 } },
+  6: { name: "宮城仙台", lat: 38.2682, lon: 140.8694, climate: { max: 5, min: -1, rain: 30 } },
+  7: { name: "宮城仙台", lat: 38.2682, lon: 140.8694, climate: { max: 5, min: -1, rain: 30 } }
 };
 
-function weatherCodeToIcon(code) { if (code === 0) return "☀️"; if (code < 5) return "⛅"; if (code < 70) return "☁️"; return "❄️"; }
+function weatherCodeToIcon(code) {
+  if (code === 0) return "☀️";
+  if (code < 5) return "⛅";
+  if (code < 70) return "☁️";
+  return "❄️";
+}
+
 async function fetchWeatherData() {
-  const today = new Date(); const tripStartDate = new Date(TRIP_START);
+  const today = new Date();
+  const tripStartDate = new Date(TRIP_START);
   const daysUntil = Math.floor((tripStartDate - today) / 86400000);
-  if (daysUntil > 16) { const d = document.getElementById('weather-detail-content'); if (d) d.innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">旅行日期尚遠，天氣預報將於出發前 16 天內顯示</div>'; return; }
+  const tooFar = daysUntil > 16;
+
   const dayPromises = tripDates.map(async (dateStr, idx) => {
     const loc = WEATHER_LOCATIONS[idx + 1];
+
+    // 超過 16 天：氣候平均值
+    if (tooFar) {
+      return {
+        dateStr, location: loc.name,
+        max: loc.climate.max, min: loc.climate.min, rain: loc.climate.rain,
+        icon: "❄️",
+        current: null,
+        sunrise: null, sunset: null,
+        isClimate: true
+      };
+    }
+
+    // 16 天內：真實預報
     try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo&start_date=${dateStr}&end_date=${dateStr}`;
-      const res = await fetch(url); const data = await res.json();
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=Asia%2FTokyo&start_date=${dateStr}&end_date=${dateStr}`;
+      const res = await fetch(url);
+      const data = await res.json();
       if (!data.daily || !data.daily.time || data.daily.time.length === 0) return null;
-      return { dateStr, location: loc.name, max: Math.round(data.daily.temperature_2m_max[0]), min: Math.round(data.daily.temperature_2m_min[0]), rain: data.daily.precipitation_probability_max[0] ?? 0, icon: weatherCodeToIcon(data.daily.weather_code[0]), current: data.current ? { temp: Math.round(data.current.temperature_2m), feels: Math.round(data.current.apparent_temperature), humidity: data.current.relative_humidity_2m, icon: weatherCodeToIcon(data.current.weather_code) } : null };
-    } catch(e) { return null; }
+      const sunrise = data.daily.sunrise?.[0]?.split("T")[1]?.substring(0, 5) || null;
+      const sunset  = data.daily.sunset?.[0]?.split("T")[1]?.substring(0, 5) || null;
+      return {
+        dateStr, location: loc.name,
+        max: Math.round(data.daily.temperature_2m_max[0]),
+        min: Math.round(data.daily.temperature_2m_min[0]),
+        rain: data.daily.precipitation_probability_max[0] ?? 0,
+        icon: weatherCodeToIcon(data.daily.weather_code[0]),
+        current: data.current ? {
+          temp: Math.round(data.current.temperature_2m),
+          feels: Math.round(data.current.apparent_temperature),
+          humidity: data.current.relative_humidity_2m,
+          icon: weatherCodeToIcon(data.current.weather_code)
+        } : null,
+        sunrise, sunset,
+        isClimate: false
+      };
+    } catch (e) { return null; }
   });
+
   const results = await Promise.all(dayPromises);
-  results.forEach(r => { if (r) window.weatherCache[r.dateStr] = { max: r.max, min: r.min, rain: r.rain, icon: r.icon, location: r.location, current: r.current }; });
+  results.forEach(r => {
+    if (r) {
+      window.weatherCache[r.dateStr] = {
+        max: r.max, min: r.min, rain: r.rain, icon: r.icon,
+        location: r.location, current: r.current,
+        sunrise: r.sunrise, sunset: r.sunset,
+        isClimate: r.isClimate || false
+      };
+    }
+  });
   if (window.AppHeader) window.AppHeader.render();
-  if (window._lastActiveDay) { const dayData = winterItineraries.find(d => d.day === window._lastActiveDay); if (dayData) renderDayItinerary(`day-section-${dayData.day}`, dayData, true); }
+  if (window._lastActiveDay) {
+    const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
+    if (dayData) renderDayItinerary(`day-section-${dayData.day}`, dayData, true);
+  }
   renderWeatherDetail();
 }
+
 function renderWeatherDetail() {
-  const detail = document.getElementById('weather-detail-content'); if (!detail) return;
+  const detail = document.getElementById('weather-detail-content');
+  if (!detail) return;
+
   const today = new Date().toISOString().substring(0, 10);
   const todayIdx = tripDates.indexOf(today);
-  const currentDayData = todayIdx >= 0 ? window.weatherCache[today] : null;
-  const curLocName = todayIdx >= 0 ? WEATHER_LOCATIONS[todayIdx + 1].name : "宮城仙台";
-  const curTemp = currentDayData?.current?.temp ?? (currentDayData ? Math.round((currentDayData.max + currentDayData.min) / 2) : null);
-  const feels = currentDayData?.current?.feels ?? curTemp;
-  const humidity = currentDayData?.current?.humidity ?? '--';
-  const curIcon = currentDayData?.current?.icon ?? currentDayData?.icon ?? "⛅";
+  const firstDayWeather = window.weatherCache[tripDates[0]];
+  const isClimateMode = firstDayWeather?.isClimate === true;
+
+  let heroData = todayIdx >= 0 ? window.weatherCache[today] : firstDayWeather;
+  let heroLocName = todayIdx >= 0 ? WEATHER_LOCATIONS[todayIdx + 1].name : (firstDayWeather?.location || "宮城仙台");
+
+  const curTemp = heroData?.current?.temp
+    ?? (heroData ? Math.round((heroData.max + heroData.min) / 2) : null);
+  const feels = heroData?.current?.feels ?? curTemp;
+  const humidity = heroData?.current?.humidity ?? '--';
+  const curIcon = heroData?.current?.icon ?? heroData?.icon ?? "⛅";
+
   let advice = { icon: "🧥", text: "防風外套即可" };
-  if (curTemp === null) advice = { icon: "⏳", text: "天氣資料尚未取得" };
+  if (curTemp === null) advice = { icon: "⏳", text: "天氣資料載入中" };
   else if (curTemp < -10) advice = { icon: "🥶", text: "極寒！羽絨 + 雪靴 + 毛帽 + 手套" };
-  else if (curTemp < -5) advice = { icon: "❄️", text: "羽絨 + 雪靴 + 毛帽必備" };
-  else if (curTemp < 0) advice = { icon: "🧣", text: "寒冷，圍巾 + 手套不可少" };
-  const forecastRows = tripDates.map((ds, i) => {
-    const w = window.weatherCache[ds]; const d = new Date(ds);
+  else if (curTemp < -5)  advice = { icon: "❄️", text: "羽絨 + 雪靴 + 毛帽必備" };
+  else if (curTemp < 0)   advice = { icon: "🧣", text: "寒冷，圍巾 + 手套不可少" };
+  else if (curTemp < 5)   advice = { icon: "🧥", text: "外套防風防水，早晚偏冷" };
+
+  const rows = tripDates.map((ds, i) => {
+    const w = window.weatherCache[ds];
+    const d = new Date(ds);
     const week = ["日","一","二","三","四","五","六"][d.getDay()];
-    const isToday = ds === today; const loc = WEATHER_LOCATIONS[i + 1].name;
+    const isToday = ds === today;
+    const loc = WEATHER_LOCATIONS[i + 1].name;
     if (!w) return `<div class="forecast-row ${isToday ? 'today' : ''}"><div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div><div class="forecast-icon">⏳</div><div class="forecast-temp" style="color:#94a3b8;font-size:11px">${loc} · 暫無資料</div></div>`;
-    return `<div class="forecast-row ${isToday ? 'today' : ''}"><div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div><div class="forecast-icon">${w.icon}</div><div class="forecast-temp"><span class="forecast-temp-max">${w.max}°</span><span class="text-slate-400 mx-1">/</span><span class="forecast-temp-min">${w.min}°</span><span style="font-size:10px;color:#94a3b8;margin-left:4px">${loc}</span></div><div class="forecast-rain">💧 ${w.rain}%</div></div>`;
+
+    const badge = w.isClimate
+      ? '<span class="forecast-badge climate">🌡️ 氣候參考</span>'
+      : '<span class="forecast-badge real">📡 即時預報</span>';
+
+    const sunRow = (w.sunrise && w.sunset)
+      ? `<div class="forecast-sun">🌅 ${w.sunrise} · 🌇 ${w.sunset}</div>`
+      : '';
+
+    return `<div class="forecast-row ${isToday ? 'today' : ''}">
+      <div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div>
+      <div class="forecast-icon">${w.icon}</div>
+      <div class="forecast-temp">
+        <span class="forecast-temp-max">${w.max}°</span>
+        <span class="text-slate-400 mx-1">/</span>
+        <span class="forecast-temp-min">${w.min}°</span>
+        <span style="font-size:10px;color:#94a3b8;margin-left:4px">${loc}</span>
+        ${sunRow}
+      </div>
+      <div class="forecast-right">
+        <div class="forecast-rain">💧 ${w.rain}%</div>
+        ${badge}
+      </div>
+    </div>`;
   }).join('');
-  detail.innerHTML = `<div class="weather-hero"><div class="weather-hero-icon">${curIcon}</div><div><div class="weather-hero-temp">${curTemp !== null ? curTemp + '°C' : '--'}</div><div class="weather-hero-meta">${curTemp !== null ? `體感 ${feels}°C · 濕度 ${humidity}% · ${curLocName}` : curLocName}</div></div></div><div class="weather-advice"><div class="weather-advice-icon">${advice.icon}</div><div class="weather-advice-text">${advice.text}</div></div><div class="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">7 天行程天氣預報</div><div class="forecast-list">${forecastRows}</div>`;
+
+  const heroHint = isClimateMode ? `
+    <div class="text-center mt-3 py-3 px-4 text-slate-500 text-[11px] bg-amber-50 rounded-xl border border-amber-200 leading-relaxed">
+      📅 距離出發還有 <strong class="text-amber-700">${Math.max(0, Math.floor((TRIP_START - Date.now()) / 86400000))}</strong> 天<br>
+      下方為<strong class="text-amber-700">氣候平均值</strong>（非實際預報）<br>
+      出發前 16 天內會自動切換為即時預報
+    </div>` : '';
+
+  detail.innerHTML = `
+    <div class="weather-hero">
+      <div class="weather-hero-icon">${curIcon}</div>
+      <div>
+        <div class="weather-hero-temp">${curTemp !== null ? curTemp + '°C' : '--'}</div>
+        <div class="weather-hero-meta">${curTemp !== null ? `體感 ${feels}°C · 濕度 ${humidity}% · ${heroLocName}` : heroLocName}</div>
+      </div>
+    </div>
+    <div class="weather-advice"><div class="weather-advice-icon">${advice.icon}</div><div class="weather-advice-text">${advice.text}</div></div>
+    <div class="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">7 天行程天氣預報</div>
+    <div class="forecast-list">${rows}</div>
+    ${heroHint}
+  `;
 }
 
 // ==================== 行程速覽 ====================
@@ -165,20 +274,39 @@ function renderDayItinerary(sectionId, dayData, force) {
 
 function buildWeatherHtml(dateStr, weatherInfo) {
   if (!weatherInfo) return '';
-  var icon = weatherInfo.icon; var max = weatherInfo.max; var min = weatherInfo.min; var rain = weatherInfo.rain; var location = weatherInfo.location || '';
-  var advice = '🧥 偏涼，外套防風防水';
+
+  const { icon, max, min, rain } = weatherInfo;
+  const location = weatherInfo.location || '';
+
+  if (weatherInfo.isClimate) {
+    return `
+      <div class="mt-1 mb-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card">
+        <span class="text-base">${icon}</span>
+        <span class="font-bold text-amber-700">${dateStr.substring(5)} ${location}：</span>
+        <span>${max}° / ${min}°</span>
+        <span class="ml-auto font-bold text-amber-600">🌡️ 氣候參考</span>
+      </div>`;
+  }
+
+  let advice = '🧥 偏涼，外套防風防水';
   if (min < -5) advice = '❄️ 極寒！羽絨+雪靴+毛帽必備';
   else if (min < 0) advice = '🧣 寒冷，圍巾手套不可少';
   if (rain > 50) advice = advice + '，攜帶雨具⚠️';
-  var html = '<div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card">';
-  html += '<span class="text-base">' + icon + '</span>';
-  html += '<span class="font-bold text-sky-700">' + dateStr.substring(5) + ' ' + location + ' 天氣：</span>';
-  html += '<span>最高 ' + max + '° / 最低 ' + min + '°</span>';
-  html += '<span class="text-slate-400">|</span>';
-  html += '<span class="text-slate-500">💧 ' + rain + '%</span>';
-  html += '<span class="ml-auto font-bold text-slate-600">' + advice + '</span>';
-  html += '</div>';
-  return html;
+
+  const sunHtml = (weatherInfo.sunrise && weatherInfo.sunset)
+    ? ` <span class="text-slate-400">|</span> <span class="text-slate-500">🌅${weatherInfo.sunrise} 🌇${weatherInfo.sunset}</span>`
+    : '';
+
+  return `
+    <div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card">
+      <span class="text-base">${icon}</span>
+      <span class="font-bold text-sky-700">${dateStr.substring(5)} ${location} 天氣：</span>
+      <span>最高 ${max}° / 最低 ${min}°</span>
+      <span class="text-slate-400">|</span>
+      <span class="text-slate-500">💧 ${rain}%</span>
+      ${sunHtml}
+      <span class="ml-auto font-bold text-slate-600">${advice}</span>
+    </div>`;
 }
 
 function buildDayHeaderHtml(dayData, weatherHtml) {
@@ -462,6 +590,7 @@ function openLedgerAdd() { const lc = document.getElementById('ledger-frame-cont
 // ==================== 行程切換 ====================
 function switchDay(day) {
   window._lastActiveDay = day;
+  try { localStorage.setItem('tohoku_last_day', String(day)); } catch(e) {}
   haptic(6);
   const dayData = winterItineraries.find(d => d.day === day);
   if (dayData && !window._renderedDays.has(day)) { renderDayItinerary(`day-section-${day}`, dayData); }
@@ -481,7 +610,35 @@ function switchDay(day) {
     });
   }
   setTimeout(updateTimelineStatus, 50);
+  if (window.updateDayProgressDots) window.updateDayProgressDots();
 }
+
+// ==================== ⭐ 快速跳轉圓點 ====================
+function updateDayProgressDots() {
+  const container = document.getElementById('day-progress-dots');
+  if (!container) return;
+  const activeDay = window._lastActiveDay || 1;
+  const todayIdx = (() => {
+    const now = Date.now();
+    for (let i = 0; i < tripDates.length; i++) {
+      const s = new Date(tripDates[i] + "T00:00:00+08:00").getTime();
+      const e = new Date(tripDates[i] + "T23:59:59+08:00").getTime();
+      if (now >= s && now <= e) return i + 1;
+    }
+    return -1;
+  })();
+
+  container.innerHTML = Array.from({ length: 7 }, (_, i) => {
+    const day = i + 1;
+    const isActive = day === activeDay;
+    const isToday = day === todayIdx;
+    const cls = ['day-dot'];
+    if (isActive) cls.push('active');
+    if (isToday) cls.push('today');
+    return `<button class="${cls.join(' ')}" onclick="switchDay(${day})" aria-label="Day ${day}"></button>`;
+  }).join('');
+}
+window.updateDayProgressDots = updateDayProgressDots;
 
 // ==================== 攻略 Modal 開關 ====================
 function toggleDriveModal() { const modal = document.getElementById('drive-modal'); if (modal.classList.contains('hidden')) { showModal('drive-modal'); modal.classList.remove('hidden'); setDriveTab('basic'); } else { hideModal('drive-modal'); setTimeout(() => modal.classList.add('hidden'), 300); } }

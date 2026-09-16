@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>🔑 重置 PIN 工具</title>
+<meta name="theme-color" content="#0c1929">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #e2e8f0;
+  }
+  .card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 28px 24px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 900;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #38bdf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .sub {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .status {
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status.loading { background: rgba(56,189,248,0.15); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.3); }
+  .status.ok { background: rgba(52,211,153,0.15); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.3); }
+  .status.err { background: rgba(248,113,113,0.15); color: #fca5a5; border: 1px solid rgba(248,113,113,0.3); }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: currentColor;
+    animation: pulse 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .user-list {
+    background: rgba(0,0,0,0.25);
+    border-radius: 14px;
+    padding: 10px;
+    margin-bottom: 18px;
+    font-size: 12px;
+  }
+  .user-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+  }
+  .user-row:last-child { margin-bottom: 0; }
+  .user-row.has-custom { background: rgba(251,191,36,0.1); }
+  .user-name { font-weight: 800; }
+  .user-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .user-status.default { background: rgba(148,163,184,0.2); color: #cbd5e1; }
+  .user-status.custom { background: rgba(251,191,36,0.2); color: #fcd34d; }
+  button {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+    color: white;
+  }
+  button:active { transform: scale(0.97); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary {
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+    box-shadow: 0 6px 20px rgba(14,165,233,0.4);
+  }
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 6px 20px rgba(239,68,68,0.4);
+  }
+  .btn-ghost {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #cbd5e1;
+  }
+  .log {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.35);
+    border-radius: 10px;
+    font-family: 'Menlo', 'Consolas', monospace;
+    font-size: 10px;
+    line-height: 1.6;
+    color: #94a3b8;
+    max-height: 180px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .note {
+    font-size: 11px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🔑 PIN 重置工具</h1>
+  <p class="sub">此工具會直接讀寫 Firebase，把用戶的 PIN 重置為預設值 <b>1234</b>。</p>
+
+  <div id="status" class="status loading">
+    <span class="dot"></span>
+    <span id="status-text">正在連線 Firebase…</span>
+  </div>
+
+  <div class="user-list" id="user-list">
+    <div class="user-row"><span class="user-name">載入中…</span></div>
+  </div>
+
+  <button id="btn-reset-yusheng" class="btn-primary" disabled>
+    🔄 重置「余生」為 1234
+  </button>
+  <button id="btn-reset-all" class="btn-danger" disabled>
+    ⚠️ 重置全部人為 1234
+  </button>
+  <button id="btn-refresh" class="btn-ghost">🔃 重新讀取狀態</button>
+
+  <div class="log" id="log">等待操作…</div>
+
+  <p class="note">
+    💡 重置後，請回到主網站（index.html）用 <b>1234</b> 登入「余生」。<br>
+    如需再次修改密碼，登入後到「帳戶設定 → 修改 PIN 碼」即可。
+  </p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+<script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
+  authDomain: "tohoku-winter-trip.firebaseapp.com",
+  projectId: "tohoku-winter-trip",
+  storageBucket: "tohoku-winter-trip.firebasestorage.app",
+  messagingSenderId: "991555590088",
+  appId: "1:991555590088:web:afb089890d7d546821d2fd",
+  measurementId: "G-9EN9JG5F3F"
+};
+
+const USERS = ["余生", "bowie", "shandy", "connie"];
+const PINS_STORAGE = "tohoku_current_user"; // 我們不動這個，只動雲端
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+const dbRef = db.collection("tohoku_trip").doc("shared_expenses");
+
+const statusEl = document.getElementById("status");
+const statusText = document.getElementById("status-text");
+const userListEl = document.getElementById("user-list");
+const logEl = document.getElementById("log");
+const btnResetYusheng = document.getElementById("btn-reset-yusheng");
+const btnResetAll = document.getElementById("btn-reset-all");
+const btnRefresh = document.getElementById("btn-refresh");
+
+let cloudPins = {};
+
+function log(msg) {
+  const time = new Date().toLocaleTimeString("zh-HK");
+  logEl.textContent = `[${time}] ${msg}\n` + logEl.textContent;
+}
+
+function setStatus(type, text) {
+  statusEl.className = "status " + type;
+  statusText.textContent = text;
+}
+
+function renderUserList() {
+  userListEl.innerHTML = "";
+  USERS.forEach(name => {
+    const hasCustom = cloudPins[name] && cloudPins[name].hash;
+    const row = document.createElement("div");
+    row.className = "user-row" + (hasCustom ? " has-custom" : "");
+    row.innerHTML = `
+      <span class="user-name">${name}</span>
+      <span class="user-status ${hasCustom ? 'custom' : 'default'}">
+        ${hasCustom ? "已自訂 PIN" : "預設 1234"}
+      </span>
+    `;
+    userListEl.appendChild(row);
+  });
+}
+
+async function loadPins() {
+  setStatus("loading", "正在讀取雲端 PIN 資料…");
+  btnResetYusheng.disabled = true;
+  btnResetAll.disabled = true;
+  try {
+    await firebase.auth().signInAnonymously();
+    const snap = await dbRef.get();
+    if (snap.exists) {
+      cloudPins = snap.data().userPins || {};
+    } else {
+      cloudPins = {};
+      log("⚠️ 雲端文件不存在，將自動建立");
+    }
+    renderUserList();
+    setStatus("ok", "✅ 已連線，可執行重置");
+    btnResetYusheng.disabled = !(cloudPins["余生"] && cloudPins["余生"].hash);
+    btnResetAll.disabled = false;
+    log("讀取成功，已自訂 PIN 的用戶：" + (Object.keys(cloudPins).filter(k => cloudPins[k] && cloudPins[k].hash).join(", ") || "（無）"));
+  } catch (e) {
+    setStatus("err", "❌ 連線失敗：" + e.message);
+    log("❌ 連線失敗：" + e.message);
+  }
+}
+
+async function resetUser(userNames) {
+  setStatus("loading", "正在重置…");
+  btnResetYusheng.disabled = true;
+  btnResetAll.disabled = true;
+  btnRefresh.disabled = true;
+  try {
+    const snap = await dbRef.get();
+    const data = snap.exists ? snap.data() : {};
+    const pins = data.userPins || {};
+    const removed = [];
+    userNames.forEach(name => {
+      if (pins[name] && pins[name].hash) {
+        removed.push(name);
+      }
+      delete pins[name];
+    });
+    await dbRef.set({ userPins: pins, updatedAt: Date.now() }, { merge: true });
+    cloudPins = pins;
+    renderUserList();
+    log(`✅ 已重置：${removed.join(", ") || "（本來就是預設）"} → 可用 PIN 1234 登入`);
+    setStatus("ok", `✅ 已重置 ${removed.length} 個帳號，請用 1234 登入`);
+    btnResetYusheng.disabled = !(cloudPins["余生"] && cloudPins["余生"].hash);
+    btnResetAll.disabled = false;
+    btnRefresh.disabled = false;
+  } catch (e) {
+    setStatus("err", "❌ 重置失敗：" + e.message);
+    log("❌ 重置失敗：" + e.message);
+    btnResetYusheng.disabled = false;
+    btnResetAll.disabled = false;
+    btnRefresh.disabled = false;
+  }
+}
+
+btnResetYusheng.addEventListener("click", () => {
+  if (!confirm("確定要重置「余生」的 PIN 為 1234 嗎？")) return;
+  resetUser(["余生"]);
+});
+
+btnResetAll.addEventListener("click", () => {
+  if (!confirm("⚠️ 這會把全部人的 PIN 重置為 1234，確定嗎？")) return;
+  resetUser(USERS);
+});
+
+btnRefresh.addEventListener("click", loadPins);
+
+// 啟動
+loadPins();
+</script>
+</body>
+</html>

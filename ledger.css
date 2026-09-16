@@ -245,3 +245,93 @@ body.modal-open [class*="fab"] {
   .walking-character.greet, .walking-character.jumping { animation: none !important; }
   .confetti-container { display: none !important; }
 }
+/* ============================================================ */
+/* ⭐ 返回頂部（IG 風格）— 記帳本                                  */
+/* ============================================================ */
+.back-to-top-btn {
+  position: fixed;
+  right: 16px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  padding: 0;
+  border: none;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 6px 20px rgba(15, 23, 42, 0.28),
+    0 1px 3px rgba(0, 0, 0, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  z-index: 9997;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px) scale(0.82);
+  transition:
+    opacity 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0.28s,
+    transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  overflow: visible;
+}
+.back-to-top-btn.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+.back-to-top-btn.scrolling {
+  transform: translateY(0) scale(0.88);
+  opacity: 0.55;
+}
+.back-to-top-btn:active {
+  transform: translateY(0) scale(0.86) !important;
+  background: rgba(15, 23, 42, 0.88);
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+@media (hover: hover) {
+  .back-to-top-btn:hover:not(.scrolling) {
+    background: rgba(15, 23, 42, 0.82);
+    transform: translateY(-2px) scale(1.05);
+  }
+}
+.btt-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+.btt-ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 2.5;
+}
+.btt-ring-progress {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.12s linear;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.45));
+}
+.btt-arrow {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  z-index: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+[data-theme="dark"] .back-to-top-btn { background: rgba(15, 23, 42, 0.75); }
+@media (max-width: 380px) {
+  .back-to-top-btn { width: 44px; height: 44px; right: 12px; }
+  .btt-arrow { width: 16px; height: 16px; }
+}

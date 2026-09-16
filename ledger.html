@@ -381,6 +381,17 @@
 <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none">
   <span id="toast-icon">✅</span><span id="toast-message">操作成功</span>
 </div>
+<!-- ⭐ 返回頂部（IG 風格） -->
+<button id="back-to-top-ledger" class="back-to-top-btn" onclick="scrollToTop()" aria-label="返回頂部">
+  <svg class="btt-ring" viewBox="0 0 48 48" aria-hidden="true">
+    <circle class="btt-ring-track" cx="24" cy="24" r="21"></circle>
+    <circle class="btt-ring-progress" cx="24" cy="24" r="21"></circle>
+  </svg>
+  <svg class="btt-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 19V5M5 12l7-7 7 7"/>
+  </svg>
+</button>
 
 <script src="./ledger.js"></script>
 </body>

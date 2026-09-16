@@ -1532,6 +1532,14 @@ window.addEventListener("DOMContentLoaded", () => {
     if (e.key === 'tohoku_current_user') updateCurrentUserBadge();
   });
   setInterval(updateCurrentUserBadge, 2000);
+
+  // ⭐ 接收主站傳來的主题切換
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'setTheme') {
+      applyTheme(e.data.theme);
+      localStorage.setItem(THEME_KEY, e.data.theme);
+    }
+  });
 });
 
 /* ============================================================

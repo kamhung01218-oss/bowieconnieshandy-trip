@@ -1725,3 +1725,592 @@ details.event-card:not([open]) .event-content-wrapper {
   border-color: #7dd3fc;
   background: #f0f9ff;
 }
+/* ============================================================ */
+/* ⭐ 返回頂部（IG 風格：磨砂圓鈕 + 進度環）                        */
+/* ============================================================ */
+.back-to-top-btn {
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--bottom-nav-height, 68px) + env(safe-area-inset-bottom, 0px) + 80px);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  padding: 0;
+  border: none;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 6px 20px rgba(15, 23, 42, 0.28),
+    0 1px 3px rgba(0, 0, 0, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  z-index: 9997;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px) scale(0.82);
+  transition:
+    opacity 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0.28s,
+    transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  overflow: visible;
+}
+.back-to-top-btn.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+.back-to-top-btn.scrolling {
+  transform: translateY(0) scale(0.88);
+  opacity: 0.55;
+}
+.back-to-top-btn:active {
+  transform: translateY(0) scale(0.86) !important;
+  background: rgba(15, 23, 42, 0.88);
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+@media (hover: hover) {
+  .back-to-top-btn:hover:not(.scrolling) {
+    background: rgba(15, 23, 42, 0.82);
+    transform: translateY(-2px) scale(1.05);
+  }
+}
+.btt-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+.btt-ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 2.5;
+}
+.btt-ring-progress {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.12s linear;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.45));
+}
+.btt-arrow {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  z-index: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+@media (max-width: 380px) {
+  .back-to-top-btn { width: 44px; height: 44px; right: 12px; }
+  .btt-arrow { width: 16px; height: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top-btn { transition: opacity 0.2s, visibility 0.2s; }
+  .btt-ring-progress { transition: none; }
+}
+/* ============================================================ */
+/* ⭐ 快速跳轉圓點                                                */
+/* ============================================================ */
+.day-progress-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 0 8px;
+  margin-bottom: 6px;
+}
+.day-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  flex-shrink: 0;
+}
+.day-dot::after { display: none; }
+.day-dot:active { transform: scale(0.8); }
+.day-dot.today {
+  background: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25);
+}
+.day-dot.active {
+  width: 28px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0ea5e9, #0284c7);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+.day-dot.active.today {
+  background: linear-gradient(90deg, #34d399, #10b981);
+  box-shadow: 0 2px 8px rgba(52, 211, 153, 0.5);
+}
+[data-theme="dark"] .day-dot { background: #475569; }
+[data-theme="dark"] .day-dot.today { background: #34d399; }
+[data-theme="dark"] .day-dot.active { background: linear-gradient(90deg, #38bdf8, #0ea5e9); }
+
+/* ============================================================ */
+/* ⭐ 天氣預報：氣候參考 / 日出日落 / 標籤                          */
+/* ============================================================ */
+.forecast-row { position: relative; }
+.forecast-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.forecast-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+.forecast-badge.real {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+.forecast-badge.climate {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+.forecast-sun {
+  font-size: 9px;
+  color: #64748b;
+  font-weight: 700;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+[data-theme="dark"] .forecast-badge.real { background: #1e3a8a; color: #bfdbfe; border-color: #1e40af; }
+[data-theme="dark"] .forecast-badge.climate { background: #78350f; color: #fde68a; border-color: #92400e; }
+[data-theme="dark"] .forecast-sun { color: #94a3b8; }
+
+/* ============================================================ */
+/* ⭐ 緊急資訊 Modal 內容                                          */
+/* ============================================================ */
+.emergency-section { margin-bottom: 20px; }
+.emergency-section-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: #475569;
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+}
+[data-theme="dark"] .emergency-section-title { color: #cbd5e1; }
+
+.emergency-call-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 1.5px solid #fecaca;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.emergency-call-btn:active {
+  transform: scale(0.98);
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+}
+.emergency-call-btn.small {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border-color: #bae6fd;
+}
+.emergency-call-btn.small:active {
+  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+}
+.emergency-call-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  width: 30px;
+  text-align: center;
+}
+.emergency-call-info { flex: 1; min-width: 0; }
+.emergency-call-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 900;
+  color: #7f1d1d;
+  margin-bottom: 1px;
+}
+.emergency-call-btn.small .emergency-call-label { color: #0c4a6e; }
+.emergency-call-desc {
+  display: block;
+  font-size: 10px;
+  color: #991b1b;
+  opacity: 0.75;
+}
+.emergency-call-btn.small .emergency-call-desc { color: #0369a1; }
+.emergency-call-tel {
+  font-size: 15px;
+  font-weight: 900;
+  color: #dc2626;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.emergency-call-btn.small .emergency-call-tel { color: #0284c7; }
+
+[data-theme="dark"] .emergency-call-btn {
+  background: linear-gradient(135deg, #450a0a, #7f1d1d);
+  border-color: #991b1b;
+}
+[data-theme="dark"] .emergency-call-btn.small {
+  background: linear-gradient(135deg, #0c4a6e, #075985);
+  border-color: #0369a1;
+}
+[data-theme="dark"] .emergency-call-label { color: #fecaca; }
+[data-theme="dark"] .emergency-call-btn.small .emergency-call-label { color: #bae6fd; }
+[data-theme="dark"] .emergency-call-desc { color: #fca5a5; }
+[data-theme="dark"] .emergency-call-btn.small .emergency-call-desc { color: #7dd3fc; }
+[data-theme="dark"] .emergency-call-tel { color: #fca5a5; }
+[data-theme="dark"] .emergency-call-btn.small .emergency-call-tel { color: #7dd3fc; }
+
+.emergency-hotel-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+}
+.emergency-hotel-row:active {
+  background: #f1f5f9;
+  transform: scale(0.98);
+}
+.emergency-hotel-day {
+  flex-shrink: 0;
+  width: 50px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: #0284c7;
+  background: #e0f2fe;
+  border-radius: 8px;
+  padding: 4px 2px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+.emergency-hotel-day span { font-size: 9px; font-weight: 700; color: #0369a1; }
+.emergency-hotel-info { flex: 1; min-width: 0; }
+.emergency-hotel-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+.emergency-hotel-note { font-size: 10px; color: #64748b; }
+.emergency-hotel-tel {
+  font-size: 12px;
+  font-weight: 900;
+  color: #0284c7;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+[data-theme="dark"] .emergency-hotel-row { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .emergency-hotel-row:active { background: #334155; }
+[data-theme="dark"] .emergency-hotel-day { background: #0c4a6e; color: #7dd3fc; }
+[data-theme="dark"] .emergency-hotel-day span { color: #38bdf8; }
+[data-theme="dark"] .emergency-hotel-name { color: #f1f5f9; }
+[data-theme="dark"] .emergency-hotel-note { color: #94a3b8; }
+[data-theme="dark"] .emergency-hotel-tel { color: #38bdf8; }
+
+.emergency-guide {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.emergency-guide summary {
+  padding: 11px 14px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 13px;
+  font-weight: 800;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  transition: background 0.2s;
+}
+.emergency-guide summary::-webkit-details-marker { display: none; }
+.emergency-guide summary::after {
+  content: '▾';
+  margin-left: auto;
+  color: #94a3b8;
+  transition: transform 0.25s;
+}
+.emergency-guide[open] summary::after { transform: rotate(180deg); }
+.emergency-guide summary:active { background: #f1f5f9; }
+.emergency-steps {
+  padding: 8px 14px 14px 34px;
+  margin: 0;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.7;
+  border-top: 1px solid #f1f5f9;
+}
+.emergency-steps li { padding: 3px 0; }
+[data-theme="dark"] .emergency-guide { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .emergency-guide summary { color: #f1f5f9; }
+[data-theme="dark"] .emergency-guide summary:active { background: #334155; }
+[data-theme="dark"] .emergency-steps { color: #cbd5e1; border-top-color: #334155; }
+
+.emergency-tip {
+  text-align: center;
+  font-size: 11px;
+  color: #64748b;
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 10px;
+  line-height: 1.6;
+}
+[data-theme="dark"] .emergency-tip { background: #1e293b; color: #94a3b8; }
+
+/* ============================================================ */
+/* ⭐ 主站深色模式                                                */
+/* ============================================================ */
+[data-theme="dark"] {
+  --snow-bg-1: #0f172a;
+  --snow-bg-2: #1e293b;
+  --snow-bg-3: #0f172a;
+  --card-bg: #1e293b;
+  --card-bg-soft: #1e293b;
+  --sky-primary: #38bdf8;
+  --sky-primary-dark: #0ea5e9;
+  --sky-deep: #7dd3fc;
+  --sky-light: #334155;
+  --sky-lighter: #1e293b;
+  --sky-accent: #38bdf8;
+  --text-main: #f1f5f9;
+  --text-soft: #cbd5e1;
+  --text-mute: #94a3b8;
+  --text-faint: #64748b;
+  --line-soft: #334155;
+  --line-sky: rgba(56, 189, 248, 0.2);
+}
+[data-theme="dark"] body {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 30%, #0f172a 100%) !important;
+  color: #f1f5f9;
+}
+[data-theme="dark"] .header-fade {
+  background: linear-gradient(to bottom, #0f172a 0%, #1e293b 50%, transparent 100%);
+}
+[data-theme="dark"] #main-itinerary-view,
+[data-theme="dark"] #schedule-container { background: transparent; }
+[data-theme="dark"] .day-tabs-wrapper {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-bottom-color: #334155 !important;
+}
+[data-theme="dark"] .day-tab {
+  background: #1e293b !important;
+  color: #cbd5e1 !important;
+  border-color: #334155 !important;
+}
+[data-theme="dark"] .day-tab.active {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+  color: white !important;
+  border-color: transparent !important;
+}
+[data-theme="dark"] #btn-collapse-all {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+[data-theme="dark"] .glass-card,
+[data-theme="dark"] .glass-card.event-card {
+  background: #1e293b !important;
+  background-image: none !important;
+  border-color: #334155 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .glass-card.event-card h3,
+[data-theme="dark"] .glass-card.event-card .text-slate-800,
+[data-theme="dark"] #schedule-container .text-slate-800 { color: #f1f5f9 !important; }
+[data-theme="dark"] .glass-card.event-card .text-slate-500,
+[data-theme="dark"] #schedule-container .text-slate-500 { color: #94a3b8 !important; }
+[data-theme="dark"] .glass-card.event-card .event-collapsible p,
+[data-theme="dark"] .glass-card.event-card .event-collapsible ul li { color: #cbd5e1 !important; }
+[data-theme="dark"] .glass-card.event-card .event-content-wrapper {
+  background: #1e293b !important;
+  border-top-color: #334155 !important;
+}
+[data-theme="dark"] .glass-card.event-card .mini-card {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+[data-theme="dark"] .glass-card.event-card .mini-card-summary {
+  background: linear-gradient(180deg, #1e293b, #0f172a) !important;
+  color: #f1f5f9;
+}
+[data-theme="dark"] .glass-card.event-card .mini-card-summary:active { background: #334155 !important; }
+[data-theme="dark"] .glass-card.event-card .mini-card-title { color: #7dd3fc; }
+[data-theme="dark"] .glass-card.event-card .mini-card-body {
+  background: #0f172a !important;
+  border-top-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.mini-card) { border-top-color: #334155 !important; }
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.mini-card) summary { color: #f1f5f9 !important; }
+[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-amber"],
+[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-sky"],
+[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-indigo"],
+[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-emerald"],
+[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-teal"],
+[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-slate"],
+[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-rose"],
+[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-red"],
+[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-white"] {
+  background: #0f172a !important;
+  border-left-color: #38bdf8 !important;
+  color: #cbd5e1;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-rose"],
+[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-red"] {
+  border-left-color: #f87171 !important;
+}
+[data-theme="dark"] .bottom-nav {
+  background: rgba(15, 23, 42, 0.98) !important;
+  border-top-color: #334155 !important;
+}
+[data-theme="dark"] .bottom-nav button { color: #94a3b8; }
+[data-theme="dark"] .bottom-nav button.active { color: #38bdf8; }
+[data-theme="dark"] .modal-box {
+  background: #1e293b !important;
+  color: #f1f5f9;
+}
+[data-theme="dark"] .modal-box h2,
+[data-theme="dark"] .modal-box h3,
+[data-theme="dark"] .modal-box strong { color: #f1f5f9 !important; }
+[data-theme="dark"] .modal-box .text-slate-800 { color: #f1f5f9 !important; }
+[data-theme="dark"] .modal-box .text-slate-700 { color: #cbd5e1 !important; }
+[data-theme="dark"] .modal-box .text-slate-600 { color: #cbd5e1 !important; }
+[data-theme="dark"] .modal-box .text-slate-500 { color: #94a3b8 !important; }
+[data-theme="dark"] .modal-box .bg-slate-50 { background: #0f172a !important; }
+[data-theme="dark"] .modal-box .bg-slate-100 { background: #334155 !important; }
+[data-theme="dark"] .modal-box .border-slate-200 { border-color: #334155 !important; }
+[data-theme="dark"] .modal-box .border-slate-100 { border-color: #334155 !important; }
+[data-theme="dark"] .modal-box .bg-white { background: #1e293b !important; color: #f1f5f9; }
+[data-theme="dark"] .modal-tab {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+[data-theme="dark"] .modal-tab.active {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+  color: white !important;
+  border-color: #0284c7 !important;
+}
+[data-theme="dark"] .category-group { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .category-header { background: linear-gradient(180deg, #1e293b, #0f172a) !important; }
+[data-theme="dark"] .category-title { color: #cbd5e1; }
+[data-theme="dark"] .checklist-item { background: #0f172a; border-color: #334155; }
+[data-theme="dark"] .checklist-item .checklist-label { color: #cbd5e1; }
+[data-theme="dark"] .checklist-item:active { background: #1e293b; }
+[data-theme="dark"] .checklist-item.checked { background: linear-gradient(135deg, #064e3b, #065f46); border-color: #10b981; }
+[data-theme="dark"] .glass-card .bg-slate-50 { background: #0f172a !important; }
+[data-theme="dark"] .weather-hero { background: linear-gradient(135deg, #075985, #0c4a6e); }
+[data-theme="dark"] .forecast-row { background: #0f172a; border-color: #334155; }
+[data-theme="dark"] .forecast-row.today {
+  background: linear-gradient(135deg, #0c4a6e, #075985);
+  border-color: #0ea5e9;
+}
+[data-theme="dark"] .forecast-date { color: #94a3b8; }
+[data-theme="dark"] .forecast-temp { color: #cbd5e1; }
+[data-theme="dark"] .tag {
+  background: #0c4a6e;
+  color: #7dd3fc;
+  border-color: #0369a1;
+}
+[data-theme="dark"] .toast { background: #0f172a; }
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: #0f172a !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+[data-theme="dark"] .app-header {
+  background: linear-gradient(180deg, #0c4a6e 0%, #075985 50%, #0c4a6e 100%) !important;
+}
+[data-theme="dark"] .header-fade {
+  background: linear-gradient(to bottom, #075985 0%, #0c4a6e 40%, #0f172a 100%) !important;
+}
+[data-theme="dark"] .category-pie-circle::after { background: #1e293b; }
+[data-theme="dark"] .skill-tab { background: #1e293b; border-color: #334155; color: #94a3b8; }
+[data-theme="dark"] .skill-tab.active { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; }
+[data-theme="dark"] .numbered-card { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .numbered-title { color: #f1f5f9; }
+[data-theme="dark"] .numbered-desc { color: #cbd5e1; }
+[data-theme="dark"] .numbered-desc strong { color: #7dd3fc; }
+[data-theme="dark"] .ticket-card {
+  background: linear-gradient(135deg, #1e1b4b, #2e1065);
+  border-color: #4c1d95;
+}
+[data-theme="dark"] .ticket-card.zao {
+  background: linear-gradient(135deg, #082f49, #0c4a6e);
+  border-color: #0369a1;
+}
+[data-theme="dark"] .ticket-title { color: #ddd6fe; }
+[data-theme="dark"] .ticket-card.zao .ticket-title { color: #bae6fd; }
+[data-theme="dark"] .ticket-meta-item { background: rgba(255,255,255,0.06); }
+[data-theme="dark"] .ticket-step { color: #ddd6fe; }
+[data-theme="dark"] .ticket-card.zao .ticket-step { color: #bae6fd; }
+[data-theme="dark"] .expand-btn {
+  background: linear-gradient(135deg, #0c4a6e, #075985);
+  border-color: #0369a1;
+  color: #7dd3fc;
+}
+[data-theme="dark"] .event-image-carousel { background: #0f172a; border-color: #334155; }
+[data-theme="dark"] .carousel-indicator { background: rgba(0,0,0,0.8); }
+[data-theme="dark"] .timeline-stamp-time {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border-color: #475569;
+  color: #7dd3fc;
+}
+[data-theme="dark"] .timeline-item.status-done .timeline-stamp-time {
+  background: #1e293b;
+  border-color: #334155;
+  color: #64748b;
+}
+[data-theme="dark"] .timeline-node { box-shadow: 0 0 0 3px #0f172a, 0 2px 6px rgba(56, 189, 248, 0.4); }
+[data-theme="dark"] .timeline-item.status-done .timeline-node { box-shadow: 0 0 0 3px #0f172a; }
+[data-theme="dark"] .timeline-item.status-active .timeline-node { box-shadow: 0 0 0 3px #0f172a, 0 0 12px rgba(56, 189, 248, 0.6); }
+[data-theme="dark"] .timeline-item.status-next .timeline-node { box-shadow: 0 0 0 3px #0f172a, 0 2px 8px rgba(56, 189, 248, 0.5); }
+[data-theme="dark"] .modal-handle-area {
+  background: linear-gradient(180deg, #1e293b 0%, rgba(30,41,59,0.85) 100%) !important;
+}
+[data-theme="dark"] .modal-handle { background: #475569; }
+[data-theme="dark"] .modal-close { background: #334155; color: #cbd5e1; }
+[data-theme="dark"] .modal-close:hover { background: #475569; color: #f1f5f9; }
+[data-theme="dark"] .emergency-guide summary { background: #1e293b; }
+[data-theme="dark"] .app-header .overview-cta {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #ea580c) !important;
+}

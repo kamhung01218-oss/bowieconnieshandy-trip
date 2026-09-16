@@ -1124,3 +1124,57 @@
     background: rgba(12, 25, 41, 0.6);
   }
 }
+/* ============================================================ */
+/* ⭐ 主站 Header 深色模式                                        */
+/* ============================================================ */
+[data-theme="dark"] .app-header .focus-inner {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .app-header .focus-title { color: #f1f5f9; }
+[data-theme="dark"] .app-header .focus-subtitle { color: #94a3b8; }
+[data-theme="dark"] .app-header .focus-label { color: #38bdf8; }
+[data-theme="dark"] .app-header .countdown-cell {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  border-color: #334155;
+}
+[data-theme="dark"] .app-header .countdown-value { color: #7dd3fc; }
+[data-theme="dark"] .app-header .countdown-unit { color: #38bdf8; }
+[data-theme="dark"] .app-header .progress-list { background: #0f172a; border-color: #334155; }
+[data-theme="dark"] .app-header .progress-item:hover { background: #334155; }
+[data-theme="dark"] .app-header .progress-label { color: #cbd5e1; }
+[data-theme="dark"] .app-header .progress-bar-mini { background: #334155; }
+[data-theme="dark"] .app-header .focus-progress-track { background: #334155; }
+[data-theme="dark"] .app-header .focus-progress-label { color: #94a3b8; }
+[data-theme="dark"] .app-header .focus-weather-cell { background: #0f172a; border-color: #334155; }
+[data-theme="dark"] .app-header .focus-weather-cell .value { color: #f1f5f9; }
+[data-theme="dark"] .app-header .focus-stat { background: #0f172a; border-color: #334155; }
+[data-theme="dark"] .app-header .focus-stat .num { color: #38bdf8; }
+[data-theme="dark"] .app-header .focus-stat .lbl { color: #94a3b8; }
+[data-theme="dark"] .app-header .focus-cta-secondary {
+  background: #0f172a;
+  border-color: #334155;
+  color: #7dd3fc;
+}
+[data-theme="dark"] .app-header .focus-cta-secondary:active { background: #334155; }
+[data-theme="dark"] .app-header .tools-toggle { background: #1e293b; color: #7dd3fc; border-color: #334155; }
+[data-theme="dark"] .app-header .tools-toggle:hover { background: #334155; border-color: #475569; }
+[data-theme="dark"] .app-header .tools-toggle.active { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; }
+[data-theme="dark"] .app-header .tools-menu-panel {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .app-header .tools-item { color: #f1f5f9; }
+[data-theme="dark"] .app-header .tools-item:hover { background: #334155; }
+[data-theme="dark"] .app-header .tools-item:active { background: #475569; }
+[data-theme="dark"] .app-header .tools-section:not(:last-child) { border-bottom-color: #334155; }
+[data-theme="dark"] .app-header .tools-section-label { color: #64748b; }
+[data-theme="dark"] .app-header .tools-item-progress { background: #0f172a; color: #7dd3fc; border-color: #334155; }
+[data-theme="dark"] .app-header .tools-item-progress.done { background: #064e3b; color: #6ee7b7; border-color: #10b981; }
+[data-theme="dark"] .app-header .tools-sync-status { color: #94a3b8; }
+[data-theme="dark"] .app-header .focus-task {
+  background: linear-gradient(135deg, #78350f, #92400e);
+  border-color: #b45309;
+}
+[data-theme="dark"] .app-header .focus-task-text { color: #fde68a; }

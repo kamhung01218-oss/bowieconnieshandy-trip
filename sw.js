@@ -1,16 +1,17 @@
 /* ============================================================
- * Service Worker - v15（強制更新版）
+ * Service Worker - v18
  * 策略：
  *   - HTML / JS / CSS：Network First（永遠拿最新）
  *   - 圖片 / 字體：Cache First（省流量）
  *   - API：Network First
  * ============================================================ */
 
-const CACHE_NAME = 'tohoku-winter-trip-v15';  // ← 每次改版號 +1
+const CACHE_NAME = 'tohoku-winter-trip-v18';  // ⭐ 每次改版號 +1
 
 const ASSETS = [
   '/', '/index.html', '/ledger.html',
-  '/data.js', '/shoot-tips.js', '/shopping.js',
+  '/data.js', '/shoot-tips.js', '/shopping.js', '/emergency.js',
+  '/app-core.js', '/app-lists.js', '/app-itinerary.js',
   '/header.css', '/header.js',
   '/style.css',
   '/manifest.json',

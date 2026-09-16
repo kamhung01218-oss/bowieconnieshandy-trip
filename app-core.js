@@ -1,7 +1,8 @@
 /* ============================================================
- * app-core.js — v7.0
+ * app-core.js — v7.2
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
- *       燈箱、角色、Service Worker、可拖動 FAB
+ *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、
+ *       深色模式、緊急資訊
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -284,6 +285,7 @@ async function submitChangePin() {
 
 // ==================== 應用初始化 ====================
 function initAppAfterLogin() {
+  initAppTheme();
   updateUserBadge();
   loadCustomItems();
   const saved = localStorage.getItem("tohoku_checked_items");
@@ -291,9 +293,16 @@ function initAppAfterLogin() {
   fetchLiveRates();
   initSnowEffect();
 
-  setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal']);
+  setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal', 'emergency-modal']);
 
-  renderDayItinerary('day-section-1', winterItineraries[0]);
+  // ⭐ 讀取上次選的 Day
+  const savedDay = parseInt(localStorage.getItem('tohoku_last_day')) || 1;
+  if (savedDay >= 1 && savedDay <= winterItineraries.length) {
+    window._lastActiveDay = savedDay;
+  } else {
+    window._lastActiveDay = 1;
+  }
+  renderDayItinerary(`day-section-${window._lastActiveDay}`, winterItineraries[window._lastActiveDay - 1]);
   setupImageFadeIn();
 
   if (window.AppHeader) {
@@ -353,6 +362,7 @@ function initAppAfterLogin() {
   renderEquipChecklist();
   renderAllShoppingContent();
   updateSnowmanVisual();
+  if (window.updateDayProgressDots) window.updateDayProgressDots();
   startMainTick();
 }
 
@@ -491,7 +501,8 @@ function setupModalDrag(modals) {
             'common-tips-modal': window.closeCommonTipsModal,
             'shopping-modal': window.closeShoppingModal,
             'all-shopping-modal': window.closeAllShoppingModal,
-            'currency-modal': window.closeCurrencyModal
+            'currency-modal': window.closeCurrencyModal,
+            'emergency-modal': window.closeEmergencyModal
           };
           if (closers[id]) closers[id]();
           box.style.transform = ''; modal.style.opacity = '';
@@ -530,7 +541,17 @@ function switchMainTab(tab) {
   hideView.classList.remove('view-active'); hideView.classList.add(isGoingToLedger ? 'view-exit-left' : 'view-exit-right');
   showView.classList.remove('hidden-view'); showView.classList.add(isGoingToLedger ? 'view-enter-from-right' : 'view-enter-from-left');
   void showView.offsetWidth; requestAnimationFrame(() => { showView.classList.remove('view-enter-from-right', 'view-enter-from-left'); showView.classList.add('view-active'); });
-  setTimeout(() => { hideView.classList.add('hidden-view'); hideView.classList.remove('view-exit-left', 'view-exit-right'); if (isGoingToLedger) { const iframe = document.getElementById("ledger-iframe"); if (iframe) iframe.style.height = "calc(100dvh - 60px)"; } }, 400);
+  setTimeout(() => {
+    hideView.classList.add('hidden-view'); hideView.classList.remove('view-exit-left', 'view-exit-right');
+    if (isGoingToLedger) {
+      const theme = document.documentElement.getAttribute('data-theme') || 'light';
+      const iframe = document.getElementById("ledger-iframe");
+      if (iframe) {
+        iframe.style.height = "calc(100dvh - 60px)";
+        try { iframe.contentWindow.postMessage({ type: 'setTheme', theme }, '*'); } catch(e) {}
+      }
+    }
+  }, 400);
 }
 
 function setupImageFadeIn(container = document) { const imgs = container.querySelectorAll('img.lazy-fade:not(.loaded)'); imgs.forEach(img => { if (img.complete && img.naturalWidth > 0) img.classList.add('loaded'); else { img.addEventListener('load', () => img.classList.add('loaded'), { once: true }); img.addEventListener('error', () => { img.classList.add('loaded'); img.style.display = 'none'; }, { once: true }); } }); }
@@ -753,4 +774,199 @@ function releaseAdminDevice() { if (!confirm("確定要解除這台裝置的管�
   requestAnimationFrame(() => { requestAnimationFrame(() => { initPosition(); }); });
   const HINT_KEY = 'tohoku_fab_hint_shown';
   if (!localStorage.getItem(HINT_KEY)) { setTimeout(() => { const hint = document.createElement('div'); hint.className = 'currency-fab-hint'; hint.textContent = '💡 可拖動我，點擊開啟匯率'; document.body.appendChild(hint); const rect = fab.getBoundingClientRect(); hint.style.left = Math.max(12, Math.min(rect.left - 60, window.innerWidth - 200)) + 'px'; hint.style.top = (rect.top - 44) + 'px'; requestAnimationFrame(() => hint.classList.add('show')); setTimeout(() => { hint.classList.remove('show'); setTimeout(() => hint.remove(), 400); }, 3500); localStorage.setItem(HINT_KEY, '1'); }, 2000); }
+})();
+
+// ==================== ⭐ 主題切換（主站深色模式） ====================
+const THEME_KEY = 'tohoku_theme';
+
+function initAppTheme() {
+  const saved = localStorage.getItem(THEME_KEY) || 'light';
+  applyAppTheme(saved);
+}
+
+function applyAppTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.body.setAttribute('data-theme', theme);
+  const icon = document.getElementById('theme-menu-icon');
+  if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+  const label = document.getElementById('theme-menu-label');
+  if (label) label.textContent = theme === 'dark' ? '淺色模式' : '深色模式';
+  const iframe = document.getElementById('ledger-iframe');
+  if (iframe && iframe.contentWindow) {
+    try { iframe.contentWindow.postMessage({ type: 'setTheme', theme }, '*'); } catch(e) {}
+  }
+}
+
+function toggleAppTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  applyAppTheme(next);
+  localStorage.setItem(THEME_KEY, next);
+  haptic(8);
+  showToast(next === 'dark' ? '🌙 已切換深色模式' : '☀️ 已切換淺色模式');
+  if (window.AppHeader) window.AppHeader.render();
+}
+window.toggleAppTheme = toggleAppTheme;
+
+// ==================== ⭐ 緊急資訊 Modal ====================
+function openEmergencyModal() {
+  const m = document.getElementById('emergency-modal');
+  if (!m) return;
+  renderEmergencyContent();
+  m.style.display = 'flex';
+  m.classList.add('active');
+  document.body.classList.add('modal-open');
+  haptic(8);
+}
+function closeEmergencyModal() {
+  const m = document.getElementById('emergency-modal');
+  if (!m) return;
+  m.classList.remove('active');
+  setTimeout(() => { m.style.display = 'none'; }, 300);
+  const a = document.querySelector('.modal-overlay.active');
+  if (!a) document.body.classList.remove('modal-open');
+}
+window.openEmergencyModal = openEmergencyModal;
+window.closeEmergencyModal = closeEmergencyModal;
+
+function renderEmergencyContent() {
+  const c = document.getElementById('emergency-content');
+  if (!c || typeof EMERGENCY_DATA === 'undefined') return;
+  const D = EMERGENCY_DATA;
+
+  const hotlineHTML = D.hotlines.map(h => `
+    <a href="tel:${h.tel.replace(/[^0-9+#]/g, '')}" class="emergency-call-btn">
+      <span class="emergency-call-icon">${h.icon}</span>
+      <div class="emergency-call-info">
+        <span class="emergency-call-label">${h.label}</span>
+        <span class="emergency-call-desc">${h.desc || ''}</span>
+      </div>
+      <span class="emergency-call-tel">${h.tel}</span>
+    </a>
+  `).join('');
+
+  const hotelsHTML = D.hotels.map(h => `
+    <a href="tel:${h.tel.replace(/[^0-9+#]/g, '')}" class="emergency-hotel-row">
+      <div class="emergency-hotel-day">${h.day}<br><span>${h.date}</span></div>
+      <div class="emergency-hotel-info">
+        <div class="emergency-hotel-name">${h.name}</div>
+        <div class="emergency-hotel-note">${h.note || ''}</div>
+      </div>
+      <div class="emergency-hotel-tel">📞 ${h.tel}</div>
+    </a>
+  `).join('');
+
+  const transportHTML = D.transport.map(t => `
+    <a href="tel:${t.tel.replace(/[^0-9+#]/g, '')}" class="emergency-call-btn small">
+      <span class="emergency-call-icon">${t.icon}</span>
+      <div class="emergency-call-info">
+        <span class="emergency-call-label">${t.label}</span>
+        <span class="emergency-call-desc">${t.desc || ''}</span>
+      </div>
+      <span class="emergency-call-tel">${t.tel}</span>
+    </a>
+  `).join('');
+
+  const guidesHTML = D.guides.map((g, i) => `
+    <details class="emergency-guide ${i === 0 ? 'open' : ''}">
+      <summary><span>${g.icon}</span> ${g.label}</summary>
+      <ol class="emergency-steps">
+        ${g.steps.map(s => `<li>${s}</li>`).join('')}
+      </ol>
+    </details>
+  `).join('');
+
+  c.innerHTML = `
+    <div class="emergency-section">
+      <div class="emergency-section-title">🆘 緊急熱線（點擊直接撥號）</div>
+      ${hotlineHTML}
+    </div>
+    <div class="emergency-section">
+      <div class="emergency-section-title">🏨 住宿電話</div>
+      ${hotelsHTML}
+    </div>
+    <div class="emergency-section">
+      <div class="emergency-section-title">🚗 租車 / 醫療</div>
+      ${transportHTML}
+    </div>
+    <div class="emergency-section">
+      <div class="emergency-section-title">📋 應變指南</div>
+      ${guidesHTML}
+    </div>
+    <div class="emergency-tip">
+      💡 建議截圖存到手機相簿，深山自駕時無訊號也能查看
+    </div>
+  `;
+}
+
+// ==================== ⭐ 返回頂部（IG 風格） ====================
+function scrollToTop() {
+  try {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e) {
+    window.scrollTo(0, 0);
+  }
+  haptic(10);
+}
+window.scrollToTop = scrollToTop;
+
+(function setupBackToTop() {
+  const btn = document.getElementById('back-to-top');
+  if (!btn) return;
+
+  const ring = btn.querySelector('.btt-ring-progress');
+  const SHOW_AT = Math.max(300, window.innerHeight * 0.55);
+  const RING_CIRC = ring ? ring.r.baseVal.value * 2 * Math.PI : 0;
+
+  if (ring && RING_CIRC > 0) {
+    ring.style.strokeDasharray = `${RING_CIRC}`;
+    ring.style.strokeDashoffset = `${RING_CIRC}`;
+  }
+
+  let ticking = false;
+  let scrollingTimer = null;
+
+  function getScrollY() {
+    return window.scrollY
+      || window.pageYOffset
+      || document.documentElement.scrollTop
+      || document.body.scrollTop
+      || 0;
+  }
+  function getMaxScroll() {
+    const doc = document.documentElement;
+    return Math.max(
+      1,
+      (doc.scrollHeight || document.body.scrollHeight) - window.innerHeight
+    );
+  }
+
+  function update() {
+    const y = getScrollY();
+    const max = getMaxScroll();
+
+    btn.classList.toggle('visible', y > SHOW_AT);
+
+    if (ring && RING_CIRC > 0) {
+      const p = Math.min(1, Math.max(0, y / max));
+      ring.style.strokeDashoffset = `${RING_CIRC * (1 - p)}`;
+    }
+
+    btn.classList.add('scrolling');
+    clearTimeout(scrollingTimer);
+    scrollingTimer = setTimeout(() => btn.classList.remove('scrolling'), 220);
+
+    ticking = false;
+  }
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
+  update();
 })();
