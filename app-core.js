@@ -1,5 +1,5 @@
 /* ============================================================
- * app-core.js — v7.2
+ * app-core.js — v7.3
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
  *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
  * ============================================================ */
@@ -288,7 +288,6 @@ async function submitChangePin() {
 
 // ==================== 應用初始化 ====================
 function initAppAfterLogin() {
-  // ⭐ 套用已儲存的主題
   applyAppTheme(localStorage.getItem(APP_THEME_KEY) || 'light');
 
   updateUserBadge();
@@ -454,8 +453,21 @@ function toggleAppTheme() {
   }
 }
 
+// ⭐ 主題重置工具（在 Console 輸入 resetTheme() 可強制回淺色）
+function resetTheme() {
+  try {
+    localStorage.setItem('tohoku_theme', 'light');
+    localStorage.setItem('tohoku_ledger_theme', 'light');
+  } catch (e) {}
+  document.documentElement.setAttribute('data-theme', 'light');
+  if (document.body) document.body.setAttribute('data-theme', 'light');
+  syncThemeToLedger('light');
+  if (typeof showToast === 'function') showToast('☀️ 已重置為淺色模式', '☀️');
+}
+
 window.toggleAppTheme = toggleAppTheme;
 window.applyAppTheme = applyAppTheme;
+window.resetTheme = resetTheme;
 
 // 監聽 iframe 就緒事件 → 主動推送主題
 window.addEventListener('message', (e) => {
@@ -584,7 +596,6 @@ function switchMainTab(tab) {
     if (isGoingToLedger) {
       const iframe = document.getElementById("ledger-iframe");
       if (iframe) iframe.style.height = "calc(100dvh - 60px)";
-      // ⭐ 切換到記帳本時，主動同步主題
       const cur = document.documentElement.getAttribute('data-theme') || 'light';
       syncThemeToLedger(cur);
     }
@@ -762,8 +773,68 @@ window.showModal = showModal;
 window.hideModal = hideModal;
 
 // ==================== Service Worker ====================
-if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => { reg.update(); reg.addEventListener('updatefound', () => { const newWorker = reg.installing; if (!newWorker) return; newWorker.addEventListener('statechange', () => { if (newWorker.state === 'installed' && navigator.serviceWorker.controller) { showUpdateAvailable(newWorker); } }); }); setInterval(() => reg.update().catch(() => {}), 60 * 1000); }).catch(err => console.log('SW failed:', err)); }); let refreshing = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (refreshing) return; refreshing = true; window.location.reload(); }); }
-function showUpdateAvailable(worker) { const toast = document.getElementById("toast"); const m = document.getElementById("toast-message"); const i = document.getElementById("toast-icon"); if (!toast || !m || !i) return; const oldUpdateBtn = document.getElementById("update-btn"); if (oldUpdateBtn) oldUpdateBtn.remove(); i.innerText = "✨"; m.innerText = "有新版本可用"; const btn = document.createElement("button"); btn.id = "update-btn"; btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto"; btn.textContent = "立即更新"; btn.onclick = (e) => { e.stopPropagation(); worker.postMessage({ type: 'SKIP_WAITING' }); btn.textContent = "更新中..."; btn.disabled = true; haptic(15); }; toast.appendChild(btn); toast.classList.remove("-translate-y-24", "opacity-0"); toast.classList.add("translate-y-0", "opacity-100"); }
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      reg.update();
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateAvailable(newWorker);
+          }
+        });
+      });
+      setInterval(() => reg.update().catch(() => {}), 60 * 1000);
+    }).catch(err => console.log('SW failed:', err));
+  });
+
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window._swReloaded = true;
+    window.location.reload();
+  });
+}
+
+function showUpdateAvailable(worker) {
+  const toast = document.getElementById("toast");
+  const m = document.getElementById("toast-message");
+  const i = document.getElementById("toast-icon");
+  if (!toast || !m || !i) return;
+  const oldUpdateBtn = document.getElementById("update-btn");
+  if (oldUpdateBtn) oldUpdateBtn.remove();
+  i.innerText = "✨";
+  m.innerText = "有新版本可用";
+  const btn = document.createElement("button");
+  btn.id = "update-btn";
+  btn.className = "ml-2 bg-white/20 hover:bg-white/30 active:scale-95 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 pointer-events-auto";
+  btn.textContent = "立即更新";
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    worker.postMessage({ type: 'SKIP_WAITING' });
+    btn.textContent = "更新中...";
+    btn.disabled = true;
+    haptic(15);
+    // ⭐ Fallback：3 秒後如果還沒重整，強制重整
+    setTimeout(() => {
+      if (!window._swReloaded) {
+        window.location.reload();
+      }
+    }, 3000);
+  };
+  toast.appendChild(btn);
+  toast.classList.remove("-translate-y-24", "opacity-0");
+  toast.classList.add("translate-y-0", "opacity-100");
+  // 保持顯示到使用者操作
+  if (window.toastTimeout) clearTimeout(window.toastTimeout);
+  window.toastTimeout = setTimeout(() => {
+    toast.classList.remove("translate-y-0", "opacity-100");
+    toast.classList.add("-translate-y-24", "opacity-0");
+  }, 15000);
+}
 
 window.addEventListener('message', (event) => { if (event.data && event.data.type === 'closeExpenseModal') { const lc = document.getElementById('ledger-frame-container'); if (lc) { lc.style.cssText = ''; if (state.currentMainTab === 'ledger') { lc.classList.remove('hidden-view'); lc.classList.add('view-active'); } else { lc.classList.add('hidden-view'); lc.classList.remove('view-active'); } } } });
 
@@ -884,7 +955,8 @@ window.scrollToTop = scrollToTop;
   document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
   update();
 })();
-// ==================== 📲 PWA 安裝引導（穩健版） ====================
+
+// ==================== 📲 PWA 安裝引導 ====================
 (function setupInstallPrompt() {
   const btn = document.getElementById('install-app-btn');
   if (!btn) {
@@ -894,30 +966,25 @@ window.scrollToTop = scrollToTop;
 
   let deferredPrompt = null;
 
-  // ---- 判斷執行環境 ----
   const ua = navigator.userAgent || '';
   const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
   const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS/.test(ua);
   const isAndroid = /Android/.test(ua);
-  const isMobile = /Mobi|Android|iPhone|iPad|iPod/.test(ua);
 
-  // 是否已安裝 / 已在獨立視窗
   const isStandalone =
     window.matchMedia('(display-mode: standalone)').matches ||
     window.matchMedia('(display-mode: fullscreen)').matches ||
     window.matchMedia('(display-mode: minimal-ui)').matches ||
     window.navigator.standalone === true;
 
-  // 是否已被使用者關閉過（記住 7 天）
   const DISMISS_KEY = 'tohoku_install_dismissed_at';
   const dismissedAt = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10);
   const dismissedRecently = dismissedAt && (Date.now() - dismissedAt) < 7 * 24 * 60 * 60 * 1000;
 
-  // ---- 決定是否顯示按鈕 ----
   function shouldShow() {
-    if (isStandalone) return false;        // 已安裝 → 不顯示
-    if (dismissedRecently) return false;   // 使用者關過 → 不顯示
-    return true;                            // 其他一律顯示
+    if (isStandalone) return false;
+    if (dismissedRecently) return false;
+    return true;
   }
 
   function show() {
@@ -928,29 +995,24 @@ window.scrollToTop = scrollToTop;
     btn.style.display = 'none';
   }
 
-  // 初次顯示：延遲 800ms 讓版面穩定
   setTimeout(show, 800);
 
-  // ---- 攔截 Android / 桌面 Chrome 的系統提示 ----
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     console.log('[Install] beforeinstallprompt 已捕獲');
-    show(); // 確保按鈕顯示
+    show();
   });
 
-  // ---- 已安裝後隱藏 ----
   window.addEventListener('appinstalled', () => {
     hide();
     try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch(e) {}
     if (typeof showToast === 'function') showToast('🎉 已安裝到桌面！', '📲');
   });
 
-  // ---- 點擊行為 ----
   window.triggerInstall = async function () {
     if (typeof haptic === 'function') haptic(10);
 
-    // 1) Android / 桌面 Chrome：有原生 prompt 就用
     if (deferredPrompt) {
       try {
         deferredPrompt.prompt();
@@ -967,24 +1029,20 @@ window.scrollToTop = scrollToTop;
       return;
     }
 
-    // 2) iOS：顯示三步圖解
     if (isIOS) {
       showIOSInstallGuide();
       return;
     }
 
-    // 3) 其他情況：顯示通用引導（含「用 Chrome 開啟」提示）
     showManualGuide();
   };
 
-  // 關閉按鈕（記住關閉時間）
   window.dismissInstall = function () {
     try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch(e) {}
     hide();
     if (typeof showToast === 'function') showToast('已隱藏，7 天後再提醒', '👌');
   };
 
-  // ---- iOS 圖解 ----
   function showIOSInstallGuide() {
     const modal = document.createElement('div');
     modal.style.cssText = [
@@ -993,8 +1051,7 @@ window.scrollToTop = scrollToTop;
       'backdrop-filter:blur(8px)',
       '-webkit-backdrop-filter:blur(8px)',
       'display:flex', 'align-items:center', 'justify-content:center',
-      'padding:20px',
-      'animation:ios-guide-fadein 0.2s ease'
+      'padding:20px'
     ].join(';');
 
     modal.innerHTML = `
@@ -1049,7 +1106,6 @@ window.scrollToTop = scrollToTop;
     });
   }
 
-  // ---- 通用引導（非 iOS、也非 Chrome，或 Chrome 沒觸發 prompt） ----
   function showManualGuide() {
     const browser = (() => {
       if (isIOS && isSafari) return 'iOS Safari';
@@ -1068,8 +1124,7 @@ window.scrollToTop = scrollToTop;
       'backdrop-filter:blur(8px)',
       '-webkit-backdrop-filter:blur(8px)',
       'display:flex', 'align-items:center', 'justify-content:center',
-      'padding:20px',
-      'animation:ios-guide-fadein 0.2s ease'
+      'padding:20px'
     ].join(';');
 
     modal.innerHTML = `
