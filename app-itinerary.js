@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v7.3
+ * app-itinerary.js — v7.6
  * 行程：天氣（含氣候參考 / 日出日落）、行程渲染、輪播、
  *       各項攻略 Modal、行程切換、快速跳轉圓點
  * ============================================================ */
@@ -13,6 +13,17 @@ const WEATHER_LOCATIONS = {
   5: { name: "宮城白石", lat: 38.0022, lon: 140.6197, climate: { max: 4, min: -2, rain: 30 } },
   6: { name: "宮城仙台", lat: 38.2682, lon: 140.8694, climate: { max: 5, min: -1, rain: 30 } },
   7: { name: "宮城仙台", lat: 38.2682, lon: 140.8694, climate: { max: 5, min: -1, rain: 30 } }
+};
+
+// ⭐ 氣候參考模式的日出日落（依往年平均值）
+const CLIMATE_SUN_TIMES = {
+  "2027-01-21": { sunrise: "06:52", sunset: "16:35" },
+  "2027-01-22": { sunrise: "06:52", sunset: "16:36" },
+  "2027-01-23": { sunrise: "06:51", sunset: "16:37" },
+  "2027-01-24": { sunrise: "06:51", sunset: "16:38" },
+  "2027-01-25": { sunrise: "06:50", sunset: "16:39" },
+  "2027-01-26": { sunrise: "06:50", sunset: "16:40" },
+  "2027-01-27": { sunrise: "06:49", sunset: "16:41" }
 };
 
 function weatherCodeToIcon(code) {
@@ -31,7 +42,6 @@ async function fetchWeatherData() {
   const dayPromises = tripDates.map(async (dateStr, idx) => {
     const loc = WEATHER_LOCATIONS[idx + 1];
 
-    // 超過 16 天：氣候平均值
     if (tooFar) {
       return {
         dateStr, location: loc.name,
@@ -43,7 +53,6 @@ async function fetchWeatherData() {
       };
     }
 
-    // 16 天內：真實預報
     try {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=Asia%2FTokyo&start_date=${dateStr}&end_date=${dateStr}`;
       const res = await fetch(url);
@@ -125,9 +134,14 @@ function renderWeatherDetail() {
       ? '<span class="forecast-badge climate">🌡️ 氣候參考</span>'
       : '<span class="forecast-badge real">📡 即時預報</span>';
 
-    const sunRow = (w.sunrise && w.sunset)
-      ? `<div class="forecast-sun">🌅 ${w.sunrise} · 🌇 ${w.sunset}</div>`
-      : '';
+    // ⭐ 日出日落：即時預報用 API，氣候參考用 fallback
+    let sunRow = '';
+    if (w.sunrise && w.sunset) {
+      sunRow = `<div class="forecast-sun">🌅 ${w.sunrise} · 🌇 ${w.sunset}</div>`;
+    } else if (w.isClimate && CLIMATE_SUN_TIMES[ds]) {
+      const r = CLIMATE_SUN_TIMES[ds];
+      sunRow = `<div class="forecast-sun">🌅 ${r.sunrise} · 🌇 ${r.sunset} <span style="opacity:0.6">（參考）</span></div>`;
+    }
 
     return `<div class="forecast-row ${isToday ? 'today' : ''}">
       <div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div>
@@ -272,45 +286,63 @@ function renderDayItinerary(sectionId, dayData, force) {
   window._renderedDays.add(dayData.day);
 }
 
+// ⭐ 天氣卡片：氣候參考 + 即時預報都有日出日落 + 建議行
 function buildWeatherHtml(dateStr, weatherInfo) {
   if (!weatherInfo) return '';
 
   const { icon, max, min, rain } = weatherInfo;
   const location = weatherInfo.location || '';
 
+  // 氣候參考模式：三行（日出日落參考 + 建議）
   if (weatherInfo.isClimate) {
+    let climateAdvice = '🧥 冬季均溫，防風防水外套';
+    if (min < -5) climateAdvice = '❄️ 極寒，羽絨 + 雪靴 + 毛帽必備';
+    else if (min < 0) climateAdvice = '🧣 寒冷，圍巾手套不可少';
+
+    const sunRef = CLIMATE_SUN_TIMES[dateStr];
+    const sunHtml = sunRef
+      ? `🌅 ${sunRef.sunrise} · 🌇 ${sunRef.sunset} <span style="opacity:0.6">（參考）</span>`
+      : '';
+
     return `
-      <div class="mt-1 mb-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card">
-        <span class="text-base">${icon}</span>
-        <span class="font-bold text-amber-700">${dateStr.substring(5)} ${location}：</span>
-        <span>${max}° / ${min}°</span>
-        <span class="ml-auto font-bold text-amber-600">🌡️ 氣候參考</span>
+      <div class="weather-card climate">
+        <div class="weather-row-1">
+          <span class="weather-icon">${icon}</span>
+          <span class="weather-loc">${dateStr.substring(5)} ${location}</span>
+          <span class="weather-temp">${max}° / ${min}°</span>
+          <span class="weather-climate-badge">🌡️ 氣候參考</span>
+        </div>
+        ${sunHtml ? `<div class="weather-row-2">${sunHtml}</div>` : ''}
+        <div class="weather-row-3">${climateAdvice}</div>
       </div>`;
   }
 
+  // 即時預報模式：三行（含日出日落 + 建議）
   let advice = '🧥 偏涼，外套防風防水';
   if (min < -5) advice = '❄️ 極寒！羽絨+雪靴+毛帽必備';
   else if (min < 0) advice = '🧣 寒冷，圍巾手套不可少';
   if (rain > 50) advice = advice + '，攜帶雨具⚠️';
 
   const sunHtml = (weatherInfo.sunrise && weatherInfo.sunset)
-    ? ` <span class="text-slate-400">|</span> <span class="text-slate-500">🌅${weatherInfo.sunrise} 🌇${weatherInfo.sunset}</span>`
+    ? `🌅 ${weatherInfo.sunrise} · 🌇 ${weatherInfo.sunset}`
     : '';
 
   return `
-    <div class="mt-1 mb-2 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-lg px-2 py-1 flex items-center gap-1.5 text-[11px] text-slate-700 weather-card">
-      <span class="text-base">${icon}</span>
-      <span class="font-bold text-sky-700">${dateStr.substring(5)} ${location} 天氣：</span>
-      <span>最高 ${max}° / 最低 ${min}°</span>
-      <span class="text-slate-400">|</span>
-      <span class="text-slate-500">💧 ${rain}%</span>
-      ${sunHtml}
-      <span class="ml-auto font-bold text-slate-600">${advice}</span>
+    <div class="weather-card">
+      <div class="weather-row-1">
+        <span class="weather-icon">${icon}</span>
+        <span class="weather-loc">${dateStr.substring(5)} ${location}</span>
+        <span class="weather-temp">${max}° / ${min}°</span>
+        <span class="weather-rain">💧${rain}%</span>
+      </div>
+      ${sunHtml ? `<div class="weather-row-2">${sunHtml}</div>` : ''}
+      <div class="weather-row-3">${advice}</div>
     </div>`;
 }
 
+// Day Header：收緊上下留白
 function buildDayHeaderHtml(dayData, weatherHtml) {
-  var html = '<div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex justify-between items-center">';
+  var html = '<div class="bg-slate-50/95 py-1 mb-0 px-1 border-b border-slate-200/50 flex justify-between items-center">';
   html += '<div class="flex items-center gap-2.5">';
   html += '<div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-lg shadow-md shrink-0">' + dayData.emoji + '</div>';
   html += '<div class="flex-1">';
@@ -329,7 +361,6 @@ function buildDayHeaderHtml(dayData, weatherHtml) {
 function buildEventsHtml(dayData) { var html = ''; for (var i = 0; i < dayData.events.length; i++) { html += buildSingleEventHtml(dayData, dayData.events[i], i); } return html; }
 
 function buildSingleEventHtml(dayData, event, index) {
-  // ⭐ 修改：所有行程預設收合（原本是 index === 0 ? 'open' : ''）
   var isOpen = '';
   var timeParts = event.time.split(' - ');
   var startTime = timeParts[0].trim();

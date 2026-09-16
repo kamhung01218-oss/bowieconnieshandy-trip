@@ -1,5 +1,5 @@
 /* ============================================================
- * style.css — v9.0 雪地清爽版
+ * style.css — v9.2 雪地清爽版
  * 淺藍漸層 + 白色卡片 + 藍色主色
  * ============================================================ */
 
@@ -63,9 +63,9 @@ button, a {
 }
 button:active { transform: scale(0.96); transition: transform 0.05s; }
 
-/* ========== Header 過渡帶 ========== */
+/* ========== Header 過渡帶（縮減留白） ========== */
 .header-fade {
-  height: 40px;
+  height: 12px;
   background: linear-gradient(to bottom,
     #7dd3fc 0%,
     #bae6fd 30%,
@@ -564,12 +564,12 @@ body.modal-open #app-root {
 }
 
 /* ============================================================
- * ⭐ 時間軸（雪地版）
+ * ⭐ 時間軸（雪地版，行程貼頂）
  * ============================================================ */
 .timeline {
   position: relative;
   padding-left: 32px;
-  padding-top: 4px;
+  padding-top: 0;
   padding-bottom: 4px;
 }
 .timeline::before {
@@ -829,6 +829,7 @@ body.modal-open #app-root {
 .event-collapsible.expanded::after { display: none; }
 .event-collapsible.no-collapse { max-height: none; }
 
+/* ========== 展開完整攻略按鈕（實心藍底） ========== */
 .expand-btn {
   display: flex;
   align-items: center;
@@ -836,11 +837,11 @@ body.modal-open #app-root {
   gap: 6px;
   width: 100%;
   margin-top: 10px;
-  padding: 10px 14px;
-  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-  border: 1px dashed #7dd3fc;
+  padding: 12px 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
   border-radius: 12px;
-  color: var(--sky-primary);
+  color: #0369a1;
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
@@ -849,8 +850,8 @@ body.modal-open #app-root {
 }
 .expand-btn:active {
   transform: scale(0.98);
-  background: linear-gradient(135deg, #e0f2fe, var(--sky-light));
-  border-style: solid;
+  background: #dbeafe;
+  border-color: #93c5fd;
 }
 .expand-btn svg { width: 14px; height: 14px; transition: transform 0.3s; }
 .expand-btn.expanded svg { transform: rotate(180deg); }
@@ -1047,7 +1048,7 @@ body.modal-open #app-root {
   border-color: #fecdd3;
 }
 
-/* ========== 深色模式 ========== */
+/* ========== 深色模式 Tag ========== */
 [data-theme="dark"] .tag-teal {
   background: #064e3b;
   color: #6ee7b7;
@@ -1881,15 +1882,15 @@ details.event-card:not([open]) .event-content-wrapper {
   .btt-ring-progress { transition: none; }
 }
 /* ============================================================ */
-/* ⭐ 快速跳轉圓點                                                */
+/* ⭐ 快速跳轉圓點（精簡留白）                                     */
 /* ============================================================ */
 .day-progress-dots {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 6px 0 8px;
-  margin-bottom: 6px;
+  padding: 2px 0 6px;
+  margin-bottom: 2px;
 }
 .day-dot {
   width: 8px;
@@ -1962,6 +1963,94 @@ details.event-card:not([open]) .event-content-wrapper {
 [data-theme="dark"] .forecast-badge.real { background: #1e3a8a; color: #bfdbfe; border-color: #1e40af; }
 [data-theme="dark"] .forecast-badge.climate { background: #78350f; color: #fde68a; border-color: #92400e; }
 [data-theme="dark"] .forecast-sun { color: #94a3b8; }
+
+/* ============================================================ */
+/* ⭐ 天氣卡片（兩行佈局，margin-bottom 精簡）                     */
+/* ============================================================ */
+.weather-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  background: linear-gradient(to right, #f0f9ff, #e0f2fe);
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+.weather-card.climate {
+  background: linear-gradient(to right, #fffbeb, #fef3c7);
+  border-color: #fde68a;
+}
+.weather-card .weather-row-1 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.weather-card .weather-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.weather-card .weather-loc {
+  font-weight: 800;
+  color: #0369a1;
+}
+.weather-card.climate .weather-loc {
+  color: #b45309;
+}
+.weather-card .weather-temp {
+  font-weight: 800;
+  color: #334155;
+  font-variant-numeric: tabular-nums;
+}
+.weather-card .weather-rain {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0ea5e9;
+  margin-left: auto;
+}
+.weather-card.climate .weather-rain {
+  color: #b45309;
+}
+.weather-card .weather-climate-badge {
+  margin-left: auto;
+  font-size: 9px;
+  color: #b45309;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+.weather-card .weather-row-2 {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.weather-card .weather-row-3 {
+  font-size: 10px;
+  color: #475569;
+  font-weight: 700;
+  line-height: 1.4;
+  padding-top: 1px;
+}
+[data-theme="dark"] .weather-card {
+  background: linear-gradient(to right, #0c4a6e, #075985);
+  border-color: #0369a1;
+}
+[data-theme="dark"] .weather-card.climate {
+  background: linear-gradient(to right, #78350f, #92400e);
+  border-color: #b45309;
+}
+[data-theme="dark"] .weather-card .weather-loc { color: #7dd3fc; }
+[data-theme="dark"] .weather-card.climate .weather-loc { color: #fde68a; }
+[data-theme="dark"] .weather-card .weather-temp { color: #e2e8f0; }
+[data-theme="dark"] .weather-card .weather-rain { color: #38bdf8; }
+[data-theme="dark"] .weather-card .weather-climate-badge { color: #fde68a; }
+[data-theme="dark"] .weather-card .weather-row-2 { color: #94a3b8; }
+[data-theme="dark"] .weather-card .weather-row-3 { color: #cbd5e1; }
 
 /* ============================================================ */
 /* ⭐ 緊急資訊 Modal 內容                                          */
@@ -2346,9 +2435,13 @@ details.event-card:not([open]) .event-content-wrapper {
 [data-theme="dark"] .ticket-step { color: #ddd6fe; }
 [data-theme="dark"] .ticket-card.zao .ticket-step { color: #bae6fd; }
 [data-theme="dark"] .expand-btn {
-  background: linear-gradient(135deg, #0c4a6e, #075985);
+  background: #0c4a6e;
   border-color: #0369a1;
   color: #7dd3fc;
+}
+[data-theme="dark"] .expand-btn:active {
+  background: #075985;
+  border-color: #0ea5e9;
 }
 [data-theme="dark"] .event-image-carousel { background: #0f172a; border-color: #334155; }
 [data-theme="dark"] .carousel-indicator { background: rgba(0,0,0,0.8); }

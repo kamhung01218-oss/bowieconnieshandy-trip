@@ -290,7 +290,7 @@
  * 焦點卡片（白色）
  * ============================================================ */
 .app-header .focus-card {
-  margin: 0 16px 20px;
+  margin: 0 16px 8px;
   max-width: 72rem;
   margin-left: auto;
   margin-right: auto;
