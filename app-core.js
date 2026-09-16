@@ -884,71 +884,107 @@ window.scrollToTop = scrollToTop;
   document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
   update();
 })();
-// ==================== 📲 PWA 安裝引導 ====================
+// ==================== 📲 PWA 安裝引導（穩健版） ====================
 (function setupInstallPrompt() {
   const btn = document.getElementById('install-app-btn');
-  if (!btn) return;
-
-  let deferredPrompt = null;
-
-  const isStandalone =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true;
-
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-  // 已安裝 → 直接隱藏按鈕
-  if (isStandalone) {
-    btn.style.display = 'none';
+  if (!btn) {
+    console.warn('[Install] 找不到 #install-app-btn');
     return;
   }
 
-  // Android / 桌面 Chrome：攔截系統提示，改用自訂按鈕
+  let deferredPrompt = null;
+
+  // ---- 判斷執行環境 ----
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/.test(ua);
+
+  // 是否已安裝 / 已在獨立視窗
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches ||
+    window.matchMedia('(display-mode: minimal-ui)').matches ||
+    window.navigator.standalone === true;
+
+  // 是否已被使用者關閉過（記住 7 天）
+  const DISMISS_KEY = 'tohoku_install_dismissed_at';
+  const dismissedAt = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10);
+  const dismissedRecently = dismissedAt && (Date.now() - dismissedAt) < 7 * 24 * 60 * 60 * 1000;
+
+  // ---- 決定是否顯示按鈕 ----
+  function shouldShow() {
+    if (isStandalone) return false;        // 已安裝 → 不顯示
+    if (dismissedRecently) return false;   // 使用者關過 → 不顯示
+    return true;                            // 其他一律顯示
+  }
+
+  function show() {
+    if (shouldShow()) btn.style.display = 'inline-flex';
+    else btn.style.display = 'none';
+  }
+  function hide() {
+    btn.style.display = 'none';
+  }
+
+  // 初次顯示：延遲 800ms 讓版面穩定
+  setTimeout(show, 800);
+
+  // ---- 攔截 Android / 桌面 Chrome 的系統提示 ----
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    btn.style.display = 'inline-flex';
+    console.log('[Install] beforeinstallprompt 已捕獲');
+    show(); // 確保按鈕顯示
   });
 
-  // iOS Safari：永遠顯示（因為 iOS 沒有 beforeinstallprompt）
-  if (isIOS) {
-    btn.style.display = 'inline-flex';
-  }
-
-  // 安裝成功後隱藏
+  // ---- 已安裝後隱藏 ----
   window.addEventListener('appinstalled', () => {
-    btn.style.display = 'none';
+    hide();
+    try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch(e) {}
     if (typeof showToast === 'function') showToast('🎉 已安裝到桌面！', '📲');
   });
 
-  // 全域觸發函數（給 HTML 的 onclick 呼叫）
+  // ---- 點擊行為 ----
   window.triggerInstall = async function () {
     if (typeof haptic === 'function') haptic(10);
 
-    // 情況 1：Android / 桌面 → 呼叫系統安裝視窗
+    // 1) Android / 桌面 Chrome：有原生 prompt 就用
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      if (outcome === 'accepted') {
-        if (typeof showToast === 'function') showToast('🎉 已安裝到桌面！', '📲');
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        if (outcome === 'accepted') {
+          if (typeof showToast === 'function') showToast('🎉 已安裝到桌面！', '📲');
+          hide();
+        }
+      } catch (err) {
+        console.warn('[Install] prompt 失敗:', err);
+        showManualGuide();
       }
       return;
     }
 
-    // 情況 2：iOS → 顯示圖解引導
+    // 2) iOS：顯示三步圖解
     if (isIOS) {
       showIOSInstallGuide();
       return;
     }
 
-    // 情況 3：其他（例如 App 內建瀏覽器）
-    if (typeof showToast === 'function') {
-      showToast('請用 Chrome 或 Safari 開啟本頁', '⚠️');
-    }
+    // 3) 其他情況：顯示通用引導（含「用 Chrome 開啟」提示）
+    showManualGuide();
   };
 
-  // iOS 專屬：三步圖解彈窗
+  // 關閉按鈕（記住關閉時間）
+  window.dismissInstall = function () {
+    try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch(e) {}
+    hide();
+    if (typeof showToast === 'function') showToast('已隱藏，7 天後再提醒', '👌');
+  };
+
+  // ---- iOS 圖解 ----
   function showIOSInstallGuide() {
     const modal = document.createElement('div');
     modal.style.cssText = [
@@ -1004,7 +1040,76 @@ window.scrollToTop = scrollToTop;
       modal.style.transition = 'opacity 0.2s';
       setTimeout(() => modal.remove(), 200);
     });
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.2s';
+        setTimeout(() => modal.remove(), 200);
+      }
+    });
+  }
 
+  // ---- 通用引導（非 iOS、也非 Chrome，或 Chrome 沒觸發 prompt） ----
+  function showManualGuide() {
+    const browser = (() => {
+      if (isIOS && isSafari) return 'iOS Safari';
+      if (isIOS) return 'iOS';
+      if (isAndroid && /Chrome/.test(ua)) return 'Android Chrome';
+      if (/Edg/.test(ua)) return 'Edge';
+      if (/Chrome/.test(ua)) return 'Chrome';
+      if (/Firefox/.test(ua)) return 'Firefox';
+      return '目前瀏覽器';
+    })();
+
+    const modal = document.createElement('div');
+    modal.style.cssText = [
+      'position:fixed', 'inset:0', 'z-index:99999',
+      'background:rgba(0,0,0,0.75)',
+      'backdrop-filter:blur(8px)',
+      '-webkit-backdrop-filter:blur(8px)',
+      'display:flex', 'align-items:center', 'justify-content:center',
+      'padding:20px',
+      'animation:ios-guide-fadein 0.2s ease'
+    ].join(';');
+
+    modal.innerHTML = `
+      <div style="
+        background:#fff; border-radius:20px; padding:24px;
+        max-width:340px; width:100%; text-align:left;
+        box-shadow:0 20px 60px rgba(0,0,0,0.4);
+        font-family:-apple-system,BlinkMacSystemFont,'Noto Sans TC',sans-serif;
+      ">
+        <div style="font-size:48px; margin-bottom:8px; text-align:center;">📲</div>
+        <h3 style="font-size:18px; font-weight:900; margin-bottom:12px; color:#0f172a; text-align:center;">
+          安裝「東北之旅」
+        </h3>
+        <p style="font-size:12px; color:#64748b; margin-bottom:12px; text-align:center;">
+          目前偵測到：<b style="color:#0284c7;">${browser}</b>
+        </p>
+        <div style="font-size:13px; line-height:1.9; color:#334155; background:#f8fafc; padding:12px; border-radius:10px;">
+          請用 <b style="color:#0284c7;">Chrome</b>（Android）或 <b style="color:#0284c7;">Safari</b>（iPhone）開啟本頁，<br>
+          然後：<br>
+          • Android：右上 <b>⋮</b> → 「安裝應用程式」<br>
+          • iPhone：底部 <b>分享 ⬆️</b> → 「加入主畫面」<br>
+          • 桌面 Chrome：網址列右側 <b>⊕</b>
+        </div>
+        <button id="manual-guide-close" style="
+          margin-top:16px; width:100%; padding:12px;
+          background:linear-gradient(135deg,#0ea5e9,#0284c7);
+          color:#fff; font-weight:900; font-size:14px;
+          border:none; border-radius:12px; cursor:pointer;
+          -webkit-tap-highlight-color:transparent;
+        ">知道了</button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.querySelector('#manual-guide-close').addEventListener('click', () => {
+      modal.style.opacity = '0';
+      modal.style.transition = 'opacity 0.2s';
+      setTimeout(() => modal.remove(), 200);
+    });
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         modal.style.opacity = '0';
