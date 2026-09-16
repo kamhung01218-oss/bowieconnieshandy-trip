@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v7.2
+ * app-itinerary.js — v7.3
  * 行程：天氣（含氣候參考 / 日出日落）、行程渲染、輪播、
  *       各項攻略 Modal、行程切換、快速跳轉圓點
  * ============================================================ */
@@ -329,7 +329,8 @@ function buildDayHeaderHtml(dayData, weatherHtml) {
 function buildEventsHtml(dayData) { var html = ''; for (var i = 0; i < dayData.events.length; i++) { html += buildSingleEventHtml(dayData, dayData.events[i], i); } return html; }
 
 function buildSingleEventHtml(dayData, event, index) {
-  var isOpen = index === 0 ? 'open' : '';
+  // ⭐ 修改：所有行程預設收合（原本是 index === 0 ? 'open' : ''）
+  var isOpen = '';
   var timeParts = event.time.split(' - ');
   var startTime = timeParts[0].trim();
   var endTime = timeParts[1] ? timeParts[1].trim() : '';
