@@ -1,6 +1,5 @@
 /* ============================================================
- * emergency.js — 緊急資訊資料
- * 可自由編輯電話、飯店資訊、應變指南
+ * emergency.js — 緊急資訊資料 + Modal 渲染
  * ============================================================ */
 
 const EMERGENCY_DATA = {
@@ -53,3 +52,131 @@ const EMERGENCY_DATA = {
     ]}
   ]
 };
+
+// ==================== 渲染 ====================
+function renderEmergencyContent() {
+  const container = document.getElementById('emergency-content');
+  if (!container) return;
+
+  const data = EMERGENCY_DATA;
+  let html = '';
+
+  // ---------- 1. 緊急熱線 ----------
+  html += '<div class="emergency-section">';
+  html += '<div class="emergency-section-title">🚨 緊急熱線</div>';
+  data.hotlines.forEach(item => {
+    const tel = String(item.tel).replace(/[^\d+#]/g, '');
+    html += `
+      <a href="tel:${tel}" class="emergency-call-btn">
+        <span class="emergency-call-icon">${item.icon}</span>
+        <span class="emergency-call-info">
+          <span class="emergency-call-label">${escapeHtml(item.label)}</span>
+          <span class="emergency-call-desc">${escapeHtml(item.desc)}</span>
+        </span>
+        <span class="emergency-call-tel">${escapeHtml(item.tel)}</span>
+      </a>`;
+  });
+  html += '</div>';
+
+  // ---------- 2. 住宿飯店 ----------
+  html += '<div class="emergency-section">';
+  html += '<div class="emergency-section-title">🏨 住宿聯絡</div>';
+  data.hotels.forEach(h => {
+    const tel = String(h.tel).replace(/[^\d+#-]/g, '');
+    html += `
+      <a href="tel:${tel}" class="emergency-hotel-row">
+        <div class="emergency-hotel-day">${escapeHtml(h.day)}<br><span>${escapeHtml(h.date)}</span></div>
+        <div class="emergency-hotel-info">
+          <div class="emergency-hotel-name">${escapeHtml(h.name)}</div>
+          <div class="emergency-hotel-note">${escapeHtml(h.note)}</div>
+        </div>
+        <div class="emergency-hotel-tel">${escapeHtml(h.tel)}</div>
+      </a>`;
+  });
+  html += '</div>';
+
+  // ---------- 3. 交通 / 醫療 ----------
+  html += '<div class="emergency-section">';
+  html += '<div class="emergency-section-title">🏥 交通與醫療</div>';
+  data.transport.forEach(item => {
+    const tel = String(item.tel).replace(/[^\d+#-]/g, '');
+    html += `
+      <a href="tel:${tel}" class="emergency-call-btn small">
+        <span class="emergency-call-icon">${item.icon}</span>
+        <span class="emergency-call-info">
+          <span class="emergency-call-label">${escapeHtml(item.label)}</span>
+          <span class="emergency-call-desc">${escapeHtml(item.desc)}</span>
+        </span>
+        <span class="emergency-call-tel">${escapeHtml(item.tel)}</span>
+      </a>`;
+  });
+  html += '</div>';
+
+  // ---------- 4. 應變指南 ----------
+  html += '<div class="emergency-section">';
+  html += '<div class="emergency-section-title">📋 應變指南</div>';
+  data.guides.forEach((g, idx) => {
+    html += `
+      <details class="emergency-guide" ${idx === 0 ? 'open' : ''}>
+        <summary>
+          <span>${g.icon}</span>
+          <span>${escapeHtml(g.label)}</span>
+        </summary>
+        <ol class="emergency-steps">
+          ${g.steps.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+        </ol>
+      </details>`;
+  });
+  html += '</div>';
+
+  // ---------- 底部提示 ----------
+  html += `
+    <div class="emergency-tip">
+      💡 點擊電話號碼可直接撥號<br>
+      建議出發前先把這頁存成截圖或加到書籤
+    </div>`;
+
+  container.innerHTML = html;
+}
+
+// ==================== 開啟 / 關閉 ====================
+function openEmergencyModal() {
+  const modal = document.getElementById('emergency-modal');
+  if (!modal) {
+    console.warn('[Emergency] 找不到 #emergency-modal');
+    return;
+  }
+  // 先渲染內容
+  renderEmergencyContent();
+  // 顯示
+  if (typeof showModal === 'function') {
+    showModal('emergency-modal');
+  } else {
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+    document.body.classList.add('modal-open');
+  }
+  modal.classList.remove('hidden');
+  if (typeof haptic === 'function') haptic(8);
+}
+
+function closeEmergencyModal() {
+  const modal = document.getElementById('emergency-modal');
+  if (!modal) return;
+  if (typeof hideModal === 'function') {
+    hideModal('emergency-modal');
+  } else {
+    modal.classList.remove('active');
+    setTimeout(() => { modal.style.display = 'none'; }, 300);
+    const anyOpen = document.querySelector('.modal-overlay.active');
+    if (!anyOpen) document.body.classList.remove('modal-open');
+  }
+  setTimeout(() => modal.classList.add('hidden'), 300);
+  if (typeof haptic === 'function') haptic(6);
+}
+
+// ==================== 匯出到 window ====================
+window.openEmergencyModal = openEmergencyModal;
+window.closeEmergencyModal = closeEmergencyModal;
+
+console.log('[Emergency] 載入完成，可呼叫 window.openEmergencyModal()');
