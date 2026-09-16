@@ -21,11 +21,14 @@
 <script src="https://cdn.jsdelivr.net/npm/firebase@11.6.1/firebase-firestore-compat.js"></script>
 
 <script>
-/* 主題初始化（避免 FOUC） */
+/* 主題初始化（避免 FOUC，同步 html + body） */
 (function() {
   try {
-    const t = localStorage.getItem('tohoku_theme') || 'light';
+    var t = localStorage.getItem('tohoku_theme') || 'light';
     document.documentElement.setAttribute('data-theme', t);
+    document.addEventListener('DOMContentLoaded', function() {
+      document.body.setAttribute('data-theme', t);
+    });
   } catch(e) {}
 })();
 </script>

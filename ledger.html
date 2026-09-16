@@ -19,8 +19,21 @@
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
 
 <link rel="stylesheet" href="./ledger.css">
+
+<script>
+/* 記帳本主題初始化（與主站同步，避免 FOUC） */
+(function() {
+  try {
+    var t = localStorage.getItem('tohoku_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+    document.addEventListener('DOMContentLoaded', function() {
+      document.body.setAttribute('data-theme', t);
+    });
+  } catch(e) {}
+})();
+</script>
 </head>
-<body class="relative" data-theme="light">
+<body class="relative">
 
 <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 

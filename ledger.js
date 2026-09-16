@@ -1,5 +1,5 @@
 /* ============================================================
- * ledger.js — 隨行記帳本主邏輯 v2.4（修復溢出）
+ * ledger.js — 隨行記帳本主邏輯 v2.5（主題同步）
  * ============================================================ */
 'use strict';
 
@@ -217,18 +217,31 @@ function decPendingWrites() {
  * 十、深色模式
  * ============================================================ */
 const THEME_KEY = 'tohoku_ledger_theme';
+
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY) || 'light';
+  // 優先讀取主站主題 key，其次讀取記帳本自己的 key
+  const saved = localStorage.getItem('tohoku_theme')
+             || localStorage.getItem(THEME_KEY)
+             || 'light';
   applyTheme(saved);
 }
+
 function toggleTheme() {
   const cur = document.documentElement.getAttribute('data-theme') || 'light';
   const next = cur === 'dark' ? 'light' : 'dark';
   applyTheme(next);
+  // ⭐ 同步寫入兩個 key，讓主站與記帳本保持一致
+  localStorage.setItem('tohoku_theme', next);
   localStorage.setItem(THEME_KEY, next);
+  // ⭐ 通知主站切換
+  if (window.parent && window.parent !== window) {
+    try { window.parent.postMessage({ type: 'setTheme', theme: next }, '*'); } catch(e) {}
+  }
   haptic(8);
 }
+
 function applyTheme(theme) {
+  theme = (theme === 'dark') ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', theme);
   document.body.setAttribute('data-theme', theme);
   const btn = document.getElementById('theme-toggle-btn');
@@ -897,6 +910,7 @@ async function saveExpense() {
       } else {
         const newEntry = { id: "exp-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5), ...expenseData };
         expenses.push(newEntry);
+        lastExpense = newEntry;
         history.unshift(createHistoryEntry("add", newEntry, `新增了「${escapeHtml(newEntry.desc)}」(${newEntry.amount} ${newEntry.currency})`));
       }
       history = history.slice(0, 200);
@@ -1514,22 +1528,97 @@ function sanitizeHistory(h) {
 }
 
 /* ============================================================
- * 三十八、初始化
+ * 三十八、返回頂部
+ * ============================================================ */
+function scrollToTop() {
+  try {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e) {
+    window.scrollTo(0, 0);
+  }
+  haptic(10);
+}
+window.scrollToTop = scrollToTop;
+
+(function setupBackToTopLedger() {
+  const btn = document.getElementById('back-to-top-ledger');
+  if (!btn) return;
+  const ring = btn.querySelector('.btt-ring-progress');
+  const SHOW_AT = Math.max(300, window.innerHeight * 0.55);
+  const RING_CIRC = ring ? ring.r.baseVal.value * 2 * Math.PI : 0;
+  if (ring && RING_CIRC > 0) {
+    ring.style.strokeDasharray = `${RING_CIRC}`;
+    ring.style.strokeDashoffset = `${RING_CIRC}`;
+  }
+  let ticking = false;
+  let scrollingTimer = null;
+  function getScrollY() {
+    return window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  }
+  function getMaxScroll() {
+    const doc = document.documentElement;
+    return Math.max(1, (doc.scrollHeight || document.body.scrollHeight) - window.innerHeight);
+  }
+  function update() {
+    const y = getScrollY();
+    const max = getMaxScroll();
+    btn.classList.toggle('visible', y > SHOW_AT);
+    if (ring && RING_CIRC > 0) {
+      const p = Math.min(1, Math.max(0, y / max));
+      ring.style.strokeDashoffset = `${RING_CIRC * (1 - p)}`;
+    }
+    btn.classList.add('scrolling');
+    clearTimeout(scrollingTimer);
+    scrollingTimer = setTimeout(() => btn.classList.remove('scrolling'), 220);
+    ticking = false;
+  }
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
+  update();
+})();
+
+/* ============================================================
+ * 三十九、初始化
  * ============================================================ */
 window.addEventListener("DOMContentLoaded", () => {
+  // ⭐ 通知主站「記帳本已就緒」，請求同步主題
+  if (window.parent && window.parent !== window) {
+    try { window.parent.postMessage({ type: 'ledgerReady' }, '*'); } catch (e) {}
+  }
+
   initTheme();
   updateCurrentUserBadge();
   initCategoryGrid();
   initSnowEffect();
   initRandomCharacters();
   initExchangeRates();
+
   // 付款方式下拉選單監聽
   const paySelect = document.getElementById('payment-method-select');
   if (paySelect) {
     paySelect.addEventListener('change', (e) => { selectedPaymentMethod = e.target.value; haptic(5); });
   }
+
+  // ⭐ 模板按鈕監聽
+  document.querySelectorAll('.template-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.templateIdx);
+      if (!isNaN(idx) && expenseTemplates[idx]) applyTemplate(expenseTemplates[idx]);
+    });
+  });
+
   window.addEventListener('storage', (e) => {
     if (e.key === 'tohoku_current_user') updateCurrentUserBadge();
+    if (e.key === 'tohoku_theme') {
+      const t = e.newValue || 'light';
+      applyTheme(t);
+    }
   });
   setInterval(updateCurrentUserBadge, 2000);
 
@@ -1543,7 +1632,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
- * 三十九、全域匯出
+ * 四十、全域匯出
  * ============================================================ */
 window.openExpenseModal = openExpenseModal;
 window.closeExpenseModal = closeExpenseModal;
@@ -1576,3 +1665,4 @@ window.openBudgetModal = openBudgetModal;
 window.closeBudgetModal = closeBudgetModal;
 window.saveBudget = saveBudget;
 window.clearBudget = clearBudget;
+window.scrollToTop = scrollToTop;
