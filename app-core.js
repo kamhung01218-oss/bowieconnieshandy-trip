@@ -1,8 +1,9 @@
 /* ============================================================
- * app-core.js — v7.2
+ * app-core.js — v7.3
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
  *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、
  *       深色模式、緊急資訊
+ * 效能優化：雪花減量、捲動偵測、返回頂部節流
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -295,7 +296,6 @@ function initAppAfterLogin() {
 
   setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal', 'emergency-modal']);
 
-  // ⭐ 讀取上次選的 Day
   const savedDay = parseInt(localStorage.getItem('tohoku_last_day')) || 1;
   if (savedDay >= 1 && savedDay <= winterItineraries.length) {
     window._lastActiveDay = savedDay;
@@ -690,23 +690,32 @@ function initRandomCharacters() { setTimeout(spawnCharacters, 2000); }
 function snowParticles() { const p = document.createElement("div"); p.className = "particle"; const colors = ["#ffffff", "#e0f2fe", "#bae6fd", "#38bdf8", "#a78bfa"]; for (let i = 0; i < 30; i++) { const el = document.createElement("div"); el.style.width = `${Math.random() * 10 + 5}px`; el.style.height = el.style.width; el.style.background = colors[Math.floor(Math.random() * colors.length)]; el.style.left = `${Math.random() * 100}vw`; el.style.top = `${Math.random() * 20 - 10}vh`; el.style.opacity = Math.random(); el.style.animation = `snowfall ${Math.random() * 3 + 2}s linear forwards`; p.appendChild(el); } document.body.appendChild(p); setTimeout(() => p.remove(), 5000); }
 window.jump = jump;
 
+// ⭐ 效能優化版雪花
 function initSnowEffect() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const c = document.getElementById("snow-fall");
   if (!c) return;
   c.innerHTML = "";
-  const isMobile = window.innerWidth < 768;
-  const isLowEnd = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
-  const count = isLowEnd ? 8 : (isMobile ? 14 : 22);
+  const w = window.innerWidth;
+  const isLowEnd = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+                   || (navigator.deviceMemory && navigator.deviceMemory <= 2);
+  let count;
+  if (isLowEnd) count = 4;
+  else if (w < 480) count = 6;
+  else if (w < 768) count = 8;
+  else count = 14;
   const anims = ["snowfall", "snowfall-small"];
   const colors = ["#ffffff", "#f0f9ff"];
+  const frag = document.createDocumentFragment();
   for (let i = 0; i < count; i++) {
     const f = document.createElement("div");
     f.className = "snowflake";
     const size = Math.random() * 6 + 3;
     f.style.cssText = `left:${Math.random()*100}%;width:${size}px;height:${size}px;background:${colors[i%2]};animation:${anims[i%2]} ${Math.random()*10+10}s linear infinite;animation-delay:${Math.random()*-12}s;`;
-    c.appendChild(f);
+    frag.appendChild(f);
   }
+  c.appendChild(frag);
+
   if (!window._snowVisibilityBound) {
     window._snowVisibilityBound = true;
     document.addEventListener('visibilitychange', () => {
@@ -715,6 +724,16 @@ function initSnowEffect() {
       const state = document.hidden ? 'paused' : 'running';
       sf.querySelectorAll('.snowflake').forEach(el => { el.style.animationPlayState = state; });
     });
+
+    // ⭐ 捲動中暫停角色動畫
+    let scrollIdleTimer = null;
+    document.addEventListener('scroll', () => {
+      document.body.classList.add('is-scrolling');
+      clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = setTimeout(() => {
+        document.body.classList.remove('is-scrolling');
+      }, 150);
+    }, { passive: true });
   }
 }
 
@@ -899,7 +918,7 @@ function renderEmergencyContent() {
   `;
 }
 
-// ==================== ⭐ 返回頂部（IG 風格） ====================
+// ==================== ⭐ 返回頂部（IG 風格 + 節流優化） ====================
 function scrollToTop() {
   try {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -925,6 +944,7 @@ window.scrollToTop = scrollToTop;
 
   let ticking = false;
   let scrollingTimer = null;
+  let lastUpdate = 0;
 
   function getScrollY() {
     return window.scrollY
@@ -942,6 +962,11 @@ window.scrollToTop = scrollToTop;
   }
 
   function update() {
+    // ⭐ 節流：圓環最多每 80ms 更新一次
+    const now = performance.now();
+    if (now - lastUpdate < 80) { ticking = false; return; }
+    lastUpdate = now;
+
     const y = getScrollY();
     const max = getMaxScroll();
 

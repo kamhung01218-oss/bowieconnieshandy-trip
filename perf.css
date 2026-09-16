@@ -1,0 +1,96 @@
+/* ============================================================
+ * perf.css — 效能優化補丁
+ * 放在 style.css 之後載入
+ * ============================================================ */
+
+/* 1. 雪花在手機只保留 8 個（原本 14 個） */
+@media (max-width: 768px) {
+  #snow-fall .snowflake:nth-child(n+9) { display: none; }
+}
+@media (max-width: 480px) {
+  #snow-fall .snowflake:nth-child(n+7) { display: none; }
+}
+
+/* 2. 圖片載入前不用 blur 濾鏡（最吃 GPU 的元兇） */
+img.lazy-fade {
+  filter: none !important;
+  transition: opacity 0.35s ease, transform 0.4s ease;
+}
+img.lazy-fade:not(.loaded) {
+  opacity: 0;
+  transform: scale(1.02);
+}
+
+/* 3. 卡片陰影簡化：從 3 層降到 1 層 */
+.glass-card,
+.glass-card.event-card {
+  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08) !important;
+}
+.glass-card.event-card[open] {
+  box-shadow: 0 4px 12px -4px rgba(2, 132, 199, 0.15) !important;
+}
+
+/* 4. day-section 加 contain，讓瀏覽器知道範圍 */
+.day-section {
+  contain: layout style paint;
+}
+.day-section.hidden {
+  display: none !important;
+  contain: strict;
+}
+
+/* 5. 關閉所有「裝飾性」脈衝動畫（很吃 CPU） */
+.timeline-item.status-next .timeline-node::after,
+.timeline-item.status-active .timeline-node::after {
+  animation: none !important;
+}
+.timeline-item.status-active .timeline-node {
+  box-shadow: 0 0 0 3px var(--snow-bg-1), 0 0 10px 2px rgba(56, 189, 248, 0.5) !important;
+}
+
+/* 6. 底部導航的 backdrop-filter 移除 */
+@media (max-width: 768px) {
+  .bottom-nav {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(255, 255, 255, 0.99) !important;
+  }
+  [data-theme="dark"] .bottom-nav {
+    background: rgba(15, 23, 42, 0.99) !important;
+  }
+  .day-tabs-wrapper {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .app-header .tools-menu-backdrop { backdrop-filter: none !important; }
+}
+
+/* 7. Modal 開啟時，主體不再做縮放/brightness（省 GPU） */
+body.modal-open #app-root {
+  filter: none !important;
+}
+@media (min-width: 1024px) {
+  body.modal-open #app-root {
+    transform: none !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* 8. 捲動中：暫停所有非必要動畫 */
+body.is-scrolling .walking-character,
+body.is-scrolling .timeline-item.status-active .timeline-stamp-time::after,
+body.is-scrolling .overview-cta,
+body.is-scrolling .tools-toggle,
+body.is-scrolling .overview-cta-dot,
+body.is-scrolling .focus-progress-fill::after {
+  animation-play-state: paused !important;
+}
+
+/* 9. will-change 只用在高頻動畫上，其他地方移除 */
+.walking-character { will-change: auto; }
+.timeline-item.status-active .timeline-node { will-change: auto; }
+
+/* 10. 減少陰影模糊半徑（負擔與半徑平方成正比） */
+.modal-box {
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.2) !important;
+}
