@@ -810,7 +810,9 @@ function closeReceiptModal() {
 }
 function openDriveFolder(url) {
   haptic(10);
-  window.open(url, '_blank');
+  // 因為 PWA 獨立 App 模式會阻擋 window.open，改用 location.href 直接在當前視窗跳轉
+  // 這樣 iOS/Android 就能成功開啟 Google Drive App 或 Safari 瀏覽器
+  window.location.href = url;
 }
 window.openReceiptModal = openReceiptModal;
 window.closeReceiptModal = closeReceiptModal;
