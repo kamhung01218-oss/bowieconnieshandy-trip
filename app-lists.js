@@ -1,6 +1,9 @@
 /* ============================================================
- * app-lists.js — v7.0
+ * app-lists.js — v7.2
  * 清單：行前預訂清單、裝備清單、購物清單、購物總覽
+ *
+ * v7.2 變更：
+ *   - 購物「新增項目」的類別改成下拉選單（8 個預設分類）
  * ============================================================ */
 
 // ==================== Modal 狀態 ====================
@@ -8,6 +11,21 @@ const modalUIState = {
   'booking-modal': { activeTab: 'all', expanded: {} },
   'equip-modal': { activeTab: 'all', expanded: {} }
 };
+
+// ⭐ 購物總覽檢視模式
+let shoppingViewMode = 'byEvent';
+
+// ⭐ 購物類別預設清單
+const SHOPPING_CATEGORIES = [
+  { value: "餐飲",   label: "🍜 餐飲" },
+  { value: "伴手禮", label: "🎁 伴手禮" },
+  { value: "藥妝",   label: "💊 藥妝" },
+  { value: "衣物",   label: "👕 衣物" },
+  { value: "玩具",   label: "🎮 玩具" },
+  { value: "電子",   label: "📱 電子" },
+  { value: "日用",   label: "🏠 日用" },
+  { value: "其他",   label: "📦 其他" }
+];
 
 // ==================== 行前預訂 ====================
 const bookingList = [
@@ -141,6 +159,8 @@ function refreshCurrentDay() {
     }
   }
 }
+
+// ⭐ v7.2：類別改成下拉選單
 function renderShoppingList(eventTitle) {
   if (!currentUser || currentUser === "訪客") { return `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用購物清單</p><p class="text-xs text-slate-500">請切換為家庭成員身份</p></div>`; }
   const items = loadShoppingItems(eventTitle);
@@ -152,9 +172,26 @@ function renderShoppingList(eventTitle) {
     items.forEach((item, index) => { const checked = item.planned ? 'checked' : ''; html += `<div class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg"><input type="checkbox" ${checked} onchange="toggleShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" data-index="${index}" class="w-4 h-4 shrink-0"><div class="flex-1 min-w-0"><strong class="text-sm text-slate-800">${escapeHtml(item.name)}</strong>${item.category ? `<span class="text-[10px] text-slate-500 ml-2">${escapeHtml(item.category)}</span>` : ''}${item.note ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate">📝 ${escapeHtml(item.note)}</p>` : ''}</div><button onclick="deleteShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" data-index="${index}" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`; });
     html += `</div>`;
   }
-  html += `<div class="mt-4 border-t border-slate-200 pt-4"><h4 class="text-sm font-bold text-slate-800 mb-2">新增購物項目</h4><div class="flex flex-col gap-2"><input id="new-shopping-name" type="text" placeholder="物品名稱 *" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><div class="flex gap-2"><input id="new-shopping-category" type="text" placeholder="類別" class="w-1/3 border border-slate-300 rounded-lg px-3 py-2 text-xs"><input id="new-shopping-note" type="text" placeholder="備註" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"></div><button onclick="addShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0">新增</button></div></div>`;
+
+  // ⭐ 類別下拉選單
+  let optionsHtml = `<option value="">— 選擇類別 —</option>`;
+  SHOPPING_CATEGORIES.forEach(cat => {
+    optionsHtml += `<option value="${escAttr(cat.value)}">${cat.label}</option>`;
+  });
+
+  html += `<div class="mt-4 border-t border-slate-200 pt-4"><h4 class="text-sm font-bold text-slate-800 mb-2">➕ 新增購物項目</h4>`;
+  html += `<div class="flex flex-col gap-2">`;
+  html += `<input id="new-shopping-name" type="text" placeholder="物品名稱 *" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs">`;
+  html += `<div class="flex gap-2">`;
+  html += `<select id="new-shopping-category" class="w-2/5 border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white">${optionsHtml}</select>`;
+  html += `<input id="new-shopping-note" type="text" placeholder="備註（選填）" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs">`;
+  html += `</div>`;
+  html += `<button onclick="addShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0 w-full">＋ 新增</button>`;
+  html += `</div></div>`;
+
   return html;
 }
+
 function addShoppingItem(btn) { const t = btn.dataset.eventTitle; if (!currentUser || currentUser === "訪客") { showToast("請先登入", "⚠️"); return; } const n = document.getElementById('new-shopping-name'); const c = document.getElementById('new-shopping-category'); const no = document.getElementById('new-shopping-note'); const name = n.value.trim(); if (!name) { showToast("請輸入物品名稱", "⚠️"); return; } const items = loadShoppingItems(t); items.push({ name, category: c.value.trim(), note: no.value.trim(), planned: false }); saveShoppingItems(t, items); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); showToast("✅ 已新增購物項目"); haptic(10); if (window.AppHeader) window.AppHeader.render(); }
 function toggleShoppingItem(el) { const t = el.dataset.eventTitle; const i = parseInt(el.dataset.index); const items = loadShoppingItems(t); items[i].planned = !items[i].planned; saveShoppingItems(t, items); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); haptic(5); if (window.AppHeader) window.AppHeader.render(); }
 function deleteShoppingItem(btn) { const t = btn.dataset.eventTitle; const i = parseInt(btn.dataset.index); const items = loadShoppingItems(t); const snapshot = { ...items[i] }; items.splice(i, 1); saveShoppingItems(t, items); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); if (window.AppHeader) window.AppHeader.render(); showUndoToast(`已刪除「${snapshot.name}」`, "🗑", () => { const cur = loadShoppingItems(t); cur.splice(Math.min(i, cur.length), 0, snapshot); saveShoppingItems(t, cur); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); if (window.AppHeader) window.AppHeader.render(); showToast("✅ 已還原", "↩️"); }); }
@@ -162,6 +199,7 @@ function deleteShoppingItem(btn) { const t = btn.dataset.eventTitle; const i = p
 // ==================== 購物清單總覽 ====================
 function openAllShoppingModal() { const m = document.getElementById('all-shopping-modal'); if (!m) return; m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); renderAllShoppingContent(); haptic(8); }
 function closeAllShoppingModal() { const m = document.getElementById('all-shopping-modal'); if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; refreshCurrentDay(); }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
+
 function getAllShoppingItems() {
   if (!currentUser || currentUser === "訪客") return [];
   const userData = getUserData();
@@ -169,25 +207,163 @@ function getAllShoppingItems() {
   winterItineraries.forEach(day => { day.events.forEach(event => { const items = userData.shopping[event.title] || []; if (items.length > 0) { groups.push({ day: day.day, dateLabel: day.dateLabel, eventTitle: event.title, eventTime: event.time, eventIndex: day.events.indexOf(event), items: items }); } }); });
   return groups;
 }
+
+function setShoppingViewMode(mode) {
+  shoppingViewMode = mode === 'byCategory' ? 'byCategory' : 'byEvent';
+  haptic(6);
+  renderAllShoppingContent();
+}
+window.setShoppingViewMode = setShoppingViewMode;
+
 function renderAllShoppingContent() {
   const container = document.getElementById('all-shopping-content'); if (!container) return;
   if (!currentUser) { container.innerHTML = '<div class="text-center py-8 text-slate-500">請先登入</div>'; return; }
   if (currentUser === "訪客") { container.innerHTML = `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用購物清單</p><p class="text-xs text-slate-500">請切換為家庭成員身份</p></div>`; return; }
+
   const groups = getAllShoppingItems();
   const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-3"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="text-xs font-black text-sky-800">${escapeHtml(currentUser)} 的購物清單總覽</div></div>`;
-  if (groups.length === 0) { container.innerHTML = userBanner + `<div class="text-center py-12 px-4"><div class="text-6xl mb-3">🛒</div><p class="text-sm font-bold text-slate-700 mb-1">購物清單還是空的</p><p class="text-xs text-slate-500 leading-relaxed">在行程卡片的「🛍️ 購物清單」按鈕中<br>加入你想買的東西吧！</p></div>`; return; }
+
+  if (groups.length === 0) {
+    container.innerHTML = userBanner + `<div class="text-center py-12 px-4"><div class="text-6xl mb-3">🛒</div><p class="text-sm font-bold text-slate-700 mb-1">購物清單還是空的</p><p class="text-xs text-slate-500 leading-relaxed">在行程卡片的「🛍️ 購物清單」按鈕中<br>加入你想買的東西吧！</p></div>`;
+    return;
+  }
+
   let totalItems = 0; let checkedItems = 0;
   groups.forEach(g => { g.items.forEach(item => { totalItems++; if (item.planned) checkedItems++; }); });
   const percent = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
-  let html = userBanner + `<div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 mb-4"><div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-emerald-800">${percent === 100 ? '🎉 全部買齊！' : '📊 購物進度'}</span><span class="text-sm font-black text-emerald-700">${checkedItems} / ${totalItems}</span></div><div class="h-2 bg-white/70 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500" style="width:${percent}%"></div></div></div>`;
-  groups.forEach((group, gIdx) => {
-    const groupChecked = group.items.filter(i => i.planned).length; const groupTotal = group.items.length; const allDone = groupChecked === groupTotal; const safeTitle = escAttr(group.eventTitle);
-    html += `<details class="mb-3 bg-white border ${allDone ? 'border-emerald-200' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden group" ${gIdx === 0 ? 'open' : ''}><summary class="cursor-pointer px-4 py-3 hover:bg-slate-50 transition-colors list-none flex items-center gap-3"><div class="shrink-0 w-10 h-10 rounded-full ${allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'} flex items-center justify-center text-xs font-black border-2 border-white shadow-sm">D${group.day}</div><div class="flex-1 min-w-0"><div class="text-[10px] font-bold text-sky-600 tracking-wide">${escapeHtml(group.dateLabel)}</div><div class="text-sm font-bold text-slate-800 truncate">${escapeHtml(group.eventTitle)}</div></div><div class="shrink-0 flex items-center gap-1.5"><span class="text-[10px] font-black ${allDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">${groupChecked}/${groupTotal}</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></summary><div class="border-t border-slate-100 bg-slate-50/50 p-3 space-y-1.5">`;
-    group.items.forEach((item, idx) => { html += `<label class="flex items-center gap-2.5 p-2.5 bg-white border ${item.planned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} rounded-xl cursor-pointer transition-all hover:shadow-sm active:scale-[0.99]"><input type="checkbox" ${item.planned ? 'checked' : ''} data-event-title="${safeTitle}" data-index="${idx}" onchange="handleAllShoppingToggle(this)" class="w-4 h-4 shrink-0"><div class="flex-1 min-w-0"><div class="flex items-center gap-2"><strong class="text-[13px] ${item.planned ? 'text-slate-500 line-through' : 'text-slate-800'} truncate">${escapeHtml(item.name)}</strong>${item.category ? `<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">${escapeHtml(item.category)}</span>` : ''}</div>${item.note ? `<p class="text-[10px] text-slate-500 mt-0.5 truncate">📝 ${escapeHtml(item.note)}</p>` : ''}</div></label>`; });
-    html += `<button onclick="jumpToEvent(${group.day}, ${group.eventIndex})" class="mt-2 w-full text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 py-2 rounded-lg transition active:scale-95">📍 前往行程查看</button></div></details>`;
-  });
+
+  let html = userBanner;
+  html += `<div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 mb-4"><div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-emerald-800">${percent === 100 ? '🎉 全部買齊！' : '📊 購物進度'}</span><span class="text-sm font-black text-emerald-700">${checkedItems} / ${totalItems}</span></div><div class="h-2 bg-white/70 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500" style="width:${percent}%"></div></div></div>`;
+
+  html += `<div class="flex items-center gap-2 mb-3 bg-slate-100 border border-slate-200 rounded-xl p-1">`;
+  html += `<button onclick="setShoppingViewMode('byEvent')" class="${shoppingViewMode === 'byEvent' ? 'bg-white shadow-sm text-sky-800' : 'text-slate-500'} flex-1 py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5">📅 按景點</button>`;
+  html += `<button onclick="setShoppingViewMode('byCategory')" class="${shoppingViewMode === 'byCategory' ? 'bg-white shadow-sm text-sky-800' : 'text-slate-500'} flex-1 py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5">📂 按類別</button>`;
+  html += `</div>`;
+
+  if (shoppingViewMode === 'byEvent') {
+    html += renderShoppingByEvent(groups);
+  } else {
+    html += renderShoppingByCategory(groups);
+  }
+
   container.innerHTML = html;
 }
+
+function renderShoppingByEvent(groups) {
+  let html = '';
+  groups.forEach((group, gIdx) => {
+    const groupChecked = group.items.filter(i => i.planned).length;
+    const groupTotal = group.items.length;
+    const allDone = groupChecked === groupTotal;
+    const safeTitle = escAttr(group.eventTitle);
+
+    html += `<details class="mb-3 bg-white border ${allDone ? 'border-emerald-200' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden group" ${gIdx === 0 ? 'open' : ''}>`;
+    html += `<summary class="cursor-pointer px-4 py-3 hover:bg-slate-50 transition-colors list-none flex items-center gap-3">`;
+    html += `<div class="shrink-0 w-10 h-10 rounded-full ${allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'} flex items-center justify-center text-xs font-black border-2 border-white shadow-sm">D${group.day}</div>`;
+    html += `<div class="flex-1 min-w-0"><div class="text-[10px] font-bold text-sky-600 tracking-wide">${escapeHtml(group.dateLabel)}</div><div class="text-sm font-bold text-slate-800 truncate">${escapeHtml(group.eventTitle)}</div></div>`;
+    html += `<div class="shrink-0 flex items-center gap-1.5"><span class="text-[10px] font-black ${allDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">${groupChecked}/${groupTotal}</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div>`;
+    html += `</summary>`;
+    html += `<div class="border-t border-slate-100 bg-slate-50/50 p-3 space-y-3">`;
+
+    const byCat = {};
+    group.items.forEach((item, idx) => {
+      const cat = (item.category || '').trim() || '未分類';
+      if (!byCat[cat]) byCat[cat] = [];
+      byCat[cat].push({ item, idx });
+    });
+
+    const catKeys = Object.keys(byCat);
+    if (catKeys.length === 1 && catKeys[0] === '未分類') {
+      group.items.forEach((item, idx) => { html += renderShoppingItemRow(item, safeTitle, idx); });
+    } else {
+      catKeys.forEach(cat => {
+        const catItems = byCat[cat];
+        const catChecked = catItems.filter(x => x.item.planned).length;
+        const catAllDone = catChecked === catItems.length;
+        html += `<div class="mb-2">`;
+        html += `<div class="flex items-center gap-2 mb-1.5 px-1">`;
+        html += `<span class="text-[11px] font-black ${catAllDone ? 'text-emerald-700' : 'text-slate-600'}">${escapeHtml(cat)}</span>`;
+        html += `<span class="text-[10px] font-bold ${catAllDone ? 'text-emerald-600' : 'text-slate-400'}">${catChecked}/${catItems.length}</span>`;
+        html += `</div>`;
+        html += `<div class="space-y-1.5">`;
+        catItems.forEach(({ item, idx }) => { html += renderShoppingItemRow(item, safeTitle, idx); });
+        html += `</div></div>`;
+      });
+    }
+
+    html += `<button onclick="jumpToEvent(${group.day}, ${group.eventIndex})" class="mt-2 w-full text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 py-2 rounded-lg transition active:scale-95">📍 前往行程查看</button>`;
+    html += `</div></details>`;
+  });
+  return html;
+}
+
+function renderShoppingByCategory(groups) {
+  const byCategory = {};
+  groups.forEach(group => {
+    group.items.forEach((item, idx) => {
+      const cat = (item.category || '').trim() || '未分類';
+      if (!byCategory[cat]) byCategory[cat] = [];
+      byCategory[cat].push({ item, idx, group });
+    });
+  });
+
+  const catKeys = Object.keys(byCategory).sort((a, b) => {
+    if (a === '未分類') return 1;
+    if (b === '未分類') return -1;
+    return a.localeCompare(b, 'zh-HK');
+  });
+
+  let html = '';
+  catKeys.forEach((cat, cIdx) => {
+    const catItems = byCategory[cat];
+    const catChecked = catItems.filter(x => x.item.planned).length;
+    const catTotal = catItems.length;
+    const catAllDone = catChecked === catTotal;
+
+    html += `<details class="mb-3 bg-white border ${catAllDone ? 'border-emerald-200' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden group" ${cIdx === 0 ? 'open' : ''}>`;
+    html += `<summary class="cursor-pointer px-4 py-3 hover:bg-slate-50 transition-colors list-none flex items-center gap-3">`;
+    html += `<div class="shrink-0 w-10 h-10 rounded-full ${catAllDone ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'} flex items-center justify-center text-base font-black border-2 border-white shadow-sm">📂</div>`;
+    html += `<div class="flex-1 min-w-0"><div class="text-sm font-bold text-slate-800 truncate">${escapeHtml(cat)}</div></div>`;
+    html += `<div class="shrink-0 flex items-center gap-1.5"><span class="text-[10px] font-black ${catAllDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">${catChecked}/${catTotal}</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div>`;
+    html += `</summary>`;
+    html += `<div class="border-t border-slate-100 bg-slate-50/50 p-3 space-y-1.5">`;
+
+    catItems.forEach(({ item, idx, group }) => {
+      const safeTitle = escAttr(group.eventTitle);
+      const planned = item.planned;
+      html += `<label class="flex items-center gap-2.5 p-2.5 bg-white border ${planned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} rounded-xl cursor-pointer transition-all hover:shadow-sm active:scale-[0.99]">`;
+      html += `<input type="checkbox" ${planned ? 'checked' : ''} data-event-title="${safeTitle}" data-index="${idx}" onchange="handleAllShoppingToggle(this)" class="w-4 h-4 shrink-0">`;
+      html += `<div class="flex-1 min-w-0">`;
+      html += `<div class="flex items-center gap-2">`;
+      html += `<strong class="text-[13px] ${planned ? 'text-slate-500 line-through' : 'text-slate-800'} truncate">${escapeHtml(item.name)}</strong>`;
+      html += `<span class="text-[9px] text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded shrink-0 font-bold">D${group.day}</span>`;
+      html += `</div>`;
+      html += `<div class="text-[10px] text-slate-500 mt-0.5 truncate">${escapeHtml(group.eventTitle)}</div>`;
+      if (item.note) html += `<p class="text-[10px] text-slate-500 mt-0.5 truncate">📝 ${escapeHtml(item.note)}</p>`;
+      html += `</div></label>`;
+    });
+
+    html += `</div></details>`;
+  });
+  return html;
+}
+
+function renderShoppingItemRow(item, safeTitle, idx) {
+  const planned = item.planned;
+  let html = `<label class="flex items-center gap-2.5 p-2.5 bg-white border ${planned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} rounded-xl cursor-pointer transition-all hover:shadow-sm active:scale-[0.99]">`;
+  html += `<input type="checkbox" ${planned ? 'checked' : ''} data-event-title="${safeTitle}" data-index="${idx}" onchange="handleAllShoppingToggle(this)" class="w-4 h-4 shrink-0">`;
+  html += `<div class="flex-1 min-w-0">`;
+  html += `<div class="flex items-center gap-2">`;
+  html += `<strong class="text-[13px] ${planned ? 'text-slate-500 line-through' : 'text-slate-800'} truncate">${escapeHtml(item.name)}</strong>`;
+  if (item.category) {
+    html += `<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">${escapeHtml(item.category)}</span>`;
+  }
+  html += `</div>`;
+  if (item.note) html += `<p class="text-[10px] text-slate-500 mt-0.5 truncate">📝 ${escapeHtml(item.note)}</p>`;
+  html += `</div></label>`;
+  return html;
+}
+
 function handleAllShoppingToggle(el) {
   const eventTitle = el.dataset.eventTitle;
   const index = parseInt(el.dataset.index);

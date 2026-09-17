@@ -1,12 +1,11 @@
 /* ============================================================
- * AppHeader v6.7
+ * AppHeader v6.8
  * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [⚙️ 工具]
  * - Focus Card：出發前/中/後
  * - 工具選單：功能入口 + 安裝 App
  *
- * v6.7 變更：
- *   - 「下一個任務」改為動態顯示（優先搶票，其次未完成預訂）
- *   - 任務卡片可點擊，直接開啟對應清單
+ * v6.8 變更：
+ *   - 我的清單：裝備/購物即使 0 項也顯示（方便進入新增）
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -46,12 +45,10 @@ window.AppHeader = (function () {
     }
     return dayData.events[dayData.events.length - 1];
   }
-  /* ⭐ v6.7：動態「下一個任務」邏輯 */
   function getNextBigTask() {
     const now = Date.now();
     const cb = _config.callbacks || {};
 
-    // 1. 即將到期的搶票（14 天內優先顯示）
     const ticketTasks = [
       { time: _config.ginzanTarget, label: "銀山 Fast Pass 搶票", emoji: "🎟️" },
       { time: _config.zaoTarget, label: "藏王纜車優先票", emoji: "🚠" }
@@ -72,7 +69,6 @@ window.AppHeader = (function () {
       };
     }
 
-    // 2. 行前預訂未完成 → 顯示下一個要處理的
     if (cb.getNextPendingBooking) {
       try {
         const booking = cb.getNextPendingBooking();
@@ -87,7 +83,6 @@ window.AppHeader = (function () {
       } catch (e) { console.warn("[AppHeader] getNextPendingBooking error:", e); }
     }
 
-    // 3. 全部完成 → 顯示出發
     if (now < _config.tripStart) {
       const daysLeft = Math.ceil((_config.tripStart - now) / 86400000);
       return {
@@ -245,9 +240,6 @@ window.AppHeader = (function () {
     }
   }
 
-  /* ============================================================
-   * 搜尋功能
-   * ============================================================ */
   function stripHtml(html) {
     if (!html) return "";
     return String(html).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -445,9 +437,6 @@ window.AppHeader = (function () {
     haptic(12);
   }
 
-  /* ============================================================
-   * Focus Card 渲染
-   * ============================================================ */
   function renderFocusCard() {
     if (!_container) return;
     const focusEl = _container.querySelector("#app-header-focus");
@@ -670,6 +659,7 @@ window.AppHeader = (function () {
     const currentUser = getCurrentUser();
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
 
+    // ⭐ v6.8：即使 0 項也顯示「我的裝備」「我的購物」（讓使用者知道有入口）
     const progressItems = [];
     const bookingP = getProgressData("booking");
     if (bookingP.total > 0) {
@@ -677,17 +667,21 @@ window.AppHeader = (function () {
     }
     if (!guest) {
       const equipP = getProgressData("equip");
-      if (equipP.total > 0) progressItems.push({ icon: "🎒", label: "我的裝備", done: equipP.done, total: equipP.total, action: "equip" });
+      progressItems.push({ icon: "🎒", label: "我的裝備", done: equipP.done, total: equipP.total, action: "equip" });
       const shoppingP = getProgressData("shopping");
-      if (shoppingP.total > 0) progressItems.push({ icon: "🛍️", label: "我的購物", done: shoppingP.done, total: shoppingP.total, action: "shopping" });
+      progressItems.push({ icon: "🛍️", label: "我的購物", done: shoppingP.done, total: shoppingP.total, action: "shopping" });
     }
 
     const progressHTML = progressItems.map(it => {
       const done = it.done === it.total && it.total > 0;
+      // ⭐ 若 total === 0，顯示「＋ 加入」
+      const badgeHTML = it.total === 0
+        ? `<span class="tools-item-tag new">＋ 加入</span>`
+        : `<span class="tools-item-progress ${done ? 'done' : ''}">${done ? '✓ ' : ''}${it.done}/${it.total}</span>`;
       return `<button type="button" class="tools-item ${done ? 'complete' : ''}" data-tool-action="${it.action}">
         <span class="tools-item-icon">${it.icon}</span>
         <span class="tools-item-label">${escapeHtml(it.label)}</span>
-        <span class="tools-item-progress ${done ? 'done' : ''}">${done ? '✓ ' : ''}${it.done}/${it.total}</span>
+        ${badgeHTML}
         <span class="tools-item-arrow">›</span>
       </button>`;
     }).join("");
