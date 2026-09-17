@@ -1,10 +1,11 @@
 /* ============================================================
- * app-core.js — v7.7
+ * app-core.js — v7.8
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
  *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
  *
- * v7.7 變更：
- *   - 新增 getNextPendingBooking callback（讓 Header 顯示下一個未完成預訂）
+ * v7.8 變更：
+ *   - 移除 Firebase Storage 上傳邏輯
+ *   - 新增「共享收據/憑證」Google Drive 資料夾傳送門
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -290,7 +291,7 @@ function initAppAfterLogin() {
   fetchLiveRates();
   initSnowEffect();
 
-  setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal']);
+  setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal', 'receipt-modal']);
 
   renderDayItinerary('day-section-1', winterItineraries[0]);
   setupImageFadeIn();
@@ -342,7 +343,6 @@ function initAppAfterLogin() {
           });
           return { done, total };
         },
-        // ⭐ 新增：取得下一個未完成的行前預訂項目
         getNextPendingBooking: () => {
           const all = [...bookingList, ...customBookingItems];
           const priorityCats = ["航班", "住宿", "租車"];
@@ -571,7 +571,8 @@ function setupModalDrag(modals) {
             'common-tips-modal': window.closeCommonTipsModal,
             'shopping-modal': window.closeShoppingModal,
             'all-shopping-modal': window.closeAllShoppingModal,
-            'currency-modal': window.closeCurrencyModal
+            'currency-modal': window.closeCurrencyModal,
+            'receipt-modal': window.closeReceiptModal
           };
           if (closers[id]) closers[id]();
           box.style.transform = ''; modal.style.opacity = '';
@@ -789,6 +790,31 @@ function showModal(id) { const overlay = document.getElementById(id); if (overla
 function hideModal(id) { const overlay = document.getElementById(id); if (overlay) { overlay.classList.remove('active'); setTimeout(() => { overlay.style.display = 'none'; }, 300); const anyOpen = document.querySelector('.modal-overlay.active'); if (!anyOpen) { document.body.style.overflow = ''; document.body.classList.remove('modal-open'); } } }
 window.showModal = showModal;
 window.hideModal = hideModal;
+
+// ==================== 📸 共享收據/憑證（Google Drive 版） ====================
+function openReceiptModal() {
+  const m = document.getElementById('receipt-modal');
+  if (!m) return;
+  m.style.display = 'flex';
+  m.classList.add('active');
+  document.body.classList.add('modal-open');
+  haptic(8);
+}
+function closeReceiptModal() {
+  const m = document.getElementById('receipt-modal');
+  if (!m) return;
+  m.classList.remove('active');
+  setTimeout(() => { m.style.display = 'none'; }, 300);
+  const a = document.querySelector('.modal-overlay.active');
+  if (!a) document.body.classList.remove('modal-open');
+}
+function openDriveFolder(url) {
+  haptic(10);
+  window.open(url, '_blank');
+}
+window.openReceiptModal = openReceiptModal;
+window.closeReceiptModal = closeReceiptModal;
+window.openDriveFolder = openDriveFolder;
 
 // ==================== Service Worker ====================
 if ('serviceWorker' in navigator) {

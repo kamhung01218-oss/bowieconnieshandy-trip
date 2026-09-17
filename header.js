@@ -1,11 +1,11 @@
 /* ============================================================
- * AppHeader v6.8
+ * AppHeader v6.9
  * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [⚙️ 工具]
  * - Focus Card：出發前/中/後
- * - 工具選單：功能入口 + 安裝 App
+ * - 工具選單：功能入口 + 安裝 App + 共享收據
  *
- * v6.8 變更：
- *   - 我的清單：裝備/購物即使 0 項也顯示（方便進入新增）
+ * v6.9 變更：
+ *   - 新增「共享收據/憑證」入口
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -659,7 +659,6 @@ window.AppHeader = (function () {
     const currentUser = getCurrentUser();
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
 
-    // ⭐ v6.8：即使 0 項也顯示「我的裝備」「我的購物」（讓使用者知道有入口）
     const progressItems = [];
     const bookingP = getProgressData("booking");
     if (bookingP.total > 0) {
@@ -674,7 +673,6 @@ window.AppHeader = (function () {
 
     const progressHTML = progressItems.map(it => {
       const done = it.done === it.total && it.total > 0;
-      // ⭐ 若 total === 0，顯示「＋ 加入」
       const badgeHTML = it.total === 0
         ? `<span class="tools-item-tag new">＋ 加入</span>`
         : `<span class="tools-item-progress ${done ? 'done' : ''}">${done ? '✓ ' : ''}${it.done}/${it.total}</span>`;
@@ -713,6 +711,12 @@ window.AppHeader = (function () {
         <button type="button" class="tools-item" data-tool-action="ledger">
           <span class="tools-item-icon">📝</span>
           <span class="tools-item-label">快速記帳</span>
+          <span class="tools-item-arrow">›</span>
+        </button>
+        <button type="button" class="tools-item" data-tool-action="receipts">
+          <span class="tools-item-icon">📸</span>
+          <span class="tools-item-label">共享收據/憑證</span>
+          <span class="tools-item-tag new">新增</span>
           <span class="tools-item-arrow">›</span>
         </button>
       </div>
@@ -809,7 +813,8 @@ window.AppHeader = (function () {
             ledger: () => cb.onSwitchTab && cb.onSwitchTab("ledger"),
             account: () => { if (typeof window.switchUser === "function") window.switchUser(); },
             theme: () => { if (typeof window.toggleAppTheme === "function") window.toggleAppTheme(); },
-            emergency: () => { if (typeof window.openEmergencyModal === "function") window.openEmergencyModal(); }
+            emergency: () => { if (typeof window.openEmergencyModal === "function") window.openEmergencyModal(); },
+            receipts: () => { if (typeof window.openReceiptModal === "function") window.openReceiptModal(); }
           };
           if (map[action]) map[action]();
         }, 180);

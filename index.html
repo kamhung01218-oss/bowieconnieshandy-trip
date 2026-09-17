@@ -543,6 +543,81 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
+  <!-- 📸 共享收據/憑證 Modal（Google Drive 版） -->
+  <div id="receipt-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeReceiptModal()">
+    <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()">
+      <div class="modal-handle-area" data-drag-handle="receipt-modal"><div class="modal-handle"></div></div>
+      <button onclick="closeReceiptModal()" class="modal-close">✕</button>
+      <div class="modal-scrollable px-6 pb-6">
+        <h2 class="text-xl font-black mb-2 flex items-center gap-2"><span class="text-2xl">📂</span> 共享檔案櫃</h2>
+        <p class="text-xs text-slate-500 mb-5 leading-relaxed">所有租車資料、酒店訂單、收據都放在這裡，點擊下方按鈕直接開啟對應的 Google Drive 資料夾。</p>
+        
+        <!-- 資料夾按鈕網格 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          
+          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1nG_pov6bLtfY1mxL5mPl7gp6Eb_fvxZA')" 
+                  class="drive-folder-btn">
+            <span class="drive-folder-icon">🚗</span>
+            <span class="drive-folder-info">
+              <span class="drive-folder-title">租車資料</span>
+              <span class="drive-folder-desc">合約、駕照、保險</span>
+            </span>
+            <span class="drive-folder-arrow">›</span>
+          </button>
+
+          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1e_SxcY3flho123h9cei6PV2vNCsGpBNx')" 
+                  class="drive-folder-btn">
+            <span class="drive-folder-icon">🏨</span>
+            <span class="drive-folder-info">
+              <span class="drive-folder-title">酒店訂單</span>
+              <span class="drive-folder-desc">訂房確認、入住憑證</span>
+            </span>
+            <span class="drive-folder-arrow">›</span>
+          </button>
+
+          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1NH_5a0f-bSyp2sGo-mnty7VUgXPFIE-y')" 
+                  class="drive-folder-btn">
+            <span class="drive-folder-icon">🛍️</span>
+            <span class="drive-folder-info">
+              <span class="drive-folder-title">購物收據</span>
+              <span class="drive-folder-desc">退稅單、購物明細</span>
+            </span>
+            <span class="drive-folder-arrow">›</span>
+          </button>
+
+          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1Be8UWtkkosodDK3gK1ipM56kTjPwGwFl')" 
+                  class="drive-folder-btn">
+            <span class="drive-folder-icon">🍜</span>
+            <span class="drive-folder-info">
+              <span class="drive-folder-title">餐飲收據</span>
+              <span class="drive-folder-desc">餐廳、咖啡廳單據</span>
+            </span>
+            <span class="drive-folder-arrow">›</span>
+          </button>
+
+          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1XyMETso2S-UT-M5G3k_DRZqhbrpybNmo')" 
+                  class="drive-folder-btn sm:col-span-2">
+            <span class="drive-folder-icon">📁</span>
+            <span class="drive-folder-info">
+              <span class="drive-folder-title">其他文件</span>
+              <span class="drive-folder-desc">護照影本、保險單、緊急聯絡資訊</span>
+            </span>
+            <span class="drive-folder-arrow">›</span>
+          </button>
+
+        </div>
+
+        <!-- 底部提示 -->
+        <div class="mt-5 p-3 bg-sky-50 border border-sky-200 rounded-xl">
+          <p class="text-[11px] text-sky-800 leading-relaxed">
+            💡 點擊按鈕會開啟 Google Drive 應用程式或瀏覽器。如果無法開啟，請確認你已登入正確的 Google 帳號，並擁有該資料夾的存取權限。
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- ============================================================ -->
   <!-- 主應用邏輯（已拆分為三個檔案，載入順序不可調換） -->
   <!-- ============================================================ -->

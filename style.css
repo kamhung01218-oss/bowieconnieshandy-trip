@@ -2964,3 +2964,137 @@ details.event-card:not([open]) .event-content-wrapper {
   min-height: 40px !important;
   padding: 8px 12px !important;
 }
+/* ============================================================
+ * ⭐ iPhone 修正：防止 D1-D7 切換按鈕被前置鏡頭/劉海遮擋
+ * ============================================================ */
+
+/* 1. 讓黏在頂部的日期切換列，自動避開 iPhone 的安全區域 */
+.day-tabs-wrapper {
+  top: env(safe-area-inset-top, 0px) !important;
+}
+
+/* 2. 填補安全區域的空白，讓背景色延伸上去，不會露出網頁底色 */
+.day-tabs-wrapper::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * env(safe-area-inset-top, 0px));
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: rgba(248, 250, 252, 0.95); /* 對應 bg-slate-50 */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: -1;
+}
+
+/* 3. 深色模式下也要填補背景 */
+[data-theme="dark"] .day-tabs-wrapper::before {
+  background: rgba(15, 23, 42, 0.95); /* 對應深色模式的背景色 */
+}
+/* ============================================================
+ * ⭐ 共享檔案櫃按鈕樣式
+ * ============================================================ */
+.drive-folder-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+  min-height: 72px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.drive-folder-btn:active {
+  transform: scale(0.97);
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  box-shadow: none;
+}
+
+@media (hover: hover) {
+  .drive-folder-btn:hover {
+    border-color: #bae6fd;
+    background: #f8fbff;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1);
+  }
+}
+
+.drive-folder-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-radius: 12px;
+  border: 1px solid #bfdbfe;
+}
+
+.drive-folder-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.drive-folder-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.3;
+}
+
+.drive-folder-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.drive-folder-arrow {
+  font-size: 20px;
+  font-weight: 900;
+  color: #cbd5e1;
+  flex-shrink: 0;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.drive-folder-btn:active .drive-folder-arrow {
+  transform: translateX(3px);
+  color: #0284c7;
+}
+
+/* 深色模式 */
+[data-theme="dark"] .drive-folder-btn {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .drive-folder-btn:active {
+  background: #334155;
+  border-color: #475569;
+}
+[data-theme="dark"] .drive-folder-icon {
+  background: linear-gradient(135deg, #1e3a5f, #0c4a6e);
+  border-color: #0369a1;
+}
+[data-theme="dark"] .drive-folder-title {
+  color: #f1f5f9;
+}
+[data-theme="dark"] .drive-folder-desc {
+  color: #64748b;
+}
+[data-theme="dark"] .drive-folder-arrow {
+  color: #475569;
+}
+[data-theme="dark"] .drive-folder-btn:active .drive-folder-arrow {
+  color: #38bdf8;
+}
