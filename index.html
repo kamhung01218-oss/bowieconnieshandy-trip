@@ -304,8 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </div>
   </div>
-
-  <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！" style="left: 15px;">
+    <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！" style="left: 15px;">
     <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="snowGrad" cx="50%" cy="30%" r="60%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dbeafe"/></radialGradient><linearGradient id="hatGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient></defs><circle cx="32" cy="48" r="13" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/><circle cx="32" cy="30" r="10" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/><path d="M22 24 L42 24 L40 16 L24 16 Z" fill="url(#hatGrad)"/><rect x="26" y="14" width="12" height="3" rx="1.5" fill="#b91c1c"/><circle cx="32" cy="14" r="3" fill="#ef4444"/><path d="M26 34 Q32 38 38 34 L37 42 L27 42 Z" fill="#3b82f6"/><path d="M28 42 L28 48 L32 45 L36 48 L36 42" fill="#2563eb"/><circle cx="28" cy="28" r="2" fill="#1e293b"/><circle cx="36" cy="28" r="2" fill="#1e293b"/><ellipse cx="32" cy="31" rx="1.8" ry="3" fill="#f97316"/><path d="M26 35 Q32 40 38 35" stroke="#475569" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M22 32 L16 28" stroke="#92400e" stroke-width="2" stroke-linecap="round"/><path d="M42 32 L48 28" stroke="#92400e" stroke-width="2" stroke-linecap="round"/><ellipse cx="28" cy="45" rx="3" ry="1.5" fill="white" opacity="0.8"/></svg>
   </div>
   <div id="fox" class="walking-character" onclick="jump('fox')" title="點我！" style="right: 15px;">
@@ -543,16 +542,35 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <!-- 📸 共享收據/憑證 Modal（Google Drive 版） -->
+  <!-- 📁 共享資料櫃 Modal -->
   <div id="receipt-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeReceiptModal()">
     <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()">
       <div class="modal-handle-area" data-drag-handle="receipt-modal"><div class="modal-handle"></div></div>
       <button onclick="closeReceiptModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-6 pb-6">
-        <h2 class="text-xl font-black mb-2 flex items-center gap-2"><span class="text-2xl">📂</span> 共享檔案櫃</h2>
-        <p class="text-xs text-slate-500 mb-5 leading-relaxed">所有租車資料、酒店訂單、收據都放在這裡，點擊下方按鈕直接開啟對應的 Google Drive 資料夾。</p>
+        <h2 class="text-xl font-black mb-2 flex items-center gap-2"><span class="text-2xl">📁</span> 共享資料櫃</h2>
+        <p class="text-xs text-slate-500 mb-5 leading-relaxed">全家人的旅行照片、租車資料、酒店訂單與收據，通通都在這裡。</p>
         
-        <!-- 資料夾按鈕網格 -->
+        <!-- ⭐ 第一區：旅行相簿 -->
+        <button onclick="openPhotoAlbum()" 
+                class="drive-folder-btn mb-4" 
+                style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border-color:#86efac;">
+          <span class="drive-folder-icon" style="background:linear-gradient(135deg,#bbf7d0,#86efac); border-color:#4ade80;">📸</span>
+          <span class="drive-folder-info">
+            <span class="drive-folder-title" style="color:#166534;">旅行共享相簿</span>
+            <span class="drive-folder-desc" style="color:#15803d;">大家拍的照片都在這裡，點擊查看</span>
+          </span>
+          <span class="drive-folder-arrow" style="color:#22c55e;">›</span>
+        </button>
+
+        <!-- 分隔線 -->
+        <div class="flex items-center gap-2 my-4">
+          <div class="flex-1 h-px bg-slate-200"></div>
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">文件與收據</span>
+          <div class="flex-1 h-px bg-slate-200"></div>
+        </div>
+
+        <!-- ⭐ 第二區：Google Drive 資料夾 -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           
           <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1nG_pov6bLtfY1mxL5mPl7gp6Eb_fvxZA')" 
@@ -610,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <!-- 底部提示 -->
         <div class="mt-5 p-3 bg-sky-50 border border-sky-200 rounded-xl">
           <p class="text-[11px] text-sky-800 leading-relaxed">
-            💡 點擊按鈕會開啟 Google Drive 應用程式或瀏覽器。如果無法開啟，請確認你已登入正確的 Google 帳號，並擁有該資料夾的存取權限。
+            💡 點擊按鈕會開啟對應的 App 或瀏覽器。如果無法開啟，請確認你已登入正確的 Google 帳號，並擁有該資料夾的存取權限。
           </p>
         </div>
 
@@ -619,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 
   <!-- ============================================================ -->
-  <!-- 主應用邏輯（已拆分為三個檔案，載入順序不可調換） -->
+  <!-- 主應用邏輯（已拆分為四個檔案，載入順序不可調換） -->
   <!-- ============================================================ -->
 
   <script src="./app-core.js"></script>

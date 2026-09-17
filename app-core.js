@@ -817,6 +817,12 @@ function openDriveFolder(url) {
 window.openReceiptModal = openReceiptModal;
 window.closeReceiptModal = closeReceiptModal;
 window.openDriveFolder = openDriveFolder;
+// ⭐ 開啟 Google 相簿共享相簿
+function openPhotoAlbum() {
+  haptic(10);
+  window.location.href = 'https://photos.app.goo.gl/Y8vBtxiH1e52C1337';
+}
+window.openPhotoAlbum = openPhotoAlbum;
 
 // ==================== Service Worker ====================
 if ('serviceWorker' in navigator) {
