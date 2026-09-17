@@ -948,65 +948,72 @@ const winterItineraries = [
         `
       },
       {
-        time: "14:45 - 18:00",
-        title: "仙台市區購物 (PARCO、3COINS、Daiso、唐吉訶德)",
-        tag: { text: "🛍️ 市區血拼", class: "tag-rose" },
-        navUrl: "",
-        priority: "optional",
-        open: true,
-        content: `
-          <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
-            <p class="mb-2 font-bold">仙台市區購物全攻略（點擊展開）</p>
-            <details class="bg-white border border-slate-200 rounded-xl shadow-sm group/inner">
-              <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-rose-700 hover:bg-slate-50 flex justify-between items-center transition-colors">
-                <span class="flex items-center gap-1.5"><span class="text-base">🛍️</span> 仙台市區購物（潮牌 / 買物 / 小食）</span>
-                <span class="text-[10px] text-slate-400 transition-transform group-open/inner:rotate-180">▼</span>
-              </summary>
-              <div class="p-3.5 border-t border-slate-100 bg-slate-50/50 space-y-2">
-                <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 shadow-sm">
-                  <strong class="block text-[13px] text-indigo-900 mb-1">✨ 大人潮牌朝聖：THE GALLERY BOX</strong>
-                  <p class="text-[11px] text-slate-600">位置：仙台 PARCO 4F。販售 Salomon、MM6 Maison Margiela 等限量聯名系列。</p>
-                  <a href="https://www.google.com/maps/search/?api=1&query=Sendai+PARCO" target="_blank" class="mt-2 block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg text-[11px] font-bold transition">📍 導航前往 仙台 PARCO</a>
-                </div>
-                <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
-                  <strong class="block text-[13px] text-slate-800 mb-2">📍 私藏逛街與好物採買清單</strong>
-                  <div class="space-y-2">
-                    <div class="flex justify-between items-center gap-2">
-                      <span class="text-[12px]">🪙 <strong>3COINS</strong> <span class="text-slate-500">(300円生活雜貨)</span></span>
-                      <a href="https://maps.app.goo.gl/uFUSHdEotSbewYDZ9" target="_blank" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-2 py-1 rounded-lg text-[10px] font-bold transition shrink-0">📍 導航</a>
-                    </div>
-                    <div class="flex justify-between items-center gap-2">
-                      <span class="text-[12px]">🏬 <strong>Daiso ヨドバシ仙台店</strong> <span class="text-slate-500">(百元商店)</span></span>
-                      <a href="https://maps.app.goo.gl/Mg38a3Q4dVi7U38D7?g_st=ac" target="_blank" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-2 py-1 rounded-lg text-[10px] font-bold transition shrink-0">📍 導航</a>
-                    </div>
-                    <div class="flex justify-between items-center gap-2">
-                      <span class="text-[12px]">🐧 <strong>唐吉訶德 仙台駅西口本店</strong> <span class="text-slate-500">(藥妝零食)</span></span>
-                      <a href="https://maps.app.goo.gl/6Ti8UJyEa1tFreBW7?g_st=ac" target="_blank" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-2 py-1 rounded-lg text-[10px] font-bold transition shrink-0">📍 導航</a>
-                    </div>
-                  </div>
-                </div>
-                <div class="bg-amber-50/40 border border-amber-100 rounded-xl p-3 shadow-sm">
-                  <strong class="block text-[13px] text-amber-900 mb-2">🍡 逛街能量補給 (站前人氣小食)</strong>
-                  <div class="space-y-2">
-                    <div class="flex justify-between items-center gap-2">
-                      <span class="text-[12px]">🫘 <strong>ankoya 駅前店</strong> <span class="text-slate-500">(豆沙銅鑼燒)</span></span>
-                      <a href="https://maps.app.goo.gl/ayEVAqZY779V7WF49?g_st=ac" target="_blank" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded-lg text-[10px] font-bold transition shrink-0">📍 導航</a>
-                    </div>
-                    <div class="flex justify-between items-center gap-2">
-                      <span class="text-[12px]">🐟 <strong>鯛吉 名掛丁本店</strong> <span class="text-slate-500">(現烤鯛魚燒)</span></span>
-                      <a href="https://maps.app.goo.gl/D5GqutNmGGPh6WrQA?g_st=ac" target="_blank" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded-lg text-[10px] font-bold transition shrink-0">📍 導航</a>
-                    </div>
-                  </div>
-                </div>
-                <div class="bg-teal-50 border border-teal-100 p-3 rounded-xl flex items-start gap-2">
-                  <span class="text-base shrink-0">🚗</span>
-                  <span class="text-[11px] text-teal-800 font-medium leading-relaxed">戰利品輕鬆載：這幾間店都在市區範圍，自駕的好處買完可以先丟車上，不用提著大包小包！</span>
-                </div>
-              </div>
-            </details>
+  time: "14:45 - 18:00",
+  title: "仙台市區購物 (PARCO、3COINS、Daiso、唐吉訶德)",
+  tag: { text: "🛍️ 市區血拼", class: "tag-rose" },
+  navUrl: "",
+  priority: "optional",
+  open: true,
+  content: `
+    <div class="space-y-2 text-xs md:text-sm text-slate-700 leading-relaxed">
+      <p class="mb-2 font-bold">仙台市區購物全攻略</p>
+      
+      <details class="shopping-sub-card group/inner">
+        <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-indigo-900 hover:bg-slate-50 flex justify-between items-center transition-colors">
+          <span class="flex items-center gap-1.5 flex-1 min-w-0"><span class="text-base">✨</span> <span class="break-words">大人潮牌朝聖：THE GALLERY BOX</span></span>
+          <span class="text-[10px] text-slate-400 transition-transform group-open/inner:rotate-180 shrink-0 ml-1">▼</span>
+        </summary>
+        <div class="p-3.5 border-t border-slate-100 bg-slate-50/50">
+          <p class="text-[11px] text-slate-600">位置：仙台 PARCO 4F。販售 Salomon、MM6 Maison Margiela 等限量聯名系列。</p>
+          <a href="https://www.google.com/maps/search/?api=1&query=Sendai+PARCO" target="_blank" class="mt-2 block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg text-[11px] font-bold transition">📍 導航前往 仙台 PARCO</a>
+        </div>
+      </details>
+
+      <details class="shopping-sub-card group/inner">
+        <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-slate-800 hover:bg-slate-50 flex justify-between items-center transition-colors">
+          <span class="flex items-center gap-1.5 flex-1 min-w-0"><span class="text-base">📍</span> <span class="break-words">私藏逛街與好物採買清單</span></span>
+          <span class="text-[10px] text-slate-400 transition-transform group-open/inner:rotate-180 shrink-0 ml-1">▼</span>
+        </summary>
+        <div class="p-3.5 border-t border-slate-100 bg-slate-50/50 space-y-2">
+          <div class="flex justify-between items-center gap-2">
+            <span class="text-[12px] flex-1 min-w-0 break-words">🪙 <strong>3COINS</strong> <span class="text-slate-500">(300円生活雜貨)</span></span>
+            <a href="https://maps.app.goo.gl/uFUSHdEotSbewYDZ9" target="_blank" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-2 py-1 rounded-lg text-[10px] font-bold transition shrink-0">📍 導航</a>
           </div>
-        `
-      },
+          <div class="flex justify-between items-center gap-2">
+            <span class="text-[12px] flex-1 min-w-0 break-words">🏬 <strong>Daiso ヨドバシ仙台店</strong> <span class="text-slate-500">(百元商店)</span></span>
+            <a href="https://maps.app.goo.gl/Mg38a3Q4dVi7U38D7?g_st=ac" target="_blank" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-2 py-1 rounded-lg text-[10px] font-bold transition shrink-0">📍 導航</a>
+          </div>
+          <div class="flex justify-between items-center gap-2">
+            <span class="text-[12px] flex-1 min-w-0 break-words">🐧 <strong>唐吉訶德 仙台駅西口本店</strong> <span class="text-slate-500">(藥妝零食)</span></span>
+            <a href="https://maps.app.goo.gl/6Ti8UJyEa1tFreBW7?g_st=ac" target="_blank" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-2 py-1 rounded-lg text-[10px] font-bold transition shrink-0">📍 導航</a>
+          </div>
+        </div>
+      </details>
+
+      <details class="shopping-sub-card group/inner">
+        <summary class="px-3.5 py-2.5 cursor-pointer text-[13px] font-bold text-amber-900 hover:bg-slate-50 flex justify-between items-center transition-colors">
+          <span class="flex items-center gap-1.5 flex-1 min-w-0"><span class="text-base">🍡</span> <span class="break-words">逛街能量補給 (站前人氣小食)</span></span>
+          <span class="text-[10px] text-slate-400 transition-transform group-open/inner:rotate-180 shrink-0 ml-1">▼</span>
+        </summary>
+        <div class="p-3.5 border-t border-slate-100 bg-slate-50/50 space-y-2">
+          <div class="flex justify-between items-center gap-2">
+            <span class="text-[12px] flex-1 min-w-0 break-words">🫘 <strong>ankoya 駅前店</strong> <span class="text-slate-500">(豆沙銅鑼燒)</span></span>
+            <a href="https://maps.app.goo.gl/ayEVAqZY779V7WF49?g_st=ac" target="_blank" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded-lg text-[10px] font-bold transition shrink-0">📍 導航</a>
+          </div>
+          <div class="flex justify-between items-center gap-2">
+            <span class="text-[12px] flex-1 min-w-0 break-words">🐟 <strong>鯛吉 名掛丁本店</strong> <span class="text-slate-500">(現烤鯛魚燒)</span></span>
+            <a href="https://maps.app.goo.gl/D5GqutNmGGPh6WrQA?g_st=ac" target="_blank" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded-lg text-[10px] font-bold transition shrink-0">📍 導航</a>
+          </div>
+        </div>
+      </details>
+
+      <div class="bg-teal-50 border border-teal-100 p-3 rounded-xl flex items-start gap-2 mt-2">
+        <span class="text-base shrink-0">🚗</span>
+        <span class="text-[11px] text-teal-800 font-medium leading-relaxed">戰利品輕鬆載：這幾間店都在市區範圍，自駕的好處買完可以先丟車上，不用提著大包小包！</span>
+      </div>
+    </div>
+  `
+},
       {
         time: "18:00 - 20:00",
         title: "晚餐：仙台特色美食與返家放鬆",

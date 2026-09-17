@@ -860,7 +860,6 @@ body.modal-open #app-root {
 .event-collapsible.expanded { max-height: 12000px; }
 .event-collapsible.expanded::after { display: none; }
 .event-collapsible.no-collapse { max-height: none; }
-
 /* ========== 展開完整攻略按鈕 ========== */
 .expand-btn {
   display: flex;
@@ -2895,4 +2894,73 @@ details.event-card:not([open]) .event-content-wrapper {
 }
 [data-theme="dark"] .timeline-item.status-active .timeline-stamp-end {
   color: rgba(255, 255, 255, 0.85);
+}
+
+/* ============================================================
+ * ⭐ 全局統一：所有行程內層折疊卡片（乾淨版風琴式）
+ * 最終安全版：只統一外觀，絕不隱藏任何原有的文字與圖標
+ * ============================================================ */
+
+/* 1. 外觀：統一白底 + 左側淡藍色細線 */
+.glass-card.event-card .event-collapsible details:not(.event-card),
+.glass-card.event-card .event-collapsible details.mini-card {
+  background: #ffffff !important;
+  border-left: 4px solid #38bdf8 !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-radius: 0 12px 12px 0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  margin-bottom: 10px !important;
+  overflow: hidden !important;
+}
+
+/* 2. 標題列：統一內距與字級，完全不碰內部的文字與圖標 */
+.glass-card.event-card .event-collapsible details:not(.event-card) > summary,
+.glass-card.event-card .event-collapsible details.mini-card > summary {
+  background: transparent !important;
+  padding: 14px 16px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  cursor: pointer !important;
+  min-height: 48px !important;
+}
+
+/* 3. 展開後的內容區：統一淺灰底 */
+.glass-card.event-card .event-collapsible details:not(.event-card) > div,
+.glass-card.event-card .event-collapsible details.mini-card > div {
+  background: #f8fafc !important;
+  border-top: none !important;
+  padding: 14px 16px !important;
+  margin-top: 0 !important;
+}
+
+/* 4. 深色模式完美適配（不刺眼） */
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card),
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.mini-card {
+  background: #1e293b !important;
+  border-left-color: #0ea5e9 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card) > summary,
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.mini-card > summary {
+  color: #f1f5f9 !important;
+  border-bottom-color: #334155 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card) > div,
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.mini-card > div {
+  background: #0f172a !important;
+}
+
+/* 5. 長文字換行防護（防止店名擠壓導航按鈕） */
+.glass-card.event-card .event-collapsible .break-words {
+  word-break: break-word;
+  white-space: normal;
+}
+
+/* 6. 確保按鈕觸控範圍加大（原本 32px → 40px） */
+.event-action-btn {
+  min-height: 40px !important;
+  padding: 8px 12px !important;
 }

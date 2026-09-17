@@ -1,10 +1,12 @@
 /* ============================================================
- * app-itinerary.js — v7.8
+ * app-itinerary.js — v8.0
  * 行程：天氣（含氣候參考 / 日出日落）、行程渲染、輪播、
  *       各項攻略 Modal、行程切換、快速跳轉圓點
  *
- * v7.8 變更：
- *   - switchDay 加入「分頁自動置中」功能
+ * v8.0 變更：
+ *   - 配合 data.js 方案 A：移除「硬拆外殼」邏輯
+ *   - 確保內層 details 保持風琴式收合狀態
+ *   - 市區購物子卡片改用乾淨版樣式
  * ============================================================ */
 
 // ==================== 天氣 ====================
@@ -284,6 +286,12 @@ function renderDayItinerary(sectionId, dayData, force) {
   setTimeout(function() {
     updateExpandButtons(dayData);
     updateTimelineStatus();
+    
+    // ⭐ 確保所有內層 details 都是收合狀態（風琴式）
+    section.querySelectorAll('details:not(.event-card)').forEach(function(d) {
+      d.open = false;
+    });
+
     autoWrapMiniCards(dayData);
     bindCarouselScroll(dayData);
   }, 150);

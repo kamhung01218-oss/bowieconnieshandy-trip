@@ -1,9 +1,9 @@
 /* ============================================================
- * app-lists.js — v7.2
+ * app-lists.js — v7.4
  * 清單：行前預訂清單、裝備清單、購物清單、購物總覽
  *
- * v7.2 變更：
- *   - 購物「新增項目」的類別改成下拉選單（8 個預設分類）
+ * v7.4 變更：
+ *   - 購物總覽加「＋ 新增物品」按鈕（可指定景點或「臨時購買」）
  * ============================================================ */
 
 // ==================== Modal 狀態 ====================
@@ -12,10 +12,9 @@ const modalUIState = {
   'equip-modal': { activeTab: 'all', expanded: {} }
 };
 
-// ⭐ 購物總覽檢視模式
 let shoppingViewMode = 'byEvent';
+let addShoppingFormOpen = false;  // ⭐ 新增物品表單是否展開
 
-// ⭐ 購物類別預設清單
 const SHOPPING_CATEGORIES = [
   { value: "餐飲",   label: "🍜 餐飲" },
   { value: "伴手禮", label: "🎁 伴手禮" },
@@ -26,6 +25,9 @@ const SHOPPING_CATEGORIES = [
   { value: "日用",   label: "🏠 日用" },
   { value: "其他",   label: "📦 其他" }
 ];
+
+// ⭐ 臨時購買的 eventTitle（不屬於任何景點）
+const TEMP_PURCHASE_TITLE = "臨時購買";
 
 // ==================== 行前預訂 ====================
 const bookingList = [
@@ -160,7 +162,6 @@ function refreshCurrentDay() {
   }
 }
 
-// ⭐ v7.2：類別改成下拉選單
 function renderShoppingList(eventTitle) {
   if (!currentUser || currentUser === "訪客") { return `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用購物清單</p><p class="text-xs text-slate-500">請切換為家庭成員身份</p></div>`; }
   const items = loadShoppingItems(eventTitle);
@@ -173,7 +174,6 @@ function renderShoppingList(eventTitle) {
     html += `</div>`;
   }
 
-  // ⭐ 類別下拉選單
   let optionsHtml = `<option value="">— 選擇類別 —</option>`;
   SHOPPING_CATEGORIES.forEach(cat => {
     optionsHtml += `<option value="${escAttr(cat.value)}">${cat.label}</option>`;
@@ -196,15 +196,70 @@ function addShoppingItem(btn) { const t = btn.dataset.eventTitle; if (!currentUs
 function toggleShoppingItem(el) { const t = el.dataset.eventTitle; const i = parseInt(el.dataset.index); const items = loadShoppingItems(t); items[i].planned = !items[i].planned; saveShoppingItems(t, items); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); haptic(5); if (window.AppHeader) window.AppHeader.render(); }
 function deleteShoppingItem(btn) { const t = btn.dataset.eventTitle; const i = parseInt(btn.dataset.index); const items = loadShoppingItems(t); const snapshot = { ...items[i] }; items.splice(i, 1); saveShoppingItems(t, items); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); if (window.AppHeader) window.AppHeader.render(); showUndoToast(`已刪除「${snapshot.name}」`, "🗑", () => { const cur = loadShoppingItems(t); cur.splice(Math.min(i, cur.length), 0, snapshot); saveShoppingItems(t, cur); document.getElementById('shopping-content').innerHTML = renderShoppingList(t); if (window.AppHeader) window.AppHeader.render(); showToast("✅ 已還原", "↩️"); }); }
 
+function deleteShoppingItemFromOverview(btn) {
+  const eventTitle = btn.dataset.eventTitle;
+  const index = parseInt(btn.dataset.index);
+  const items = loadShoppingItems(eventTitle);
+  if (!items[index]) return;
+  const snapshot = { ...items[index] };
+  items.splice(index, 1);
+  saveShoppingItems(eventTitle, items);
+
+  renderAllShoppingContent();
+  if (window.AppHeader) window.AppHeader.render();
+  haptic(10);
+
+  showUndoToast(`已刪除「${snapshot.name}」`, "🗑", () => {
+    const cur = loadShoppingItems(eventTitle);
+    cur.splice(Math.min(index, cur.length), 0, snapshot);
+    saveShoppingItems(eventTitle, cur);
+    renderAllShoppingContent();
+    if (window.AppHeader) window.AppHeader.render();
+    showToast("✅ 已還原", "↩️");
+  });
+}
+window.deleteShoppingItemFromOverview = deleteShoppingItemFromOverview;
+
 // ==================== 購物清單總覽 ====================
 function openAllShoppingModal() { const m = document.getElementById('all-shopping-modal'); if (!m) return; m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); renderAllShoppingContent(); haptic(8); }
-function closeAllShoppingModal() { const m = document.getElementById('all-shopping-modal'); if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; refreshCurrentDay(); }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
+function closeAllShoppingModal() { const m = document.getElementById('all-shopping-modal'); if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; addShoppingFormOpen = false; refreshCurrentDay(); }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
 
 function getAllShoppingItems() {
   if (!currentUser || currentUser === "訪客") return [];
   const userData = getUserData();
   const groups = [];
-  winterItineraries.forEach(day => { day.events.forEach(event => { const items = userData.shopping[event.title] || []; if (items.length > 0) { groups.push({ day: day.day, dateLabel: day.dateLabel, eventTitle: event.title, eventTime: event.time, eventIndex: day.events.indexOf(event), items: items }); } }); });
+
+  // ⭐ 先處理「臨時購買」
+  const tempItems = userData.shopping[TEMP_PURCHASE_TITLE] || [];
+  if (tempItems.length > 0) {
+    groups.push({
+      day: 0,
+      dateLabel: "🛒 臨時購買",
+      eventTitle: TEMP_PURCHASE_TITLE,
+      eventTime: "",
+      eventIndex: -1,
+      items: tempItems,
+      isTemp: true
+    });
+  }
+
+  // 再處理正常的景點
+  winterItineraries.forEach(day => {
+    day.events.forEach(event => {
+      const items = userData.shopping[event.title] || [];
+      if (items.length > 0) {
+        groups.push({
+          day: day.day,
+          dateLabel: day.dateLabel,
+          eventTitle: event.title,
+          eventTime: event.time,
+          eventIndex: day.events.indexOf(event),
+          items: items,
+          isTemp: false
+        });
+      }
+    });
+  });
   return groups;
 }
 
@@ -215,6 +270,67 @@ function setShoppingViewMode(mode) {
 }
 window.setShoppingViewMode = setShoppingViewMode;
 
+function toggleAddShoppingForm() {
+  addShoppingFormOpen = !addShoppingFormOpen;
+  renderAllShoppingContent();
+  if (addShoppingFormOpen) {
+    setTimeout(() => {
+      const el = document.getElementById('add-shopping-name');
+      if (el) el.focus();
+    }, 100);
+  }
+  haptic(6);
+}
+window.toggleAddShoppingForm = toggleAddShoppingForm;
+
+function submitNewShoppingItem() {
+  if (!currentUser || currentUser === "訪客") { showToast("請先登入", "⚠️"); return; }
+  const nameEl = document.getElementById('add-shopping-name');
+  const catEl = document.getElementById('add-shopping-category');
+  const eventEl = document.getElementById('add-shopping-event');
+  const noteEl = document.getElementById('add-shopping-note');
+  if (!nameEl || !eventEl) return;
+
+  const name = nameEl.value.trim();
+  const category = catEl.value;
+  const eventTitle = eventEl.value;
+  const note = noteEl.value.trim();
+
+  if (!name) { showToast("請輸入物品名稱", "⚠️"); haptic(50); nameEl.focus(); return; }
+  if (!eventTitle) { showToast("請選擇要歸到哪一天", "⚠️"); haptic(50); eventEl.focus(); return; }
+
+  const items = loadShoppingItems(eventTitle);
+  items.push({ name, category, note, planned: false });
+  saveShoppingItems(eventTitle, items);
+
+  // 清空表單（保留 category 方便連續新增）
+  nameEl.value = '';
+  noteEl.value = '';
+  nameEl.focus();
+
+  showToast("✅ 已新增購物項目");
+  haptic(10);
+
+  renderAllShoppingContent();
+  if (window.AppHeader) window.AppHeader.render();
+}
+window.submitNewShoppingItem = submitNewShoppingItem;
+
+// ⭐ 生成景點選項（按 Day 分組）
+function buildEventOptionsHtml() {
+  let html = `<optgroup label="🛒 不指定">
+    <option value="${escAttr(TEMP_PURCHASE_TITLE)}">🛒 臨時購買（旅途中看到就買）</option>
+  </optgroup>`;
+  winterItineraries.forEach(day => {
+    html += `<optgroup label="Day ${day.day} · ${escapeHtml(day.dateLabel)}">`;
+    day.events.forEach(evt => {
+      html += `<option value="${escAttr(evt.title)}">${escapeHtml(evt.time)} · ${escapeHtml(evt.title)}</option>`;
+    });
+    html += `</optgroup>`;
+  });
+  return html;
+}
+
 function renderAllShoppingContent() {
   const container = document.getElementById('all-shopping-content'); if (!container) return;
   if (!currentUser) { container.innerHTML = '<div class="text-center py-8 text-slate-500">請先登入</div>'; return; }
@@ -223,8 +339,39 @@ function renderAllShoppingContent() {
   const groups = getAllShoppingItems();
   const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-3"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="text-xs font-black text-sky-800">${escapeHtml(currentUser)} 的購物清單總覽</div></div>`;
 
+  // ⭐ 新增物品按鈕 + 表單
+  const addFormHtml = `
+    <button onclick="toggleAddShoppingForm()" class="w-full mb-3 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-black text-sm py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+      <span style="font-size:16px;font-weight:900">${addShoppingFormOpen ? '✕' : '＋'}</span>
+      <span>${addShoppingFormOpen ? '收起表單' : '新增物品'}</span>
+    </button>
+    <div id="add-shopping-form" class="${addShoppingFormOpen ? '' : 'hidden'} mb-4 bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 space-y-3">
+      <div class="text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1">新增物品到購物清單</div>
+      <input id="add-shopping-name" type="text" placeholder="物品名稱 *（例：白色戀人餅乾）" class="w-full border-2 border-emerald-200 rounded-lg px-3 py-2.5 text-sm font-bold bg-white focus:outline-none focus:border-emerald-400">
+      <div class="flex gap-2">
+        <select id="add-shopping-category" class="w-1/2 border-2 border-emerald-200 rounded-lg px-2 py-2.5 text-xs font-bold bg-white focus:outline-none focus:border-emerald-400">
+          <option value="">— 類別 —</option>
+          ${SHOPPING_CATEGORIES.map(c => `<option value="${escAttr(c.value)}">${c.label}</option>`).join('')}
+        </select>
+        <select id="add-shopping-event" class="flex-1 border-2 border-emerald-200 rounded-lg px-2 py-2.5 text-xs font-bold bg-white focus:outline-none focus:border-emerald-400">
+          <option value="">— 歸到哪一天？ * —</option>
+          ${buildEventOptionsHtml()}
+        </select>
+      </div>
+      <input id="add-shopping-note" type="text" placeholder="備註（選填）" class="w-full border-2 border-emerald-200 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:border-emerald-400">
+      <button onclick="submitNewShoppingItem()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-black py-2.5 rounded-lg transition">✓ 新增</button>
+      <p class="text-[10px] text-emerald-600 leading-relaxed">💡 選「🛒 臨時購買」可將物品加入不分景點的清單</p>
+    </div>
+  `;
+
+  // 空清單 → 顯示新增按鈕 + 說明
   if (groups.length === 0) {
-    container.innerHTML = userBanner + `<div class="text-center py-12 px-4"><div class="text-6xl mb-3">🛒</div><p class="text-sm font-bold text-slate-700 mb-1">購物清單還是空的</p><p class="text-xs text-slate-500 leading-relaxed">在行程卡片的「🛍️ 購物清單」按鈕中<br>加入你想買的東西吧！</p></div>`;
+    container.innerHTML = userBanner + addFormHtml + `
+      <div class="text-center py-10 px-4">
+        <div class="text-6xl mb-3">🛒</div>
+        <p class="text-sm font-bold text-slate-700 mb-1">購物清單還是空的</p>
+        <p class="text-xs text-slate-500 leading-relaxed">用上方按鈕新增<br>或在行程卡片的「🛍️ 購物清單」中加入</p>
+      </div>`;
     return;
   }
 
@@ -234,6 +381,8 @@ function renderAllShoppingContent() {
 
   let html = userBanner;
   html += `<div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 mb-4"><div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-emerald-800">${percent === 100 ? '🎉 全部買齊！' : '📊 購物進度'}</span><span class="text-sm font-black text-emerald-700">${checkedItems} / ${totalItems}</span></div><div class="h-2 bg-white/70 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500" style="width:${percent}%"></div></div></div>`;
+
+  html += addFormHtml;
 
   html += `<div class="flex items-center gap-2 mb-3 bg-slate-100 border border-slate-200 rounded-xl p-1">`;
   html += `<button onclick="setShoppingViewMode('byEvent')" class="${shoppingViewMode === 'byEvent' ? 'bg-white shadow-sm text-sky-800' : 'text-slate-500'} flex-1 py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5">📅 按景點</button>`;
@@ -247,6 +396,16 @@ function renderAllShoppingContent() {
   }
 
   container.innerHTML = html;
+
+  // ⭐ 重新綁定表單事件（若有展開）
+  if (addShoppingFormOpen) {
+    const nameEl = document.getElementById('add-shopping-name');
+    if (nameEl) {
+      nameEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); submitNewShoppingItem(); }
+      });
+    }
+  }
 }
 
 function renderShoppingByEvent(groups) {
@@ -257,9 +416,12 @@ function renderShoppingByEvent(groups) {
     const allDone = groupChecked === groupTotal;
     const safeTitle = escAttr(group.eventTitle);
 
+    const badgeText = group.isTemp ? '🛒' : `D${group.day}`;
+    const badgeClass = group.isTemp ? 'bg-amber-100 text-amber-700' : (allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700');
+
     html += `<details class="mb-3 bg-white border ${allDone ? 'border-emerald-200' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden group" ${gIdx === 0 ? 'open' : ''}>`;
     html += `<summary class="cursor-pointer px-4 py-3 hover:bg-slate-50 transition-colors list-none flex items-center gap-3">`;
-    html += `<div class="shrink-0 w-10 h-10 rounded-full ${allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'} flex items-center justify-center text-xs font-black border-2 border-white shadow-sm">D${group.day}</div>`;
+    html += `<div class="shrink-0 w-10 h-10 rounded-full ${badgeClass} flex items-center justify-center text-xs font-black border-2 border-white shadow-sm">${badgeText}</div>`;
     html += `<div class="flex-1 min-w-0"><div class="text-[10px] font-bold text-sky-600 tracking-wide">${escapeHtml(group.dateLabel)}</div><div class="text-sm font-bold text-slate-800 truncate">${escapeHtml(group.eventTitle)}</div></div>`;
     html += `<div class="shrink-0 flex items-center gap-1.5"><span class="text-[10px] font-black ${allDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">${groupChecked}/${groupTotal}</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div>`;
     html += `</summary>`;
@@ -291,7 +453,10 @@ function renderShoppingByEvent(groups) {
       });
     }
 
-    html += `<button onclick="jumpToEvent(${group.day}, ${group.eventIndex})" class="mt-2 w-full text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 py-2 rounded-lg transition active:scale-95">📍 前往行程查看</button>`;
+    // 只有非臨時項目才顯示「前往行程」
+    if (!group.isTemp) {
+      html += `<button onclick="jumpToEvent(${group.day}, ${group.eventIndex})" class="mt-2 w-full text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 py-2 rounded-lg transition active:scale-95">📍 前往行程查看</button>`;
+    }
     html += `</div></details>`;
   });
   return html;
@@ -331,16 +496,22 @@ function renderShoppingByCategory(groups) {
     catItems.forEach(({ item, idx, group }) => {
       const safeTitle = escAttr(group.eventTitle);
       const planned = item.planned;
-      html += `<label class="flex items-center gap-2.5 p-2.5 bg-white border ${planned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} rounded-xl cursor-pointer transition-all hover:shadow-sm active:scale-[0.99]">`;
-      html += `<input type="checkbox" ${planned ? 'checked' : ''} data-event-title="${safeTitle}" data-index="${idx}" onchange="handleAllShoppingToggle(this)" class="w-4 h-4 shrink-0">`;
-      html += `<div class="flex-1 min-w-0">`;
+      const badgeText = group.isTemp ? '🛒' : `D${group.day}`;
+      const badgeClass = group.isTemp ? 'text-amber-700 bg-amber-100' : 'text-sky-700 bg-sky-100';
+      html += `<div class="flex items-center gap-2.5 p-2.5 bg-white border ${planned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} rounded-xl transition-all">`;
+      html += `<input type="checkbox" ${planned ? 'checked' : ''} data-event-title="${safeTitle}" data-index="${idx}" onchange="handleAllShoppingToggle(this)" class="w-4 h-4 shrink-0 cursor-pointer">`;
+      html += `<div class="flex-1 min-w-0 cursor-pointer" onclick="this.previousElementSibling.click()">`;
       html += `<div class="flex items-center gap-2">`;
       html += `<strong class="text-[13px] ${planned ? 'text-slate-500 line-through' : 'text-slate-800'} truncate">${escapeHtml(item.name)}</strong>`;
-      html += `<span class="text-[9px] text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded shrink-0 font-bold">D${group.day}</span>`;
+      html += `<span class="text-[9px] ${badgeClass} px-1.5 py-0.5 rounded shrink-0 font-bold">${badgeText}</span>`;
       html += `</div>`;
       html += `<div class="text-[10px] text-slate-500 mt-0.5 truncate">${escapeHtml(group.eventTitle)}</div>`;
       if (item.note) html += `<p class="text-[10px] text-slate-500 mt-0.5 truncate">📝 ${escapeHtml(item.note)}</p>`;
-      html += `</div></label>`;
+      html += `</div>`;
+      html += `<button type="button" onclick="deleteShoppingItemFromOverview(this)" data-event-title="${safeTitle}" data-index="${idx}" class="text-red-400 hover:text-red-600 p-1 shrink-0 transition" title="刪除">`;
+      html += `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
+      html += `</button>`;
+      html += `</div>`;
     });
 
     html += `</div></details>`;
@@ -350,9 +521,9 @@ function renderShoppingByCategory(groups) {
 
 function renderShoppingItemRow(item, safeTitle, idx) {
   const planned = item.planned;
-  let html = `<label class="flex items-center gap-2.5 p-2.5 bg-white border ${planned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} rounded-xl cursor-pointer transition-all hover:shadow-sm active:scale-[0.99]">`;
-  html += `<input type="checkbox" ${planned ? 'checked' : ''} data-event-title="${safeTitle}" data-index="${idx}" onchange="handleAllShoppingToggle(this)" class="w-4 h-4 shrink-0">`;
-  html += `<div class="flex-1 min-w-0">`;
+  let html = `<div class="flex items-center gap-2.5 p-2.5 bg-white border ${planned ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} rounded-xl transition-all">`;
+  html += `<input type="checkbox" ${planned ? 'checked' : ''} data-event-title="${safeTitle}" data-index="${idx}" onchange="handleAllShoppingToggle(this)" class="w-4 h-4 shrink-0 cursor-pointer">`;
+  html += `<div class="flex-1 min-w-0 cursor-pointer" onclick="this.previousElementSibling.click()">`;
   html += `<div class="flex items-center gap-2">`;
   html += `<strong class="text-[13px] ${planned ? 'text-slate-500 line-through' : 'text-slate-800'} truncate">${escapeHtml(item.name)}</strong>`;
   if (item.category) {
@@ -360,7 +531,11 @@ function renderShoppingItemRow(item, safeTitle, idx) {
   }
   html += `</div>`;
   if (item.note) html += `<p class="text-[10px] text-slate-500 mt-0.5 truncate">📝 ${escapeHtml(item.note)}</p>`;
-  html += `</div></label>`;
+  html += `</div>`;
+  html += `<button type="button" onclick="deleteShoppingItemFromOverview(this)" data-event-title="${safeTitle}" data-index="${idx}" class="text-red-400 hover:text-red-600 p-1 shrink-0 transition" title="刪除">`;
+  html += `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
+  html += `</button>`;
+  html += `</div>`;
   return html;
 }
 
@@ -372,11 +547,11 @@ function handleAllShoppingToggle(el) {
   items[index].planned = !items[index].planned;
   saveShoppingItems(eventTitle, items);
   haptic(5);
-  const label = el.closest('label');
-  if (label) {
-    label.classList.toggle('border-emerald-200', items[index].planned);
-    label.classList.toggle('bg-emerald-50/40', items[index].planned);
-    const strong = label.querySelector('strong');
+  const wrapper = el.parentElement;
+  if (wrapper) {
+    wrapper.classList.toggle('border-emerald-200', items[index].planned);
+    wrapper.classList.toggle('bg-emerald-50/40', items[index].planned);
+    const strong = wrapper.querySelector('strong');
     if (strong) { strong.classList.toggle('text-slate-500', items[index].planned); strong.classList.toggle('line-through', items[index].planned); strong.classList.toggle('text-slate-800', !items[index].planned); }
   }
   const container = document.getElementById('all-shopping-content');
