@@ -84,11 +84,11 @@
   <!-- 頂部工具列 -->
   <div class="bg-white border border-slate-200 p-2 rounded-2xl shadow-sm flex items-center justify-between gap-3">
     <div class="flex items-center gap-1.5 flex-wrap min-w-0">
-      <span id="cloud-sync-badge" class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-slate-200 shrink-0">
+      <span id="cloud-sync-badge" class="text-[11px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-slate-200 shrink-0">
         <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 連線中…
       </span>
       <span class="text-xs font-black text-slate-800 truncate">隨行記帳本</span>
-      <span id="current-user-badge" class="text-[10px] px-2 py-0.5 rounded-full font-bold hidden"></span>
+      <span id="current-user-badge" class="text-[11px] px-2 py-0.5 rounded-full font-bold hidden"></span>
     </div>
     <div class="flex items-center gap-1.5 shrink-0">
       <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition text-sm" title="切換主題">🌙</button>
@@ -100,15 +100,15 @@
   <!-- 統計卡片 -->
   <div class="grid grid-cols-3 gap-2">
     <div class="bg-gradient-to-br from-sky-950 to-sky-900 text-white p-2 rounded-xl shadow-sm text-center">
-      <div class="flex items-center justify-center gap-1 mb-0.5"><span class="text-xs">💰</span><span class="text-[9px] text-sky-200 uppercase font-bold tracking-wider">總支出</span></div>
+      <div class="flex items-center justify-center gap-1 mb-0.5"><span class="text-xs">💰</span><span class="text-[11px] text-sky-200 uppercase font-bold tracking-wider">總支出</span></div>
       <strong id="stat-total" class="block text-base md:text-lg font-black drop-shadow-md">0.00 HKD</strong>
     </div>
     <div class="bg-gradient-to-br from-blue-900 to-indigo-800 text-white p-2 rounded-xl shadow-sm text-center">
-      <div class="flex items-center justify-center gap-1 mb-0.5"><span class="text-xs">📅</span><span id="stat-day-label" class="text-[9px] text-sky-200 uppercase font-bold tracking-wider">平均每日</span></div>
+      <div class="flex items-center justify-center gap-1 mb-0.5"><span class="text-xs">📅</span><span id="stat-day-label" class="text-[11px] text-sky-200 uppercase font-bold tracking-wider">平均每日</span></div>
       <strong id="stat-day-value" class="block text-base md:text-lg font-black drop-shadow-md">0.00 HKD</strong>
     </div>
     <div class="bg-gradient-to-br from-slate-800 to-slate-700 text-white p-2 rounded-xl shadow-sm text-center">
-      <div class="flex items-center justify-center gap-1 mb-0.5"><span class="text-xs">🧾</span><span class="text-[9px] text-slate-300 uppercase font-bold tracking-wider">筆數</span></div>
+      <div class="flex items-center justify-center gap-1 mb-0.5"><span class="text-xs">🧾</span><span class="text-[11px] text-slate-300 uppercase font-bold tracking-wider">筆數</span></div>
       <strong id="stat-count" class="block text-base md:text-lg font-black drop-shadow-md">0 筆</strong>
     </div>
   </div>
@@ -131,7 +131,7 @@
     <div class="border-b border-slate-200 bg-slate-50 p-1.5 flex gap-1.5 overflow-x-auto scrollbar-none">
       <button id="tab-records-btn" onclick='switchLedgerSubTab("records")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black bg-white text-sky-900 shadow-sm transition flex flex-col items-center justify-center"><span class="text-base">📝</span><span>明細</span></button>
       <button id="tab-balances-btn" onclick='switchLedgerSubTab("balances")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center"><span class="text-base">⚖️</span><span>結算</span></button>
-      <button id="tab-suggested-btn" onclick='switchLedgerSubTab("suggested")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center"><span class="text-base">💡</span><span>還款 <span id="debt-count-badge" class="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full hidden">0</span></span></button>
+      <button id="tab-suggested-btn" onclick='switchLedgerSubTab("suggested")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center"><span class="text-base">💡</span><span>還款 <span id="debt-count-badge" class="bg-red-500 text-white text-[11px] px-1.5 py-0.5 rounded-full hidden">0</span></span></button>
       <button id="tab-history-btn" onclick='switchLedgerSubTab("history")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center"><span class="text-base">🕘</span><span>紀錄</span></button>
     </div>
 
@@ -145,14 +145,14 @@
             <option value="newest">最新優先</option><option value="oldest">最舊優先</option><option value="amountHigh">金額高→低</option><option value="amountLow">金額低→高</option>
           </select>
           <div class="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 shadow-inner">
-            <span class="text-[10px] text-slate-500 font-bold">👀</span>
+            <span class="text-[11px] text-slate-500 font-bold">👀</span>
             <select id="ledger-view-as" onchange="changeViewAs(this.value)" class="text-xs font-black bg-transparent text-sky-700 outline-none cursor-pointer">
               <option value="余生">余生</option><option value="bowie">bowie</option><option value="shandy">shandy</option><option value="connie">connie</option>
             </select>
           </div>
-          <button onclick="exportCSV()" class="text-[10px] font-bold bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded transition">📊 CSV</button>
-          <button onclick="exportLedgerText()" class="text-[10px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded transition">📥 文字</button>
-          <button onclick="openConfirmModal()" class="text-[10px] font-bold text-red-500 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 px-2 py-1 rounded transition">🗑 清空</button>
+          <button onclick="exportCSV()" class="text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded transition">📊 CSV</button>
+          <button onclick="exportLedgerText()" class="text-[11px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded transition">📥 文字</button>
+          <button onclick="openConfirmModal()" class="text-[11px] font-bold text-red-500 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 px-2 py-1 rounded transition">🗑 清空</button>
         </div>
       </div>
 
@@ -215,9 +215,9 @@
     <!-- 建議還款 -->
     <div id="subview-suggested" class="p-4 hidden space-y-4">
       <div class="grid grid-cols-3 gap-2">
-        <div class="bg-red-50 border border-red-200 p-2 rounded-xl text-center"><span class="text-[10px] text-red-600 block">待還總額</span><strong id="debt-total" class="text-sm text-red-600">$0.00</strong></div>
-        <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-xl text-center"><span class="text-[10px] text-emerald-600 block">應收總額</span><strong id="credit-total" class="text-sm text-emerald-600">$0.00</strong></div>
-        <div class="bg-sky-50 border border-sky-200 p-2 rounded-xl text-center"><span class="text-[10px] text-sky-600 block">結算筆數</span><strong id="settled-total" class="text-sm text-sky-600">0 筆</strong></div>
+        <div class="bg-red-50 border border-red-200 p-2 rounded-xl text-center"><span class="text-[11px] text-red-600 block">待還總額</span><strong id="debt-total" class="text-sm text-red-600">$0.00</strong></div>
+        <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-xl text-center"><span class="text-[11px] text-emerald-600 block">應收總額</span><strong id="credit-total" class="text-sm text-emerald-600">$0.00</strong></div>
+        <div class="bg-sky-50 border border-sky-200 p-2 rounded-xl text-center"><span class="text-[11px] text-sky-600 block">結算筆數</span><strong id="settled-total" class="text-sm text-sky-600">0 筆</strong></div>
       </div>
       <div class="flex gap-2">
         <button onclick="copySettlementPlan()" class="flex-1 py-2 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl text-xs font-bold border border-sky-200 transition">📋 複製還款計畫</button>
@@ -231,8 +231,8 @@
       <div class="flex items-center justify-between gap-2 flex-wrap">
         <h4 class="text-sm font-bold text-slate-800">🕘 歷史變更記錄</h4>
         <div class="flex items-center gap-2">
-          <span id="history-count-badge" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded-full font-bold border border-slate-200">0 筆</span>
-          <button onclick="openClearHistoryConfirm()" class="text-[10px] font-bold text-red-500 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 px-2 py-1 rounded transition">🗑 清空歷史</button>
+          <span id="history-count-badge" class="text-[11px] bg-slate-100 text-slate-600 px-2 py-1 rounded-full font-bold border border-slate-200">0 筆</span>
+          <button onclick="openClearHistoryConfirm()" class="text-[11px] font-bold text-red-500 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 px-2 py-1 rounded transition">🗑 清空歷史</button>
         </div>
       </div>
       <div class="bg-sky-50 border border-sky-200 rounded-2xl p-3 text-[11px] text-sky-800 leading-relaxed">☁️ 所有資料即時同步至雲端。清空歷史需要管理員密碼。</div>
@@ -354,13 +354,13 @@
         <div>
           <div class="flex items-center justify-between mb-1.5">
             <label class="text-xs font-bold text-slate-600">👥 分擔成員</label>
-            <button type="button" id="custom-split-toggle" onclick="toggleCustomSplit()" class="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-0.5 rounded transition">✏️ 自訂金額</button>
+            <button type="button" id="custom-split-toggle" onclick="toggleCustomSplit()" class="text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-0.5 rounded transition">✏️ 自訂金額</button>
           </div>
           <div class="grid grid-cols-4 gap-1.5 mb-2" id="splitters-grid"></div>
           <div id="custom-split-inputs" class="hidden space-y-1.5 mt-2"></div>
           <div class="flex justify-between items-center mt-2">
-            <span id="split-sum-hint" class="text-[10px] font-bold text-slate-400"></span>
-            <button type="button" onclick='setSplitPreset("all")' class="text-[10px] font-bold text-sky-600 hover:text-sky-800 underline">全部均分</button>
+            <span id="split-sum-hint" class="text-[11px] font-bold text-slate-400"></span>
+            <button type="button" onclick='setSplitPreset("all")' class="text-[11px] font-bold text-sky-600 hover:text-sky-800 underline">全部均分</button>
           </div>
         </div>
 

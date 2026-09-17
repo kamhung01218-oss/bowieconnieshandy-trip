@@ -1,6 +1,9 @@
 /* ============================================================
- * style.css — v9.2 雪地清爽版
+ * style.css — v10.1 雪地清爽版
  * 淺藍漸層 + 白色卡片 + 藍色主色
+ *
+ * v10.1 變更：
+ *   - 移除列印樣式（已不需要）
  * ============================================================ */
 
 :root {
@@ -23,13 +26,34 @@
   --sky-lighter: #e0f2fe;
   --sky-accent: #0ea5e9;
 
-  --text-main: #1e293b;
-  --text-soft: #475569;
-  --text-mute: #64748b;
-  --text-faint: #94a3b8;
+  /* ⭐ 對比度加深後 */
+  --text-main: #0f172a;
+  --text-soft: #334155;
+  --text-mute: #475569;
+  --text-faint: #64748b;
 
   --line-soft: #e2e8f0;
   --line-sky: rgba(186, 230, 253, 0.6);
+
+  /* 統一圓角 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* 統一按鈕高度 */
+  --btn-sm: 36px;
+  --btn-md: 40px;
+  --btn-lg: 44px;
+
+  /* 統一字級 */
+  --fs-2xs: 11px;
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-base: 16px;
+  --fs-lg: 20px;
+  --fs-2xl: 28px;
+  --fs-3xl: 40px;
 
   /* 字體 */
   --font-sans: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -63,7 +87,23 @@ button, a {
 }
 button:active { transform: scale(0.96); transition: transform 0.05s; }
 
-/* ========== Header 過渡帶（縮減留白） ========== */
+/* 全域數字對齊 */
+.num,
+.tab-count,
+.day-subtotal,
+.tools-item-progress,
+.budget-pct,
+.countdown-value,
+.countdown-inline-num,
+.countdown-inline-num-sm,
+.timeline-stamp-time,
+.timeline-stamp-end,
+.daily-bar-amt,
+.stat-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========== Header 過渡帶 ========== */
 .header-fade {
   height: 12px;
   background: linear-gradient(to bottom,
@@ -100,7 +140,7 @@ img.lazy-fade.loaded {
     rgba(186, 230, 253, 0.4) 100%);
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.6s ease-in-out infinite;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 @keyframes skeleton-shimmer {
   0% { background-position: 200% 0; }
@@ -108,7 +148,7 @@ img.lazy-fade.loaded {
 }
 .skeleton-card {
   background: rgba(255, 255, 255, 0.9);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 14px;
   margin-bottom: 16px;
   border: 1px solid var(--line-sky);
@@ -125,19 +165,19 @@ img.lazy-fade.loaded {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 6px;
 }
-.modal-progress-label { font-size: 11px; color: var(--text-mute); font-weight: 700; }
+.modal-progress-label { font-size: var(--fs-2xs); color: var(--text-mute); font-weight: 700; }
 .modal-progress-count {
-  font-size: 13px; font-weight: 900; color: var(--sky-primary);
+  font-size: var(--fs-xs); font-weight: 900; color: var(--sky-primary);
   font-variant-numeric: tabular-nums;
 }
 .modal-progress-track {
-  height: 8px; background: var(--sky-lighter); border-radius: 999px;
+  height: 8px; background: var(--sky-lighter); border-radius: var(--radius-full);
   overflow: hidden; position: relative;
 }
 .modal-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #38bdf8, var(--sky-primary));
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
   position: relative; overflow: hidden;
@@ -157,6 +197,9 @@ img.lazy-fade.loaded {
 .modal-progress-fill.complete {
   background: linear-gradient(90deg, #34d399, #10b981);
 }
+.modal-progress-fill.complete::after {
+  animation: none;
+}
 
 /* ========== Modal Tab ========== */
 .modal-tabs {
@@ -168,10 +211,11 @@ img.lazy-fade.loaded {
 .modal-tab {
   flex-shrink: 0;
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 7px 14px; border-radius: 999px;
+  padding: 7px 14px; border-radius: var(--radius-full);
   background: #f1f5f9; border: 1px solid var(--line-soft);
-  color: var(--text-mute); font-size: 12px; font-weight: 800;
+  color: var(--text-mute); font-size: var(--fs-xs); font-weight: 800;
   white-space: nowrap; cursor: pointer; transition: all 0.2s;
+  min-height: var(--btn-sm);
 }
 .modal-tab:active { transform: scale(0.95); }
 .modal-tab.active {
@@ -180,7 +224,7 @@ img.lazy-fade.loaded {
   box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3);
 }
 .modal-tab .tab-count {
-  font-size: 10px; padding: 1px 6px; border-radius: 999px;
+  font-size: var(--fs-2xs); padding: 1px 6px; border-radius: var(--radius-full);
   background: rgba(255,255,255,0.25);
   font-variant-numeric: tabular-nums;
 }
@@ -191,11 +235,12 @@ img.lazy-fade.loaded {
 .skill-tab {
   flex-shrink: 0;
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 9px 16px; border-radius: 999px;
+  padding: 9px 16px; border-radius: var(--radius-full);
   background: #f1f5f9; border: 1px solid var(--line-soft);
-  color: var(--text-mute); font-size: 12px; font-weight: 800;
+  color: var(--text-mute); font-size: var(--fs-xs); font-weight: 800;
   white-space: nowrap; cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: var(--btn-md);
 }
 .skill-tab:active { transform: scale(0.95); }
 .skill-tab.active {
@@ -208,7 +253,7 @@ img.lazy-fade.loaded {
 /* ========== 分類折疊 ========== */
 .category-group {
   margin-bottom: 10px;
-  border: 1px solid var(--line-soft); border-radius: 14px;
+  border: 1px solid var(--line-soft); border-radius: var(--radius-md);
   overflow: hidden; background: white; transition: all 0.2s;
 }
 .category-group.done {
@@ -226,11 +271,11 @@ img.lazy-fade.loaded {
   background: linear-gradient(180deg, #ecfdf5, #d1fae5);
 }
 .category-title-wrap { display: flex; align-items: center; gap: 8px; }
-.category-title { font-size: 13px; font-weight: 900; color: #334155; }
+.category-title { font-size: var(--fs-sm); font-weight: 900; color: #334155; }
 .category-group.done .category-title { color: #059669; }
 .category-count {
-  font-size: 10px; font-weight: 800;
-  padding: 2px 8px; border-radius: 999px;
+  font-size: var(--fs-2xs); font-weight: 800;
+  padding: 2px 8px; border-radius: var(--radius-full);
   background: var(--line-soft); color: var(--text-mute);
   font-variant-numeric: tabular-nums;
 }
@@ -267,15 +312,15 @@ img.lazy-fade.loaded {
   text-decoration-thickness: 1px;
 }
 .checklist-item .checklist-label {
-  flex: 1; font-size: 12px; color: #334155; line-height: 1.4;
+  flex: 1; font-size: var(--fs-xs); color: #334155; line-height: 1.4;
 }
-.checklist-item .checklist-icon { font-size: 16px; flex-shrink: 0; }
+.checklist-item .checklist-icon { font-size: var(--fs-base); flex-shrink: 0; }
 
 /* ========== 編號卡片 ========== */
 .numbered-card {
   display: flex; gap: 12px; padding: 14px;
   background: white; border: 1px solid var(--line-soft);
-  border-radius: 14px; transition: all 0.2s;
+  border-radius: var(--radius-md); transition: all 0.2s;
   position: relative; overflow: hidden;
 }
 .numbered-card::before {
@@ -290,9 +335,9 @@ img.lazy-fade.loaded {
 .numbered-card.success::before { background: linear-gradient(180deg, #34d399, #059669); }
 .numbered-index {
   flex-shrink: 0; width: 28px; height: 28px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: linear-gradient(135deg, #eff6ff, #dbeafe);
-  color: var(--sky-primary); font-size: 13px; font-weight: 900;
+  color: var(--sky-primary); font-size: var(--fs-xs); font-weight: 900;
   display: flex; align-items: center; justify-content: center;
   font-variant-numeric: tabular-nums;
   border: 1px solid var(--sky-light);
@@ -311,17 +356,17 @@ img.lazy-fade.loaded {
 }
 .numbered-content { flex: 1; min-width: 0; }
 .numbered-title {
-  font-size: 13px; font-weight: 900; color: var(--text-main);
+  font-size: var(--fs-sm); font-weight: 900; color: var(--text-main);
   margin-bottom: 4px; line-height: 1.3;
 }
-.numbered-desc { font-size: 12px; color: var(--text-mute); line-height: 1.6; }
+.numbered-desc { font-size: var(--fs-xs); color: var(--text-mute); line-height: 1.6; }
 .numbered-desc strong { color: #0f172a; font-weight: 800; }
 
 /* ========== 搶票卡片 ========== */
 .ticket-card {
   background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
   border: 1.5px solid #ddd6fe;
-  border-radius: 16px; padding: 14px;
+  border-radius: var(--radius-lg); padding: 14px;
   margin-bottom: 12px;
   position: relative; overflow: hidden;
 }
@@ -346,13 +391,13 @@ img.lazy-fade.loaded {
   gap: 8px; margin-bottom: 8px;
 }
 .ticket-title {
-  font-size: 14px; font-weight: 900; color: #4c1d95;
+  font-size: var(--fs-sm); font-weight: 900; color: #4c1d95;
   display: flex; align-items: center; gap: 6px;
 }
 .ticket-card.zao .ticket-title { color: #1e3a8a; }
 .ticket-badge {
-  font-size: 9px; font-weight: 900;
-  padding: 2px 8px; border-radius: 999px;
+  font-size: var(--fs-2xs); font-weight: 900;
+  padding: 2px 8px; border-radius: var(--radius-full);
   background: #a78bfa; color: white;
   letter-spacing: 0.05em;
 }
@@ -364,10 +409,10 @@ img.lazy-fade.loaded {
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.8);
 }
-.ticket-countdown-label { font-size: 10px; color: #7c3aed; font-weight: 800; }
+.ticket-countdown-label { font-size: var(--fs-2xs); color: #7c3aed; font-weight: 800; }
 .ticket-card.zao .ticket-countdown-label { color: #2563eb; }
 .ticket-countdown {
-  font-size: 16px; font-weight: 900; color: #4c1d95;
+  font-size: var(--fs-base); font-weight: 900; color: #4c1d95;
   font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
 }
 .ticket-card.zao .ticket-countdown { color: #1e3a8a; }
@@ -377,28 +422,28 @@ img.lazy-fade.loaded {
 }
 .ticket-meta-item {
   background: rgba(255,255,255,0.5);
-  border-radius: 8px; padding: 6px 8px;
+  border-radius: var(--radius-sm); padding: 6px 8px;
 }
 .ticket-meta-item .label {
-  font-size: 9px; color: #7c3aed; font-weight: 800;
+  font-size: var(--fs-2xs); color: #7c3aed; font-weight: 800;
   letter-spacing: 0.05em;
 }
 .ticket-card.zao .ticket-meta-item .label { color: #2563eb; }
 .ticket-meta-item .value {
-  font-size: 11px; font-weight: 900; color: #4c1d95;
+  font-size: var(--fs-xs); font-weight: 900; color: #4c1d95;
   margin-top: 2px; line-height: 1.3;
 }
 .ticket-card.zao .ticket-meta-item .value { color: #1e3a8a; }
 .ticket-steps { display: flex; flex-direction: column; gap: 6px; }
 .ticket-step {
   display: flex; align-items: flex-start; gap: 8px;
-  font-size: 11px; color: #4c1d95; line-height: 1.5;
+  font-size: var(--fs-xs); color: #4c1d95; line-height: 1.5;
 }
 .ticket-card.zao .ticket-step { color: #1e3a8a; }
 .ticket-step-dot {
   flex-shrink: 0; width: 18px; height: 18px;
   border-radius: 50%; background: #a78bfa;
-  color: white; font-size: 10px; font-weight: 900;
+  color: white; font-size: var(--fs-2xs); font-weight: 900;
   display: flex; align-items: center; justify-content: center;
   margin-top: 1px;
 }
@@ -409,7 +454,7 @@ img.lazy-fade.loaded {
   display: flex; align-items: center; gap: 16px;
   padding: 16px;
   background: linear-gradient(135deg, var(--sky-primary) 0%, var(--sky-deep) 100%);
-  border-radius: 18px; color: white;
+  border-radius: var(--radius-lg); color: white;
   margin-bottom: 12px; position: relative; overflow: hidden;
 }
 .weather-hero::before {
@@ -421,28 +466,28 @@ img.lazy-fade.loaded {
   pointer-events: none;
 }
 .weather-hero-icon {
-  font-size: 52px; line-height: 1;
+  font-size: var(--fs-3xl); line-height: 1;
   flex-shrink: 0;
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
 }
 .weather-hero-temp {
-  font-size: 36px; font-weight: 900; line-height: 1;
+  font-size: var(--fs-2xl); font-weight: 900; line-height: 1;
   font-variant-numeric: tabular-nums; letter-spacing: -0.03em;
 }
 .weather-hero-meta {
-  font-size: 11px; color: rgba(255,255,255,0.75);
+  font-size: var(--fs-2xs); color: rgba(255,255,255,0.75);
   margin-top: 4px; font-weight: 600;
 }
 .weather-advice {
   background: rgba(251, 191, 36, 0.15);
   border: 1px solid rgba(251, 191, 36, 0.3);
-  border-radius: 12px; padding: 10px 12px;
+  border-radius: var(--radius-md); padding: 10px 12px;
   margin-bottom: 12px;
   display: flex; align-items: center; gap: 10px;
 }
-.weather-advice-icon { font-size: 22px; flex-shrink: 0; }
+.weather-advice-icon { font-size: var(--fs-lg); flex-shrink: 0; }
 .weather-advice-text {
-  font-size: 12px; font-weight: 800; color: #92400e;
+  font-size: var(--fs-xs); font-weight: 800; color: #92400e;
   line-height: 1.4;
 }
 
@@ -450,7 +495,7 @@ img.lazy-fade.loaded {
 .forecast-row {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px; background: #f8fafc;
-  border-radius: 12px; border: 1px solid #f1f5f9;
+  border-radius: var(--radius-md); border: 1px solid #f1f5f9;
   transition: all 0.2s;
 }
 .forecast-row.today {
@@ -459,20 +504,20 @@ img.lazy-fade.loaded {
 }
 .forecast-date {
   flex-shrink: 0; width: 62px;
-  font-size: 11px; font-weight: 800; color: var(--text-mute);
+  font-size: var(--fs-2xs); font-weight: 800; color: var(--text-soft);
 }
 .forecast-row.today .forecast-date { color: var(--sky-primary); }
-.forecast-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
+.forecast-icon { font-size: var(--fs-base); flex-shrink: 0; width: 24px; text-align: center; }
 .forecast-temp {
-  flex: 1; font-size: 12px; font-weight: 800;
-  color: #334155; font-variant-numeric: tabular-nums;
+  flex: 1; font-size: var(--fs-xs); font-weight: 800;
+  color: var(--text-main); font-variant-numeric: tabular-nums;
 }
 .forecast-temp-max { color: #dc2626; font-weight: 900; }
 .forecast-temp-min { color: var(--sky-primary); font-weight: 900; }
 .forecast-rain {
-  font-size: 11px; font-weight: 800; color: var(--sky-accent);
+  font-size: var(--fs-2xs); font-weight: 800; color: var(--sky-accent);
   background: rgba(14, 165, 233, 0.1);
-  padding: 3px 8px; border-radius: 999px;
+  padding: 3px 8px; border-radius: var(--radius-full);
 }
 
 /* ========== 行程速覽時間軸 ========== */
@@ -490,16 +535,16 @@ img.lazy-fade.loaded {
   flex-shrink: 0;
   width: 32px; height: 32px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 900; color: white;
+  font-size: var(--fs-2xs); font-weight: 900; color: white;
   z-index: 1;
   box-shadow: 0 0 0 3px white;
 }
 .overview-day-content { flex: 1; min-width: 0; padding-top: 2px; }
 .overview-day-title {
-  font-size: 13px; font-weight: 900; color: var(--text-main);
+  font-size: var(--fs-sm); font-weight: 900; color: var(--text-main);
   margin-bottom: 2px;
 }
-.overview-day-desc { font-size: 11px; color: var(--text-mute); line-height: 1.4; }
+.overview-day-desc { font-size: var(--fs-2xs); color: var(--text-soft); line-height: 1.4; }
 
 /* ========== Modal 手勢關閉 ========== */
 .modal-handle-area {
@@ -508,12 +553,12 @@ img.lazy-fade.loaded {
   padding: 10px 0 6px;
   cursor: grab; touch-action: none;
   background: linear-gradient(180deg, white 0%, rgba(255,255,255,0.85) 100%);
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
 }
 .modal-handle-area:active { cursor: grabbing; }
 .modal-handle {
-  width: 40px; height: 5px; border-radius: 999px;
+  width: 40px; height: 5px; border-radius: var(--radius-full);
   background: #cbd5e1;
   transition: background 0.2s, transform 0.2s;
 }
@@ -536,7 +581,7 @@ body.modal-open #app-root {
   }
   body.modal-open #app-root {
     transform: scale(0.96);
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
   }
 }
@@ -557,14 +602,14 @@ body.modal-open #app-root {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
   border: 1px solid var(--line-sky);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 4px 20px rgba(2, 132, 199, 0.06);
   padding: 16px;
   transition: all 0.3s ease;
 }
 
 /* ============================================================
- * ⭐ 時間軸（雪地版，行程貼頂）
+ * 時間軸（雪地版）
  * ============================================================ */
 .timeline {
   position: relative;
@@ -606,57 +651,74 @@ body.modal-open #app-root {
 .timeline-node {
   position: relative;
   flex-shrink: 0;
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: linear-gradient(135deg, #38bdf8, var(--sky-primary));
   box-shadow:
-    0 0 0 3px var(--snow-bg-1),
-    0 2px 6px rgba(2, 132, 199, 0.35);
+    0 0 0 2.5px var(--snow-bg-1),
+    0 1px 4px rgba(2, 132, 199, 0.3);
   z-index: 2;
   transition: background 0.3s ease, box-shadow 0.3s ease;
-  margin-left: 4px;
+  margin-left: 6px;
 }
 
 .timeline-stamp {
   display: inline-flex;
   align-items: baseline;
-  gap: 5px;
+  gap: 6px;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
+
 .timeline-stamp-time {
-  font-family: var(--font-num);
-  font-size: 20px;
+  font-family: var(--font-sans);
+  font-size: 15px;
   font-weight: 700;
-  color: var(--sky-deep);
   letter-spacing: -0.01em;
-  padding: 5px 12px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--sky-lighter), var(--sky-light));
-  border: 1px solid #7dd3fc;
-  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.15);
-  transition: all 0.3s ease;
-  position: relative;
+  color: var(--sky-deep);
+  background: transparent;
+  border: none;
+  border-left: 3px solid var(--sky-primary);
+  border-radius: 0;
+  padding: 2px 10px;
+  box-shadow: none;
   display: inline-block;
+  transition: color 0.3s ease, border-color 0.3s ease;
 }
 .timeline-stamp-end {
-  font-family: var(--font-num);
-  font-size: 13px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-mute);
+  margin-left: 2px;
+}
+
+/* 時間膠囊輕量版（覆蓋前面） */
+.timeline-stamp-time {
+  font-family: var(--font-sans);
+  font-size: 15px;
   font-weight: 700;
-  color: var(--text-faint);
-  margin-left: 4px;
+  letter-spacing: -0.01em;
+  color: var(--sky-deep);
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
+  padding: 4px 14px;
+  box-shadow: 0 1px 2px rgba(2, 132, 199, 0.08);
+  display: inline-block;
+  transition: all 0.3s ease;
 }
 
 /* ---------- 已完成 ---------- */
 .timeline-item.status-done .timeline-node {
   background: #cbd5e1;
-  box-shadow: 0 0 0 3px var(--snow-bg-1);
+  box-shadow: 0 0 0 2.5px var(--snow-bg-1);
 }
 .timeline-item.status-done .timeline-stamp-time {
   color: var(--text-faint);
   background: #f1f5f9;
-  border-color: var(--line-soft);
+  border-color: #e2e8f0;
   text-decoration: line-through;
   text-decoration-color: #cbd5e1;
   text-decoration-thickness: 1.5px;
@@ -669,6 +731,9 @@ body.modal-open #app-root {
 /* ---------- 進行中 ---------- */
 .timeline-item.status-active .timeline-node {
   background: linear-gradient(135deg, var(--sky-accent), var(--sky-primary));
+  box-shadow:
+    0 0 0 2.5px var(--snow-bg-1),
+    0 0 10px 2px rgba(56, 189, 248, 0.5);
 }
 .timeline-item.status-active .timeline-node::after {
   content: '';
@@ -687,78 +752,45 @@ body.modal-open #app-root {
 }
 
 .timeline-item.status-active .timeline-stamp-time {
-  background: linear-gradient(135deg, var(--sky-accent), var(--sky-primary));
-  border-color: var(--sky-primary-dark);
-  color: #ffffff;
-  box-shadow: 0 3px 12px rgba(14, 165, 233, 0.5);
+  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+  border-color: #38bdf8;
+  color: var(--sky-deep);
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
 }
-.timeline-item.status-active .timeline-stamp-time::after {
-  content: '● LIVE';
+.timeline-item.status-active .timeline-stamp-time::before {
+  content: '';
   display: inline-block;
-  font-size: 9px;
-  font-weight: 700;
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.25);
-  padding: 2px 6px;
-  border-radius: 999px;
-  margin-left: 6px;
-  letter-spacing: 0.08em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  margin-right: 6px;
   vertical-align: middle;
-  animation: live-blink 1.4s ease-in-out infinite;
-  will-change: opacity;
-}
-@keyframes live-blink {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.4; }
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
 }
 
 /* ---------- 下一個 ---------- */
 .timeline-item.status-next .timeline-node {
   background: linear-gradient(135deg, #7dd3fc, #38bdf8);
   box-shadow:
-    0 0 0 3px var(--snow-bg-1),
-    0 2px 8px rgba(56, 189, 248, 0.4);
+    0 0 0 2.5px var(--snow-bg-1),
+    0 1px 5px rgba(56, 189, 248, 0.4);
 }
 .timeline-item.status-next .timeline-node::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: #38bdf8;
-  z-index: -1;
-  pointer-events: none;
-  animation: pulse-ring-soft 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  will-change: transform, opacity;
-}
-@keyframes pulse-ring-soft {
-  0%   { transform: scale(1);   opacity: 0.5; }
-  100% { transform: scale(2.5); opacity: 0; }
+  display: none;
 }
 .timeline-item.status-next .timeline-stamp-time {
-  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-  border-color: #38bdf8;
-  color: var(--sky-deep);
-  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.25);
-}
-.timeline-item.status-next .timeline-stamp-time::after {
-  content: 'NEXT';
-  display: inline-block;
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--sky-primary-dark);
-  background: rgba(255, 255, 255, 0.75);
-  padding: 2px 6px;
-  border-radius: 999px;
-  margin-left: 6px;
-  letter-spacing: 0.1em;
-  vertical-align: middle;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border-color: #fde68a;
+  color: #b45309;
 }
 
 /* ---------- 未開始 ---------- */
 .timeline-item.status-upcoming .timeline-node {
   background: linear-gradient(135deg, var(--sky-light), #7dd3fc);
   box-shadow:
-    0 0 0 3px var(--snow-bg-1),
+    0 0 0 2.5px var(--snow-bg-1),
     0 1px 3px rgba(2, 132, 199, 0.2);
 }
 
@@ -775,15 +807,15 @@ body.modal-open #app-root {
     gap: 6px;
   }
   .timeline-node {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     margin-left: 4px;
   }
   .timeline-stamp-time {
-    font-size: 18px;
-    padding: 4px 10px;
+    font-size: 14px;
+    padding: 3px 10px;
   }
-  .timeline-stamp-end { font-size: 12px; }
+  .timeline-stamp-end { font-size: var(--fs-2xs); }
 }
 @media (max-width: 340px) {
   .timeline { padding-left: 24px; }
@@ -794,13 +826,13 @@ body.modal-open #app-root {
     gap: 5px;
   }
   .timeline-node {
-    width: 11px;
-    height: 11px;
+    width: 9px;
+    height: 9px;
     margin-left: 3px;
   }
   .timeline-stamp-time {
-    font-size: 17px;
-    padding: 4px 8px;
+    font-size: 13px;
+    padding: 2px 8px;
   }
 }
 
@@ -829,7 +861,7 @@ body.modal-open #app-root {
 .event-collapsible.expanded::after { display: none; }
 .event-collapsible.no-collapse { max-height: none; }
 
-/* ========== 展開完整攻略按鈕（實心藍底） ========== */
+/* ========== 展開完整攻略按鈕 ========== */
 .expand-btn {
   display: flex;
   align-items: center;
@@ -840,13 +872,14 @@ body.modal-open #app-root {
   padding: 12px 16px;
   background: #eff6ff;
   border: 1px solid #bfdbfe;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   color: #0369a1;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 800;
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: 0.02em;
+  min-height: var(--btn-lg);
 }
 .expand-btn:active {
   transform: scale(0.98);
@@ -874,8 +907,8 @@ body.modal-open #app-root {
   flex: 1;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 2px; font-size: 11px; font-weight: 700;
-  color: var(--text-mute); border-radius: 12px;
+  gap: 2px; font-size: var(--fs-2xs); font-weight: 700;
+  color: var(--text-mute); border-radius: var(--radius-md);
   padding: 8px 0; transition: all 0.2s;
   background: transparent; border: none;
   position: relative;
@@ -889,7 +922,7 @@ body.modal-open #app-root {
   transform: translateX(-50%);
   width: 22px;
   height: 3px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: linear-gradient(90deg, #38bdf8, var(--sky-primary));
   box-shadow: 0 0 8px rgba(56, 189, 248, 0.55);
   animation: nav-indicator-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -950,12 +983,12 @@ body.modal-open #app-root {
 
 /* ========== 日期分頁 ========== */
 .day-tab {
-  border-radius: 999px !important;
+  border-radius: var(--radius-full) !important;
   transition: all 0.3s ease;
-  min-height: 44px;
+  min-height: var(--btn-lg);
   display: inline-flex; align-items: center; justify-content: center;
   padding: 8px 16px; font-weight: 700;
-  font-size: 0.9rem; min-width: 64px;
+  font-size: var(--fs-sm); min-width: 64px;
   background: white !important;
   color: var(--text-mute) !important;
   border: 1px solid var(--line-soft) !important;
@@ -997,90 +1030,39 @@ body.modal-open #app-root {
   border-radius: 50% !important;
 }
 
-/* ========== Tag 標籤（v2：語義化 + 低飽和） ========== */
+/* ============================================================
+ * Tag 灰底 + 左側彩條
+ * ============================================================ */
 .tag {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-  padding: 0.18rem 0.55rem;
-  border-radius: 6px;
-  font-size: 0.7rem;
+  gap: 0.25rem;
+  padding: 3px 8px 3px 7px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-2xs);
   font-weight: 700;
   line-height: 1.5;
   letter-spacing: 0.02em;
   white-space: nowrap;
-  border: 1px solid;
-  transition: all 0.2s;
+  background: #f1f5f9;
+  color: #334155;
+  border: none;
+  border-left: 3px solid currentColor;
+  transition: background 0.2s;
 }
 
-/* 🚗 交通 / 移動 — 翠綠 */
-.tag-teal {
-  background: #ecfdf5;
-  color: #047857;
-  border-color: #a7f3d0;
-}
-
-/* 🍜 美食 / 必看 — 琥珀（視覺焦點） */
-.tag-amber {
-  background: #fffbeb;
-  color: #b45309;
-  border-color: #fde68a;
-}
-
-/* 🏨 住宿 / 休息 — 靛藍 */
-.tag-indigo {
-  background: #eef2ff;
-  color: #4338ca;
-  border-color: #c7d2fe;
-}
-
-/* 🎿 活動 / 體驗 — 紫色（與靛藍區分） */
-.tag-sky {
-  background: #f5f3ff;
-  color: #6d28d9;
-  border-color: #ddd6fe;
-}
-
-/* 🛍️ 購物 / 血拼 — 玫瑰 */
-.tag-rose {
-  background: #fff1f2;
-  color: #be123c;
-  border-color: #fecdd3;
-}
-
-/* ========== 深色模式 Tag ========== */
-[data-theme="dark"] .tag-teal {
-  background: #064e3b;
-  color: #6ee7b7;
-  border-color: #10b981;
-}
-[data-theme="dark"] .tag-amber {
-  background: #78350f;
-  color: #fde68a;
-  border-color: #b45309;
-}
-[data-theme="dark"] .tag-indigo {
-  background: #312e81;
-  color: #a5b4fc;
-  border-color: #4f46e5;
-}
-[data-theme="dark"] .tag-sky {
-  background: #4c1d95;
-  color: #ddd6fe;
-  border-color: #7c3aed;
-}
-[data-theme="dark"] .tag-rose {
-  background: #881337;
-  color: #fecdd3;
-  border-color: #e11d48;
-}
+.tag-teal   { color: #059669; }
+.tag-amber  { color: #d97706; }
+.tag-indigo { color: #4f46e5; }
+.tag-sky    { color: #7c3aed; }
+.tag-rose   { color: #e11d48; }
 
 /* ========== Modal 通用 ========== */
 .modal-close {
   position: absolute;
   top: 1rem; right: 1rem;
   width: 2rem; height: 2rem;
-  background: #f1f5f9; border-radius: 9999px;
+  background: #f1f5f9; border-radius: var(--radius-full);
   display: flex; align-items: center; justify-content: center;
   color: var(--text-mute); transition: all 0.2s;
   z-index: 40;
@@ -1097,6 +1079,7 @@ body.modal-open #app-root {
   display: flex; flex-direction: column;
   max-height: 90vh;
   background: #ffffff;
+  border-radius: var(--radius-lg);
 }
 .modal-overlay.active .modal-box { transform: scale(1) translateY(0); }
 .modal-box .modal-scrollable {
@@ -1126,10 +1109,10 @@ input[type="checkbox"] {
 input[type="checkbox"]:checked { background: var(--sky-primary); border-color: var(--sky-primary); }
 input[type="checkbox"]:checked::after {
   content: '✓'; position: absolute; color: white;
-  font-size: 12px; left: 2px; top: -1px; font-weight: bold;
+  font-size: var(--fs-xs); left: 2px; top: -1px; font-weight: bold;
 }
 
-/* ========== 雪花（雪地版：白色） ========== */
+/* ========== 雪花 ========== */
 .snowflake {
   position: absolute;
   top: -10px;
@@ -1181,14 +1164,14 @@ details.event-card[open] .event-content-wrapper { animation: slideDown 0.3s ease
 #lightbox.active { opacity: 1; visibility: visible; }
 #lightbox img {
   max-width: 95vw; max-height: 85vh;
-  object-fit: contain; border-radius: 12px;
+  object-fit: contain; border-radius: var(--radius-md);
   border: 4px solid white;
   box-shadow: 0 12px 32px rgba(0,0,0,0.4);
 }
 .lightbox-btn {
   background: rgba(255, 255, 255, 0.2);
   color: white; padding: 12px;
-  border-radius: 9999px; cursor: pointer; font-weight: bold;
+  border-radius: var(--radius-full); cursor: pointer; font-weight: bold;
 }
 .particle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 9999; }
 
@@ -1232,12 +1215,12 @@ button:active::after {
 .fab-wrapper > button { pointer-events: auto; }
 
 /* ============================================================
- * 📦 迷你卡片（雪地版）
+ * 迷你卡片
  * ============================================================ */
 .glass-card.event-card .mini-card {
   background: #ffffff;
   border: 1px solid var(--line-sky);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   margin: 10px 0;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(2, 132, 199, 0.06);
@@ -1268,7 +1251,7 @@ button:active::after {
   content: '▾';
   margin-left: auto;
   color: var(--sky-primary);
-  font-size: 14px;
+  font-size: var(--fs-sm);
   transition: transform 0.25s ease;
   flex-shrink: 0;
 }
@@ -1279,7 +1262,7 @@ button:active::after {
 .glass-card.event-card .mini-card-title {
   flex: 1;
   min-width: 0;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 800;
   color: var(--sky-deep);
   line-height: 1.4;
@@ -1288,7 +1271,7 @@ button:active::after {
 
 .glass-card.event-card .mini-card-icon {
   flex-shrink: 0;
-  font-size: 16px;
+  font-size: var(--fs-base);
   line-height: 1;
 }
 
@@ -1296,7 +1279,7 @@ button:active::after {
   padding: 12px 14px;
   border-top: 1px solid var(--line-sky);
   background: #ffffff;
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   line-height: 1.7;
   color: var(--text-soft);
 }
@@ -1318,7 +1301,7 @@ button:active::after {
 .glass-card.event-card .mini-card-body ul li {
   position: relative;
   padding: 4px 0 4px 20px;
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   line-height: 1.6;
 }
 .glass-card.event-card .mini-card-body ul li::before {
@@ -1340,8 +1323,8 @@ button:active::after {
   background-image: none !important;
   color: var(--sky-primary) !important;
   border: 1.5px solid var(--sky-light) !important;
-  border-radius: 8px !important;
-  font-size: 11px !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: var(--fs-2xs) !important;
   font-weight: 700 !important;
   padding: 5px 12px !important;
   margin: 4px 4px 4px 0 !important;
@@ -1354,9 +1337,8 @@ button:active::after {
   box-shadow: none !important;
 }
 
-/* 引導語 */
 .glass-card.event-card .event-collapsible > div > p:first-child {
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   line-height: 1.75;
   color: var(--text-soft);
   margin-bottom: 12px;
@@ -1366,14 +1348,13 @@ button:active::after {
  * 內容排版
  * ============================================================ */
 .glass-card.event-card .event-collapsible p {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   line-height: 1.8;
   color: var(--text-soft);
   margin-bottom: 12px;
 }
 .glass-card.event-card .event-collapsible p:last-child { margin-bottom: 0; }
 
-/* 統一提示框 */
 .glass-card.event-card .event-collapsible div[class*="bg-amber"],
 .glass-card.event-card .event-collapsible div[class*="bg-sky"],
 .glass-card.event-card .event-collapsible div[class*="bg-indigo"],
@@ -1383,7 +1364,7 @@ button:active::after {
   background: #f8fbff !important;
   border: none !important;
   border-left: 3px solid #7dd3fc !important;
-  border-radius: 0 10px 10px 0 !important;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;
   padding: 12px 14px !important;
   margin: 10px 0 !important;
   box-shadow: none !important;
@@ -1394,20 +1375,19 @@ button:active::after {
   background: #fef2f2 !important;
   border: none !important;
   border-left: 3px solid #f87171 !important;
-  border-radius: 0 10px 10px 0 !important;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;
   padding: 12px 14px !important;
   margin: 10px 0 !important;
   box-shadow: none !important;
 }
 
-/* 列表 */
 .glass-card.event-card .event-collapsible ul {
   list-style: none; padding: 0; margin: 12px 0;
 }
 .glass-card.event-card .event-collapsible ul li {
   position: relative;
   padding: 6px 0 6px 24px;
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   line-height: 1.7;
   color: var(--text-soft);
 }
@@ -1421,7 +1401,6 @@ button:active::after {
   opacity: 0.7;
 }
 
-/* 抽屜式 details */
 .glass-card.event-card .event-collapsible details:not(.mini-card) {
   background: transparent !important;
   border: none !important;
@@ -1433,7 +1412,7 @@ button:active::after {
 .glass-card.event-card .event-collapsible details:not(.mini-card) summary {
   background: transparent !important;
   color: var(--text-main) !important;
-  font-size: 13px !important;
+  font-size: var(--fs-sm) !important;
   font-weight: 700 !important;
   padding: 12px 0 !important;
   border: none !important;
@@ -1445,7 +1424,7 @@ button:active::after {
 .glass-card.event-card .event-collapsible details:not(.mini-card) summary::before {
   content: '▸';
   color: var(--sky-primary);
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   transition: transform 0.25s;
   display: inline-block;
 }
@@ -1476,7 +1455,7 @@ button:active::after {
       #fbfdff 50%,
       #f0f9ff 100%);
   border: 1px solid var(--line-sky);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   box-shadow:
     0 1px 2px rgba(2, 132, 199, 0.04),
     0 8px 24px -8px rgba(2, 132, 199, 0.12);
@@ -1485,7 +1464,6 @@ button:active::after {
   transition: box-shadow 0.35s ease, transform 0.3s ease;
 }
 
-/* 隱藏米紙膠帶 */
 .glass-card.event-card::before { display: none; }
 
 .glass-card.event-card > * {
@@ -1512,13 +1490,12 @@ button:active::after {
   line-height: 1.35;
 }
 
-/* 圖片 */
 .glass-card.event-card .event-content-wrapper > div:first-child {
   margin: 4px 18px 12px !important;
   padding: 0 !important;
   background: white !important;
   border: 1px solid var(--line-soft);
-  border-radius: 12px !important;
+  border-radius: var(--radius-md) !important;
   box-shadow: 0 2px 8px rgba(2, 132, 199, 0.06);
   overflow: hidden !important;
   transition: transform 0.3s ease;
@@ -1531,14 +1508,13 @@ button:active::after {
   height: 160px !important;
 }
 
-/* 導航按鈕 */
 .glass-card.event-card .event-content-wrapper > a {
   background: linear-gradient(135deg, var(--sky-primary), var(--sky-primary-dark)) !important;
   background-image: linear-gradient(135deg, var(--sky-primary), var(--sky-primary-dark)) !important;
   color: white !important;
   border: none !important;
-  border-radius: 12px !important;
-  font-size: 12px !important;
+  border-radius: var(--radius-md) !important;
+  font-size: var(--fs-xs) !important;
   font-weight: 700 !important;
   letter-spacing: 0.02em;
   padding: 10px 16px !important;
@@ -1562,21 +1538,140 @@ button:active::after {
   padding-top: 12px !important;
 }
 
-/* 印章按鈕（拍攝/購物） */
-.glass-card.event-card summary button {
+/* ============================================================
+ * 行程卡片「標題 + 按鈕」分行
+ * ============================================================ */
+.glass-card.event-card summary.event-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 14px 16px 0 !important;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.event-summary-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+}
+
+.event-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.event-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+}
+
+.event-location {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.event-summary-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.event-action-buttons {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.event-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: #f1f5f9;
+  color: #075985;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 32px;
+}
+.event-action-btn:active {
+  background: var(--sky-lighter);
+  transform: scale(0.96);
+}
+
+.event-action-btn .badge {
+  background: #10b981;
+  color: white;
+  font-size: var(--fs-2xs);
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  margin-left: 2px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.event-expand-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, background 0.2s;
+  border: 1px solid var(--line-soft);
+}
+.event-expand-icon svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-faint);
+}
+.glass-card.event-card[open] .event-expand-icon {
+  transform: rotate(180deg);
+  background: var(--sky-lighter);
+}
+.glass-card.event-card[open] .event-expand-icon svg {
+  color: var(--sky-primary);
+}
+
+.glass-card.event-card summary:not(.event-summary) {
+  padding: 16px 18px 12px !important;
+  position: relative;
+}
+
+.glass-card.event-card summary button:not(.event-action-btn) {
   background: rgba(255, 255, 255, 0.9) !important;
   background-image: none !important;
   border: 1px solid var(--sky-light) !important;
   color: var(--sky-primary-dark) !important;
-  font-size: 10px !important;
+  font-size: var(--fs-2xs) !important;
   font-weight: 700 !important;
   letter-spacing: 0.03em;
-  border-radius: 999px !important;
+  border-radius: var(--radius-full) !important;
   padding: 3px 10px !important;
   box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08);
   transition: all 0.2s;
+  min-height: auto;
 }
-.glass-card.event-card summary button:active {
+.glass-card.event-card summary button:not(.event-action-btn):active {
   transform: scale(0.95);
   box-shadow: none;
 }
@@ -1637,14 +1732,15 @@ details.event-card:not([open]) .event-content-wrapper {
     -webkit-backdrop-filter: none !important;
   }
 }
+
 /* ============================================================
- * 🎠 圖片輪播（多圖景點）
+ * 圖片輪播
  * ============================================================ */
 .event-image-carousel {
   position: relative;
   background: #ffffff;
   border: 1px solid var(--line-soft);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -1682,10 +1778,10 @@ details.event-card:not([open]) .event-content-wrapper {
   -webkit-backdrop-filter: blur(6px);
   color: white;
   font-family: var(--font-num);
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   gap: 3px;
@@ -1694,7 +1790,7 @@ details.event-card:not([open]) .event-content-wrapper {
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 .carousel-current { color: #ffffff; }
-.carousel-sep { color: rgba(255,255,255,0.5); font-size: 10px; }
+.carousel-sep { color: rgba(255,255,255,0.5); font-size: var(--fs-2xs); }
 .carousel-total { color: rgba(255,255,255,0.75); }
 
 .carousel-hint {
@@ -1711,7 +1807,7 @@ details.event-card:not([open]) .event-content-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: var(--fs-base);
   line-height: 1;
   pointer-events: none;
   opacity: 0;
@@ -1723,8 +1819,8 @@ details.event-card:not([open]) .event-content-wrapper {
 
 @media (max-width: 768px) {
   .carousel-img { height: 150px; }
-  .carousel-indicator { font-size: 10px; padding: 2px 8px; bottom: 8px; right: 8px; }
-  .carousel-hint { width: 22px; height: 22px; font-size: 14px; }
+  .carousel-indicator { font-size: var(--fs-2xs); padding: 2px 8px; bottom: 8px; right: 8px; }
+  .carousel-hint { width: 22px; height: 22px; font-size: var(--fs-sm); }
 }
 @media (max-width: 380px) {
   .carousel-img { height: 130px; }
@@ -1732,6 +1828,7 @@ details.event-card:not([open]) .event-content-wrapper {
 @media (prefers-reduced-motion: reduce) {
   .carousel-track { scroll-behavior: auto; }
 }
+
 /* ============================================================
  * 無障礙
  * ============================================================ */
@@ -1746,31 +1843,28 @@ details.event-card:not([open]) .event-content-wrapper {
   .walking-character.greet,
   .walking-character.jumping { animation: none !important; }
   .confetti-container { display: none !important; }
-  .timeline-item.status-active .timeline-node::after,
-  .timeline-item.status-active .timeline-stamp-time::after,
-  .timeline-item.status-next .timeline-node::after {
+  .timeline-item.status-active .timeline-node::after {
     animation: none !important;
-  }
-  .timeline-item.status-active .timeline-node::after,
-  .timeline-item.status-next .timeline-node::after {
     display: none;
   }
 }
+
 /* ============================================================
- * 🪙 快速金額按鈕
+ * 快速金額按鈕
  * ============================================================ */
 .quick-amt {
   padding: 10px 4px;
   background: #ffffff;
   border: 1.5px solid #e2e8f0;
   color: #475569;
-  border-radius: 12px;
-  font-size: 13px;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
   font-weight: 800;
   font-family: 'Playfair Display', 'Noto Sans TC', Georgia, serif;
   transition: all 0.15s ease;
   cursor: pointer;
   letter-spacing: 0.01em;
+  min-height: var(--btn-md);
 }
 .quick-amt:active {
   transform: scale(0.94);
@@ -1788,9 +1882,10 @@ details.event-card:not([open]) .event-content-wrapper {
   border-color: #7dd3fc;
   background: #f0f9ff;
 }
-/* ============================================================ */
-/* ⭐ 返回頂部（IG 風格：磨砂圓鈕 + 進度環）                        */
-/* ============================================================ */
+
+/* ============================================================
+ * 返回頂部（IG 風格）
+ * ============================================================ */
 .back-to-top-btn {
   position: fixed;
   right: 16px;
@@ -1881,9 +1976,10 @@ details.event-card:not([open]) .event-content-wrapper {
   .back-to-top-btn { transition: opacity 0.2s, visibility 0.2s; }
   .btt-ring-progress { transition: none; }
 }
-/* ============================================================ */
-/* ⭐ 快速跳轉圓點（精簡留白）                                     */
-/* ============================================================ */
+
+/* ============================================================
+ * 快速跳轉圓點
+ * ============================================================ */
 .day-progress-dots {
   display: flex;
   align-items: center;
@@ -1912,7 +2008,7 @@ details.event-card:not([open]) .event-content-wrapper {
 }
 .day-dot.active {
   width: 28px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: linear-gradient(90deg, #0ea5e9, #0284c7);
   box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
 }
@@ -1920,13 +2016,10 @@ details.event-card:not([open]) .event-content-wrapper {
   background: linear-gradient(90deg, #34d399, #10b981);
   box-shadow: 0 2px 8px rgba(52, 211, 153, 0.5);
 }
-[data-theme="dark"] .day-dot { background: #475569; }
-[data-theme="dark"] .day-dot.today { background: #34d399; }
-[data-theme="dark"] .day-dot.active { background: linear-gradient(90deg, #38bdf8, #0ea5e9); }
 
-/* ============================================================ */
-/* ⭐ 天氣預報：氣候參考 / 日出日落 / 標籤                          */
-/* ============================================================ */
+/* ============================================================
+ * 天氣預報：氣候參考 / 日出日落 / 標籤
+ * ============================================================ */
 .forecast-row { position: relative; }
 .forecast-right {
   display: flex;
@@ -1936,10 +2029,10 @@ details.event-card:not([open]) .event-content-wrapper {
   flex-shrink: 0;
 }
 .forecast-badge {
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   white-space: nowrap;
   letter-spacing: 0.02em;
 }
@@ -1954,19 +2047,16 @@ details.event-card:not([open]) .event-content-wrapper {
   border: 1px solid #fde68a;
 }
 .forecast-sun {
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   color: #64748b;
   font-weight: 700;
   margin-top: 2px;
   font-variant-numeric: tabular-nums;
 }
-[data-theme="dark"] .forecast-badge.real { background: #1e3a8a; color: #bfdbfe; border-color: #1e40af; }
-[data-theme="dark"] .forecast-badge.climate { background: #78350f; color: #fde68a; border-color: #92400e; }
-[data-theme="dark"] .forecast-sun { color: #94a3b8; }
 
-/* ============================================================ */
-/* ⭐ 天氣卡片（兩行佈局，margin-bottom 精簡）                     */
-/* ============================================================ */
+/* ============================================================
+ * 天氣卡片
+ * ============================================================ */
 .weather-card {
   display: flex;
   flex-direction: column;
@@ -1987,11 +2077,11 @@ details.event-card:not([open]) .event-content-wrapper {
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   line-height: 1.4;
 }
 .weather-card .weather-icon {
-  font-size: 16px;
+  font-size: var(--fs-base);
   line-height: 1;
   flex-shrink: 0;
 }
@@ -2008,7 +2098,7 @@ details.event-card:not([open]) .event-content-wrapper {
   font-variant-numeric: tabular-nums;
 }
 .weather-card .weather-rain {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   color: #0ea5e9;
   margin-left: auto;
@@ -2018,52 +2108,36 @@ details.event-card:not([open]) .event-content-wrapper {
 }
 .weather-card .weather-climate-badge {
   margin-left: auto;
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   color: #b45309;
   font-weight: 900;
   letter-spacing: 0.02em;
 }
 .weather-card .weather-row-2 {
-  font-size: 10px;
-  color: #64748b;
+  font-size: var(--fs-2xs);
+  color: var(--text-mute);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 .weather-card .weather-row-3 {
-  font-size: 10px;
-  color: #475569;
+  font-size: var(--fs-2xs);
+  color: var(--text-soft);
   font-weight: 700;
   line-height: 1.4;
   padding-top: 1px;
 }
-[data-theme="dark"] .weather-card {
-  background: linear-gradient(to right, #0c4a6e, #075985);
-  border-color: #0369a1;
-}
-[data-theme="dark"] .weather-card.climate {
-  background: linear-gradient(to right, #78350f, #92400e);
-  border-color: #b45309;
-}
-[data-theme="dark"] .weather-card .weather-loc { color: #7dd3fc; }
-[data-theme="dark"] .weather-card.climate .weather-loc { color: #fde68a; }
-[data-theme="dark"] .weather-card .weather-temp { color: #e2e8f0; }
-[data-theme="dark"] .weather-card .weather-rain { color: #38bdf8; }
-[data-theme="dark"] .weather-card .weather-climate-badge { color: #fde68a; }
-[data-theme="dark"] .weather-card .weather-row-2 { color: #94a3b8; }
-[data-theme="dark"] .weather-card .weather-row-3 { color: #cbd5e1; }
 
-/* ============================================================ */
-/* ⭐ 緊急資訊 Modal 內容                                          */
-/* ============================================================ */
+/* ============================================================
+ * 緊急資訊 Modal 內容
+ * ============================================================ */
 .emergency-section { margin-bottom: 20px; }
 .emergency-section-title {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 900;
   color: #475569;
   margin-bottom: 10px;
   letter-spacing: 0.02em;
 }
-[data-theme="dark"] .emergency-section-title { color: #cbd5e1; }
 
 .emergency-call-btn {
   display: flex;
@@ -2073,7 +2147,7 @@ details.event-card:not([open]) .event-content-wrapper {
   margin-bottom: 8px;
   background: linear-gradient(135deg, #fef2f2, #fee2e2);
   border: 1.5px solid #fecaca;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
   transition: all 0.2s;
@@ -2091,7 +2165,7 @@ details.event-card:not([open]) .event-content-wrapper {
   background: linear-gradient(135deg, #e0f2fe, #bae6fd);
 }
 .emergency-call-icon {
-  font-size: 22px;
+  font-size: var(--fs-lg);
   flex-shrink: 0;
   width: 30px;
   text-align: center;
@@ -2099,7 +2173,7 @@ details.event-card:not([open]) .event-content-wrapper {
 .emergency-call-info { flex: 1; min-width: 0; }
 .emergency-call-label {
   display: block;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 900;
   color: #7f1d1d;
   margin-bottom: 1px;
@@ -2107,13 +2181,13 @@ details.event-card:not([open]) .event-content-wrapper {
 .emergency-call-btn.small .emergency-call-label { color: #0c4a6e; }
 .emergency-call-desc {
   display: block;
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   color: #991b1b;
-  opacity: 0.75;
+  opacity: 1;
 }
 .emergency-call-btn.small .emergency-call-desc { color: #0369a1; }
 .emergency-call-tel {
-  font-size: 15px;
+  font-size: var(--fs-sm);
   font-weight: 900;
   color: #dc2626;
   font-variant-numeric: tabular-nums;
@@ -2121,21 +2195,6 @@ details.event-card:not([open]) .event-content-wrapper {
   letter-spacing: 0.02em;
 }
 .emergency-call-btn.small .emergency-call-tel { color: #0284c7; }
-
-[data-theme="dark"] .emergency-call-btn {
-  background: linear-gradient(135deg, #450a0a, #7f1d1d);
-  border-color: #991b1b;
-}
-[data-theme="dark"] .emergency-call-btn.small {
-  background: linear-gradient(135deg, #0c4a6e, #075985);
-  border-color: #0369a1;
-}
-[data-theme="dark"] .emergency-call-label { color: #fecaca; }
-[data-theme="dark"] .emergency-call-btn.small .emergency-call-label { color: #bae6fd; }
-[data-theme="dark"] .emergency-call-desc { color: #fca5a5; }
-[data-theme="dark"] .emergency-call-btn.small .emergency-call-desc { color: #7dd3fc; }
-[data-theme="dark"] .emergency-call-tel { color: #fca5a5; }
-[data-theme="dark"] .emergency-call-btn.small .emergency-call-tel { color: #7dd3fc; }
 
 .emergency-hotel-row {
   display: flex;
@@ -2145,7 +2204,7 @@ details.event-card:not([open]) .event-content-wrapper {
   margin-bottom: 8px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
   transition: all 0.2s;
@@ -2158,43 +2217,36 @@ details.event-card:not([open]) .event-content-wrapper {
   flex-shrink: 0;
   width: 50px;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fs-xs);
   font-weight: 900;
   color: #0284c7;
   background: #e0f2fe;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 4px 2px;
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
-.emergency-hotel-day span { font-size: 9px; font-weight: 700; color: #0369a1; }
+.emergency-hotel-day span { font-size: var(--fs-2xs); font-weight: 700; color: #0369a1; }
 .emergency-hotel-info { flex: 1; min-width: 0; }
 .emergency-hotel-name {
-  font-size: 13px;
+  font-size: var(--fs-xs);
   font-weight: 800;
   color: #1e293b;
   margin-bottom: 2px;
 }
-.emergency-hotel-note { font-size: 10px; color: #64748b; }
+.emergency-hotel-note { font-size: var(--fs-2xs); color: #64748b; }
 .emergency-hotel-tel {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 900;
   color: #0284c7;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }
-[data-theme="dark"] .emergency-hotel-row { background: #1e293b; border-color: #334155; }
-[data-theme="dark"] .emergency-hotel-row:active { background: #334155; }
-[data-theme="dark"] .emergency-hotel-day { background: #0c4a6e; color: #7dd3fc; }
-[data-theme="dark"] .emergency-hotel-day span { color: #38bdf8; }
-[data-theme="dark"] .emergency-hotel-name { color: #f1f5f9; }
-[data-theme="dark"] .emergency-hotel-note { color: #94a3b8; }
-[data-theme="dark"] .emergency-hotel-tel { color: #38bdf8; }
 
 .emergency-guide {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   margin-bottom: 8px;
   overflow: hidden;
 }
@@ -2202,7 +2254,7 @@ details.event-card:not([open]) .event-content-wrapper {
   padding: 11px 14px;
   cursor: pointer;
   list-style: none;
-  font-size: 13px;
+  font-size: var(--fs-xs);
   font-weight: 800;
   color: #1e293b;
   display: flex;
@@ -2223,31 +2275,279 @@ details.event-card:not([open]) .event-content-wrapper {
 .emergency-steps {
   padding: 8px 14px 14px 34px;
   margin: 0;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: #475569;
   line-height: 1.7;
   border-top: 1px solid #f1f5f9;
 }
 .emergency-steps li { padding: 3px 0; }
-[data-theme="dark"] .emergency-guide { background: #1e293b; border-color: #334155; }
-[data-theme="dark"] .emergency-guide summary { color: #f1f5f9; }
-[data-theme="dark"] .emergency-guide summary:active { background: #334155; }
-[data-theme="dark"] .emergency-steps { color: #cbd5e1; border-top-color: #334155; }
 
 .emergency-tip {
   text-align: center;
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   color: #64748b;
   padding: 10px;
   background: #f8fafc;
   border-radius: 10px;
   line-height: 1.6;
 }
-[data-theme="dark"] .emergency-tip { background: #1e293b; color: #94a3b8; }
 
-/* ============================================================ */
-/* ⭐ 主站深色模式                                                */
-/* ============================================================ */
+/* ============================================================
+ * 對比度加深（雪地反光下可讀性）
+ * ============================================================ */
+.event-location {
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+.weather-card .weather-row-2 {
+  color: var(--text-mute);
+  font-weight: 700;
+}
+
+.weather-card .weather-row-3 {
+  color: var(--text-soft);
+  font-weight: 700;
+}
+
+.forecast-date {
+  color: var(--text-soft);
+  font-weight: 800;
+}
+
+.forecast-temp {
+  color: var(--text-main);
+}
+
+.mini-card-body {
+  color: var(--text-soft);
+}
+
+.event-action-btn {
+  color: #075985;
+}
+
+.tools-item {
+  color: var(--text-main);
+}
+
+.progress-label {
+  color: var(--text-main);
+}
+
+.focus-progress-label {
+  color: var(--text-soft);
+}
+
+.focus-weather-cell .label {
+  color: var(--text-soft);
+}
+
+.focus-subtitle {
+  color: var(--text-mute);
+}
+
+.overview-day-desc {
+  color: var(--text-soft);
+}
+
+.emergency-call-desc,
+.emergency-hotel-note {
+  opacity: 1;
+}
+
+/* ============================================================
+ * 全域搜尋 Modal
+ * ============================================================ */
+.search-modal-wrap {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  align-items: flex-start !important;
+  padding: 60px 16px 20px !important;
+  z-index: 300 !important;
+}
+.search-modal-wrap.active {
+  display: flex !important;
+}
+.search-modal-box {
+  width: 100%;
+  max-width: 560px;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 100px);
+  overflow: hidden;
+  transform: scale(0.96) translateY(-8px);
+  opacity: 0;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
+}
+.search-modal-wrap.active .search-modal-box {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.search-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  background: #ffffff;
+  flex-shrink: 0;
+}
+.search-header-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+#search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  font-family: inherit;
+  padding: 4px 0;
+}
+#search-input::placeholder {
+  color: var(--text-faint);
+  font-weight: 500;
+}
+.search-close-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: var(--text-mute);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.search-close-btn:active {
+  background: #e2e8f0;
+  color: var(--text-main);
+  transform: scale(0.94);
+}
+
+.search-results {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 8px 12px;
+  background: #f8fafc;
+}
+
+.search-empty {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.search-day-group {
+  margin-bottom: 8px;
+}
+.search-day-label {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--sky-primary);
+  padding: 8px 10px 6px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.search-result-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  font-family: inherit;
+  margin-bottom: 4px;
+}
+.search-result-item:active {
+  background: var(--sky-lighter);
+  border-color: var(--sky-light);
+  transform: scale(0.99);
+}
+.search-result-item:hover {
+  background: #f0f9ff;
+  border-color: var(--sky-light);
+}
+
+.search-result-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--sky-lighter);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+.search-result-main {
+  flex: 1;
+  min-width: 0;
+}
+.search-result-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.35;
+  margin-bottom: 2px;
+  word-break: break-word;
+}
+.search-result-title mark {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0 2px;
+  border-radius: 3px;
+  font-weight: 900;
+}
+.search-result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-mute);
+  font-weight: 500;
+}
+.search-result-arrow {
+  flex-shrink: 0;
+  color: var(--text-faint);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .search-modal-wrap {
+    padding: 20px 12px 12px !important;
+    align-items: stretch !important;
+  }
+  .search-modal-box {
+    max-height: calc(100vh - 40px);
+  }
+}
+
+/* ============================================================
+ * 深色模式
+ * ============================================================ */
 [data-theme="dark"] {
   --snow-bg-1: #0f172a;
   --snow-bg-2: #1e293b;
@@ -2272,7 +2572,7 @@ details.event-card:not([open]) .event-content-wrapper {
   color: #f1f5f9;
 }
 [data-theme="dark"] .header-fade {
-  background: linear-gradient(to bottom, #0f172a 0%, #1e293b 50%, transparent 100%);
+  background: linear-gradient(to bottom, #0f172a 0%, #0f172a 60%, transparent 100%);
 }
 [data-theme="dark"] #main-itinerary-view,
 [data-theme="dark"] #schedule-container { background: transparent; }
@@ -2393,13 +2693,11 @@ details.event-card:not([open]) .event-content-wrapper {
   background: linear-gradient(135deg, #0c4a6e, #075985);
   border-color: #0ea5e9;
 }
-[data-theme="dark"] .forecast-date { color: #94a3b8; }
+[data-theme="dark"] .forecast-date { color: #cbd5e1; }
 [data-theme="dark"] .forecast-temp { color: #cbd5e1; }
-[data-theme="dark"] .tag {
-  background: #0c4a6e;
-  color: #7dd3fc;
-  border-color: #0369a1;
-}
+[data-theme="dark"] .forecast-badge.real { background: #1e3a8a; color: #bfdbfe; border-color: #1e40af; }
+[data-theme="dark"] .forecast-badge.climate { background: #78350f; color: #fde68a; border-color: #92400e; }
+[data-theme="dark"] .forecast-sun { color: #94a3b8; }
 [data-theme="dark"] .toast { background: #0f172a; }
 [data-theme="dark"] input,
 [data-theme="dark"] textarea,
@@ -2410,9 +2708,6 @@ details.event-card:not([open]) .event-content-wrapper {
 }
 [data-theme="dark"] .app-header {
   background: linear-gradient(180deg, #0c4a6e 0%, #075985 50%, #0c4a6e 100%) !important;
-}
-[data-theme="dark"] .header-fade {
-  background: linear-gradient(to bottom, #075985 0%, #0c4a6e 40%, #0f172a 100%) !important;
 }
 [data-theme="dark"] .category-pie-circle::after { background: #1e293b; }
 [data-theme="dark"] .skill-tab { background: #1e293b; border-color: #334155; color: #94a3b8; }
@@ -2446,26 +2741,158 @@ details.event-card:not([open]) .event-content-wrapper {
 [data-theme="dark"] .event-image-carousel { background: #0f172a; border-color: #334155; }
 [data-theme="dark"] .carousel-indicator { background: rgba(0,0,0,0.8); }
 [data-theme="dark"] .timeline-stamp-time {
-  background: linear-gradient(135deg, #1e293b, #334155);
-  border-color: #475569;
   color: #7dd3fc;
+  background: linear-gradient(135deg, #0c4a6e, #075985);
+  border-color: #0369a1;
 }
 [data-theme="dark"] .timeline-item.status-done .timeline-stamp-time {
+  color: #64748b;
   background: #1e293b;
   border-color: #334155;
-  color: #64748b;
 }
-[data-theme="dark"] .timeline-node { box-shadow: 0 0 0 3px #0f172a, 0 2px 6px rgba(56, 189, 248, 0.4); }
-[data-theme="dark"] .timeline-item.status-done .timeline-node { box-shadow: 0 0 0 3px #0f172a; }
-[data-theme="dark"] .timeline-item.status-active .timeline-node { box-shadow: 0 0 0 3px #0f172a, 0 0 12px rgba(56, 189, 248, 0.6); }
-[data-theme="dark"] .timeline-item.status-next .timeline-node { box-shadow: 0 0 0 3px #0f172a, 0 2px 8px rgba(56, 189, 248, 0.5); }
+[data-theme="dark"] .timeline-item.status-active .timeline-stamp-time {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+[data-theme="dark"] .timeline-item.status-next .timeline-stamp-time {
+  background: linear-gradient(135deg, #78350f, #92400e);
+  border-color: #b45309;
+  color: #fcd34d;
+}
+[data-theme="dark"] .timeline-node { box-shadow: 0 0 0 2.5px #0f172a, 0 1px 4px rgba(56, 189, 248, 0.4); }
+[data-theme="dark"] .timeline-item.status-done .timeline-node { box-shadow: 0 0 0 2.5px #0f172a; }
+[data-theme="dark"] .timeline-item.status-active .timeline-node { box-shadow: 0 0 0 2.5px #0f172a, 0 0 12px rgba(56, 189, 248, 0.6); }
+[data-theme="dark"] .timeline-item.status-next .timeline-node { box-shadow: 0 0 0 2.5px #0f172a, 0 1px 5px rgba(56, 189, 248, 0.5); }
 [data-theme="dark"] .modal-handle-area {
   background: linear-gradient(180deg, #1e293b 0%, rgba(30,41,59,0.85) 100%) !important;
 }
 [data-theme="dark"] .modal-handle { background: #475569; }
 [data-theme="dark"] .modal-close { background: #334155; color: #cbd5e1; }
 [data-theme="dark"] .modal-close:hover { background: #475569; color: #f1f5f9; }
-[data-theme="dark"] .emergency-guide summary { background: #1e293b; }
-[data-theme="dark"] .app-header .overview-cta {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b, #ea580c) !important;
+[data-theme="dark"] .emergency-guide { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .emergency-guide summary { background: #1e293b; color: #f1f5f9; }
+[data-theme="dark"] .emergency-guide summary:active { background: #334155; }
+[data-theme="dark"] .emergency-steps { color: #cbd5e1; border-top-color: #334155; }
+[data-theme="dark"] .emergency-section-title { color: #cbd5e1; }
+[data-theme="dark"] .emergency-call-btn {
+  background: linear-gradient(135deg, #450a0a, #7f1d1d);
+  border-color: #991b1b;
+}
+[data-theme="dark"] .emergency-call-btn.small {
+  background: linear-gradient(135deg, #0c4a6e, #075985);
+  border-color: #0369a1;
+}
+[data-theme="dark"] .emergency-call-label { color: #fecaca; }
+[data-theme="dark"] .emergency-call-btn.small .emergency-call-label { color: #bae6fd; }
+[data-theme="dark"] .emergency-call-desc { color: #fca5a5; }
+[data-theme="dark"] .emergency-call-btn.small .emergency-call-desc { color: #7dd3fc; }
+[data-theme="dark"] .emergency-call-tel { color: #fca5a5; }
+[data-theme="dark"] .emergency-call-btn.small .emergency-call-tel { color: #7dd3fc; }
+[data-theme="dark"] .emergency-hotel-row { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .emergency-hotel-row:active { background: #334155; }
+[data-theme="dark"] .emergency-hotel-day { background: #0c4a6e; color: #7dd3fc; }
+[data-theme="dark"] .emergency-hotel-day span { color: #38bdf8; }
+[data-theme="dark"] .emergency-hotel-name { color: #f1f5f9; }
+[data-theme="dark"] .emergency-hotel-note { color: #94a3b8; }
+[data-theme="dark"] .emergency-hotel-tel { color: #38bdf8; }
+[data-theme="dark"] .emergency-tip { background: #1e293b; color: #94a3b8; }
+[data-theme="dark"] .event-summary-actions {
+  border-top-color: #334155;
+}
+[data-theme="dark"] .event-action-btn {
+  background: #334155;
+  color: #7dd3fc;
+}
+[data-theme="dark"] .event-action-btn:active {
+  background: #475569;
+}
+[data-theme="dark"] .event-expand-icon {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .glass-card.event-card[open] .event-expand-icon {
+  background: #334155;
+}
+[data-theme="dark"] .glass-card.event-card[open] .event-expand-icon svg {
+  color: #38bdf8;
+}
+[data-theme="dark"] .event-location { color: #cbd5e1; }
+[data-theme="dark"] .weather-card .weather-row-2 { color: #cbd5e1; }
+[data-theme="dark"] .weather-card .weather-row-3 { color: #e2e8f0; }
+[data-theme="dark"] .search-modal-box { background: #1e293b; }
+[data-theme="dark"] .search-header {
+  background: #1e293b;
+  border-bottom-color: #334155;
+}
+[data-theme="dark"] #search-input {
+  color: #f1f5f9;
+}
+[data-theme="dark"] #search-input::placeholder {
+  color: #64748b;
+}
+[data-theme="dark"] .search-close-btn {
+  background: #334155;
+  color: #cbd5e1;
+}
+[data-theme="dark"] .search-close-btn:active {
+  background: #475569;
+  color: #f1f5f9;
+}
+[data-theme="dark"] .search-results {
+  background: #0f172a;
+}
+[data-theme="dark"] .search-result-item {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .search-result-item:active,
+[data-theme="dark"] .search-result-item:hover {
+  background: #334155;
+  border-color: #475569;
+}
+[data-theme="dark"] .search-result-title {
+  color: #f1f5f9;
+}
+[data-theme="dark"] .search-result-title mark {
+  background: #78350f;
+  color: #fde68a;
+}
+[data-theme="dark"] .search-result-icon {
+  background: #334155;
+}
+/* ============================================================
+ * ⭐ 修復：進行中時間膠囊 vs 天氣卡片 撞色
+ * 進行中改成深藍實心 + 白字，與天氣卡片明確區別
+ * ============================================================ */
+
+/* 進行中：深藍實心 */
+.timeline-item.status-active .timeline-stamp-time {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border: 1px solid #0c4a6e;
+  color: #ffffff;
+  font-weight: 900;
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.45);
+}
+
+/* 紅點：改成白色外框，在深藍底上更明顯 */
+.timeline-item.status-active .timeline-stamp-time::before {
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+}
+
+/* 進行中的結束時間（– 10:30 那行）也要跟著變白 */
+.timeline-item.status-active .timeline-stamp-end {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 深色模式：進行中改成更亮的藍 */
+[data-theme="dark"] .timeline-item.status-active .timeline-stamp-time {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(56, 189, 248, 0.55);
+}
+[data-theme="dark"] .timeline-item.status-active .timeline-stamp-end {
+  color: rgba(255, 255, 255, 0.85);
 }

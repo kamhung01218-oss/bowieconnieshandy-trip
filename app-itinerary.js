@@ -1,7 +1,10 @@
 /* ============================================================
- * app-itinerary.js — v7.6
+ * app-itinerary.js — v7.8
  * 行程：天氣（含氣候參考 / 日出日落）、行程渲染、輪播、
  *       各項攻略 Modal、行程切換、快速跳轉圓點
+ *
+ * v7.8 變更：
+ *   - switchDay 加入「分頁自動置中」功能
  * ============================================================ */
 
 // ==================== 天氣 ====================
@@ -134,7 +137,6 @@ function renderWeatherDetail() {
       ? '<span class="forecast-badge climate">🌡️ 氣候參考</span>'
       : '<span class="forecast-badge real">📡 即時預報</span>';
 
-    // ⭐ 日出日落：即時預報用 API，氣候參考用 fallback
     let sunRow = '';
     if (w.sunrise && w.sunset) {
       sunRow = `<div class="forecast-sun">🌅 ${w.sunrise} · 🌇 ${w.sunset}</div>`;
@@ -150,7 +152,7 @@ function renderWeatherDetail() {
         <span class="forecast-temp-max">${w.max}°</span>
         <span class="text-slate-400 mx-1">/</span>
         <span class="forecast-temp-min">${w.min}°</span>
-        <span style="font-size:10px;color:#94a3b8;margin-left:4px">${loc}</span>
+        <span style="font-size:11px;color:#94a3b8;margin-left:4px">${loc}</span>
         ${sunRow}
       </div>
       <div class="forecast-right">
@@ -161,7 +163,7 @@ function renderWeatherDetail() {
   }).join('');
 
   const heroHint = isClimateMode ? `
-    <div class="text-center mt-3 py-3 px-4 text-slate-500 text-[11px] bg-amber-50 rounded-xl border border-amber-200 leading-relaxed">
+    <div class="text-center mt-3 py-3 px-4 text-slate-500 text-xs bg-amber-50 rounded-xl border border-amber-200 leading-relaxed">
       📅 距離出發還有 <strong class="text-amber-700">${Math.max(0, Math.floor((TRIP_START - Date.now()) / 86400000))}</strong> 天<br>
       下方為<strong class="text-amber-700">氣候平均值</strong>（非實際預報）<br>
       出發前 16 天內會自動切換為即時預報
@@ -197,14 +199,16 @@ function buildTimePill(startTime, endTime) {
   var endText = (endTime && endTime !== '-') ? escapeHtml(endTime) : '';
   return '<div class="timeline-stamp">' + '<span class="timeline-stamp-time">' + timeText + '</span>' + (endText ? '<span class="timeline-stamp-end">– ' + endText + '</span>' : '') + '</div>';
 }
-function buildTagHtml(tag) { if (!tag || !tag.text) return ''; return '<span class="tag">' + escapeHtml(tag.text) + '</span>'; }
-function buildShootBtnHtml(day, index, eventTitle, shoppingCount) {
+function buildTagHtml(tag) { if (!tag || !tag.text) return ''; return '<span class="tag ' + (tag.class ? escapeHtml(tag.class) : '') + '">' + escapeHtml(tag.text) + '</span>'; }
+
+// ⭐ 動作按鈕改成獨立一行
+function buildEventActionsHtml(day, index, eventTitle, shoppingCount) {
   var safeTitle = escAttr(eventTitle);
   var badge = '';
-  if (shoppingCount > 0) { badge = ' <span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">' + shoppingCount + '</span>'; }
-  var html = '<div class="flex flex-wrap gap-1 mt-1">';
-  html += '<button onclick="openShootTipsModal(' + day + ', ' + index + ')" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-bold transition">🎬 拍攝靈感</button>';
-  html += '<button onclick="openShoppingModal(this.dataset.eventTitle)" data-event-title="' + safeTitle + '" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold transition">🛍️ 購物清單' + badge + '</button>';
+  if (shoppingCount > 0) { badge = '<span class="badge">' + shoppingCount + '</span>'; }
+  var html = '<div class="event-action-buttons">';
+  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShootTipsModal(' + day + ',' + index + ')">🎬 拍攝</button>';
+  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShoppingModal(this.dataset.eventTitle)" data-event-title="' + safeTitle + '">🛍️ 購物' + badge + '</button>';
   html += '</div>';
   return html;
 }
@@ -286,14 +290,13 @@ function renderDayItinerary(sectionId, dayData, force) {
   window._renderedDays.add(dayData.day);
 }
 
-// ⭐ 天氣卡片：氣候參考 + 即時預報都有日出日落 + 建議行
+// ⭐ 天氣卡片
 function buildWeatherHtml(dateStr, weatherInfo) {
   if (!weatherInfo) return '';
 
   const { icon, max, min, rain } = weatherInfo;
   const location = weatherInfo.location || '';
 
-  // 氣候參考模式：三行（日出日落參考 + 建議）
   if (weatherInfo.isClimate) {
     let climateAdvice = '🧥 冬季均溫，防風防水外套';
     if (min < -5) climateAdvice = '❄️ 極寒，羽絨 + 雪靴 + 毛帽必備';
@@ -317,7 +320,6 @@ function buildWeatherHtml(dateStr, weatherInfo) {
       </div>`;
   }
 
-  // 即時預報模式：三行（含日出日落 + 建議）
   let advice = '🧥 偏涼，外套防風防水';
   if (min < -5) advice = '❄️ 極寒！羽絨+雪靴+毛帽必備';
   else if (min < 0) advice = '🧣 寒冷，圍巾手套不可少';
@@ -340,15 +342,15 @@ function buildWeatherHtml(dateStr, weatherInfo) {
     </div>`;
 }
 
-// Day Header：收緊上下留白
+// Day Header
 function buildDayHeaderHtml(dayData, weatherHtml) {
   var html = '<div class="bg-slate-50/95 py-1 mb-0 px-1 border-b border-slate-200/50 flex justify-between items-center">';
   html += '<div class="flex items-center gap-2.5">';
   html += '<div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white flex items-center justify-center text-lg shadow-md shrink-0">' + dayData.emoji + '</div>';
   html += '<div class="flex-1">';
-  html += '<span class="text-[11px] font-bold text-sky-600 tracking-wider">' + escapeHtml(dayData.dateLabel) + '</span>';
+  html += '<span class="text-xs font-bold text-sky-600 tracking-wider">' + escapeHtml(dayData.dateLabel) + '</span>';
   html += '<h2 class="text-sm md:text-lg font-extrabold text-slate-800 leading-tight">' + escapeHtml(dayData.title) + '</h2>';
-  if (dayData.subtitle) { html += '<p class="text-[10px] text-slate-500 mt-0.5">' + escapeHtml(dayData.subtitle) + '</p>'; }
+  if (dayData.subtitle) { html += '<p class="text-xs text-slate-500 mt-0.5">' + escapeHtml(dayData.subtitle) + '</p>'; }
   html += weatherHtml;
   html += '</div></div>';
   html += '<button onclick="openVlogPlanModal(' + dayData.day + ')" class="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-sky-400 to-blue-500 text-white rounded-full shadow-sm shrink-0 ml-2">';
@@ -360,15 +362,17 @@ function buildDayHeaderHtml(dayData, weatherHtml) {
 
 function buildEventsHtml(dayData) { var html = ''; for (var i = 0; i < dayData.events.length; i++) { html += buildSingleEventHtml(dayData, dayData.events[i], i); } return html; }
 
+/* ============================================================
+ * 行程卡片「標題 + 按鈕」分行
+ * ============================================================ */
 function buildSingleEventHtml(dayData, event, index) {
-  var isOpen = '';
   var timeParts = event.time.split(' - ');
   var startTime = timeParts[0].trim();
   var endTime = timeParts[1] ? timeParts[1].trim() : '';
   var shoppingItems = loadShoppingItems(event.title);
   var timeStamp = buildTimePill(startTime, endTime);
   var tagHtml = buildTagHtml(event.tag);
-  var shootBtnHtml = buildShootBtnHtml(dayData.day, index, event.title, shoppingItems.length);
+  var actionsHtml = buildEventActionsHtml(dayData.day, index, event.title, shoppingItems.length);
   var imageHtml = buildEventImage(event.img, event.title, event.images);
   var navBtnHtml = buildEventNavBtn(event.navUrl, event.title, event.navName);
 
@@ -378,19 +382,30 @@ function buildSingleEventHtml(dayData, event, index) {
   html += timeStamp;
   html += '</div>';
   html += '<div class="timeline-card">';
-  html += '<details ' + isOpen + ' data-day="' + dayData.day + '" data-index="' + index + '" class="group glass-card rounded-2xl relative overflow-hidden event-card">';
+  html += '<details data-day="' + dayData.day + '" data-index="' + index + '" class="group glass-card rounded-2xl relative overflow-hidden event-card">';
   html += '<div class="itinerary-cat-strip"></div>';
-  html += '<summary class="flex items-start gap-3 p-3 cursor-pointer select-none hover:bg-slate-50/50 transition-colors relative list-none pl-5">';
-  html += '<div class="flex-1 min-w-0 pr-8">';
-  html += '<div class="flex flex-wrap items-center gap-2 mb-1">' + tagHtml + '</div>';
-  html += '<h3 class="text-[13px] md:text-[15px] font-bold text-slate-800 leading-tight">' + escapeHtml(event.title) + '</h3>';
-  html += shootBtnHtml;
-  if (event.location) { html += '<div class="text-[11px] text-slate-500 mt-0.5">📍 ' + escapeHtml(event.location) + '</div>'; }
+
+  html += '<summary class="event-summary">';
+
+  html += '<div class="event-summary-info">';
+  if (tagHtml) {
+    html += '<div class="event-tag-row">' + tagHtml + '</div>';
+  }
+  html += '<h3 class="event-title">' + escapeHtml(event.title) + '</h3>';
+  if (event.location) {
+    html += '<div class="event-location">📍 ' + escapeHtml(event.location) + '</div>';
+  }
   html += '</div>';
-  html += '<div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-open:rotate-180 transition-transform duration-300 border border-slate-100">';
-  html += '<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+
+  html += '<div class="event-summary-actions">';
+  html += actionsHtml;
+  html += '<div class="event-expand-icon">';
+  html += '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>';
   html += '</div>';
+  html += '</div>';
+
   html += '</summary>';
+
   html += '<div class="event-content-wrapper p-3 pt-0 pb-4 border-t border-slate-50/80 bg-slate-50/30">';
   html += imageHtml;
   html += navBtnHtml;
@@ -412,9 +427,9 @@ function buildDiaryHtml(dayData) {
   html += '<div class="flex items-center gap-2 mb-1.5">';
   html += '<span class="text-base">📖</span>';
   html += '<strong class="text-xs text-slate-800">今日旅行日記</strong>';
-  html += '<button onclick="saveDiary(' + dayData.day + ')" class="ml-auto text-[10px] bg-sky-500 hover:bg-sky-600 text-white px-2 py-0.5 rounded font-bold transition">儲存</button>';
+  html += '<button onclick="saveDiary(' + dayData.day + ')" class="ml-auto text-xs bg-sky-500 hover:bg-sky-600 text-white px-2 py-0.5 rounded font-bold transition">儲存</button>';
   html += '</div>';
-  html += '<textarea id="diary-input-' + dayData.day + '" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-1.5 px-2.5 text-[11px] resize-none">' + escapeHtml(savedDiary) + '</textarea>';
+  html += '<textarea id="diary-input-' + dayData.day + '" rows="2" placeholder="寫下今天最難忘的事…" class="w-full border border-slate-200 bg-white rounded-xl py-1.5 px-2.5 text-xs resize-none">' + escapeHtml(savedDiary) + '</textarea>';
   html += '</div>';
   return html;
 }
@@ -641,11 +656,27 @@ function switchDay(day) {
       targetSection.style.transform = 'translateY(0)';
     });
   }
+
+  // ⭐ 分頁自動置中：讓當前選中的分頁捲動到正中央
+  if (activeTab) {
+    const container = document.getElementById("day-tabs-container");
+    if (container) {
+      requestAnimationFrame(() => {
+        const containerRect = container.getBoundingClientRect();
+        const tabRect = activeTab.getBoundingClientRect();
+        const targetScroll = container.scrollLeft
+          + tabRect.left - containerRect.left
+          - (containerRect.width - tabRect.width) / 2;
+        container.scrollTo({ left: Math.max(0, targetScroll), behavior: 'smooth' });
+      });
+    }
+  }
+
   setTimeout(updateTimelineStatus, 50);
   if (window.updateDayProgressDots) window.updateDayProgressDots();
 }
 
-// ==================== ⭐ 快速跳轉圓點 ====================
+// ==================== 快速跳轉圓點 ====================
 function updateDayProgressDots() {
   const container = document.getElementById('day-progress-dots');
   if (!container) return;

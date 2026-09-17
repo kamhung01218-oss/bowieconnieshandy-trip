@@ -1,8 +1,11 @@
 /* ============================================================
- * AppHeader 雪地清爽版 v7.0
+ * AppHeader 雪地清爽版 v8.1
  * 淺藍漸層 Header + 白色焦點卡
- * + 琥珀「速覽」按鈕 + 白色實心「工具」按鈕
- * + 工具選單進度徽章 / 快速操作 / 搶票倒數
+ * + 白色「工具」按鈕
+ * + 字級收斂 / Focus Card 手機精簡
+ *
+ * v8.1 變更：
+ *   - 移除未使用的 .overview-cta 系列樣式
  * ============================================================ */
 
 :root {
@@ -30,6 +33,24 @@
   --amber-cta-1: #fbbf24;
   --amber-cta-2: #f59e0b;
   --amber-cta-3: #ea580c;
+
+  /* ⭐ 統一圓角與按鈕高度 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  --btn-sm: 36px;
+  --btn-md: 40px;
+  --btn-lg: 44px;
+
+  /* ⭐ 統一字級 */
+  --fs-2xs: 11px;
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-base: 16px;
+  --fs-lg: 20px;
+  --fs-2xl: 28px;
 }
 
 /* ============================================================
@@ -95,7 +116,7 @@
 }
 
 .app-header .brand-title {
-  font-size: 14px;
+  font-size: var(--fs-sm);
   font-weight: 900;
   letter-spacing: -0.01em;
   text-shadow: 0 1px 8px rgba(2, 132, 199, 0.4);
@@ -113,108 +134,19 @@
 }
 
 /* ============================================================
- * ⭐ 行程速覽按鈕（琥珀色高亮膠囊）
- * ============================================================ */
-.app-header .overview-cta {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 34px;
-  padding: 0 12px 0 10px;
-  border-radius: 999px;
-  background: linear-gradient(135deg,
-    var(--amber-cta-1) 0%,
-    var(--amber-cta-2) 50%,
-    var(--amber-cta-3) 100%);
-  color: #ffffff;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  border: 1.5px solid rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  animation: overview-cta-breathe 2.4s ease-in-out infinite;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.app-header .overview-cta-icon {
-  font-size: 14px;
-  line-height: 1;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
-}
-
-.app-header .overview-cta-text {
-  font-size: 11px;
-  font-weight: 900;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-  white-space: nowrap;
-}
-
-.app-header .overview-cta:active {
-  transform: scale(0.94);
-  animation: none;
-}
-
-.app-header .overview-cta:hover {
-  background: linear-gradient(135deg,
-    #fcd34d 0%,
-    var(--amber-cta-1) 50%,
-    #f97316 100%);
-}
-
-@keyframes overview-cta-breathe {
-  0%, 100% {
-    box-shadow:
-      0 4px 14px rgba(245, 158, 11, 0.45),
-      0 1px 3px rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.25),
-      0 0 0 0 rgba(251, 191, 36, 0.55);
-  }
-  50% {
-    box-shadow:
-      0 4px 14px rgba(245, 158, 11, 0.65),
-      0 1px 3px rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.25),
-      0 0 0 7px rgba(251, 191, 36, 0);
-  }
-}
-
-.app-header .overview-cta-dot {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ef4444;
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 6px rgba(239, 68, 68, 0.8);
-  animation: overview-dot-pulse 1.5s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes overview-dot-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.25); opacity: 0.85; }
-}
-
-/* ============================================================
- * ⚙️ 工具按鈕（白色實心膠囊 + 心跳提示）
+ * ⚙️ 工具按鈕（白色實心膠囊）
  * ============================================================ */
 .app-header .tools-toggle {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  height: 34px;
+  height: var(--btn-sm);
   padding: 0 12px 0 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: #ffffff;
   color: #0369a1;
   font-family: inherit;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 900;
   letter-spacing: 0.02em;
   border: 1.5px solid rgba(255, 255, 255, 0.9);
@@ -225,7 +157,6 @@
     0 1px 3px rgba(0, 0, 0, 0.08);
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   -webkit-tap-highlight-color: transparent;
-  animation: tools-toggle-hint 3.5s ease-in-out infinite;
 }
 
 .app-header .tools-toggle-icon {
@@ -236,7 +167,7 @@
 }
 
 .app-header .tools-toggle-text {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 900;
   white-space: nowrap;
 }
@@ -245,7 +176,6 @@
   transform: scale(0.94);
   box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
   background: #f0f9ff;
-  animation: none;
 }
 
 .app-header .tools-toggle:hover {
@@ -263,27 +193,10 @@
   box-shadow:
     0 6px 18px rgba(2, 132, 199, 0.45),
     0 0 0 3px rgba(186, 230, 253, 0.6);
-  animation: none;
 }
 
 .app-header .tools-toggle.active .icon-gear {
   transform: rotate(90deg);
-}
-
-@keyframes tools-toggle-hint {
-  0%, 85%, 100% {
-    box-shadow:
-      0 4px 12px rgba(2, 132, 199, 0.2),
-      0 1px 3px rgba(0, 0, 0, 0.08);
-    transform: scale(1);
-  }
-  90% {
-    box-shadow:
-      0 6px 20px rgba(2, 132, 199, 0.5),
-      0 1px 3px rgba(0, 0, 0, 0.08),
-      0 0 0 6px rgba(56, 189, 248, 0.25);
-    transform: scale(1.06);
-  }
 }
 
 /* ============================================================
@@ -307,7 +220,7 @@
   position: relative;
   background: #ffffff;
   border: 1px solid rgba(186, 230, 253, 0.8);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 18px 18px 16px;
   box-shadow:
     0 4px 16px rgba(2, 132, 199, 0.15),
@@ -328,7 +241,7 @@
  * 標籤 / 標題
  * ============================================================ */
 .app-header .focus-label {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -347,7 +260,7 @@
 }
 
 .app-header .focus-title {
-  font-size: 16px;
+  font-size: var(--fs-base);
   font-weight: 900;
   color: var(--text-main);
   letter-spacing: -0.01em;
@@ -355,13 +268,13 @@
 }
 
 .app-header .focus-subtitle {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--text-mute);
   margin-top: 2px;
 }
 
 /* ============================================================
- * 倒數格子
+ * 倒數格子（桌面版）
  * ============================================================ */
 .app-header .countdown-grid {
   display: grid;
@@ -405,7 +318,7 @@
   position: relative;
   z-index: 1;
   display: block;
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   font-weight: 800;
   color: var(--sky-primary);
   margin-top: 5px;
@@ -413,10 +326,10 @@
 }
 
 .app-header .countdown-cell[data-cell-block="seconds"] .countdown-value {
-  color: #8b5cf6;
+  color: var(--sky-deep);
 }
 .app-header .countdown-cell[data-cell-block="seconds"] .countdown-unit {
-  color: #a78bfa;
+  color: var(--sky-primary);
 }
 
 .app-header .countdown-value.tick {
@@ -429,6 +342,54 @@
 }
 
 /* ============================================================
+ * 手機版單行倒數
+ * ============================================================ */
+.app-header .countdown-inline {
+  display: none;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  padding: 14px 0 16px;
+  flex-wrap: wrap;
+}
+
+.app-header .countdown-inline-num {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--sky-deep);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-header .countdown-inline-unit {
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  color: var(--sky-primary);
+  margin-right: 14px;
+  letter-spacing: 0.05em;
+}
+
+.app-header .countdown-inline-num-sm {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--sky-deep);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-header .countdown-inline-unit-sm {
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  color: var(--sky-primary);
+  margin-right: 10px;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================================
  * 進度條
  * ============================================================ */
 .app-header .focus-progress-row { margin-top: 14px; }
@@ -436,14 +397,14 @@
 .app-header .focus-progress-track {
   height: 6px;
   background: var(--sky-lighter);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   overflow: hidden;
   position: relative;
 }
 .app-header .focus-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #a78bfa 100%);
-  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8 0%, #0284c7 100%);
+  border-radius: var(--radius-full);
   transition: width 0.8s ease;
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
   position: relative;
@@ -459,8 +420,13 @@
 }
 @keyframes progress-shimmer { 0% { left: -30%; } 100% { left: 130%; } }
 
+.app-header .focus-progress-fill[style*="width: 100%"]::after,
+.app-header .focus-progress-fill[style*="width:100%"]::after {
+  animation: none;
+}
+
 .app-header .focus-progress-label {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   color: var(--text-mute);
   text-align: center;
   margin-top: 6px;
@@ -510,7 +476,7 @@
 }
 
 .app-header .progress-label {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--text-main);
   flex-shrink: 0;
@@ -522,13 +488,13 @@
   flex: 1;
   height: 5px;
   background: var(--sky-lighter);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   overflow: hidden;
   position: relative;
 }
 .app-header .progress-bar-mini-fill {
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: linear-gradient(90deg, #38bdf8, #6366f1);
   transition: width 0.6s ease;
   box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
@@ -540,7 +506,7 @@
 .app-header .progress-item.done .progress-label { color: #059669; }
 
 .app-header .progress-count {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   color: var(--sky-primary);
@@ -551,7 +517,7 @@
 .app-header .progress-item.done .progress-count { color: #059669; }
 
 .app-header .progress-arrow {
-  font-size: 14px;
+  font-size: var(--fs-sm);
   color: var(--text-faint);
   flex-shrink: 0;
   transition: transform 0.2s, color 0.2s;
@@ -570,7 +536,7 @@
   gap: 8px;
   background: linear-gradient(135deg, #fef3c7, #fde68a);
   border: 1px solid rgba(251, 191, 36, 0.5);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 8px 10px;
   margin-top: 10px;
 }
@@ -578,7 +544,7 @@
 .app-header .focus-task-icon { font-size: 16px; flex-shrink: 0; }
 
 .app-header .focus-task-text {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   color: #92400e;
   line-height: 1.4;
@@ -597,18 +563,18 @@
 .app-header .focus-weather-cell {
   background: #f8fbff;
   border: 1px solid var(--line-sky);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 8px 10px;
 }
 
 .app-header .focus-weather-cell .label {
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   color: var(--text-mute);
   font-weight: 800;
   letter-spacing: 0.05em;
 }
 .app-header .focus-weather-cell .value {
-  font-size: 14px;
+  font-size: var(--fs-sm);
   font-weight: 900;
   color: var(--text-main);
   margin-top: 1px;
@@ -623,14 +589,15 @@
   justify-content: center;
   gap: 6px;
   padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 12px;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-xs);
   font-weight: 800;
   transition: all 0.2s;
   flex: 1;
   cursor: pointer;
   text-decoration: none;
   border: none;
+  min-height: var(--btn-lg);
 }
 
 .app-header .focus-cta-primary {
@@ -677,13 +644,13 @@
   text-align: center;
 }
 .app-header .focus-stat .num {
-  font-size: 16px;
+  font-size: var(--fs-base);
   font-weight: 900;
   color: var(--sky-primary);
   font-variant-numeric: tabular-nums;
 }
 .app-header .focus-stat .lbl {
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   color: var(--text-mute);
   font-weight: 700;
   margin-top: 1px;
@@ -739,7 +706,7 @@
 
   background: #ffffff;
   border: 1px solid var(--line-sky);
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   box-shadow:
     0 20px 50px rgba(2, 132, 199, 0.2),
     0 0 0 1px rgba(255, 255, 255, 0.5);
@@ -773,12 +740,11 @@
   border-bottom: 1px solid var(--line-soft);
 }
 
-/* 分組標題（含 emoji） */
 .app-header .tools-section-label {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   font-weight: 800;
   letter-spacing: 0.12em;
   color: var(--text-faint);
@@ -786,11 +752,10 @@
   text-transform: uppercase;
 }
 .app-header .tools-section-label span {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   letter-spacing: 0;
 }
 
-/* 工具項目 */
 .app-header .tools-item {
   display: flex;
   align-items: center;
@@ -800,13 +765,14 @@
   border: none;
   background: transparent;
   color: var(--text-main);
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   width: 100%;
   text-align: left;
   cursor: pointer;
   transition: all 0.15s;
   font-family: inherit;
+  min-height: var(--btn-md);
 }
 .app-header .tools-item:hover { background: var(--sky-lighter); }
 .app-header .tools-item:active {
@@ -815,7 +781,7 @@
 }
 
 .app-header .tools-item-icon {
-  font-size: 16px;
+  font-size: var(--fs-base);
   width: 22px;
   text-align: center;
   flex-shrink: 0;
@@ -828,16 +794,15 @@
   text-overflow: ellipsis;
 }
 
-/* ⭐ 進度徽章（膠囊樣式） */
 .app-header .tools-item-progress {
   display: inline-flex;
   align-items: center;
   gap: 3px;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--sky-lighter);
   color: var(--sky-primary-dark);
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
@@ -852,14 +817,13 @@
   color: #059669;
 }
 
-/* ⭐ 徽章（新/熱門/倒數） */
 .app-header .tools-item-tag {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  font-size: 9px;
+  font-size: var(--fs-2xs);
   padding: 2px 7px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   font-weight: 900;
   letter-spacing: 0.03em;
   flex-shrink: 0;
@@ -872,21 +836,10 @@
 .app-header .tools-item-tag.hot {
   background: linear-gradient(135deg, #fb923c, #ea580c);
   color: white;
-  animation: ticket-pulse 2s ease-in-out infinite;
-}
-@keyframes ticket-pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.5);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 4px rgba(251, 146, 60, 0);
-  }
 }
 
 .app-header .tools-item-arrow {
-  font-size: 14px;
+  font-size: var(--fs-sm);
   color: var(--text-faint);
   flex-shrink: 0;
   transition: transform 0.15s, color 0.15s;
@@ -896,13 +849,12 @@
   color: var(--sky-primary);
 }
 
-/* 雲端狀態 */
 .app-header .tools-sync-status {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   color: var(--text-mute);
 }
@@ -912,13 +864,11 @@
   border-radius: 50%;
   background: #34d399;
   box-shadow: 0 0 6px #34d399;
-  animation: app-header-pulse 2s infinite;
   flex-shrink: 0;
 }
 .app-header .tools-sync-status.disconnected .tools-sync-dot {
   background: #f87171;
   box-shadow: 0 0 6px #f87171;
-  animation: none;
 }
 .app-header .tools-sync-status.disconnected { color: #fca5a5; }
 
@@ -933,33 +883,57 @@
 @media (min-width: 1024px) {
   .app-header .focus-card { padding: 0 24px; }
   .app-header .brand-bar { padding: 0 24px; }
-  .app-header .countdown-value { font-size: 28px; }
-  .app-header .countdown-unit { font-size: 12px; }
-  .app-header .overview-cta,
-  .app-header .tools-toggle { height: 36px; padding: 0 14px 0 12px; }
-  .app-header .overview-cta-text,
-  .app-header .tools-toggle-text { font-size: 12px; }
+  .app-header .countdown-value { font-size: var(--fs-2xl); }
+  .app-header .countdown-unit { font-size: var(--fs-xs); }
+  .app-header .tools-toggle { height: var(--btn-sm); padding: 0 14px 0 12px; }
+}
+
+@media (max-width: 767px) {
+  .app-header .focus-inner {
+    padding: 14px 16px 14px;
+  }
+
+  .app-header .countdown-inline {
+    display: flex;
+  }
+  .app-header .countdown-grid {
+    display: none;
+  }
+
+  .app-header .progress-list {
+    display: none;
+  }
+
+  .app-header .focus-cta-row .focus-cta-secondary {
+    display: none;
+  }
+  .app-header .focus-cta-row .focus-cta-primary {
+    flex: 1 1 100%;
+  }
+
+  .app-header .focus-progress-label {
+    margin-top: 8px;
+  }
+
+  .app-header .focus-task {
+    padding: 8px 12px;
+    margin-top: 12px;
+  }
 }
 
 @media (max-width: 360px) {
-  .app-header .countdown-value { font-size: 22px; }
-  .app-header .countdown-unit { font-size: 10px; }
-  .app-header .countdown-cell { padding: 9px 2px; }
-  .app-header .brand-title { font-size: 12px; }
+  .app-header .countdown-inline-num { font-size: 30px; }
+  .app-header .countdown-inline-num-sm { font-size: 18px; }
+  .app-header .countdown-inline-unit { font-size: var(--fs-xs); margin-right: 10px; }
+  .app-header .countdown-inline-unit-sm { font-size: var(--fs-2xs); margin-right: 8px; }
+
+  .app-header .brand-title { font-size: var(--fs-xs); }
   .app-header .brand-actions { gap: 4px; }
-  .app-header .progress-label { min-width: 60px; font-size: 11px; }
+  .app-header .progress-label { min-width: 60px; }
   .app-header .tools-menu-panel {
     width: calc(100vw - 24px);
     right: 12px;
   }
-  .app-header .overview-cta {
-    height: 30px;
-    padding: 0 10px 0 8px;
-    gap: 4px;
-  }
-  .app-header .overview-cta-icon { font-size: 12px; }
-  .app-header .overview-cta-text { font-size: 10px; }
-  .app-header .overview-cta-dot { width: 7px; height: 7px; }
 
   .app-header .tools-toggle {
     height: 30px;
@@ -970,17 +944,6 @@
   .app-header .tools-toggle-text { display: none; }
 }
 
-/* 極窄螢幕：速覽按鈕只留圖示 */
-@media (max-width: 340px) {
-  .app-header .overview-cta-text { display: none; }
-  .app-header .overview-cta {
-    padding: 0 10px;
-    width: 30px;
-    justify-content: center;
-  }
-  .app-header .overview-cta-icon { font-size: 15px; }
-}
-
 /* ============================================================
  * 無障礙
  * ============================================================ */
@@ -988,15 +951,9 @@
   .app-header .focus-inner::before,
   .app-header .focus-progress-fill::after,
   .app-header .focus-label::before,
-  .app-header .tools-sync-dot,
   .app-header .countdown-value.tick,
-  .app-header .overview-cta,
-  .app-header .overview-cta-dot,
-  .app-header .tools-toggle,
-  .app-header .tools-item-tag.hot {
-    animation: none !important;
-  }
   .app-header .tools-toggle .icon-gear {
+    animation: none !important;
     transition: none !important;
   }
 }
@@ -1089,7 +1046,7 @@
   color: white;
   padding: 8px 12px;
   border-radius: 10px;
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   pointer-events: none;
   opacity: 0;
@@ -1124,9 +1081,10 @@
     background: rgba(12, 25, 41, 0.6);
   }
 }
-/* ============================================================ */
-/* ⭐ 主站 Header 深色模式                                        */
-/* ============================================================ */
+
+/* ============================================================
+ * ⭐ 主站 Header 深色模式
+ * ============================================================ */
 [data-theme="dark"] .app-header .focus-inner {
   background: #1e293b;
   border-color: #334155;
@@ -1141,6 +1099,10 @@
 }
 [data-theme="dark"] .app-header .countdown-value { color: #7dd3fc; }
 [data-theme="dark"] .app-header .countdown-unit { color: #38bdf8; }
+[data-theme="dark"] .app-header .countdown-inline-num,
+[data-theme="dark"] .app-header .countdown-inline-num-sm { color: #7dd3fc; }
+[data-theme="dark"] .app-header .countdown-inline-unit,
+[data-theme="dark"] .app-header .countdown-inline-unit-sm { color: #38bdf8; }
 [data-theme="dark"] .app-header .progress-list { background: #0f172a; border-color: #334155; }
 [data-theme="dark"] .app-header .progress-item:hover { background: #334155; }
 [data-theme="dark"] .app-header .progress-label { color: #cbd5e1; }
@@ -1178,3 +1140,46 @@
   border-color: #b45309;
 }
 [data-theme="dark"] .app-header .focus-task-text { color: #fde68a; }
+
+/* ============================================================
+ * ⭐ 修復：手機版 Header 標題被三顆按鈕擠壓
+ * ============================================================ */
+@media (max-width: 640px) {
+  .app-header .brand-actions {
+    gap: 4px;
+  }
+  .app-header .brand-actions .tools-toggle {
+    width: 34px;
+    height: 32px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+  }
+  .app-header .brand-actions .tools-toggle-text {
+    display: none;
+  }
+  .app-header .brand-actions .tools-toggle-icon {
+    font-size: 15px;
+    line-height: 1;
+  }
+  .app-header .brand-title {
+    font-size: 13px;
+  }
+  .app-header .brand-bar {
+    padding: 0 12px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-header .brand-title {
+    font-size: 12px;
+  }
+  .app-header .brand-actions .tools-toggle {
+    width: 30px;
+    height: 30px;
+  }
+  .app-header .brand-actions .tools-toggle-icon {
+    font-size: 14px;
+  }
+}

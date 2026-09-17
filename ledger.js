@@ -1,5 +1,6 @@
 /* ============================================================
- * ledger.js — 隨行記帳本主邏輯 v2.5（主題同步）
+ * ledger.js — 隨行記帳本主邏輯 v2.6
+ * v2.6：字級收斂（9/10/12.5px → 11/12px）
  * ============================================================ */
 'use strict';
 
@@ -219,7 +220,6 @@ function decPendingWrites() {
 const THEME_KEY = 'tohoku_ledger_theme';
 
 function initTheme() {
-  // 優先讀取主站主題 key，其次讀取記帳本自己的 key
   const saved = localStorage.getItem('tohoku_theme')
              || localStorage.getItem(THEME_KEY)
              || 'light';
@@ -230,10 +230,8 @@ function toggleTheme() {
   const cur = document.documentElement.getAttribute('data-theme') || 'light';
   const next = cur === 'dark' ? 'light' : 'dark';
   applyTheme(next);
-  // ⭐ 同步寫入兩個 key，讓主站與記帳本保持一致
   localStorage.setItem('tohoku_theme', next);
   localStorage.setItem(THEME_KEY, next);
-  // ⭐ 通知主站切換
   if (window.parent && window.parent !== window) {
     try { window.parent.postMessage({ type: 'setTheme', theme: next }, '*'); } catch(e) {}
   }
@@ -257,11 +255,11 @@ function updateCurrentUserBadge() {
   const u = getCurrentUser();
   if (u) {
     const colorMap = { "余生":"bg-blue-100 text-blue-800 border-blue-200", "bowie":"bg-pink-100 text-pink-800 border-pink-200", "shandy":"bg-emerald-100 text-emerald-800 border-emerald-200", "connie":"bg-purple-100 text-purple-800 border-purple-200" };
-    badge.className = `text-[10px] px-2 py-0.5 rounded-full font-bold border ${colorMap[u] || "bg-slate-100 text-slate-700 border-slate-200"}`;
+    badge.className = `text-[11px] px-2 py-0.5 rounded-full font-bold border ${colorMap[u] || "bg-slate-100 text-slate-700 border-slate-200"}`;
     badge.textContent = `👤 ${u}`;
     badge.classList.remove('hidden');
   } else {
-    badge.className = 'text-[10px] px-2 py-0.5 rounded-full font-bold border bg-slate-100 text-slate-500 border-slate-200';
+    badge.className = 'text-[11px] px-2 py-0.5 rounded-full font-bold border bg-slate-100 text-slate-500 border-slate-200';
     badge.textContent = '👤 訪客（唯讀）';
     badge.classList.remove('hidden');
   }
@@ -711,7 +709,7 @@ function renderLedgerSelectors() {
       btn.type = "button";
       btn.onclick = () => { state.activePayer = member; renderLedgerSelectors(); haptic(5); };
       btn.className = `py-1.5 px-1 text-xs rounded-xl font-bold transition border text-center min-h-[48px] flex flex-col items-center justify-center gap-0.5 ${state.activePayer === member ? style.solid + " shadow-sm scale-105" : style.soft}`;
-      btn.innerHTML = `<div class="w-5 h-5 rounded-full ${state.activePayer === member ? "bg-white/20 text-white" : style.avatar + " text-white"} flex items-center justify-center text-[10px] font-black shadow-sm">${escapeHtml(member[0].toUpperCase())}</div><span class="${state.activePayer === member ? "text-white" : style.text} text-[10px]">${escapeHtml(member)} ${escapeHtml(symbol)}</span>`;
+      btn.innerHTML = `<div class="w-5 h-5 rounded-full ${state.activePayer === member ? "bg-white/20 text-white" : style.avatar + " text-white"} flex items-center justify-center text-[11px] font-black shadow-sm">${escapeHtml(member[0].toUpperCase())}</div><span class="${state.activePayer === member ? "text-white" : style.text} text-[11px]">${escapeHtml(member)} ${escapeHtml(symbol)}</span>`;
       payerGrid.appendChild(btn);
     });
   }
@@ -740,10 +738,10 @@ function renderLedgerSelectors() {
       customInputs.innerHTML = state.activeSplitWith.map(s => {
         const style = memberStyle[s.name] || memberStyle["余生"];
         return `<div class="flex items-center gap-2">
-          <div class="w-6 h-6 rounded-full ${style.avatar} text-white flex items-center justify-center text-[10px] font-black shrink-0">${escapeHtml(s.name[0].toUpperCase())}</div>
-          <span class="text-[11px] font-bold text-slate-700 w-14 shrink-0">${escapeHtml(s.name)}</span>
+          <div class="w-6 h-6 rounded-full ${style.avatar} text-white flex items-center justify-center text-[11px] font-black shrink-0">${escapeHtml(s.name[0].toUpperCase())}</div>
+          <span class="text-[12px] font-bold text-slate-700 w-14 shrink-0">${escapeHtml(s.name)}</span>
           <input type="number" inputmode="decimal" step="1" min="0" data-split-name="${escAttr(s.name)}" value="${s.amount || 0}" class="flex-1 min-w-0 border border-slate-300 bg-white rounded-lg py-1.5 px-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500/50">
-          <span class="text-[10px] text-slate-400 font-bold w-6 shrink-0">HKD</span>
+          <span class="text-[11px] text-slate-400 font-bold w-6 shrink-0">HKD</span>
         </div>`;
       }).join('');
       customInputs.querySelectorAll('input[data-split-name]').forEach(inp => {
@@ -771,13 +769,13 @@ function updateCustomSplitHint() {
   if (state.customSplitEnabled) {
     const sum = state.activeSplitWith.reduce((s, x) => s + (Number(x.amount) || 0), 0);
     const diff = round2(sum - totalHKD);
-    if (Math.abs(diff) < 1) { hint.textContent = `✓ 已分配 $${sum.toFixed(2)}`; hint.className = 'text-[10px] font-bold text-emerald-600'; }
-    else { hint.textContent = diff > 0 ? `超出 $${diff.toFixed(2)}` : `尚差 $${Math.abs(diff).toFixed(2)}`; hint.className = 'text-[10px] font-bold text-red-500'; }
+    if (Math.abs(diff) < 1) { hint.textContent = `✓ 已分配 $${sum.toFixed(2)}`; hint.className = 'text-[11px] font-bold text-emerald-600'; }
+    else { hint.textContent = diff > 0 ? `超出 $${diff.toFixed(2)}` : `尚差 $${Math.abs(diff).toFixed(2)}`; hint.className = 'text-[11px] font-bold text-red-500'; }
   } else {
     if (state.activeSplitWith.length > 0 && totalHKD > 0) {
       const share = round2(totalHKD / state.activeSplitWith.length);
       hint.textContent = `${state.activeSplitWith.length}人均分 · $${share.toFixed(2)}/人`;
-      hint.className = 'text-[10px] font-bold text-slate-400';
+      hint.className = 'text-[11px] font-bold text-slate-400';
     } else {
       hint.textContent = '';
     }
@@ -1012,7 +1010,7 @@ function renderHistoryList() {
     const typeText = item.type === "add" ? "新增" : item.type === "edit" ? "修改" : item.type === "clear" ? "清空" : "刪除";
     const card = document.createElement("div");
     card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start gap-2";
-    card.innerHTML = `<span class="text-xl">${escapeHtml(item.actionSymbol || "📝")}</span><div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1 flex-wrap"><span class="text-[10px] font-black px-2 py-0.5 rounded-full ${typeColor}">${typeText}</span><span class="text-[10px] font-bold text-slate-700">${escapeHtml(item.actionBy)}</span><span class="text-[9px] text-slate-400">${escapeHtml(item.actionTime)}</span></div><p class="text-[11px] text-slate-600">${item.details}</p></div>`;
+    card.innerHTML = `<span class="text-xl">${escapeHtml(item.actionSymbol || "📝")}</span><div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1 flex-wrap"><span class="text-[11px] font-black px-2 py-0.5 rounded-full ${typeColor}">${typeText}</span><span class="text-[11px] font-bold text-slate-700">${escapeHtml(item.actionBy)}</span><span class="text-[11px] text-slate-400">${escapeHtml(item.actionTime)}</span></div><p class="text-[12px] text-slate-600">${item.details}</p></div>`;
     container.appendChild(card);
   });
 }
@@ -1067,7 +1065,7 @@ function renderCharts() {
 }
 
 /* ============================================================
- * 二十八、列表渲染（無滑動刪除）
+ * 二十八、列表渲染
  * ============================================================ */
 function renderExpensesList() {
   const container = document.getElementById("records-list-container");
@@ -1117,7 +1115,7 @@ function renderExpensesList() {
       <div class="flex items-center gap-2 min-w-0">
         <span class="day-badge">D${day}</span>
         <span class="text-xs font-bold text-slate-700">${escapeHtml(dateLabel)}</span>
-        <span class="text-[10px] text-slate-400">· ${dayList.length} 筆</span>
+        <span class="text-[11px] text-slate-400">· ${dayList.length} 筆</span>
       </div>
       <span class="day-subtotal">$${dayTotal.toFixed(2)}</span>
     `;
@@ -1142,7 +1140,7 @@ function renderExpensesList() {
       const symbol = memberSymbols[expense.payer] || "";
       const timeStr = expense.createdTime || new Date(expense.createdAt).toLocaleString("zh-HK");
       const catColor = categoryColors[expense.category] || 'bg-slate-400';
-      const remarkHtml = expense.remark ? `<div class="flex items-center gap-1 mt-1 text-[10px] text-slate-500 bg-slate-100 rounded px-1.5 py-0.5"><span>📌</span><span class="truncate">${escapeHtml(expense.remark)}</span></div>` : '';
+      const remarkHtml = expense.remark ? `<div class="flex items-center gap-1 mt-1 text-[11px] text-slate-500 bg-slate-100 rounded px-1.5 py-0.5"><span>📌</span><span class="truncate">${escapeHtml(expense.remark)}</span></div>` : '';
       const payMethodHtml = expense.paymentMethod ? `<span class="bg-white/80 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-medium">${escapeHtml(expense.paymentMethod)}</span>` : '';
       const customSplitTag = splitArr.some((s, i) => i > 0 && Math.abs(s.amount - splitArr[0].amount) > 0.01) ? `<span class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-black">自訂分攤</span>` : '';
 
@@ -1155,9 +1153,9 @@ function renderExpensesList() {
           <div class="space-y-0.5 flex-1 min-w-0">
             <div class="flex items-center gap-2">
               <strong class="text-slate-900 text-[13px] truncate">${escapeHtml(expense.desc)}</strong>
-              <span class="text-[10px]">${escapeHtml(symbol)}</span>
+              <span class="text-[11px]">${escapeHtml(symbol)}</span>
             </div>
-            <div class="flex items-center gap-1.5 text-[10px] text-slate-500 flex-wrap mt-0.5">
+            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 flex-wrap mt-0.5">
               <span class="bg-white/80 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-medium">${escapeHtml(expense.category)}</span>
               ${payMethodHtml}
               ${customSplitTag}
@@ -1168,7 +1166,7 @@ function renderExpensesList() {
           </div>
         </div>
         <div class="text-right flex items-center gap-2 shrink-0 pl-2">
-          <div class="flex flex-col items-end justify-center h-full">${balanceHtml}<span class="text-[9px] text-slate-400 font-medium mt-0.5" title="原幣 ${expense.amount} ${expense.currency}">合: $${expense.amountInHKD.toFixed(1)}</span></div>
+          <div class="flex flex-col items-end justify-center h-full">${balanceHtml}<span class="text-[11px] text-slate-400 font-medium mt-0.5" title="原幣 ${expense.amount} ${expense.currency}">合: $${expense.amountInHKD.toFixed(1)}</span></div>
           <div class="flex flex-col gap-1">
             <button onclick="openEditExpenseModal('${expense.id}')" class="text-slate-300 hover:text-sky-500 p-1.5 transition bg-white/50 hover:bg-white rounded-lg border border-slate-100 shadow-sm" title="編輯">✏️</button>
             <button onclick="deleteExpense('${expense.id}')" class="text-slate-300 hover:text-red-500 p-1.5 transition bg-white/50 hover:bg-white rounded-lg border border-slate-100 shadow-sm" title="刪除">🗑</button>
@@ -1212,7 +1210,7 @@ function renderBalancesTable() {
     const balanceClass = balance > 0 ? "text-emerald-600 font-bold" : balance < 0 ? "text-red-500 font-bold" : "text-slate-400";
     const style = memberStyle[member] || memberStyle["余生"];
     const symbol = memberSymbols[member] || "";
-    tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="py-2 font-bold text-slate-800 flex items-center gap-2"><div class="w-5 h-5 rounded-full ${style.avatar} text-white font-black flex items-center justify-center text-[9px] border border-white shadow-sm">${escapeHtml(member[0].toUpperCase())}</div>${escapeHtml(member)} ${escapeHtml(symbol)}</td><td class="py-2 text-right text-slate-600 font-medium">$${paid}</td><td class="py-2 text-right text-slate-600 font-medium">$${owed}</td><td class="py-2 text-right ${balanceClass}">$${balanceText}</td></tr>`;
+    tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="py-2 font-bold text-slate-800 flex items-center gap-2"><div class="w-5 h-5 rounded-full ${style.avatar} text-white font-black flex items-center justify-center text-[11px] border border-white shadow-sm">${escapeHtml(member[0].toUpperCase())}</div>${escapeHtml(member)} ${escapeHtml(symbol)}</td><td class="py-2 text-right text-slate-600 font-medium">$${paid}</td><td class="py-2 text-right text-slate-600 font-medium">$${owed}</td><td class="py-2 text-right ${balanceClass}">$${balanceText}</td></tr>`;
   });
 }
 
@@ -1266,7 +1264,7 @@ function renderSuggestedSettlements() {
     const toStyle = memberStyle[s.to] || memberStyle["余生"];
     const fromSymbol = memberSymbols[s.from] || "";
     const toSymbol = memberSymbols[s.to] || "";
-    container.innerHTML += `<div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-center justify-between text-xs shadow-sm"><div class="flex items-center gap-1.5 md:gap-2"><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${escapeHtml(s.from[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.from)} ${escapeHtml(fromSymbol)}</span></div><span class="text-slate-400 text-[10px] font-bold flex flex-col items-center px-1"><span>轉帳</span><span class="text-[8px] mt-0.5 text-slate-300">→</span></span><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${toStyle.avatar} text-white flex items-center justify-center text-[9px] font-black">${escapeHtml(s.to[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.to)} ${escapeHtml(toSymbol)}</span></div></div><div class="text-right"><span class="block text-[9px] text-slate-400 mb-0.5 font-medium">金額</span><strong class="text-sm md:text-base font-black text-rose-600">$${escapeHtml(s.amount)}</strong></div></div>`;
+    container.innerHTML += `<div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-center justify-between text-xs shadow-sm"><div class="flex items-center gap-1.5 md:gap-2"><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${fromStyle.avatar} text-white flex items-center justify-center text-[11px] font-black">${escapeHtml(s.from[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.from)} ${escapeHtml(fromSymbol)}</span></div><span class="text-slate-400 text-[11px] font-bold flex flex-col items-center px-1"><span>轉帳</span><span class="text-[11px] mt-0.5 text-slate-300">→</span></span><div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm"><div class="w-5 h-5 rounded-full ${toStyle.avatar} text-white flex items-center justify-center text-[11px] font-black">${escapeHtml(s.to[0].toUpperCase())}</div><span class="font-bold text-slate-700 hidden sm:inline">${escapeHtml(s.to)} ${escapeHtml(toSymbol)}</span></div></div><div class="text-right"><span class="block text-[11px] text-slate-400 mb-0.5 font-medium">金額</span><strong class="text-sm md:text-base font-black text-rose-600">$${escapeHtml(s.amount)}</strong></div></div>`;
   });
 }
 function toggleSettlementDone() { showToast("ℹ️ 無需標記，資料為即時計算", "ℹ️"); }
@@ -1587,7 +1585,6 @@ window.scrollToTop = scrollToTop;
  * 三十九、初始化
  * ============================================================ */
 window.addEventListener("DOMContentLoaded", () => {
-  // ⭐ 通知主站「記帳本已就緒」，請求同步主題
   if (window.parent && window.parent !== window) {
     try { window.parent.postMessage({ type: 'ledgerReady' }, '*'); } catch (e) {}
   }
@@ -1599,13 +1596,11 @@ window.addEventListener("DOMContentLoaded", () => {
   initRandomCharacters();
   initExchangeRates();
 
-  // 付款方式下拉選單監聽
   const paySelect = document.getElementById('payment-method-select');
   if (paySelect) {
     paySelect.addEventListener('change', (e) => { selectedPaymentMethod = e.target.value; haptic(5); });
   }
 
-  // ⭐ 模板按鈕監聽
   document.querySelectorAll('.template-pill').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = parseInt(btn.dataset.templateIdx);
@@ -1622,7 +1617,6 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   setInterval(updateCurrentUserBadge, 2000);
 
-  // ⭐ 接收主站傳來的主题切換
   window.addEventListener('message', (e) => {
     if (e.data && e.data.type === 'setTheme') {
       applyTheme(e.data.theme);

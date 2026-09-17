@@ -1,7 +1,10 @@
 /* ============================================================
- * app-core.js — v7.3
+ * app-core.js — v7.7
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
  *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
+ *
+ * v7.7 變更：
+ *   - 新增 getNextPendingBooking callback（讓 Header 顯示下一個未完成預訂）
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -46,18 +49,6 @@ async function verifyUserPinAsync(user, inputPin, forceFetch) {
     return inputHash === pins[user].hash;
   }
   return USER_PINS[user] === inputPin;
-}
-
-async function fetchUserPinsFromCloud() {
-  try {
-    if (!window.dbRef) return {};
-    const docSnap = await window.dbRef.get();
-    if (docSnap.exists && docSnap.data().userPins) {
-      cloudUserPins = docSnap.data().userPins;
-      return cloudUserPins;
-    }
-  } catch(e) { console.warn("[fetchUserPins]", e); }
-  return {};
 }
 
 // ==================== 全域變數 ====================
@@ -288,6 +279,8 @@ async function submitChangePin() {
 
 // ==================== 應用初始化 ====================
 function initAppAfterLogin() {
+  if (!window._lastActiveDay) window._lastActiveDay = 1;
+
   applyAppTheme(localStorage.getItem(APP_THEME_KEY) || 'light');
 
   updateUserBadge();
@@ -348,6 +341,34 @@ function initAppAfterLogin() {
             (items || []).forEach(item => { total++; if (item.planned) done++; });
           });
           return { done, total };
+        },
+        // ⭐ 新增：取得下一個未完成的行前預訂項目
+        getNextPendingBooking: () => {
+          const all = [...bookingList, ...customBookingItems];
+          const priorityCats = ["航班", "住宿", "租車"];
+          let priorityPending = null;
+          let anyPending = null;
+          let remaining = 0;
+
+          for (const item of all) {
+            const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+            if (state.checkedItems[key] !== true) {
+              remaining++;
+              if (!priorityPending && priorityCats.includes(item.category)) {
+                priorityPending = item;
+              }
+              if (!anyPending) anyPending = item;
+            }
+          }
+
+          const nextItem = priorityPending || anyPending;
+          if (!nextItem) return null;
+          return {
+            label: nextItem.label,
+            icon: nextItem.icon,
+            category: nextItem.category,
+            remaining
+          };
         }
       }
     });
@@ -453,7 +474,6 @@ function toggleAppTheme() {
   }
 }
 
-// ⭐ 主題重置工具（在 Console 輸入 resetTheme() 可強制回淺色）
 function resetTheme() {
   try {
     localStorage.setItem('tohoku_theme', 'light');
@@ -469,7 +489,6 @@ window.toggleAppTheme = toggleAppTheme;
 window.applyAppTheme = applyAppTheme;
 window.resetTheme = resetTheme;
 
-// 監聽 iframe 就緒事件 → 主動推送主題
 window.addEventListener('message', (e) => {
   if (e.data && e.data.type === 'ledgerReady') {
     const cur = document.documentElement.getAttribute('data-theme') || 'light';
@@ -650,7 +669,6 @@ function closeCurrencyModal() {
   const a = document.querySelector('.modal-overlay.active');
   if (!a) document.body.classList.remove('modal-open');
 }
-function toggleCurrencyWidget() { openCurrencyModal(); }
 window.openCurrencyModal = openCurrencyModal;
 window.closeCurrencyModal = closeCurrencyModal;
 
@@ -818,7 +836,6 @@ function showUpdateAvailable(worker) {
     btn.textContent = "更新中...";
     btn.disabled = true;
     haptic(15);
-    // ⭐ Fallback：3 秒後如果還沒重整，強制重整
     setTimeout(() => {
       if (!window._swReloaded) {
         window.location.reload();
@@ -828,7 +845,6 @@ function showUpdateAvailable(worker) {
   toast.appendChild(btn);
   toast.classList.remove("-translate-y-24", "opacity-0");
   toast.classList.add("translate-y-0", "opacity-100");
-  // 保持顯示到使用者操作
   if (window.toastTimeout) clearTimeout(window.toastTimeout);
   window.toastTimeout = setTimeout(() => {
     toast.classList.remove("translate-y-0", "opacity-100");
@@ -884,7 +900,7 @@ function releaseAdminDevice() { if (!confirm("確定要解除這台裝置的管�
   if (!localStorage.getItem(HINT_KEY)) { setTimeout(() => { const hint = document.createElement('div'); hint.className = 'currency-fab-hint'; hint.textContent = '💡 可拖動我，點擊開啟匯率'; document.body.appendChild(hint); const rect = fab.getBoundingClientRect(); hint.style.left = Math.max(12, Math.min(rect.left - 60, window.innerWidth - 200)) + 'px'; hint.style.top = (rect.top - 44) + 'px'; requestAnimationFrame(() => hint.classList.add('show')); setTimeout(() => { hint.classList.remove('show'); setTimeout(() => hint.remove(), 400); }, 3500); localStorage.setItem(HINT_KEY, '1'); }, 2000); }
 })();
 
-// ==================== ⭐ 返回頂部（IG 風格） ====================
+// ==================== 返回頂部（IG 風格） ====================
 function scrollToTop() {
   try {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -956,14 +972,8 @@ window.scrollToTop = scrollToTop;
   update();
 })();
 
-// ==================== 📲 PWA 安裝引導 ====================
+// ==================== 📲 PWA 安裝引導（工具選單入口） ====================
 (function setupInstallPrompt() {
-  const btn = document.getElementById('install-app-btn');
-  if (!btn) {
-    console.warn('[Install] 找不到 #install-app-btn');
-    return;
-  }
-
   let deferredPrompt = null;
 
   const ua = navigator.userAgent || '';
@@ -981,33 +991,23 @@ window.scrollToTop = scrollToTop;
   const dismissedAt = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10);
   const dismissedRecently = dismissedAt && (Date.now() - dismissedAt) < 7 * 24 * 60 * 60 * 1000;
 
-  function shouldShow() {
+  window.isInstallAvailable = function () {
     if (isStandalone) return false;
     if (dismissedRecently) return false;
     return true;
-  }
-
-  function show() {
-    if (shouldShow()) btn.style.display = 'inline-flex';
-    else btn.style.display = 'none';
-  }
-  function hide() {
-    btn.style.display = 'none';
-  }
-
-  setTimeout(show, 800);
+  };
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     console.log('[Install] beforeinstallprompt 已捕獲');
-    show();
+    if (window.AppHeader && window.AppHeader.render) window.AppHeader.render();
   });
 
   window.addEventListener('appinstalled', () => {
-    hide();
     try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch(e) {}
     if (typeof showToast === 'function') showToast('🎉 已安裝到桌面！', '📲');
+    if (window.AppHeader && window.AppHeader.render) window.AppHeader.render();
   });
 
   window.triggerInstall = async function () {
@@ -1020,7 +1020,6 @@ window.scrollToTop = scrollToTop;
         deferredPrompt = null;
         if (outcome === 'accepted') {
           if (typeof showToast === 'function') showToast('🎉 已安裝到桌面！', '📲');
-          hide();
         }
       } catch (err) {
         console.warn('[Install] prompt 失敗:', err);
@@ -1035,12 +1034,6 @@ window.scrollToTop = scrollToTop;
     }
 
     showManualGuide();
-  };
-
-  window.dismissInstall = function () {
-    try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch(e) {}
-    hide();
-    if (typeof showToast === 'function') showToast('已隱藏，7 天後再提醒', '👌');
   };
 
   function showIOSInstallGuide() {

@@ -40,6 +40,7 @@
 
 <link rel="stylesheet" href="./header.css">
 <link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./perf.css">
 
 <script>
 tailwind.config = {
@@ -171,74 +172,23 @@ document.addEventListener('DOMContentLoaded', () => {
 #btn-collapse-all:active {
   transform: scale(0.94);
 }
-
-/* ⭐ 安裝按鈕動畫 */
-@keyframes install-pulse {
-  0%, 100% {
-    box-shadow: 0 4px 14px rgba(14, 165, 233, 0.5);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.8), 0 0 0 6px rgba(14, 165, 233, 0.15);
-    transform: scale(1.03);
-  }
-}
-@keyframes ios-guide-fadein {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-#install-app-btn {
-  display: none;
-  position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 56px);
-  right: 16px;
-  z-index: 90;
-  align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: white;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  animation: install-pulse 2s ease-in-out infinite;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.15s ease;
-}
-#install-app-btn:active {
-  transform: scale(0.94);
-  animation: none;
-}
-#install-app-btn .install-icon {
-  font-size: 14px;
-  line-height: 1;
-}
-@media (max-width: 380px) {
-  #install-app-btn {
-    height: 32px;
-    padding: 0 12px;
-    font-size: 11px;
-  }
-  #install-app-btn .install-icon { font-size: 13px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  #install-app-btn { animation: none; }
-}
 </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
 
   <div id="snow-fall" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
-  <!-- 📲 安裝 App 按鈕（未安裝時自動顯示） -->
-  <button id="install-app-btn" onclick="triggerInstall()" aria-label="安裝應用程式">
-    <span class="install-icon">📲</span>
-    <span>安裝</span>
-  </button>
+  <!-- 🔍 全域搜尋 Modal -->
+  <div id="search-modal" class="modal-overlay search-modal-wrap" style="display:none">
+    <div class="search-modal-box" onclick="event.stopPropagation()">
+      <div class="search-header">
+        <span class="search-header-icon">🔍</span>
+        <input id="search-input" type="text" placeholder="搜尋行程、景點、餐廳…" autocomplete="off">
+        <button id="search-close" class="search-close-btn" aria-label="關閉">✕</button>
+      </div>
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </div>
 
   <!-- 用戶登入彈窗 -->
   <div id="user-modal" class="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
