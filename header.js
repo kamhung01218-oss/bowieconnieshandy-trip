@@ -1,11 +1,14 @@
 /* ============================================================
- * AppHeader v6.9
+ * AppHeader v7.0
  * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [⚙️ 工具]
  * - Focus Card：出發前/中/後
  * - 工具選單：功能入口 + 安裝 App + 共享收據
+ * - 全域搜尋：防抖 + 熱門關鍵字
  *
- * v6.9 變更：
- *   - 新增「共享收據/憑證」入口
+ * v7.0 變更（P1）：
+ *   - 搜尋輸入加 150ms 防抖，避免每個字元都重算
+ *   - 空結果時顯示熱門關鍵字標籤（可點擊）
+ *   - 加入 aria-live 讓螢幕閱讀器能讀取結果
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -18,6 +21,18 @@ window.AppHeader = (function () {
   let _lastDuringRender = 0;
   let _docClickHandler = null;
   let _escKeyHandler = null;
+  let _searchDebounceTimer = null;
+
+  // ⭐ 熱門關鍵字（標籤, 搜尋詞）
+  const HOT_KEYWORDS = [
+    { label: '🦊 狐狸村', kw: '狐狸村' },
+    { label: '🥩 牛舌',   kw: '牛舌' },
+    { label: '⛷️ 藏王',   kw: '藏王' },
+    { label: '🏮 銀山',   kw: '銀山' },
+    { label: '🍜 拉麵',   kw: '拉麵' },
+    { label: '☃️ 樹冰',   kw: '樹冰' },
+    { label: '♨️ 溫泉',   kw: '溫泉' }
+  ];
 
   function getTripPhase() {
     const now = Date.now();
@@ -298,7 +313,10 @@ window.AppHeader = (function () {
     const resultsEl = document.getElementById('search-results');
 
     if (input) input.value = "";
-    if (resultsEl) resultsEl.innerHTML = renderSearchEmpty();
+    if (resultsEl) {
+      resultsEl.innerHTML = renderSearchEmpty();
+      bindHotTagClicks();
+    }
 
     modal.style.display = 'flex';
     modal.classList.add('active');
@@ -318,13 +336,36 @@ window.AppHeader = (function () {
     haptic(6);
   }
 
+  // ⭐ P1：空結果顯示熱門關鍵字
   function renderSearchEmpty() {
+    const tagsHtml = HOT_KEYWORDS.map(t =>
+      `<button type="button" class="search-hot-tag" data-hot-kw="${escapeHtml(t.kw)}">${t.label}</button>`
+    ).join('');
     return `
       <div class="search-empty">
         <div style="font-size:36px;margin-bottom:8px">🔍</div>
         <div style="font-size:13px;font-weight:700;color:#64748b">輸入關鍵字開始搜尋</div>
-        <div style="font-size:11px;color:#94a3b8;margin-top:4px">例如：狐狸村、牛舌、藏王、拉麵</div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:6px">或點選熱門關鍵字</div>
+        <div class="search-hot-tags">${tagsHtml}</div>
       </div>`;
+  }
+
+  // ⭐ P1：綁定熱門標籤點擊事件
+  function bindHotTagClicks() {
+    const resultsEl = document.getElementById('search-results');
+    if (!resultsEl) return;
+    resultsEl.querySelectorAll('[data-hot-kw]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const kw = btn.dataset.hotKw;
+        const input = document.getElementById('search-input');
+        if (input) {
+          input.value = kw;
+          input.focus();
+          handleSearchInput(kw);
+        }
+        haptic(5);
+      });
+    });
   }
 
   function renderSearchNoResult(kw) {
@@ -385,6 +426,7 @@ window.AppHeader = (function () {
     if (!resultsEl) return;
     if (!kw.trim()) {
       resultsEl.innerHTML = renderSearchEmpty();
+      bindHotTagClicks();
       return;
     }
     const results = searchItinerary(kw);
@@ -912,14 +954,18 @@ window.AppHeader = (function () {
       };
       document.addEventListener("keydown", _escKeyHandler);
 
+      // ⭐ P1：搜尋輸入加防抖（150ms）
       const searchInput = document.getElementById('search-input');
       if (searchInput) {
         searchInput.addEventListener('input', (e) => {
-          handleSearchInput(e.target.value);
+          const value = e.target.value;
+          clearTimeout(_searchDebounceTimer);
+          _searchDebounceTimer = setTimeout(() => handleSearchInput(value), 150);
         });
         searchInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
+            clearTimeout(_searchDebounceTimer);
             const firstResult = document.querySelector('.search-result-item');
             if (firstResult) firstResult.click();
           }
@@ -970,6 +1016,7 @@ window.AppHeader = (function () {
       if (_tickTimer) { clearInterval(_tickTimer); _tickTimer = null; }
       if (_docClickHandler) { document.removeEventListener("click", _docClickHandler); _docClickHandler = null; }
       if (_escKeyHandler) { document.removeEventListener("keydown", _escKeyHandler); _escKeyHandler = null; }
+      if (_searchDebounceTimer) { clearTimeout(_searchDebounceTimer); _searchDebounceTimer = null; }
       if (_container) _container.innerHTML = "";
       _config = null; _container = null;
       _lastRenderedPhase = null; _nextEventStartMs = null; _lastDuringRender = 0;

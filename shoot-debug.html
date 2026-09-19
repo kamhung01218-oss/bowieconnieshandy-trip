@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🔍 Shoot Tips 除錯工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Noto Sans TC', sans-serif;
+    background: #0f172a; color: #e2e8f0;
+    padding: 20px; min-height: 100vh;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 900; margin-bottom: 8px; color: #38bdf8; }
+  .sub { font-size: 12px; color: #64748b; margin-bottom: 20px; line-height: 1.6; }
+  .sub code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; color: #7dd3fc; font-size: 11px; }
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat .num { font-size: 24px; font-weight: 900; color: #38bdf8; }
+  .stat.ok .num { color: #34d399; }
+  .stat.err .num { color: #f87171; }
+  .stat .lbl { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .btn {
+    padding: 8px 14px; border-radius: 8px; border: none;
+    font-size: 12px; font-weight: 800; cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-primary { background: #0ea5e9; color: white; }
+  .btn-ghost { background: rgba(255,255,255,0.08); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.15); }
+  .btn:active { transform: scale(0.96); }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+  .row.ok { border-color: rgba(52,211,153,0.4); }
+  .row.warn { border-color: rgba(251,191,36,0.4); }
+  .row.err { border-color: rgba(248,113,113,0.4); }
+  .row .label {
+    font-size: 10px; color: #64748b; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .row .value { color: #e2e8f0; word-break: break-all; }
+  .row .badge {
+    display: inline-block; padding: 2px 8px;
+    border-radius: 999px; font-size: 10px; font-weight: 900;
+    margin-bottom: 6px;
+  }
+  .badge.ok { background: rgba(52,211,153,0.2); color: #6ee7b7; }
+  .badge.warn { background: rgba(251,191,36,0.2); color: #fcd34d; }
+  .badge.err { background: rgba(248,113,113,0.2); color: #fca5a5; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔍 Shoot Tips 除錯工具</h1>
+  <p class="sub">
+    檢查 <code>data.js</code> 的每個 <code>event.title</code> 是否能在 <code>shoot-tips.js</code> 找到對應的拍攝建議。<br>
+    🟢 精確匹配 · 🟡 近似匹配（標題有小改）· 🔴 完全找不到。
+  </p>
+
+  <div class="summary">
+    <div class="stat ok"><div class="num" id="cnt-ok">0</div><div class="lbl">精確匹配</div></div>
+    <div class="stat"><div class="num" id="cnt-warn">0</div><div class="lbl">近似匹配</div></div>
+    <div class="stat err"><div class="num" id="cnt-err">0</div><div class="lbl">找不到</div></div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="runCheck()">🔄 重新檢查</button>
+    <button class="btn btn-ghost" onclick="copyReport()">📋 複製報告</button>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script src="./data.js"></script>
+<script src="./shoot-tips.js"></script>
+<script>
+const normalize = (s) => String(s)
+  .replace(/\s+/g, '')
+  .replace(/[（）()【】\[\]「」『』""'']/g, '')
+  .replace(/[，,。.、；;：:！!？?·・｜|]/g, '')
+  .replace(/[&＆]/g, '&')
+  .replace(/[-–—－]/g, '-')
+  .toLowerCase();
+
+let report = [];
+
+function runCheck() {
+  const container = document.getElementById('results');
+  container.innerHTML = '';
+  report = [];
+  let ok = 0, warn = 0, err = 0;
+
+  if (typeof winterItineraries === 'undefined' || typeof shootTips === 'undefined') {
+    container.innerHTML = '<div style="color:#f87171;padding:20px">❌ 無法載入 data.js 或 shoot-tips.js</div>';
+    return;
+  }
+
+  const keys = Object.keys(shootTips);
+  const normalizedMap = {};
+  keys.forEach(k => { normalizedMap[normalize(k)] = k; });
+
+  winterItineraries.forEach(day => {
+    day.events.forEach(event => {
+      const title = event.title;
+      let status = 'err';
+      let matchedKey = '';
+
+      if (shootTips[title]) {
+        status = 'ok';
+        matchedKey = title;
+        ok++;
+      } else {
+        const norm = normalize(title);
+        if (normalizedMap[norm]) {
+          status = 'warn';
+          matchedKey = normalizedMap[norm];
+          warn++;
+        } else {
+          err++;
+        }
+      }
+
+      report.push({ day: day.day, title, status, matchedKey });
+
+      const badge = status === 'ok' ? '<span class="badge ok">✅ 精確</span>'
+        : status === 'warn' ? '<span class="badge warn">⚠️ 近似</span>'
+        : '<span class="badge err">❌ 找不到</span>';
+
+      container.innerHTML += `
+        <div class="row ${status}">
+          <div>
+            <div class="label">D${day.day} · event.title</div>
+            <div class="value">${escapeHtml(title)}</div>
+          </div>
+          <div>
+            <div class="label">匹配結果</div>
+            ${badge}
+            <div class="value" style="font-size:11px;color:#94a3b8">
+              ${matchedKey ? escapeHtml(matchedKey) : '—'}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  });
+
+  document.getElementById('cnt-ok').textContent = ok;
+  document.getElementById('cnt-warn').textContent = warn;
+  document.getElementById('cnt-err').textContent = err;
+}
+
+function copyReport() {
+  let txt = '📋 Shoot Tips 除錯報告\n=====================\n\n';
+  report.forEach(r => {
+    const icon = r.status === 'ok' ? '✅' : r.status === 'warn' ? '⚠️' : '❌';
+    txt += `${icon} D${r.day} | ${r.title}\n`;
+    if (r.matchedKey && r.matchedKey !== r.title) {
+      txt += `   → 匹配到：${r.matchedKey}\n`;
+    }
+  });
+  navigator.clipboard.writeText(txt).then(() => {
+    alert('✅ 報告已複製到剪貼簿');
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+window.addEventListener('DOMContentLoaded', runCheck);
+</script>
+</body>
+</html>

@@ -13,7 +13,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@11.6.1/firebase-app-compat.js"></script>
@@ -40,6 +40,8 @@
 
 <link rel="stylesheet" href="./header.css">
 <link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./dark.css">
+<link rel="stylesheet" href="./patches.css">
 <link rel="stylesheet" href="./perf.css">
 
 <script>
@@ -523,7 +525,19 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="weather-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeWeatherModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="weather-modal"><div class="modal-handle"></div></div><button onclick="closeWeatherModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4">📊 詳細天氣預報</h2><div id="weather-detail-content" class="text-sm text-slate-600"></div></div></div></div>
   <div id="trip-overview-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeTripOverview()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-3xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="trip-overview-modal"><div class="modal-handle"></div></div><button onclick="closeTripOverview()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4">📋 行程速覽</h2><div id="overview-timeline-content"></div></div></div></div>
   <div id="lightbox" onclick="closeLightbox(event)"><button onclick="closeLightbox()" class="absolute top-4 right-4 text-white text-3xl w-10 h-10 flex items-center justify-center rounded-full bg-black/50">✕</button><button id="lightbox-prev" class="lightbox-btn absolute left-4 top-1/2 -translate-y-1/2" onclick="changeLightbox(-1)">‹</button><img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()"><button id="lightbox-next" class="lightbox-btn absolute right-4 top-1/2 -translate-y-1/2" onclick="changeLightbox(1)">›</button><div id="lightbox-caption" class="absolute bottom-6 left-0 right-0 text-center text-white/90 text-sm"></div></div>
-  <div id="shoot-tips-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeShootTipsModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="shoot-tips-modal"><div class="modal-handle"></div></div><button onclick="closeShootTipsModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🎬</span> 拍攝靈感</h2><div id="shoot-tips-content"></div></div></div></div>
+  <div id="shoot-tips-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeShootTipsModal()">
+  <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()">
+    <div class="modal-handle-area" data-drag-handle="shoot-tips-modal"><div class="modal-handle"></div></div>
+    <button onclick="closeShootTipsModal()" class="modal-close">✕</button>
+    <div class="modal-scrollable px-6 pb-6">
+      <h2 class="text-xl font-black mb-1 flex items-center gap-2">
+        <span class="text-2xl">🎬</span> 拍攝靈感
+      </h2>
+      <p id="shoot-tips-title" class="text-xs text-slate-500 font-semibold mb-4 leading-relaxed"></p>
+      <div id="shoot-tips-content"></div>
+    </div>
+  </div>
+</div>
   <div id="vlog-plan-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeVlogPlanModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="vlog-plan-modal"><div class="modal-handle"></div></div><button onclick="closeVlogPlanModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🎬</span> Vlog 構思</h2><div id="vlog-plan-content"></div></div></div></div>
   <div id="common-tips-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeCommonTipsModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="common-tips-modal"><div class="modal-handle"></div></div><button onclick="closeCommonTipsModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">📷</span> 通用拍攝技巧</h2><div id="common-tips-content"></div></div></div></div>
   <div id="shopping-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeShoppingModal()"><div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()"><div class="modal-handle-area" data-drag-handle="shopping-modal"><div class="modal-handle"></div></div><button onclick="closeShoppingModal()" class="modal-close">✕</button><div class="modal-scrollable px-6 pb-6"><h2 class="text-xl font-black mb-4 flex items-center gap-2"><span class="text-2xl">🛍️</span> 購物清單</h2><div id="shopping-content"></div></div></div></div>

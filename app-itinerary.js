@@ -1,12 +1,13 @@
 /* ============================================================
- * app-itinerary.js — v8.0
- * 行程：天氣（含氣候參考 / 日出日落）、行程渲染、輪播、
- *       各項攻略 Modal、行程切換、快速跳轉圓點
+ * app-itinerary.js — v13.3
  *
- * v8.0 變更：
- *   - 配合 data.js 方案 A：移除「硬拆外殼」邏輯
- *   - 確保內層 details 保持風琴式收合狀態
- *   - 市區購物子卡片改用乾淨版樣式
+ * v13.3 變更：
+ *   - ⭐ findShootTips：穩健查找拍攝建議（精確 → 正規化 → 部分匹配）
+ *   - ⭐ 拍攝靈感 Modal 全新三層結構：
+ *       照片輪播 → 拍照建議 → 角度/動作兩欄 → 進階資訊收合
+ *   - ⭐ 通用拍攝技巧卡片化
+ *   - v13.2 摺疊小卡集中最底
+ *   - 三層徽章系統
  * ============================================================ */
 
 // ==================== 天氣 ====================
@@ -20,7 +21,6 @@ const WEATHER_LOCATIONS = {
   7: { name: "宮城仙台", lat: 38.2682, lon: 140.8694, climate: { max: 5, min: -1, rain: 30 } }
 };
 
-// ⭐ 氣候參考模式的日出日落（依往年平均值）
 const CLIMATE_SUN_TIMES = {
   "2027-01-21": { sunrise: "06:52", sunset: "16:35" },
   "2027-01-22": { sunrise: "06:52", sunset: "16:36" },
@@ -186,6 +186,61 @@ function renderWeatherDetail() {
   `;
 }
 
+// ==================== ⭐ findShootTips：穩健查找 ====================
+function findShootTips(eventTitle) {
+  if (!eventTitle || typeof shootTips === 'undefined') return null;
+
+  // 1. 精確匹配
+  if (shootTips[eventTitle]) return shootTips[eventTitle];
+
+  // 2. 正規化匹配
+  const normalize = (s) => String(s)
+    .replace(/\s+/g, '')
+    .replace(/[（）()【】\[\]「」『』""'']/g, '')
+    .replace(/[，,。.、；;：:！!？?·・｜|]/g, '')
+    .replace(/[&＆]/g, '&')
+    .replace(/[-–—－]/g, '-')
+    .toLowerCase();
+
+  const target = normalize(eventTitle);
+  const keys = Object.keys(shootTips);
+
+  for (const key of keys) {
+    if (normalize(key) === target) return shootTips[key];
+  }
+
+  // 3. 部分匹配（最長共同片段）
+  let bestMatch = null;
+  let bestScore = 0;
+
+  for (const key of keys) {
+    const nk = normalize(key);
+    if (nk.length < 4 || target.length < 4) continue;
+    let score = 0;
+    if (nk.includes(target) || target.includes(nk)) {
+      score = Math.min(nk.length, target.length) * 2;
+    } else {
+      let prefix = 0;
+      const minLen = Math.min(nk.length, target.length);
+      while (prefix < minLen && nk[prefix] === target[prefix]) prefix++;
+      if (prefix >= 6) score = prefix;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = shootTips[key];
+    }
+  }
+
+  if (bestMatch && bestScore >= 6) {
+    console.warn(`[shootTips] "${eventTitle}" 未精確匹配，使用近似結果（分數 ${bestScore}）`);
+    return bestMatch;
+  }
+
+  console.warn('[shootTips] ❌ 找不到匹配：', eventTitle);
+  console.warn('[shootTips] 可用的 key 有：', keys);
+  return null;
+}
+
 // ==================== 行程速覽 ====================
 function renderTripOverview() {
   const container = document.getElementById('overview-timeline-content'); if (!container) return;
@@ -193,7 +248,18 @@ function renderTripOverview() {
   container.innerHTML = `<div class="overview-timeline">${days.map(d => `<div class="overview-day"><div class="overview-day-marker" style="background:${d.color}">${d.day}</div><div class="overview-day-content"><div class="overview-day-title">${d.emoji} ${d.title}</div><div class="overview-day-desc">${d.desc}</div></div></div>`).join('')}</div>`;
 }
 
-function toggleContent(day, index) { const wrapper = document.getElementById(`collapsible-${day}-${index}`); const btn = document.querySelector(`[data-expand-btn="${day}-${index}"]`); if (!wrapper) return; haptic(6); const isExpanded = wrapper.classList.toggle("expanded"); if (btn) { btn.classList.toggle("expanded", isExpanded); const label = btn.querySelector("span"); if (label) label.textContent = isExpanded ? "收合攻略" : "展開完整攻略"; } }
+function toggleContent(day, index) {
+  const wrapper = document.getElementById(`collapsible-${day}-${index}`);
+  const btn = document.querySelector(`[data-expand-btn="${day}-${index}"]`);
+  if (!wrapper) return;
+  haptic(6);
+  const isExpanded = wrapper.classList.toggle("expanded");
+  if (btn) {
+    btn.classList.toggle("expanded", isExpanded);
+    const label = btn.querySelector("span");
+    if (label) label.textContent = isExpanded ? "收合攻略" : "展開完整攻略";
+  }
+}
 
 // ==================== 行程渲染 ====================
 function buildTimePill(startTime, endTime) {
@@ -203,7 +269,6 @@ function buildTimePill(startTime, endTime) {
 }
 function buildTagHtml(tag) { if (!tag || !tag.text) return ''; return '<span class="tag ' + (tag.class ? escapeHtml(tag.class) : '') + '">' + escapeHtml(tag.text) + '</span>'; }
 
-// ⭐ 動作按鈕改成獨立一行
 function buildEventActionsHtml(day, index, eventTitle, shoppingCount) {
   var safeTitle = escAttr(eventTitle);
   var badge = '';
@@ -269,6 +334,160 @@ function buildEventNavBtn(navUrl, eventTitle, navName) {
   return html;
 }
 
+/* ============================================================
+ * ⭐ v13.2：統一事件卡片內容
+ * ============================================================ */
+function normalizeEventContent(section) {
+  var collapsibles = section.querySelectorAll('.event-collapsible');
+  collapsibles.forEach(function(collapsible) {
+    normalizeSingleCollapsible(collapsible);
+  });
+}
+
+function normalizeSingleCollapsible(collapsible) {
+  var initialChildren = Array.from(collapsible.children);
+  initialChildren.forEach(function(el) {
+    if (el.classList.contains('tip-block')) {
+      var converted = convertTipBlockToDetails(el);
+      if (converted) {
+        collapsible.replaceChild(converted, el);
+      }
+    }
+  });
+
+  var allChildren = Array.from(collapsible.children);
+  var detailsList = [];
+  var otherElements = [];
+
+  allChildren.forEach(function(el) {
+    if (el.tagName === 'DETAILS') {
+      detailsList.push(el);
+    } else {
+      otherElements.push(el);
+    }
+  });
+
+  if (detailsList.length === 0) return;
+
+  var mostImportant = null;
+  for (var i = 0; i < detailsList.length; i++) {
+    if (detailsList[i].classList.contains('tip-block-details') &&
+        detailsList[i].classList.contains('danger')) {
+      mostImportant = detailsList[i];
+      break;
+    }
+  }
+  if (!mostImportant) {
+    for (var j = 0; j < detailsList.length; j++) {
+      if (detailsList[j].classList.contains('tip-block-details') &&
+          detailsList[j].classList.contains('warn')) {
+        mostImportant = detailsList[j];
+        break;
+      }
+    }
+  }
+  if (mostImportant) {
+    mostImportant.open = true;
+    mostImportant.setAttribute('data-keep-open', 'true');
+  }
+
+  var fragment = document.createDocumentFragment();
+
+  otherElements.forEach(function(el) {
+    fragment.appendChild(el);
+  });
+
+  var divider = document.createElement('div');
+  divider.className = 'collapsible-divider';
+  divider.innerHTML = '<span>📖 詳細攻略</span>';
+  fragment.appendChild(divider);
+
+  if (mostImportant) {
+    fragment.appendChild(mostImportant);
+  }
+  detailsList.forEach(function(d) {
+    if (d !== mostImportant) {
+      fragment.appendChild(d);
+    }
+  });
+
+  collapsible.innerHTML = '';
+  collapsible.appendChild(fragment);
+}
+
+function convertTipBlockToDetails(tipBlock) {
+  var strong = tipBlock.querySelector('strong');
+  var fullText = tipBlock.textContent.trim();
+  var hasBr = tipBlock.innerHTML.includes('<br');
+
+  if (!strong && (!hasBr || fullText.length < 80)) {
+    return null;
+  }
+
+  var titleText = '';
+  if (strong) {
+    titleText = strong.textContent.trim();
+  } else {
+    var htmlContent = tipBlock.innerHTML;
+    var firstBrIndex = htmlContent.indexOf('<br');
+    var rawTitle = firstBrIndex > -1 ? htmlContent.substring(0, firstBrIndex) : htmlContent;
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = rawTitle;
+    titleText = tempDiv.textContent.trim();
+  }
+
+  if (!titleText) titleText = '💡 詳細資訊';
+
+  var isDanger = tipBlock.classList.contains('danger');
+  var isWarn = tipBlock.classList.contains('warn');
+
+  var details = document.createElement('details');
+  details.className = 'tip-block-details';
+  if (isDanger) details.classList.add('danger');
+  if (isWarn) details.classList.add('warn');
+
+  var summary = document.createElement('summary');
+  summary.textContent = titleText;
+
+  var body = document.createElement('div');
+  var nodes = Array.from(tipBlock.childNodes);
+
+  if (strong) {
+    var skipNextBr = false;
+    nodes.forEach(function(node) {
+      if (node === strong) {
+        skipNextBr = true;
+        return;
+      }
+      if (skipNextBr && node.nodeType === 1 && node.tagName === 'BR') {
+        skipNextBr = false;
+        return;
+      }
+      skipNextBr = false;
+      body.appendChild(node.cloneNode(true));
+    });
+  } else {
+    var skipMode = true;
+    nodes.forEach(function(node) {
+      if (skipMode) {
+        if (node.nodeType === 1 && node.tagName === 'BR') {
+          skipMode = false;
+        }
+        return;
+      }
+      body.appendChild(node.cloneNode(true));
+    });
+  }
+
+  if (body.textContent.trim() === '' && !body.querySelector('img')) {
+    return null;
+  }
+
+  details.appendChild(summary);
+  details.appendChild(body);
+  return details;
+}
+
 function renderDayItinerary(sectionId, dayData, force) {
   if (force === undefined) force = false;
   if (!force && window._renderedDays.has(dayData.day)) return;
@@ -281,15 +500,19 @@ function renderDayItinerary(sectionId, dayData, force) {
   var eventsHtml = buildEventsHtml(dayData);
   var diaryHtml = buildDiaryHtml(dayData);
   section.innerHTML = '<div class="mb-8">' + headerHtml + '<div class="timeline">' + eventsHtml + '</div>' + diaryHtml + '</div>';
+
+  normalizeEventContent(section);
+
   setupImageFadeIn(section);
   setupEventImageLightbox(section);
   setTimeout(function() {
     updateExpandButtons(dayData);
     updateTimelineStatus();
-    
-    // ⭐ 確保所有內層 details 都是收合狀態（風琴式）
+
     section.querySelectorAll('details:not(.event-card)').forEach(function(d) {
-      d.open = false;
+      if (d.dataset.keepOpen !== 'true') {
+        d.open = false;
+      }
     });
 
     autoWrapMiniCards(dayData);
@@ -298,10 +521,8 @@ function renderDayItinerary(sectionId, dayData, force) {
   window._renderedDays.add(dayData.day);
 }
 
-// ⭐ 天氣卡片
 function buildWeatherHtml(dateStr, weatherInfo) {
   if (!weatherInfo) return '';
-
   const { icon, max, min, rain } = weatherInfo;
   const location = weatherInfo.location || '';
 
@@ -350,7 +571,6 @@ function buildWeatherHtml(dateStr, weatherInfo) {
     </div>`;
 }
 
-// Day Header
 function buildDayHeaderHtml(dayData, weatherHtml) {
   var html = '<div class="bg-slate-50/95 py-1 mb-0 px-1 border-b border-slate-200/50 flex justify-between items-center">';
   html += '<div class="flex items-center gap-2.5">';
@@ -370,9 +590,6 @@ function buildDayHeaderHtml(dayData, weatherHtml) {
 
 function buildEventsHtml(dayData) { var html = ''; for (var i = 0; i < dayData.events.length; i++) { html += buildSingleEventHtml(dayData, dayData.events[i], i); } return html; }
 
-/* ============================================================
- * 行程卡片「標題 + 按鈕」分行
- * ============================================================ */
 function buildSingleEventHtml(dayData, event, index) {
   var timeParts = event.time.split(' - ');
   var startTime = timeParts[0].trim();
@@ -384,36 +601,43 @@ function buildSingleEventHtml(dayData, event, index) {
   var imageHtml = buildEventImage(event.img, event.title, event.images);
   var navBtnHtml = buildEventNavBtn(event.navUrl, event.title, event.navName);
 
+  var priorityBadge = '';
+  if (event.highlight === true) {
+    priorityBadge = '<span class="event-priority-badge highlight">⭐ 重點</span>';
+  } else if (event.priority === 'optional') {
+    priorityBadge = '<span class="event-priority-badge optional">🔄 彈性</span>';
+  }
+
+  var tagClass = '';
+  if (event.tag && event.tag.class) {
+    tagClass = ' ' + event.tag.class.replace('tag-', 'card-');
+  }
+
   var html = '<div class="timeline-item" data-time="' + escapeHtml(startTime) + '" data-end-time="' + escapeHtml(endTime) + '" data-day="' + dayData.day + '">';
   html += '<div class="timeline-marker">';
   html += '<div class="timeline-node"></div>';
   html += timeStamp;
   html += '</div>';
   html += '<div class="timeline-card">';
-  html += '<details data-day="' + dayData.day + '" data-index="' + index + '" class="group glass-card rounded-2xl relative overflow-hidden event-card">';
+  html += '<details data-day="' + dayData.day + '" data-index="' + index + '" class="group glass-card rounded-2xl relative overflow-hidden event-card' + tagClass + '"' + (event.open ? ' open' : '') + '>';
   html += '<div class="itinerary-cat-strip"></div>';
-
   html += '<summary class="event-summary">';
-
   html += '<div class="event-summary-info">';
-  if (tagHtml) {
-    html += '<div class="event-tag-row">' + tagHtml + '</div>';
+  if (tagHtml || priorityBadge) {
+    html += '<div class="event-tag-row">' + tagHtml + priorityBadge + '</div>';
   }
   html += '<h3 class="event-title">' + escapeHtml(event.title) + '</h3>';
   if (event.location) {
     html += '<div class="event-location">📍 ' + escapeHtml(event.location) + '</div>';
   }
   html += '</div>';
-
   html += '<div class="event-summary-actions">';
   html += actionsHtml;
   html += '<div class="event-expand-icon">';
   html += '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>';
   html += '</div>';
   html += '</div>';
-
   html += '</summary>';
-
   html += '<div class="event-content-wrapper p-3 pt-0 pb-4 border-t border-slate-50/80 bg-slate-50/30">';
   html += imageHtml;
   html += navBtnHtml;
@@ -460,58 +684,16 @@ function setupEventImageLightbox(section) {
 function updateExpandButtons(dayData) {
   dayData.events.forEach(function(_, index) {
     var wrapper = document.getElementById('collapsible-' + dayData.day + '-' + index);
-    var btn = document.querySelector('[data-expand-btn="' + dayData.day + '-' + index + '"]');
-    if (wrapper && btn) {
-      if (wrapper.scrollHeight <= 580) { wrapper.classList.add('no-collapse'); btn.classList.add('hidden'); }
-      else { wrapper.classList.remove('no-collapse'); btn.classList.remove('hidden'); }
+    if (wrapper) {
+      wrapper.classList.add('no-collapse');
     }
   });
 }
 
-// ==================== 自動包裝迷你卡片 ====================
 function autoWrapMiniCards(dayData) {
-  dayData.events.forEach(function(_, index) {
-    var wrapper = document.getElementById('collapsible-' + dayData.day + '-' + index);
-    if (!wrapper) return;
-    var contentDiv = wrapper.querySelector(':scope > div');
-    if (!contentDiv) return;
-    var colorClasses = ['bg-amber', 'bg-sky', 'bg-indigo', 'bg-emerald', 'bg-teal', 'bg-rose', 'bg-slate', 'bg-white'];
-    var sections = Array.from(contentDiv.children).filter(function(el) {
-      if (el.tagName !== 'DIV') return false;
-      if (el.parentElement && el.parentElement.closest('details:not(.event-card)')) return false;
-      if (el.classList.contains('mini-card')) return false;
-      var cls = el.className || '';
-      return colorClasses.some(function(c) { return cls.indexOf(c) > -1; });
-    });
-    sections.forEach(function(section) {
-      var titleEl = section.querySelector('strong, h3, h4');
-      if (!titleEl) return;
-      var emoji = '';
-      var firstText = titleEl.textContent.trim();
-      var emojiMatch = firstText.match(/^([\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]+)\s*/u);
-      if (emojiMatch) { emoji = emojiMatch[1]; }
-      var details = document.createElement('details');
-      details.className = 'mini-card';
-      var summary = document.createElement('summary');
-      summary.className = 'mini-card-summary';
-      if (emoji) { var iconEl = document.createElement('span'); iconEl.className = 'mini-card-icon'; iconEl.textContent = emoji; summary.appendChild(iconEl); }
-      var titleSpan = document.createElement('span');
-      titleSpan.className = 'mini-card-title';
-      var cleanTitle = firstText.replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]+\s*/u, '').trim();
-      titleSpan.textContent = cleanTitle;
-      summary.appendChild(titleSpan);
-      var body = document.createElement('div');
-      body.className = 'mini-card-body';
-      titleEl.remove();
-      while (section.firstChild) { body.appendChild(section.firstChild); }
-      details.appendChild(summary);
-      details.appendChild(body);
-      section.parentNode.replaceChild(details, section);
-    });
-  });
+  return;
 }
 
-// ==================== 輪播滾動監聽 ====================
 function bindCarouselScroll(dayData) {
   dayData.events.forEach(function(_, index) {
     var wrapper = document.getElementById('collapsible-' + dayData.day + '-' + index);
@@ -572,56 +754,262 @@ function renderDriveContent() { const container = document.getElementById('drive
 // ==================== 搶票攻略 ====================
 function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">首選方案</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/8 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>1/8 22:55 設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 15:30-19:15 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/15 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
 
-// ==================== 拍攝靈感 ====================
+// ==================== ⭐ 拍攝靈感（v13.3 新版） ====================
 function openShootTipsModal(day, eventIndex) {
   const dayData = winterItineraries.find(d => d.day === day);
   if (!dayData) return;
   const event = dayData.events[eventIndex];
   if (!event) return;
-  const tips = shootTips[event.title];
+
+  const tips = findShootTips(event.title);
   const content = document.getElementById("shoot-tips-content");
-  let html = "";
-  if (tips) {
-    const pa = tips["拍照建議"] || "";
-    html += `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-orange-800 mb-2">📷 拍照建議</h3><p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(pa)}</p></div>`;
-    if (tips["參考照片"] && tips["參考照片"].length > 0) {
-      const imgHtml = tips["參考照片"].map(url => `<img src="${escAttr(url)}" class="lazy-fade w-32 h-24 object-cover rounded-lg cursor-pointer border border-slate-200" onclick="openLightbox(['${escAttr(url)}'], 0)" loading="lazy" decoding="async">`).join("");
-      html += `<div class="bg-pink-50 border border-pink-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-pink-800 mb-2">📷 參考照片</h3><div class="flex gap-2 overflow-x-auto scrollbar-none pb-2">${imgHtml}</div></div>`;
-    }
-    html += `<details class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-3"><summary class="cursor-pointer text-sm font-black text-slate-700 mb-2">📸 展開詳細拍攝建議</summary><div class="space-y-3 mt-2">`;
-    if (tips["Pocket 3 參數"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3"><h3 class="text-sm font-black text-sky-800 mb-1">📸 Pocket 3 參數</h3><p class="text-sm text-slate-700">${escapeHtml(tips["Pocket 3 參數"])}</p></div>`;
-    if (tips["Vlog 必拍鏡頭"] && tips["Vlog 必拍鏡頭"].length > 0) html += `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h3 class="text-sm font-black text-emerald-800 mb-2">🎬 Vlog 必拍鏡頭</h3><ul class="list-disc pl-4 space-y-1">${tips["Vlog 必拍鏡頭"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
-    if (tips["最佳拍攝時間"] || tips["拍攝時長"]) { let ti = ""; if (tips["最佳拍攝時間"]) ti += `<span class="block mb-1">⏰ ${escapeHtml(tips["最佳拍攝時間"])}</span>`; if (tips["拍攝時長"]) ti += `<span class="block">⏳ ${escapeHtml(tips["拍攝時長"])}</span>`; html += `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3"><h3 class="text-sm font-black text-amber-800 mb-2">⏱️ 拍攝時間建議</h3><p class="text-sm text-slate-700">${ti}</p></div>`; }
-    if (tips["拍攝角度"] && tips["拍攝角度"].length > 0) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎯 拍攝角度</h3><ul class="list-disc pl-4 space-y-1">${tips["拍攝角度"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
-    if (tips["人物動作建議"] && tips["人物動作建議"].length > 0) html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3"><h3 class="text-sm font-black text-rose-800 mb-2">🧍 人物動作建議</h3><ul class="list-disc pl-4 space-y-1">${tips["人物動作建議"].map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
-    html += `</div></details>`;
-  } else {
-    html = `<div class="text-center py-8 text-slate-500 text-sm">暫時沒有這個景點的拍攝建議。</div>`;
+  const headerTitle = document.getElementById("shoot-tips-title");
+
+  if (headerTitle) headerTitle.textContent = event.title;
+
+  if (!tips) {
+    content.innerHTML = `
+      <div class="text-center py-12">
+        <div class="text-5xl mb-3">🎬</div>
+        <p class="text-sm font-bold text-slate-700 mb-1">這個景點還沒有拍攝建議</p>
+        <p class="text-xs text-slate-500">可以先參考「通用拍攝技巧」</p>
+      </div>`;
+    showModal('shoot-tips-modal');
+    document.getElementById('shoot-tips-modal').classList.remove('hidden');
+    return;
   }
+
+  let html = '';
+
+  // 第一層：照片輪播
+  const photos = tips["參考照片"] || [];
+  if (photos.length > 0) {
+    const photosJson = escAttr(JSON.stringify(photos));
+    html += `<div class="shoot-photo-hero">`;
+    html += `<div class="shoot-photo-track">`;
+    photos.forEach((url, i) => {
+      html += `<img src="${escAttr(url)}" 
+        class="lazy-fade shoot-photo-img" 
+        loading="lazy" decoding="async"
+        data-index="${i}"
+        onclick="openShootLightbox('${photosJson}', ${i})">`;
+    });
+    html += `</div>`;
+    if (photos.length > 1) {
+      html += `<div class="shoot-photo-indicator"><span class="cur">1</span> / <span class="total">${photos.length}</span></div>`;
+    }
+    html += `</div>`;
+  }
+
+  // 第二層：拍照建議
+  const advice = tips["拍照建議"] || "";
+  if (advice) {
+    html += `<div class="shoot-block shoot-block-main">
+      <div class="shoot-block-header">
+        <span class="shoot-block-icon">📷</span>
+        <span class="shoot-block-title">拍照建議</span>
+      </div>
+      <p class="shoot-block-text">${escapeHtml(advice)}</p>
+    </div>`;
+  }
+
+  // 第三層：拍攝角度 + 人物動作（兩欄）
+  const angles = tips["拍攝角度"] || [];
+  const actions = tips["人物動作建議"] || [];
+  if (angles.length > 0 || actions.length > 0) {
+    html += `<div class="shoot-grid-2">`;
+    if (angles.length > 0) {
+      html += `<div class="shoot-block shoot-block-angle">
+        <div class="shoot-block-header">
+          <span class="shoot-block-icon">🎯</span>
+          <span class="shoot-block-title">拍攝角度</span>
+        </div>
+        <ul class="shoot-list">${angles.map(a => `<li>${escapeHtml(a)}</li>`).join('')}</ul>
+      </div>`;
+    }
+    if (actions.length > 0) {
+      html += `<div class="shoot-block shoot-block-action">
+        <div class="shoot-block-header">
+          <span class="shoot-block-icon">🧍</span>
+          <span class="shoot-block-title">人物動作</span>
+        </div>
+        <ul class="shoot-list">${actions.map(a => `<li>${escapeHtml(a)}</li>`).join('')}</ul>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  // 第四層：進階資訊（收合）
+  const pocket = tips["Pocket 3 參數"] || "";
+  const vlogShots = tips["Vlog 必拍鏡頭"] || [];
+  const bestTime = tips["最佳拍攝時間"] || "";
+  const duration = tips["拍攝時長"] || "";
+  const hasAdvanced = pocket || vlogShots.length > 0 || bestTime || duration;
+
+  if (hasAdvanced) {
+    html += `<details class="shoot-advanced">
+      <summary>
+        <span class="shoot-advanced-icon">⚙️</span>
+        <span class="shoot-advanced-title">進階資訊</span>
+        <span class="shoot-advanced-hint">相機設定 · Vlog 鏡頭 · 時間建議</span>
+        <span class="shoot-advanced-chevron">▾</span>
+      </summary>
+      <div class="shoot-advanced-body">`;
+
+    if (pocket) {
+      html += `<div class="shoot-advanced-item">
+        <div class="shoot-advanced-item-title">📸 Pocket 3 參數</div>
+        <p class="shoot-advanced-item-text">${escapeHtml(pocket)}</p>
+      </div>`;
+    }
+    if (vlogShots.length > 0) {
+      html += `<div class="shoot-advanced-item">
+        <div class="shoot-advanced-item-title">🎬 Vlog 必拍鏡頭</div>
+        <ul class="shoot-list">${vlogShots.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ul>
+      </div>`;
+    }
+    if (bestTime || duration) {
+      html += `<div class="shoot-advanced-item">
+        <div class="shoot-advanced-item-title">⏰ 時間建議</div>
+        <ul class="shoot-list">`;
+      if (bestTime) html += `<li>${escapeHtml(bestTime)}</li>`;
+      if (duration)  html += `<li>${escapeHtml(duration)}</li>`;
+      html += `</ul></div>`;
+    }
+
+    html += `</div></details>`;
+  }
+
   content.innerHTML = html;
+
+  setTimeout(() => {
+    setupImageFadeIn(content);
+    bindShootPhotoIndicator(content);
+  }, 50);
+
   showModal('shoot-tips-modal');
   document.getElementById('shoot-tips-modal').classList.remove('hidden');
-  setTimeout(() => setupImageFadeIn(content), 50);
 }
-function closeShootTipsModal() { hideModal('shoot-tips-modal'); setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300); }
 
-function openCommonTipsModal() {
-  const m = document.getElementById('common-tips-modal'); if (!m) return;
-  m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open');
-  const c = document.getElementById('common-tips-content');
-  if (c && typeof shootTipsCommon !== 'undefined') {
-    let html = '';
-    Object.keys(shootTipsCommon).forEach(title => {
-      const tips = shootTipsCommon[title];
-      html += `<div class="mb-4 bg-slate-50 border border-slate-200 rounded-2xl p-4"><h3 class="text-sm font-black text-slate-800 mb-2">${escapeHtml(title)}</h3>`;
-      if (tips['拍照建議']) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mb-2 text-xs text-slate-700"><strong class="text-sky-800 block mb-1">📷 拍照建議</strong>${escapeHtml(tips['拍照建議'])}</div>`;
-      html += `</div>`;
-    });
-    c.innerHTML = html;
+function openShootLightbox(photosJson, idx) {
+  try {
+    const urls = JSON.parse(photosJson.replace(/&quot;/g, '"'));
+    openLightbox(urls, idx);
+  } catch (e) {
+    console.warn('[shoot-lightbox] 解析失敗', e);
   }
 }
-function closeCommonTipsModal() { const m = document.getElementById('common-tips-modal'); if (m) { m.classList.remove('active'); setTimeout(() => m.style.display = 'none', 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
+window.openShootLightbox = openShootLightbox;
 
+function bindShootPhotoIndicator(container) {
+  const track = container.querySelector('.shoot-photo-track');
+  const cur = container.querySelector('.shoot-photo-indicator .cur');
+  if (!track || !cur) return;
+  let timer;
+  track.addEventListener('scroll', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      const idx = Math.round(track.scrollLeft / track.clientWidth) + 1;
+      cur.textContent = idx;
+    }, 80);
+  }, { passive: true });
+}
+
+function closeShootTipsModal() {
+  hideModal('shoot-tips-modal');
+  setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300);
+}
+
+// ==================== ⭐ 通用拍攝技巧（v13.3 新版） ====================
+function openCommonTipsModal() {
+  const m = document.getElementById('common-tips-modal');
+  if (!m) return;
+  m.style.display = 'flex';
+  m.classList.add('active');
+  document.body.classList.add('modal-open');
+
+  const c = document.getElementById('common-tips-content');
+  if (!c || typeof shootTipsCommon === 'undefined') return;
+
+  const tipsList = [
+    { key: '顯高全身照',   emoji: '📏', color: 'sky' },
+    { key: '慵懶坐姿照',   emoji: '🪑', color: 'amber' },
+    { key: '氛圍感半身照', emoji: '✨', color: 'indigo' }
+  ];
+
+  let html = `<div class="common-tips-intro">
+    <span class="common-tips-intro-icon">💡</span>
+    <p class="common-tips-intro-text">三個萬用構圖法，任何場景都能拍出好照片</p>
+  </div>`;
+
+  tipsList.forEach(({ key, emoji, color }) => {
+    const tips = shootTipsCommon[key];
+    if (!tips) return;
+
+    const advice = tips["拍照建議"] || "";
+    const angles = tips["拍攝角度"] || [];
+    const actions = tips["人物動作建議"] || [];
+    const photos = tips["參考照片"] || [];
+
+    html += `<div class="common-tip-card common-tip-${color}">`;
+
+    html += `<div class="common-tip-header">
+      <span class="common-tip-emoji">${emoji}</span>
+      <span class="common-tip-title">${escapeHtml(key)}</span>
+    </div>`;
+
+    if (photos.length > 0) {
+      const photosJson = escAttr(JSON.stringify(photos));
+      html += `<div class="common-tip-photo-track">`;
+      photos.forEach((url, i) => {
+        html += `<img src="${escAttr(url)}" 
+          class="lazy-fade common-tip-photo" 
+          loading="lazy" decoding="async"
+          data-index="${i}"
+          onclick="openShootLightbox('${photosJson}', ${i})">`;
+      });
+      html += `</div>`;
+    }
+
+    if (advice) {
+      html += `<p class="common-tip-advice">${escapeHtml(advice)}</p>`;
+    }
+
+    if (angles.length > 0 || actions.length > 0) {
+      html += `<div class="common-tip-grid">`;
+      if (angles.length > 0) {
+        html += `<div class="common-tip-col">
+          <div class="common-tip-col-title">🎯 角度</div>
+          <ul class="shoot-list">${angles.map(a => `<li>${escapeHtml(a)}</li>`).join('')}</ul>
+        </div>`;
+      }
+      if (actions.length > 0) {
+        html += `<div class="common-tip-col">
+          <div class="common-tip-col-title">🧍 動作</div>
+          <ul class="shoot-list">${actions.map(a => `<li>${escapeHtml(a)}</li>`).join('')}</ul>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  c.innerHTML = html;
+  setTimeout(() => setupImageFadeIn(c), 50);
+}
+
+function closeCommonTipsModal() {
+  const m = document.getElementById('common-tips-modal');
+  if (m) {
+    m.classList.remove('active');
+    setTimeout(() => m.style.display = 'none', 300);
+    const a = document.querySelector('.modal-overlay.active');
+    if (!a) document.body.classList.remove('modal-open');
+  }
+}
+
+// ==================== Vlog 構思 ====================
 function openVlogPlanModal(day) {
   const plan = vlogPlan["D" + day];
   const content = document.getElementById("vlog-plan-content");
@@ -665,7 +1053,6 @@ function switchDay(day) {
     });
   }
 
-  // ⭐ 分頁自動置中：讓當前選中的分頁捲動到正中央
   if (activeTab) {
     const container = document.getElementById("day-tabs-container");
     if (container) {
@@ -721,7 +1108,6 @@ function closeTripOverview() { const m = document.getElementById('trip-overview-
 function openWeatherModal() { const modal = document.getElementById('weather-modal'); showModal('weather-modal'); modal.classList.remove('hidden'); document.getElementById('weather-detail-content').innerHTML = ''; fetchWeatherData(); }
 function closeWeatherModal() { hideModal('weather-modal'); setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300); }
 
-// 讓 app-core 的 setupModalDrag 可以從 window 找到
 window.toggleDriveModal = toggleDriveModal;
 window.closeDriveModal = closeDriveModal;
 window.toggleTicketModal = toggleTicketModal;
@@ -736,3 +1122,4 @@ window.openCommonTipsModal = openCommonTipsModal;
 window.closeCommonTipsModal = closeCommonTipsModal;
 window.openVlogPlanModal = openVlogPlanModal;
 window.closeVlogPlanModal = closeVlogPlanModal;
+window.findShootTips = findShootTips;

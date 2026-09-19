@@ -1,9 +1,12 @@
 /* ============================================================
- * style.css — v10.1 雪地清爽版
+ * style.css — v12.0 雪地清爽版（淺色基礎）
  * 淺藍漸層 + 白色卡片 + 藍色主色
  *
- * v10.1 變更：
- *   - 移除列印樣式（已不需要）
+ * ⚠️ 拆分說明：
+ *   - 深色模式 → 見 dark.css
+ *   - 補丁（v11.2 / v11.7 / v12.0）→ 見 patches.css
+ *
+ * 載入順序：style.css → dark.css → patches.css
  * ============================================================ */
 
 :root {
@@ -26,7 +29,7 @@
   --sky-lighter: #e0f2fe;
   --sky-accent: #0ea5e9;
 
-  /* ⭐ 對比度加深後 */
+  /* 對比度加深 */
   --text-main: #0f172a;
   --text-soft: #334155;
   --text-mute: #475569;
@@ -634,7 +637,7 @@ body.modal-open #app-root {
 
 .timeline-item {
   position: relative;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 .timeline-item:last-child { margin-bottom: 0; }
 
@@ -677,30 +680,6 @@ body.modal-open #app-root {
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--sky-deep);
-  background: transparent;
-  border: none;
-  border-left: 3px solid var(--sky-primary);
-  border-radius: 0;
-  padding: 2px 10px;
-  box-shadow: none;
-  display: inline-block;
-  transition: color 0.3s ease, border-color 0.3s ease;
-}
-.timeline-stamp-end {
-  font-family: var(--font-sans);
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  color: var(--text-mute);
-  margin-left: 2px;
-}
-
-/* 時間膠囊輕量版（覆蓋前面） */
-.timeline-stamp-time {
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--sky-deep);
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
   border: 1px solid #bae6fd;
   border-radius: 999px;
@@ -708,6 +687,13 @@ body.modal-open #app-root {
   box-shadow: 0 1px 2px rgba(2, 132, 199, 0.08);
   display: inline-block;
   transition: all 0.3s ease;
+}
+.timeline-stamp-end {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-mute);
+  margin-left: 2px;
 }
 
 /* ---------- 已完成 ---------- */
@@ -752,11 +738,11 @@ body.modal-open #app-root {
 }
 
 .timeline-item.status-active .timeline-stamp-time {
-  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-  border-color: #38bdf8;
-  color: var(--sky-deep);
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border: 1px solid #0c4a6e;
+  color: #ffffff;
   font-weight: 900;
-  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.45);
 }
 .timeline-item.status-active .timeline-stamp-time::before {
   content: '';
@@ -764,10 +750,13 @@ body.modal-open #app-root {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #ef4444;
+  background: #ffffff;
   margin-right: 6px;
   vertical-align: middle;
-  box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+}
+.timeline-item.status-active .timeline-stamp-end {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* ---------- 下一個 ---------- */
@@ -860,6 +849,7 @@ body.modal-open #app-root {
 .event-collapsible.expanded { max-height: 12000px; }
 .event-collapsible.expanded::after { display: none; }
 .event-collapsible.no-collapse { max-height: none; }
+
 /* ========== 展開完整攻略按鈕 ========== */
 .expand-btn {
   display: flex;
@@ -1033,22 +1023,14 @@ body.modal-open #app-root {
  * Tag 灰底 + 左側彩條
  * ============================================================ */
 .tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 3px 8px 3px 7px;
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-2xs);
-  font-weight: 700;
-  line-height: 1.5;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  background: #f1f5f9;
-  color: #334155;
-  border: none;
-  border-left: 3px solid currentColor;
-  transition: background 0.2s;
+  background: #f1f5f9 !important;
+  color: #334155 !important;
 }
+.tag-teal   { background: #ecfdf5 !important; }
+.tag-amber  { background: #fffbeb !important; }
+.tag-indigo { background: #eef2ff !important; }
+.tag-sky    { background: #f5f3ff !important; }
+.tag-rose   { background: #fff1f2 !important; }
 
 .tag-teal   { color: #059669; }
 .tag-amber  { color: #d97706; }
@@ -1214,7 +1196,138 @@ button:active::after {
 .fab-wrapper > button { pointer-events: auto; }
 
 /* ============================================================
- * 迷你卡片
+ * ⭐ 統一提示塊系統 .tip-block
+ * ============================================================ */
+.glass-card.event-card .event-collapsible .tip-block {
+  display: block;
+  border-left: 3px solid #cbd5e1;
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 0 10px 10px 0;
+  margin: 10px 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #475569;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+}
+
+.glass-card.event-card .event-collapsible .tip-block.warn {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+  color: #78350f;
+}
+
+.glass-card.event-card .event-collapsible .tip-block.danger {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+  color: #7f1d1d;
+}
+
+.glass-card.event-card .event-collapsible .tip-block strong {
+  color: inherit;
+  font-weight: 800;
+}
+
+.glass-card.event-card .event-collapsible .tip-block br {
+  line-height: 1.9;
+}
+
+/* ============================================================
+ * ⭐ 統一所有內層折疊（含手寫 details 與自動包裝）
+ * v11.7：三層次配色修正
+ * ============================================================ */
+.glass-card.event-card .event-collapsible details:not(.event-card) {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-left: 3px solid #38bdf8 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  margin: 10px 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.glass-card.event-card .event-collapsible details:not(.event-card) > summary {
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1.5 !important;
+  padding: 13px 15px !important;
+  border: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  min-height: 46px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  list-style: none !important;
+  transition: background 0.15s ease !important;
+}
+
+.glass-card.event-card .event-collapsible details:not(.event-card)[open] > summary {
+  background: #f0f9ff !important;
+  border-bottom-color: #bae6fd !important;
+  color: #0369a1 !important;
+}
+
+.glass-card.event-card .event-collapsible details:not(.event-card) > summary:hover {
+  background: #f1f5f9 !important;
+}
+
+.glass-card.event-card .event-collapsible details:not(.event-card) > summary::-webkit-details-marker {
+  display: none;
+}
+
+.glass-card.event-card .event-collapsible details:not(.event-card) > div {
+  background: #fafbfc !important;
+  color: #475569 !important;
+  font-size: 13px !important;
+  line-height: 1.75 !important;
+  padding: 14px 16px !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+.glass-card.event-card .event-collapsible details:not(.event-card) ul {
+  padding-left: 20px !important;
+  margin: 6px 0 !important;
+  list-style: disc !important;
+}
+
+.glass-card.event-card .event-collapsible details:not(.event-card) li {
+  padding: 3px 0 !important;
+  line-height: 1.7 !important;
+}
+
+.glass-card.event-card .event-collapsible details:not(.event-card) > div > p {
+  margin: 0 0 10px 0 !important;
+  font-size: 13px !important;
+  line-height: 1.75 !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) > div > p:last-child {
+  margin-bottom: 0 !important;
+}
+
+.glass-card.event-card .event-collapsible details:not(.event-card) > summary::after {
+  content: '▾';
+  margin-left: auto;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 900;
+  flex-shrink: 0;
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.glass-card.event-card .event-collapsible details:not(.event-card)[open] > summary::after {
+  transform: rotate(180deg);
+  color: #0284c7;
+}
+
+/* ============================================================
+ * 迷你卡片（保留相容，但不再自動包裝）
  * ============================================================ */
 .glass-card.event-card .mini-card {
   background: #ffffff;
@@ -1336,6 +1449,9 @@ button:active::after {
   box-shadow: none !important;
 }
 
+/* ============================================================
+ * 內容排版
+ * ============================================================ */
 .glass-card.event-card .event-collapsible > div > p:first-child {
   font-size: var(--fs-sm);
   line-height: 1.75;
@@ -1343,9 +1459,6 @@ button:active::after {
   margin-bottom: 12px;
 }
 
-/* ============================================================
- * 內容排版
- * ============================================================ */
 .glass-card.event-card .event-collapsible p {
   font-size: var(--fs-sm);
   line-height: 1.8;
@@ -1353,32 +1466,6 @@ button:active::after {
   margin-bottom: 12px;
 }
 .glass-card.event-card .event-collapsible p:last-child { margin-bottom: 0; }
-
-.glass-card.event-card .event-collapsible div[class*="bg-amber"],
-.glass-card.event-card .event-collapsible div[class*="bg-sky"],
-.glass-card.event-card .event-collapsible div[class*="bg-indigo"],
-.glass-card.event-card .event-collapsible div[class*="bg-emerald"],
-.glass-card.event-card .event-collapsible div[class*="bg-teal"],
-.glass-card.event-card .event-collapsible div[class*="bg-slate"] {
-  background: #f8fbff !important;
-  border: none !important;
-  border-left: 3px solid #7dd3fc !important;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;
-  padding: 12px 14px !important;
-  margin: 10px 0 !important;
-  box-shadow: none !important;
-}
-
-.glass-card.event-card .event-collapsible div[class*="bg-rose"],
-.glass-card.event-card .event-collapsible div[class*="bg-red"] {
-  background: #fef2f2 !important;
-  border: none !important;
-  border-left: 3px solid #f87171 !important;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;
-  padding: 12px 14px !important;
-  margin: 10px 0 !important;
-  box-shadow: none !important;
-}
 
 .glass-card.event-card .event-collapsible ul {
   list-style: none; padding: 0; margin: 12px 0;
@@ -1398,42 +1485,6 @@ button:active::after {
   border-radius: 50%;
   background: var(--sky-primary);
   opacity: 0.7;
-}
-
-.glass-card.event-card .event-collapsible details:not(.mini-card) {
-  background: transparent !important;
-  border: none !important;
-  border-top: 1px solid var(--line-soft) !important;
-  border-radius: 0 !important;
-  margin: 14px 0 !important;
-  box-shadow: none !important;
-}
-.glass-card.event-card .event-collapsible details:not(.mini-card) summary {
-  background: transparent !important;
-  color: var(--text-main) !important;
-  font-size: var(--fs-sm) !important;
-  font-weight: 700 !important;
-  padding: 12px 0 !important;
-  border: none !important;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-.glass-card.event-card .event-collapsible details:not(.mini-card) summary::before {
-  content: '▸';
-  color: var(--sky-primary);
-  font-size: var(--fs-2xs);
-  transition: transform 0.25s;
-  display: inline-block;
-}
-.glass-card.event-card .event-collapsible details:not(.mini-card)[open] summary::before {
-  transform: rotate(90deg);
-}
-.glass-card.event-card .event-collapsible details:not(.mini-card) > div {
-  background: transparent !important;
-  padding: 0 0 12px 0 !important;
-  border-top: none !important;
 }
 
 .glass-card.event-card .event-collapsible {
@@ -1544,7 +1595,7 @@ button:active::after {
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 14px 16px 0 !important;
+  padding: 18px 20px 0 !important;
   cursor: pointer;
   list-style: none;
   user-select: none;
@@ -1553,8 +1604,8 @@ button:active::after {
 .event-summary-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding-bottom: 12px;
+  gap: 5px;
+  padding-bottom: 14px;
 }
 
 .event-tag-row {
@@ -1597,7 +1648,7 @@ button:active::after {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
   background: #f1f5f9;
   color: #075985;
@@ -1608,7 +1659,7 @@ button:active::after {
   transition: background 0.15s, transform 0.15s;
   white-space: nowrap;
   flex-shrink: 0;
-  min-height: 32px;
+  min-height: 40px;
 }
 .event-action-btn:active {
   background: var(--sky-lighter);
@@ -1654,25 +1705,6 @@ button:active::after {
 .glass-card.event-card summary:not(.event-summary) {
   padding: 16px 18px 12px !important;
   position: relative;
-}
-
-.glass-card.event-card summary button:not(.event-action-btn) {
-  background: rgba(255, 255, 255, 0.9) !important;
-  background-image: none !important;
-  border: 1px solid var(--sky-light) !important;
-  color: var(--sky-primary-dark) !important;
-  font-size: var(--fs-2xs) !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.03em;
-  border-radius: var(--radius-full) !important;
-  padding: 3px 10px !important;
-  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08);
-  transition: all 0.2s;
-  min-height: auto;
-}
-.glass-card.event-card summary button:not(.event-action-btn):active {
-  transform: scale(0.95);
-  box-shadow: none;
 }
 
 /* ============================================================
@@ -2545,556 +2577,37 @@ details.event-card:not([open]) .event-content-wrapper {
 }
 
 /* ============================================================
- * 深色模式
+ * ⭐ v11.7：內容中的導航連結：變成獨立膠囊
  * ============================================================ */
-[data-theme="dark"] {
-  --snow-bg-1: #0f172a;
-  --snow-bg-2: #1e293b;
-  --snow-bg-3: #0f172a;
-  --card-bg: #1e293b;
-  --card-bg-soft: #1e293b;
-  --sky-primary: #38bdf8;
-  --sky-primary-dark: #0ea5e9;
-  --sky-deep: #7dd3fc;
-  --sky-light: #334155;
-  --sky-lighter: #1e293b;
-  --sky-accent: #38bdf8;
-  --text-main: #f1f5f9;
-  --text-soft: #cbd5e1;
-  --text-mute: #94a3b8;
-  --text-faint: #64748b;
-  --line-soft: #334155;
-  --line-sky: rgba(56, 189, 248, 0.2);
-}
-[data-theme="dark"] body {
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 30%, #0f172a 100%) !important;
-  color: #f1f5f9;
-}
-[data-theme="dark"] .header-fade {
-  background: linear-gradient(to bottom, #0f172a 0%, #0f172a 60%, transparent 100%);
-}
-[data-theme="dark"] #main-itinerary-view,
-[data-theme="dark"] #schedule-container { background: transparent; }
-[data-theme="dark"] .day-tabs-wrapper {
-  background: rgba(15, 23, 42, 0.95) !important;
-  border-bottom-color: #334155 !important;
-}
-[data-theme="dark"] .day-tab {
-  background: #1e293b !important;
-  color: #cbd5e1 !important;
-  border-color: #334155 !important;
-}
-[data-theme="dark"] .day-tab.active {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
-  color: white !important;
-  border-color: transparent !important;
-}
-[data-theme="dark"] #btn-collapse-all {
-  background: #1e293b !important;
-  border-color: #334155 !important;
-  color: #cbd5e1 !important;
-}
-[data-theme="dark"] .glass-card,
-[data-theme="dark"] .glass-card.event-card {
-  background: #1e293b !important;
-  background-image: none !important;
-  border-color: #334155 !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
-}
-[data-theme="dark"] .glass-card.event-card h3,
-[data-theme="dark"] .glass-card.event-card .text-slate-800,
-[data-theme="dark"] #schedule-container .text-slate-800 { color: #f1f5f9 !important; }
-[data-theme="dark"] .glass-card.event-card .text-slate-500,
-[data-theme="dark"] #schedule-container .text-slate-500 { color: #94a3b8 !important; }
-[data-theme="dark"] .glass-card.event-card .event-collapsible p,
-[data-theme="dark"] .glass-card.event-card .event-collapsible ul li { color: #cbd5e1 !important; }
-[data-theme="dark"] .glass-card.event-card .event-content-wrapper {
-  background: #1e293b !important;
-  border-top-color: #334155 !important;
-}
-[data-theme="dark"] .glass-card.event-card .mini-card {
-  background: #0f172a !important;
-  border-color: #334155 !important;
-}
-[data-theme="dark"] .glass-card.event-card .mini-card-summary {
-  background: linear-gradient(180deg, #1e293b, #0f172a) !important;
-  color: #f1f5f9;
-}
-[data-theme="dark"] .glass-card.event-card .mini-card-summary:active { background: #334155 !important; }
-[data-theme="dark"] .glass-card.event-card .mini-card-title { color: #7dd3fc; }
-[data-theme="dark"] .glass-card.event-card .mini-card-body {
-  background: #0f172a !important;
-  border-top-color: #334155 !important;
-  color: #cbd5e1 !important;
-}
-[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.mini-card) { border-top-color: #334155 !important; }
-[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.mini-card) summary { color: #f1f5f9 !important; }
-[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-amber"],
-[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-sky"],
-[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-indigo"],
-[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-emerald"],
-[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-teal"],
-[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-slate"],
-[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-rose"],
-[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-red"],
-[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-white"] {
-  background: #0f172a !important;
-  border-left-color: #38bdf8 !important;
-  color: #cbd5e1;
-}
-[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-rose"],
-[data-theme="dark"] .glass-card.event-card .event-collapsible div[class*="bg-red"] {
-  border-left-color: #f87171 !important;
-}
-[data-theme="dark"] .bottom-nav {
-  background: rgba(15, 23, 42, 0.98) !important;
-  border-top-color: #334155 !important;
-}
-[data-theme="dark"] .bottom-nav button { color: #94a3b8; }
-[data-theme="dark"] .bottom-nav button.active { color: #38bdf8; }
-[data-theme="dark"] .modal-box {
-  background: #1e293b !important;
-  color: #f1f5f9;
-}
-[data-theme="dark"] .modal-box h2,
-[data-theme="dark"] .modal-box h3,
-[data-theme="dark"] .modal-box strong { color: #f1f5f9 !important; }
-[data-theme="dark"] .modal-box .text-slate-800 { color: #f1f5f9 !important; }
-[data-theme="dark"] .modal-box .text-slate-700 { color: #cbd5e1 !important; }
-[data-theme="dark"] .modal-box .text-slate-600 { color: #cbd5e1 !important; }
-[data-theme="dark"] .modal-box .text-slate-500 { color: #94a3b8 !important; }
-[data-theme="dark"] .modal-box .bg-slate-50 { background: #0f172a !important; }
-[data-theme="dark"] .modal-box .bg-slate-100 { background: #334155 !important; }
-[data-theme="dark"] .modal-box .border-slate-200 { border-color: #334155 !important; }
-[data-theme="dark"] .modal-box .border-slate-100 { border-color: #334155 !important; }
-[data-theme="dark"] .modal-box .bg-white { background: #1e293b !important; color: #f1f5f9; }
-[data-theme="dark"] .modal-tab {
-  background: #1e293b !important;
-  border-color: #334155 !important;
-  color: #94a3b8 !important;
-}
-[data-theme="dark"] .modal-tab.active {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
-  color: white !important;
-  border-color: #0284c7 !important;
-}
-[data-theme="dark"] .category-group { background: #1e293b; border-color: #334155; }
-[data-theme="dark"] .category-header { background: linear-gradient(180deg, #1e293b, #0f172a) !important; }
-[data-theme="dark"] .category-title { color: #cbd5e1; }
-[data-theme="dark"] .checklist-item { background: #0f172a; border-color: #334155; }
-[data-theme="dark"] .checklist-item .checklist-label { color: #cbd5e1; }
-[data-theme="dark"] .checklist-item:active { background: #1e293b; }
-[data-theme="dark"] .checklist-item.checked { background: linear-gradient(135deg, #064e3b, #065f46); border-color: #10b981; }
-[data-theme="dark"] .glass-card .bg-slate-50 { background: #0f172a !important; }
-[data-theme="dark"] .weather-hero { background: linear-gradient(135deg, #075985, #0c4a6e); }
-[data-theme="dark"] .forecast-row { background: #0f172a; border-color: #334155; }
-[data-theme="dark"] .forecast-row.today {
-  background: linear-gradient(135deg, #0c4a6e, #075985);
-  border-color: #0ea5e9;
-}
-[data-theme="dark"] .forecast-date { color: #cbd5e1; }
-[data-theme="dark"] .forecast-temp { color: #cbd5e1; }
-[data-theme="dark"] .forecast-badge.real { background: #1e3a8a; color: #bfdbfe; border-color: #1e40af; }
-[data-theme="dark"] .forecast-badge.climate { background: #78350f; color: #fde68a; border-color: #92400e; }
-[data-theme="dark"] .forecast-sun { color: #94a3b8; }
-[data-theme="dark"] .toast { background: #0f172a; }
-[data-theme="dark"] input,
-[data-theme="dark"] textarea,
-[data-theme="dark"] select {
-  background: #0f172a !important;
-  color: #f1f5f9 !important;
-  border-color: #334155 !important;
-}
-[data-theme="dark"] .app-header {
-  background: linear-gradient(180deg, #0c4a6e 0%, #075985 50%, #0c4a6e 100%) !important;
-}
-[data-theme="dark"] .category-pie-circle::after { background: #1e293b; }
-[data-theme="dark"] .skill-tab { background: #1e293b; border-color: #334155; color: #94a3b8; }
-[data-theme="dark"] .skill-tab.active { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; }
-[data-theme="dark"] .numbered-card { background: #1e293b; border-color: #334155; }
-[data-theme="dark"] .numbered-title { color: #f1f5f9; }
-[data-theme="dark"] .numbered-desc { color: #cbd5e1; }
-[data-theme="dark"] .numbered-desc strong { color: #7dd3fc; }
-[data-theme="dark"] .ticket-card {
-  background: linear-gradient(135deg, #1e1b4b, #2e1065);
-  border-color: #4c1d95;
-}
-[data-theme="dark"] .ticket-card.zao {
-  background: linear-gradient(135deg, #082f49, #0c4a6e);
-  border-color: #0369a1;
-}
-[data-theme="dark"] .ticket-title { color: #ddd6fe; }
-[data-theme="dark"] .ticket-card.zao .ticket-title { color: #bae6fd; }
-[data-theme="dark"] .ticket-meta-item { background: rgba(255,255,255,0.06); }
-[data-theme="dark"] .ticket-step { color: #ddd6fe; }
-[data-theme="dark"] .ticket-card.zao .ticket-step { color: #bae6fd; }
-[data-theme="dark"] .expand-btn {
-  background: #0c4a6e;
-  border-color: #0369a1;
-  color: #7dd3fc;
-}
-[data-theme="dark"] .expand-btn:active {
-  background: #075985;
-  border-color: #0ea5e9;
-}
-[data-theme="dark"] .event-image-carousel { background: #0f172a; border-color: #334155; }
-[data-theme="dark"] .carousel-indicator { background: rgba(0,0,0,0.8); }
-[data-theme="dark"] .timeline-stamp-time {
-  color: #7dd3fc;
-  background: linear-gradient(135deg, #0c4a6e, #075985);
-  border-color: #0369a1;
-}
-[data-theme="dark"] .timeline-item.status-done .timeline-stamp-time {
-  color: #64748b;
-  background: #1e293b;
-  border-color: #334155;
-}
-[data-theme="dark"] .timeline-item.status-active .timeline-stamp-time {
-  background: linear-gradient(135deg, #0284c7, #0369a1);
-  border-color: #38bdf8;
-  color: #ffffff;
-}
-[data-theme="dark"] .timeline-item.status-next .timeline-stamp-time {
-  background: linear-gradient(135deg, #78350f, #92400e);
-  border-color: #b45309;
-  color: #fcd34d;
-}
-[data-theme="dark"] .timeline-node { box-shadow: 0 0 0 2.5px #0f172a, 0 1px 4px rgba(56, 189, 248, 0.4); }
-[data-theme="dark"] .timeline-item.status-done .timeline-node { box-shadow: 0 0 0 2.5px #0f172a; }
-[data-theme="dark"] .timeline-item.status-active .timeline-node { box-shadow: 0 0 0 2.5px #0f172a, 0 0 12px rgba(56, 189, 248, 0.6); }
-[data-theme="dark"] .timeline-item.status-next .timeline-node { box-shadow: 0 0 0 2.5px #0f172a, 0 1px 5px rgba(56, 189, 248, 0.5); }
-[data-theme="dark"] .modal-handle-area {
-  background: linear-gradient(180deg, #1e293b 0%, rgba(30,41,59,0.85) 100%) !important;
-}
-[data-theme="dark"] .modal-handle { background: #475569; }
-[data-theme="dark"] .modal-close { background: #334155; color: #cbd5e1; }
-[data-theme="dark"] .modal-close:hover { background: #475569; color: #f1f5f9; }
-[data-theme="dark"] .emergency-guide { background: #1e293b; border-color: #334155; }
-[data-theme="dark"] .emergency-guide summary { background: #1e293b; color: #f1f5f9; }
-[data-theme="dark"] .emergency-guide summary:active { background: #334155; }
-[data-theme="dark"] .emergency-steps { color: #cbd5e1; border-top-color: #334155; }
-[data-theme="dark"] .emergency-section-title { color: #cbd5e1; }
-[data-theme="dark"] .emergency-call-btn {
-  background: linear-gradient(135deg, #450a0a, #7f1d1d);
-  border-color: #991b1b;
-}
-[data-theme="dark"] .emergency-call-btn.small {
-  background: linear-gradient(135deg, #0c4a6e, #075985);
-  border-color: #0369a1;
-}
-[data-theme="dark"] .emergency-call-label { color: #fecaca; }
-[data-theme="dark"] .emergency-call-btn.small .emergency-call-label { color: #bae6fd; }
-[data-theme="dark"] .emergency-call-desc { color: #fca5a5; }
-[data-theme="dark"] .emergency-call-btn.small .emergency-call-desc { color: #7dd3fc; }
-[data-theme="dark"] .emergency-call-tel { color: #fca5a5; }
-[data-theme="dark"] .emergency-call-btn.small .emergency-call-tel { color: #7dd3fc; }
-[data-theme="dark"] .emergency-hotel-row { background: #1e293b; border-color: #334155; }
-[data-theme="dark"] .emergency-hotel-row:active { background: #334155; }
-[data-theme="dark"] .emergency-hotel-day { background: #0c4a6e; color: #7dd3fc; }
-[data-theme="dark"] .emergency-hotel-day span { color: #38bdf8; }
-[data-theme="dark"] .emergency-hotel-name { color: #f1f5f9; }
-[data-theme="dark"] .emergency-hotel-note { color: #94a3b8; }
-[data-theme="dark"] .emergency-hotel-tel { color: #38bdf8; }
-[data-theme="dark"] .emergency-tip { background: #1e293b; color: #94a3b8; }
-[data-theme="dark"] .event-summary-actions {
-  border-top-color: #334155;
-}
-[data-theme="dark"] .event-action-btn {
-  background: #334155;
-  color: #7dd3fc;
-}
-[data-theme="dark"] .event-action-btn:active {
-  background: #475569;
-}
-[data-theme="dark"] .event-expand-icon {
-  background: #1e293b;
-  border-color: #334155;
-}
-[data-theme="dark"] .glass-card.event-card[open] .event-expand-icon {
-  background: #334155;
-}
-[data-theme="dark"] .glass-card.event-card[open] .event-expand-icon svg {
-  color: #38bdf8;
-}
-[data-theme="dark"] .event-location { color: #cbd5e1; }
-[data-theme="dark"] .weather-card .weather-row-2 { color: #cbd5e1; }
-[data-theme="dark"] .weather-card .weather-row-3 { color: #e2e8f0; }
-[data-theme="dark"] .search-modal-box { background: #1e293b; }
-[data-theme="dark"] .search-header {
-  background: #1e293b;
-  border-bottom-color: #334155;
-}
-[data-theme="dark"] #search-input {
-  color: #f1f5f9;
-}
-[data-theme="dark"] #search-input::placeholder {
-  color: #64748b;
-}
-[data-theme="dark"] .search-close-btn {
-  background: #334155;
-  color: #cbd5e1;
-}
-[data-theme="dark"] .search-close-btn:active {
-  background: #475569;
-  color: #f1f5f9;
-}
-[data-theme="dark"] .search-results {
-  background: #0f172a;
-}
-[data-theme="dark"] .search-result-item {
-  background: #1e293b;
-  border-color: #334155;
-}
-[data-theme="dark"] .search-result-item:active,
-[data-theme="dark"] .search-result-item:hover {
-  background: #334155;
-  border-color: #475569;
-}
-[data-theme="dark"] .search-result-title {
-  color: #f1f5f9;
-}
-[data-theme="dark"] .search-result-title mark {
-  background: #78350f;
-  color: #fde68a;
-}
-[data-theme="dark"] .search-result-icon {
-  background: #334155;
-}
-/* ============================================================
- * ⭐ 修復：進行中時間膠囊 vs 天氣卡片 撞色
- * 進行中改成深藍實心 + 白字，與天氣卡片明確區別
- * ============================================================ */
-
-/* 進行中：深藍實心 */
-.timeline-item.status-active .timeline-stamp-time {
-  background: linear-gradient(135deg, #0284c7, #0369a1);
-  border: 1px solid #0c4a6e;
-  color: #ffffff;
-  font-weight: 900;
-  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.45);
-}
-
-/* 紅點：改成白色外框，在深藍底上更明顯 */
-.timeline-item.status-active .timeline-stamp-time::before {
-  background: #ffffff;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
-}
-
-/* 進行中的結束時間（– 10:30 那行）也要跟著變白 */
-.timeline-item.status-active .timeline-stamp-end {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* 深色模式：進行中改成更亮的藍 */
-[data-theme="dark"] .timeline-item.status-active .timeline-stamp-time {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  border-color: #38bdf8;
-  color: #ffffff;
-  box-shadow: 0 3px 12px rgba(56, 189, 248, 0.55);
-}
-[data-theme="dark"] .timeline-item.status-active .timeline-stamp-end {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-/* ============================================================
- * ⭐ 全局統一：所有行程內層折疊卡片（乾淨版風琴式）
- * 最終安全版：只統一外觀，絕不隱藏任何原有的文字與圖標
- * ============================================================ */
-
-/* 1. 外觀：統一白底 + 左側淡藍色細線 */
-.glass-card.event-card .event-collapsible details:not(.event-card),
-.glass-card.event-card .event-collapsible details.mini-card {
-  background: #ffffff !important;
-  border-left: 4px solid #38bdf8 !important;
-  border-top: none !important;
-  border-right: none !important;
-  border-bottom: none !important;
-  border-radius: 0 12px 12px 0 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-  margin-bottom: 10px !important;
-  overflow: hidden !important;
-}
-
-/* 2. 標題列：統一內距與字級，完全不碰內部的文字與圖標 */
-.glass-card.event-card .event-collapsible details:not(.event-card) > summary,
-.glass-card.event-card .event-collapsible details.mini-card > summary {
-  background: transparent !important;
-  padding: 14px 16px !important;
-  font-size: 13px !important;
-  font-weight: 800 !important;
-  color: #1e293b !important;
-  border-bottom: 1px solid #f1f5f9 !important;
-  cursor: pointer !important;
-  min-height: 48px !important;
-}
-
-/* 3. 展開後的內容區：統一淺灰底 */
-.glass-card.event-card .event-collapsible details:not(.event-card) > div,
-.glass-card.event-card .event-collapsible details.mini-card > div {
-  background: #f8fafc !important;
-  border-top: none !important;
-  padding: 14px 16px !important;
-  margin-top: 0 !important;
-}
-
-/* 4. 深色模式完美適配（不刺眼） */
-[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card),
-[data-theme="dark"] .glass-card.event-card .event-collapsible details.mini-card {
-  background: #1e293b !important;
-  border-left-color: #0ea5e9 !important;
-}
-[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card) > summary,
-[data-theme="dark"] .glass-card.event-card .event-collapsible details.mini-card > summary {
-  color: #f1f5f9 !important;
-  border-bottom-color: #334155 !important;
-}
-[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card) > div,
-[data-theme="dark"] .glass-card.event-card .event-collapsible details.mini-card > div {
-  background: #0f172a !important;
-}
-
-/* 5. 長文字換行防護（防止店名擠壓導航按鈕） */
-.glass-card.event-card .event-collapsible .break-words {
-  word-break: break-word;
-  white-space: normal;
-}
-
-/* 6. 確保按鈕觸控範圍加大（原本 32px → 40px） */
-.event-action-btn {
-  min-height: 40px !important;
-  padding: 8px 12px !important;
-}
-/* ============================================================
- * ⭐ iPhone 修正：防止 D1-D7 切換按鈕被前置鏡頭/劉海遮擋
- * ============================================================ */
-
-/* 1. 讓黏在頂部的日期切換列，自動避開 iPhone 的安全區域 */
-.day-tabs-wrapper {
-  top: env(safe-area-inset-top, 0px) !important;
-}
-
-/* 2. 填補安全區域的空白，讓背景色延伸上去，不會露出網頁底色 */
-.day-tabs-wrapper::before {
-  content: '';
-  position: absolute;
-  top: calc(-1 * env(safe-area-inset-top, 0px));
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top, 0px);
-  background: rgba(248, 250, 252, 0.95); /* 對應 bg-slate-50 */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: -1;
-}
-
-/* 3. 深色模式下也要填補背景 */
-[data-theme="dark"] .day-tabs-wrapper::before {
-  background: rgba(15, 23, 42, 0.95); /* 對應深色模式的背景色 */
-}
-/* ============================================================
- * ⭐ 共享檔案櫃按鈕樣式
- * ============================================================ */
-.drive-folder-btn {
-  display: flex;
+.glass-card.event-card .event-collapsible p > a[href*="maps"],
+.glass-card.event-card .event-collapsible p > a[href*="goo.gl"],
+.glass-card.event-card .event-collapsible div > a[href*="maps"],
+.glass-card.event-card .event-collapsible div > a[href*="goo.gl"] {
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
-  background: #ffffff;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-  width: 100%;
-  min-height: 72px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-
-.drive-folder-btn:active {
-  transform: scale(0.97);
-  background: #f0f9ff;
-  border-color: #bae6fd;
-  box-shadow: none;
-}
-
-@media (hover: hover) {
-  .drive-folder-btn:hover {
-    border-color: #bae6fd;
-    background: #f8fbff;
-    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1);
-  }
-}
-
-.drive-folder-icon {
-  font-size: 28px;
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #eff6ff, #dbeafe);
-  border-radius: 12px;
-  border: 1px solid #bfdbfe;
-}
-
-.drive-folder-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
   gap: 2px;
-}
-
-.drive-folder-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: #1e293b;
-  line-height: 1.3;
-}
-
-.drive-folder-desc {
+  padding: 3px 10px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
   font-size: 11px;
-  color: #94a3b8;
-  font-weight: 500;
-  line-height: 1.3;
-}
-
-.drive-folder-arrow {
-  font-size: 20px;
-  font-weight: 900;
-  color: #cbd5e1;
+  font-weight: 700;
+  color: #0369a1 !important;
+  text-decoration: none;
+  white-space: nowrap;
+  margin-left: 4px;
+  vertical-align: middle;
+  transition: background 0.15s, transform 0.15s;
+  line-height: 1.4;
   flex-shrink: 0;
-  transition: transform 0.2s, color 0.2s;
+}
+.glass-card.event-card .event-collapsible p > a[href*="maps"]:active,
+.glass-card.event-card .event-collapsible p > a[href*="goo.gl"]:active {
+  background: #dbeafe;
+  transform: scale(0.96);
 }
 
-.drive-folder-btn:active .drive-folder-arrow {
-  transform: translateX(3px);
-  color: #0284c7;
-}
-
-/* 深色模式 */
-[data-theme="dark"] .drive-folder-btn {
-  background: #1e293b;
-  border-color: #334155;
-}
-[data-theme="dark"] .drive-folder-btn:active {
-  background: #334155;
-  border-color: #475569;
-}
-[data-theme="dark"] .drive-folder-icon {
-  background: linear-gradient(135deg, #1e3a5f, #0c4a6e);
-  border-color: #0369a1;
-}
-[data-theme="dark"] .drive-folder-title {
-  color: #f1f5f9;
-}
-[data-theme="dark"] .drive-folder-desc {
-  color: #64748b;
-}
-[data-theme="dark"] .drive-folder-arrow {
-  color: #475569;
-}
-[data-theme="dark"] .drive-folder-btn:active .drive-folder-arrow {
-  color: #38bdf8;
-}
+/* ============================================================
+ * 拆分說明
+ * ============================================================ */
+/* 深色模式見 dark.css，補丁見 patches.css */

@@ -1,11 +1,12 @@
 /* ============================================================
- * app-core.js — v7.8
+ * app-core.js — v12.0
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
  *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
  *
- * v7.8 變更：
+ * v12.0 變更：
+ *   - 匯率 FAB 縮小至 48px（配合 header.css v12.0）
  *   - 移除 Firebase Storage 上傳邏輯
- *   - 新增「共享收據/憑證」Google Drive 資料夾傳送門
+ *   - 共享收據/憑證 Google Drive 資料夾傳送門
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -810,8 +811,6 @@ function closeReceiptModal() {
 }
 function openDriveFolder(url) {
   haptic(10);
-  // 因為 PWA 獨立 App 模式會阻擋 window.open，改用 location.href 直接在當前視窗跳轉
-  // 這樣 iOS/Android 就能成功開啟 Google Drive App 或 Safari 瀏覽器
   window.location.href = url;
 }
 window.openReceiptModal = openReceiptModal;
@@ -912,7 +911,7 @@ function releaseAdminDevice() { if (!confirm("確定要解除這台裝置的管�
 (function setupDraggableCurrencyFab() {
   const fab = document.getElementById('currency-fab');
   if (!fab) return;
-  const FAB_SIZE = 56; const PADDING = 12; const SAFE_TOP = 12; const SAFE_BOTTOM = 88; const MOVE_THRESHOLD = 6; const STORAGE_KEY = 'tohoku_currency_fab_pos';
+  const FAB_SIZE = 48; const PADDING = 12; const SAFE_TOP = 12; const SAFE_BOTTOM = 88; const MOVE_THRESHOLD = 6; const STORAGE_KEY = 'tohoku_currency_fab_pos';
   let isDragging = false; let startX = 0, startY = 0; let currentX = 0, currentY = 0; let moved = false; let hasCustomPosition = false;
   function getBounds() { return { minX: PADDING, maxX: window.innerWidth - FAB_SIZE - PADDING, minY: SAFE_TOP, maxY: window.innerHeight - SAFE_BOTTOM - FAB_SIZE }; }
   function clampPosition(x, y) { const b = getBounds(); return { x: Math.max(b.minX, Math.min(b.maxX, x)), y: Math.max(b.minY, Math.min(b.maxY, y)) }; }

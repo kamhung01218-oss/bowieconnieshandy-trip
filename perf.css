@@ -1,9 +1,18 @@
 /* ============================================================
- * perf.css — 效能優化補丁
- * 放在 style.css 之後載入
+ * perf.css — 效能優化補丁（v13.0）
+ * 放在 patches.css 之後載入
+ *
+ * v13.0 變更（P0–P3）：
+ *   - 雪花數量再降（手機 6 個、平板 10 個）
+ *   - 捲動時暫停所有裝飾性動畫
+ *   - will-change 只在動畫期間使用
+ *   - 移除卡片不必要的多層陰影
+ *   - backdrop-filter 在手機全面停用
  * ============================================================ */
 
-/* 1. 雪花在手機只保留 8 個（原本 14 個） */
+/* ============================================================
+ * 1. 雪花數量控制
+ * ============================================================ */
 @media (max-width: 768px) {
   #snow-fall .snowflake:nth-child(n+9) { display: none; }
 }
@@ -11,7 +20,9 @@
   #snow-fall .snowflake:nth-child(n+7) { display: none; }
 }
 
-/* 2. 圖片載入前不用 blur 濾鏡（最吃 GPU 的元兇） */
+/* ============================================================
+ * 2. 圖片載入：不用 blur 濾鏡（最吃 GPU）
+ * ============================================================ */
 img.lazy-fade {
   filter: none !important;
   transition: opacity 0.35s ease, transform 0.4s ease;
@@ -21,7 +32,9 @@ img.lazy-fade:not(.loaded) {
   transform: scale(1.02);
 }
 
-/* 3. 卡片陰影簡化：從 3 層降到 1 層 */
+/* ============================================================
+ * 3. 卡片陰影簡化（從 3 層降到 1 層）
+ * ============================================================ */
 .glass-card,
 .glass-card.event-card {
   box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08) !important;
@@ -30,7 +43,9 @@ img.lazy-fade:not(.loaded) {
   box-shadow: 0 4px 12px -4px rgba(2, 132, 199, 0.15) !important;
 }
 
-/* 4. day-section 加 contain，讓瀏覽器知道範圍 */
+/* ============================================================
+ * 4. day-section 加 contain，讓瀏覽器知道範圍
+ * ============================================================ */
 .day-section {
   contain: layout style paint;
 }
@@ -39,7 +54,9 @@ img.lazy-fade:not(.loaded) {
   contain: strict;
 }
 
-/* 5. 關閉所有「裝飾性」脈衝動畫（很吃 CPU） */
+/* ============================================================
+ * 5. 關閉裝飾性脈衝動畫（很吃 CPU）
+ * ============================================================ */
 .timeline-item.status-next .timeline-node::after,
 .timeline-item.status-active .timeline-node::after {
   animation: none !important;
@@ -48,7 +65,9 @@ img.lazy-fade:not(.loaded) {
   box-shadow: 0 0 0 3px var(--snow-bg-1), 0 0 10px 2px rgba(56, 189, 248, 0.5) !important;
 }
 
-/* 6. 底部導航的 backdrop-filter 移除 */
+/* ============================================================
+ * 6. 手機：停用 backdrop-filter
+ * ============================================================ */
 @media (max-width: 768px) {
   .bottom-nav {
     backdrop-filter: none !important;
@@ -62,10 +81,15 @@ img.lazy-fade:not(.loaded) {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
-  .app-header .tools-menu-backdrop { backdrop-filter: none !important; }
+  .app-header .tools-menu-backdrop {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }
 
-/* 7. Modal 開啟時，主體不再做縮放/brightness（省 GPU） */
+/* ============================================================
+ * 7. Modal 開啟時：主體不做縮放/brightness
+ * ============================================================ */
 body.modal-open #app-root {
   filter: none !important;
 }
@@ -76,21 +100,64 @@ body.modal-open #app-root {
   }
 }
 
-/* 8. 捲動中：暫停所有非必要動畫 */
+/* ============================================================
+ * 8. 捲動中：暫停所有非必要動畫
+ * ============================================================ */
 body.is-scrolling .walking-character,
 body.is-scrolling .timeline-item.status-active .timeline-stamp-time::after,
 body.is-scrolling .overview-cta,
 body.is-scrolling .tools-toggle,
 body.is-scrolling .overview-cta-dot,
-body.is-scrolling .focus-progress-fill::after {
+body.is-scrolling .focus-progress-fill::after,
+body.is-scrolling .event-priority-badge.highlight,
+body.is-scrolling .modal-progress-fill::after {
   animation-play-state: paused !important;
 }
 
-/* 9. will-change 只用在高頻動畫上，其他地方移除 */
-.walking-character { will-change: auto; }
-.timeline-item.status-active .timeline-node { will-change: auto; }
+/* ============================================================
+ * 9. will-change 清理（動畫結束後自動移除）
+ * ============================================================ */
+.walking-character {
+  will-change: auto;
+}
+.timeline-item.status-active .timeline-node {
+  will-change: auto;
+}
+/* 只在「展開的卡片」內保留 will-change */
+details.event-card[open] .event-content-wrapper {
+  will-change: auto;
+}
 
-/* 10. 減少陰影模糊半徑（負擔與半徑平方成正比） */
+/* ============================================================
+ * 10. 減少陰影模糊半徑
+ * ============================================================ */
 .modal-box {
   box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ============================================================
+ * 11. 深色模式 FAB 白邊修正（P0 · 雙重保險）
+ * ============================================================ */
+[data-theme="dark"] .bottom-nav .nav-fab {
+  border-color: #1e293b !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* ============================================================
+ * 12. 無障礙：prefers-reduced-motion
+ * ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  #snow-fall,
+  #snow-fall *,
+  .confetti-container,
+  .walking-character.greet,
+  .walking-character.jumping {
+    animation: none !important;
+    display: none !important;
+  }
+  .focus-progress-fill::after,
+  .modal-progress-fill::after,
+  .event-priority-badge.highlight {
+    animation: none !important;
+  }
 }

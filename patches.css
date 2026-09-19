@@ -1,0 +1,1247 @@
+/* ============================================================
+ * patches.css — 補丁集中區（v13.1 響應式字級版）
+ *
+ * 載入順序：style.css → dark.css → patches.css → perf.css
+ *
+ * v13.1 變更：
+ *   ✅ .event-title 響應式字級
+ *      手機 16px/700 · 平板 17px/800 · 桌面 18px/800
+ *   ✅ .event-location 微調至 12.5px
+ * ============================================================ */
+
+/* ============================================================
+ * 1. iPhone 安全區修正
+ * ============================================================ */
+.day-tabs-wrapper {
+  top: env(safe-area-inset-top, 0px) !important;
+}
+.day-tabs-wrapper::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * env(safe-area-inset-top, 0px));
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: rgba(248, 250, 252, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 0;
+  pointer-events: none;
+}
+[data-theme="dark"] .day-tabs-wrapper::before {
+  background: rgba(15, 23, 42, 0.95);
+}
+
+/* ============================================================
+ * 2. 共享檔案櫃按鈕
+ * ============================================================ */
+.drive-folder-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+  min-height: 72px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.drive-folder-btn:active {
+  transform: scale(0.97);
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  box-shadow: none;
+}
+@media (hover: hover) {
+  .drive-folder-btn:hover {
+    border-color: #bae6fd;
+    background: #f8fbff;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1);
+  }
+}
+.drive-folder-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-radius: 12px;
+  border: 1px solid #bfdbfe;
+}
+.drive-folder-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.drive-folder-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.3;
+}
+.drive-folder-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.drive-folder-arrow {
+  font-size: 20px;
+  font-weight: 900;
+  color: #cbd5e1;
+  flex-shrink: 0;
+  transition: transform 0.2s, color 0.2s;
+}
+.drive-folder-btn:active .drive-folder-arrow {
+  transform: translateX(3px);
+  color: #0284c7;
+}
+[data-theme="dark"] .drive-folder-btn {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .drive-folder-btn:active {
+  background: #334155;
+  border-color: #475569;
+}
+[data-theme="dark"] .drive-folder-icon {
+  background: linear-gradient(135deg, #1e3a5f, #0c4a6e);
+  border-color: #0369a1;
+}
+[data-theme="dark"] .drive-folder-title { color: #f1f5f9; }
+[data-theme="dark"] .drive-folder-desc { color: #64748b; }
+[data-theme="dark"] .drive-folder-arrow { color: #475569; }
+[data-theme="dark"] .drive-folder-btn:active .drive-folder-arrow { color: #38bdf8; }
+
+/* ============================================================
+ * 3. 解除內層折疊高度限制
+ * ============================================================ */
+.event-collapsible {
+  max-height: none !important;
+  overflow: visible !important;
+}
+.event-collapsible::after {
+  display: none !important;
+}
+
+/* ============================================================
+ * 4. 卡片視覺（雜誌化 · 極簡）
+ * ============================================================ */
+
+/* 4.1 卡片間距與陰影 */
+.timeline-item {
+  margin-bottom: 24px !important;
+}
+.glass-card.event-card {
+  border-radius: 16px !important;
+  box-shadow:
+    0 1px 2px rgba(2, 132, 199, 0.05),
+    0 4px 12px -2px rgba(2, 132, 199, 0.08) !important;
+  position: relative !important;
+}
+.glass-card.event-card[open] {
+  box-shadow:
+    0 2px 4px rgba(2, 132, 199, 0.06),
+    0 8px 20px -4px rgba(2, 132, 199, 0.12) !important;
+}
+
+/* 4.2 移除卡片頂部漸層色帶（降噪） */
+.glass-card.event-card::before {
+  display: none !important;
+}
+
+/* 4.3 ⭐ 標題：響應式字級（手機 16 / 平板 17 / 桌面 18） */
+.event-title {
+  font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #0c4a6e !important;
+  line-height: 1.45 !important;
+  letter-spacing: -0.005em !important;
+  text-shadow: none !important;
+  margin-top: 6px !important;
+  padding-left: 14px !important;
+  position: relative !important;
+}
+.event-title::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 5px !important;
+  bottom: 5px !important;
+  width: 4px !important;
+  border-radius: 2px !important;
+  background: linear-gradient(180deg, #bae6fd, #38bdf8) !important;
+  pointer-events: none !important;
+}
+.glass-card.event-card.card-teal .event-title::before {
+  background: linear-gradient(180deg, #a7f3d0, #34d399) !important;
+}
+.glass-card.event-card.card-amber .event-title::before {
+  background: linear-gradient(180deg, #fde68a, #fbbf24) !important;
+}
+.glass-card.event-card.card-indigo .event-title::before {
+  background: linear-gradient(180deg, #c7d2fe, #818cf8) !important;
+}
+.glass-card.event-card.card-sky .event-title::before {
+  background: linear-gradient(180deg, #ddd6fe, #a78bfa) !important;
+}
+.glass-card.event-card.card-rose .event-title::before {
+  background: linear-gradient(180deg, #fecdd3, #fb7185) !important;
+}
+
+/* 平板：升級到 17px / 800 */
+@media (min-width: 768px) {
+  .event-title {
+    font-size: 17px !important;
+    font-weight: 800 !important;
+  }
+}
+/* 桌面：升級到 18px / 800 */
+@media (min-width: 1024px) {
+  .event-title {
+    font-size: 18px !important;
+  }
+}
+
+/* 4.4 Tag 眉標：透明底 + 彩色字（雜誌感） */
+.event-tag-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  margin-bottom: 0 !important;
+}
+.tag {
+  background: transparent !important;
+  color: #94a3b8 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+  line-height: 1.4 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  white-space: nowrap !important;
+}
+.tag.tag-teal   { color: #0d9488 !important; }
+.tag.tag-amber  { color: #b45309 !important; }
+.tag.tag-indigo { color: #4f46e5 !important; }
+.tag.tag-sky    { color: #7c3aed !important; }
+.tag.tag-rose   { color: #be123c !important; }
+
+/* 4.5 ⭐ 地點：微調至 12.5px */
+.event-location {
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  color: #94a3b8 !important;
+  letter-spacing: 0.02em !important;
+  margin-top: 4px !important;
+  padding-left: 14px !important;
+}
+@media (min-width: 768px) {
+  .event-location {
+    font-size: 13px !important;
+  }
+}
+
+/* 4.6 重點徽章：極簡化（只用 ⭐ + 文字，無背景色） */
+.event-priority-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  height: auto !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  letter-spacing: 0.05em !important;
+  white-space: nowrap !important;
+  line-height: 1.4 !important;
+  flex-shrink: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  animation: none !important;
+  text-shadow: none !important;
+}
+.event-priority-badge.highlight { color: #b45309 !important; }
+.event-priority-badge.optional  { color: #94a3b8 !important; }
+
+/* 4.7 時間 pill（低飽和） */
+.timeline-stamp-time {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
+  color: #0369a1 !important;
+  background: #f0f9ff !important;
+  border: 1px solid #bae6fd !important;
+  border-radius: 999px !important;
+  padding: 4px 14px !important;
+  box-shadow: none !important;
+}
+.timeline-stamp-end {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #94a3b8 !important;
+}
+[data-theme="dark"] .timeline-stamp-time {
+  color: #7dd3fc !important;
+  background: #0c4a6e !important;
+  border-color: #0369a1 !important;
+}
+[data-theme="dark"] .timeline-stamp-end { color: #64748b !important; }
+
+/* 4.8 摘要區內距 */
+.glass-card.event-card summary.event-summary {
+  padding: 18px 20px 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+}
+.event-summary-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding-left: 2px !important;
+  padding-bottom: 18px !important;
+}
+.event-summary-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  padding: 14px 0 16px !important;
+}
+
+/* ============================================================
+ * 5. Tip blocks（低飽和）
+ * ============================================================ */
+.glass-card.event-card .event-collapsible .tip-block {
+  display: block !important;
+  border-left: 3px solid #cbd5e1 !important;
+  background: #f8fafc !important;
+  padding: 13px 16px !important;
+  border-radius: 0 12px 12px 0 !important;
+  margin: 12px 0 !important;
+  font-size: 13px !important;
+  line-height: 1.7 !important;
+  color: #475569 !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+.glass-card.event-card .event-collapsible .tip-block.warn {
+  border-left-color: #facc15 !important;
+  background: #fefce8 !important;
+  color: #713f12 !important;
+}
+.glass-card.event-card .event-collapsible .tip-block.danger {
+  border-left-color: #f87171 !important;
+  background: #fef2f2 !important;
+  color: #7f1d1d !important;
+}
+.glass-card.event-card .event-collapsible .tip-block strong {
+  color: inherit !important;
+  font-weight: 800 !important;
+}
+
+/* ============================================================
+ * 6. 內層 details（三層次配色）
+ * ============================================================ */
+.glass-card.event-card .event-collapsible details:not(.event-card) {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-left: 3px solid #38bdf8 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  margin: 10px 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) > summary {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%) !important;
+  color: #0369a1 !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  line-height: 1.5 !important;
+  padding: 14px 16px !important;
+  border: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  list-style: none !important;
+  transition: background 0.2s ease !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card)[open] > summary {
+  background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%) !important;
+  border-bottom-color: #7dd3fc !important;
+  color: #0c4a6e !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) > summary:hover {
+  background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) > summary::-webkit-details-marker {
+  display: none !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) > div {
+  background: #fafbfc !important;
+  color: #475569 !important;
+  font-size: 13px !important;
+  line-height: 1.7 !important;
+  padding: 14px 16px !important;
+  border: none !important;
+  margin: 0 !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) ul {
+  padding-left: 20px !important;
+  margin: 6px 0 !important;
+  list-style: disc !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) li {
+  padding: 3px 0 !important;
+  line-height: 1.7 !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) > div > p {
+  margin: 0 0 10px 0 !important;
+  font-size: 13px !important;
+  line-height: 1.7 !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) > div > p:last-child {
+  margin-bottom: 0 !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) > summary::after {
+  content: '▾' !important;
+  margin-left: auto !important;
+  color: #94a3b8 !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.25s ease, color 0.25s ease !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card)[open] > summary::after {
+  transform: rotate(180deg) !important;
+  color: #0284c7 !important;
+}
+
+/* ============================================================
+ * 7. 導航連結膠囊
+ * ============================================================ */
+.glass-card.event-card .event-collapsible p > a[href*="maps"],
+.glass-card.event-card .event-collapsible p > a[href*="goo.gl"],
+.glass-card.event-card .event-collapsible div > a[href*="maps"],
+.glass-card.event-card .event-collapsible div > a[href*="goo.gl"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+  padding: 3px 10px !important;
+  background: #f0f9ff !important;
+  border: 1px solid #bae6fd !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #0369a1 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  margin-left: 4px !important;
+  vertical-align: middle !important;
+  transition: background 0.15s, transform 0.15s !important;
+  line-height: 1.4 !important;
+  flex-shrink: 0 !important;
+}
+.glass-card.event-card .event-collapsible p > a[href*="maps"]:active,
+.glass-card.event-card .event-collapsible p > a[href*="goo.gl"]:active {
+  background: #dbeafe !important;
+  transform: scale(0.96) !important;
+}
+
+/* ============================================================
+ * 8. 節奏間距 + 行高
+ * ============================================================ */
+.glass-card.event-card .event-collapsible p {
+  margin-bottom: 14px !important;
+  line-height: 1.7 !important;
+}
+.glass-card.event-card .event-collapsible ul li {
+  line-height: 1.7 !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) > div,
+.glass-card.event-card .event-collapsible details:not(.event-card) > div > p {
+  line-height: 1.7 !important;
+}
+.glass-card.event-card .event-collapsible {
+  padding: 0 20px 12px !important;
+}
+.glass-card.event-card .event-content-wrapper {
+  padding: 4px 0 4px !important;
+}
+
+/* ============================================================
+ * 9. 展開交錯動畫
+ * ============================================================ */
+@keyframes magazine-fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+details.event-card[open] .event-content-wrapper > * {
+  animation: magazine-fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+details.event-card[open] .event-content-wrapper > *:nth-child(1) { animation-delay: 0.05s; }
+details.event-card[open] .event-content-wrapper > *:nth-child(2) { animation-delay: 0.12s; }
+details.event-card[open] .event-content-wrapper > *:nth-child(3) { animation-delay: 0.19s; }
+details.event-card[open] .event-content-wrapper > *:nth-child(4) { animation-delay: 0.26s; }
+details.event-card[open] .event-content-wrapper > *:nth-child(5) { animation-delay: 0.33s; }
+details.event-card[open] .event-content-wrapper > *:nth-child(6) { animation-delay: 0.40s; }
+details.event-card[open] .event-content-wrapper > *:nth-child(7) { animation-delay: 0.47s; }
+details.event-card[open] .event-content-wrapper > *:nth-child(8) { animation-delay: 0.54s; }
+
+/* ============================================================
+ * 10. 深色模式集中適配
+ * ============================================================ */
+[data-theme="dark"] .event-title { color: #e0f2fe !important; }
+[data-theme="dark"] .event-title::before {
+  background: linear-gradient(180deg, #0c4a6e, #38bdf8) !important;
+}
+[data-theme="dark"] .glass-card.event-card.card-teal .event-title::before {
+  background: linear-gradient(180deg, #064e3b, #34d399) !important;
+}
+[data-theme="dark"] .glass-card.event-card.card-amber .event-title::before {
+  background: linear-gradient(180deg, #78350f, #fbbf24) !important;
+}
+[data-theme="dark"] .glass-card.event-card.card-indigo .event-title::before {
+  background: linear-gradient(180deg, #312e81, #818cf8) !important;
+}
+[data-theme="dark"] .glass-card.event-card.card-sky .event-title::before {
+  background: linear-gradient(180deg, #4c1d95, #a78bfa) !important;
+}
+[data-theme="dark"] .glass-card.event-card.card-rose .event-title::before {
+  background: linear-gradient(180deg, #881337, #fb7185) !important;
+}
+[data-theme="dark"] .tag { color: #94a3b8 !important; }
+[data-theme="dark"] .tag.tag-teal   { color: #2dd4bf !important; }
+[data-theme="dark"] .tag.tag-amber  { color: #fbbf24 !important; }
+[data-theme="dark"] .tag.tag-indigo { color: #a5b4fc !important; }
+[data-theme="dark"] .tag.tag-sky    { color: #c4b5fd !important; }
+[data-theme="dark"] .tag.tag-rose   { color: #fda4af !important; }
+[data-theme="dark"] .event-location { color: #64748b !important; }
+[data-theme="dark"] .event-priority-badge.highlight { color: #fbbf24 !important; }
+[data-theme="dark"] .event-priority-badge.optional  { color: #64748b !important; }
+
+[data-theme="dark"] .glass-card.event-card .event-collapsible .tip-block {
+  background: #0f172a !important;
+  color: #cbd5e1 !important;
+  border-left-color: #475569 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible .tip-block.warn {
+  background: #422006 !important;
+  color: #fde68a !important;
+  border-left-color: #f59e0b !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible .tip-block.danger {
+  background: #450a0a !important;
+  color: #fecaca !important;
+  border-left-color: #ef4444 !important;
+}
+
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card) {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  border-left-color: #0ea5e9 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card) > summary {
+  background: linear-gradient(180deg, #334155 0%, #1e293b 100%) !important;
+  color: #7dd3fc !important;
+  border-bottom-color: #475569 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card)[open] > summary {
+  background: linear-gradient(180deg, #0c4a6e 0%, #075985 100%) !important;
+  color: #bae6fd !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card) > div {
+  background: #0f172a !important;
+  color: #cbd5e1 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible p > a[href*="maps"],
+[data-theme="dark"] .glass-card.event-card .event-collapsible p > a[href*="goo.gl"] {
+  background: #0c4a6e !important;
+  border-color: #0369a1 !important;
+  color: #7dd3fc !important;
+}
+
+/* ============================================================
+ * 11. ⭐ 深色模式 FAB 白邊修正
+ * ============================================================ */
+[data-theme="dark"] .bottom-nav .nav-fab {
+  border-color: #1e293b !important;
+}
+
+/* ============================================================
+ * 12. ⭐ 無障礙：focus-visible
+ * ============================================================ */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #0284c7;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+[data-theme="dark"] button:focus-visible,
+[data-theme="dark"] a:focus-visible,
+[data-theme="dark"] input:focus-visible,
+[data-theme="dark"] select:focus-visible,
+[data-theme="dark"] textarea:focus-visible,
+[data-theme="dark"] [tabindex]:focus-visible {
+  outline-color: #38bdf8;
+}
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ============================================================
+ * 13. ⭐ 無障礙：天氣雨量對比度修正
+ * ============================================================ */
+.forecast-rain {
+  color: #0369a1 !important;
+  background: rgba(3, 105, 161, 0.08) !important;
+}
+[data-theme="dark"] .forecast-rain {
+  color: #7dd3fc !important;
+  background: rgba(125, 211, 252, 0.12) !important;
+}
+
+/* ============================================================
+ * 14. ⭐ 搜尋熱門關鍵字
+ * ============================================================ */
+.search-hot-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.search-hot-tag {
+  padding: 6px 14px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  line-height: 1.4;
+  -webkit-tap-highlight-color: transparent;
+}
+.search-hot-tag:active {
+  transform: scale(0.95);
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0284c7;
+}
+@media (hover: hover) {
+  .search-hot-tag:hover {
+    background: #e0f2fe;
+    border-color: #bae6fd;
+    color: #0284c7;
+  }
+}
+[data-theme="dark"] .search-hot-tag {
+  background: #334155;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+[data-theme="dark"] .search-hot-tag:active {
+  background: #0c4a6e;
+  border-color: #0369a1;
+  color: #7dd3fc;
+}
+
+/* ============================================================
+ * 15. 無障礙：prefers-reduced-motion
+ * ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  details.event-card[open] .event-content-wrapper > * {
+    animation: none !important;
+  }
+  .event-priority-badge.highlight {
+    animation: none !important;
+  }
+  .search-hot-tag {
+    transition: none !important;
+  }
+}
+/* ============================================================
+ * 16. ⭐ v13.0：統一事件卡片「轉換後的 details」樣式
+ *
+ * normalizeEventContent 會把次要 tip-block 轉成 <details>，
+ * 並加上 .tip-block-details class。
+ * 這裡定義 danger / warn 的對應配色。
+ * ============================================================ */
+
+/* 基本：與原有 details 視覺一致 */
+.glass-card.event-card .event-collapsible details.tip-block-details {
+  border-left-color: #38bdf8 !important;
+}
+
+/* ── danger（紅色） ── */
+.glass-card.event-card .event-collapsible details.tip-block-details.danger {
+  border-left-color: #f87171 !important;
+}
+.glass-card.event-card .event-collapsible details.tip-block-details.danger > summary {
+  background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%) !important;
+  color: #7f1d1d !important;
+  border-bottom-color: #fecaca !important;
+}
+.glass-card.event-card .event-collapsible details.tip-block-details.danger[open] > summary {
+  background: linear-gradient(180deg, #fee2e2 0%, #fecaca 100%) !important;
+  color: #7f1d1d !important;
+  border-bottom-color: #fca5a5 !important;
+}
+.glass-card.event-card .event-collapsible details.tip-block-details.danger > summary::after {
+  color: #dc2626 !important;
+}
+.glass-card.event-card .event-collapsible details.tip-block-details.danger > div {
+  background: #fef2f2 !important;
+  color: #7f1d1d !important;
+}
+
+/* ── warn（黃色） ── */
+.glass-card.event-card .event-collapsible details.tip-block-details.warn {
+  border-left-color: #facc15 !important;
+}
+.glass-card.event-card .event-collapsible details.tip-block-details.warn > summary {
+  background: linear-gradient(180deg, #fefce8 0%, #fef3c7 100%) !important;
+  color: #713f12 !important;
+  border-bottom-color: #fde68a !important;
+}
+.glass-card.event-card .event-collapsible details.tip-block-details.warn[open] > summary {
+  background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%) !important;
+  color: #713f12 !important;
+  border-bottom-color: #fcd34d !important;
+}
+.glass-card.event-card .event-collapsible details.tip-block-details.warn > summary::after {
+  color: #d97706 !important;
+}
+.glass-card.event-card .event-collapsible details.tip-block-details.warn > div {
+  background: #fefce8 !important;
+  color: #713f12 !important;
+}
+
+/* ── 深色模式 ── */
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details.danger {
+  border-left-color: #ef4444 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details.danger > summary {
+  background: linear-gradient(180deg, #450a0a 0%, #7f1d1d 100%) !important;
+  color: #fecaca !important;
+  border-bottom-color: #991b1b !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details.danger[open] > summary {
+  background: linear-gradient(180deg, #7f1d1d 0%, #991b1b 100%) !important;
+  color: #fee2e2 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details.danger > summary::after {
+  color: #fca5a5 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details.danger > div {
+  background: #450a0a !important;
+  color: #fecaca !important;
+}
+
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details.warn {
+  border-left-color: #f59e0b !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details.warn > summary {
+  background: linear-gradient(180deg, #422006 0%, #78350f 100%) !important;
+  color: #fde68a !important;
+  border-bottom-color: #92400e !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details.warn[open] > summary {
+  background: linear-gradient(180deg, #78350f 0%, #92400e 100%) !important;
+  color: #fef3c7 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details.warn > summary::after {
+  color: #fbbf24 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details.warn > div {
+  background: #422006 !important;
+  color: #fde68a !important;
+}
+
+/* ⭐ 展開的 details 微提升視覺權重 */
+.glass-card.event-card .event-collapsible details.tip-block-details[open] {
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(2, 132, 199, 0.08) !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details[open] {
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(56, 189, 248, 0.15) !important;
+}
+/* ============================================================
+ * 17. ⭐ v13.2：摺疊小卡統一集中最底
+ * ============================================================ */
+
+/* ── 分隔線「📖 詳細攻略」 ── */
+.collapsible-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 14px;
+  padding: 0;
+  color: #94a3b8;
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  user-select: none;
+}
+.collapsible-divider::before,
+.collapsible-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+}
+.collapsible-divider span {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+[data-theme="dark"] .collapsible-divider {
+  color: #64748b;
+}
+[data-theme="dark"] .collapsible-divider::before,
+[data-theme="dark"] .collapsible-divider::after {
+  background: linear-gradient(90deg, transparent, #334155, transparent);
+}
+
+/* ── 摺疊小卡之間：統一間距 ── */
+.glass-card.event-card .event-collapsible details.tip-block-details {
+  margin: 8px 0 !important;
+}
+.glass-card.event-card .event-collapsible .collapsible-divider + details {
+  margin-top: 0 !important;
+}
+
+/* ── 第一個展開的 danger/warn：視覺權重更高 ── */
+.glass-card.event-card .event-collapsible details.tip-block-details[open][data-keep-open="true"] {
+  margin-bottom: 12px !important;
+  box-shadow:
+    0 3px 10px rgba(2, 132, 199, 0.08),
+    0 0 0 1px rgba(2, 132, 199, 0.1) !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details[open][data-keep-open="true"] {
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(56, 189, 248, 0.15) !important;
+}
+
+/* ── 若 collapsible 內沒有 details，分隔線隱藏（保險） ── */
+.glass-card.event-card .event-collapsible .collapsible-divider:last-child {
+  display: none !important;
+}
+/* ============================================================
+ * 18. ⭐ 拍攝靈感 / 通用拍攝技巧 — 統一卡片設計（v13.3）
+ * ============================================================ */
+
+/* ── 照片輪播（拍攝靈感）── */
+.shoot-photo-hero {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f1f5f9;
+  margin-bottom: 14px;
+}
+.shoot-photo-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.shoot-photo-track::-webkit-scrollbar { display: none; }
+.shoot-photo-img {
+  flex-shrink: 0;
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.shoot-photo-indicator {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  pointer-events: none;
+  letter-spacing: 0.05em;
+}
+
+/* ── 拍攝內容區塊 ── */
+.shoot-block {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.shoot-block-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.shoot-block-icon { font-size: 15px; }
+.shoot-block-title {
+  font-size: 12.5px;
+  font-weight: 900;
+  color: #334155;
+  letter-spacing: 0.03em;
+}
+.shoot-block-text {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.75;
+  margin: 0;
+}
+
+.shoot-block-main {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: #fed7aa;
+}
+.shoot-block-main .shoot-block-title { color: #9a3412; }
+.shoot-block-main .shoot-block-text { color: #7c2d12; font-weight: 500; }
+
+.shoot-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+@media (max-width: 480px) {
+  .shoot-grid-2 { grid-template-columns: 1fr; }
+}
+
+.shoot-block-angle {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border-color: #c7d2fe;
+}
+.shoot-block-angle .shoot-block-title { color: #4338ca; }
+
+.shoot-block-action {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+  border-color: #fbcfe8;
+}
+.shoot-block-action .shoot-block-title { color: #9d174d; }
+
+.shoot-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.shoot-list li {
+  position: relative;
+  padding: 4px 0 4px 16px;
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.6;
+}
+.shoot-list li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 12px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.4;
+}
+
+/* ── 進階資訊（收合） ── */
+.shoot-advanced {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.shoot-advanced > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 16px;
+  cursor: pointer;
+  list-style: none;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  transition: background 0.15s;
+  user-select: none;
+}
+.shoot-advanced > summary::-webkit-details-marker { display: none; }
+.shoot-advanced > summary:hover { background: #f1f5f9; }
+.shoot-advanced-icon { font-size: 15px; flex-shrink: 0; }
+.shoot-advanced-title {
+  font-size: 13px;
+  font-weight: 900;
+  color: #334155;
+}
+.shoot-advanced-hint {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  flex: 1;
+  text-align: right;
+  margin-right: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.shoot-advanced-chevron {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 900;
+  flex-shrink: 0;
+  transition: transform 0.25s;
+}
+.shoot-advanced[open] > summary { background: #e0f2fe; }
+.shoot-advanced[open] > summary .shoot-advanced-title { color: #0369a1; }
+.shoot-advanced[open] .shoot-advanced-chevron { transform: rotate(180deg); color: #0284c7; }
+
+.shoot-advanced-body {
+  padding: 14px 16px;
+  background: #fafbfc;
+  border-top: 1px solid #e2e8f0;
+}
+.shoot-advanced-item {
+  margin-bottom: 14px;
+}
+.shoot-advanced-item:last-child { margin-bottom: 0; }
+.shoot-advanced-item-title {
+  font-size: 11.5px;
+  font-weight: 900;
+  color: #0369a1;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.shoot-advanced-item-text {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ── 通用拍攝技巧 Intro ── */
+.common-tips-intro {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.common-tips-intro-icon { font-size: 20px; flex-shrink: 0; }
+.common-tips-intro-text {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e40af;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── 通用技巧卡片 ── */
+.common-tip-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.common-tip-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+.common-tip-sky::before    { background: linear-gradient(180deg, #38bdf8, #0284c7); }
+.common-tip-amber::before  { background: linear-gradient(180deg, #fbbf24, #d97706); }
+.common-tip-indigo::before { background: linear-gradient(180deg, #818cf8, #4f46e5); }
+
+.common-tip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.common-tip-emoji { font-size: 20px; flex-shrink: 0; }
+.common-tip-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.005em;
+}
+
+.common-tip-photo-track {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  margin: 0 -16px 12px;
+  padding: 0 16px;
+}
+.common-tip-photo-track::-webkit-scrollbar { display: none; }
+.common-tip-photo {
+  flex-shrink: 0;
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+  scroll-snap-align: start;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.common-tip-advice {
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.75;
+  margin: 0 0 12px;
+}
+
+.common-tip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #e2e8f0;
+}
+@media (max-width: 480px) {
+  .common-tip-grid { grid-template-columns: 1fr; }
+}
+.common-tip-col-title {
+  font-size: 11px;
+  font-weight: 900;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ── 深色模式 ── */
+[data-theme="dark"] .shoot-photo-hero { background: #1e293b; }
+[data-theme="dark"] .shoot-photo-indicator { background: rgba(0,0,0,0.8); }
+
+[data-theme="dark"] .shoot-block {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .shoot-block-title { color: #cbd5e1; }
+[data-theme="dark"] .shoot-block-text { color: #cbd5e1; }
+
+[data-theme="dark"] .shoot-block-main {
+  background: linear-gradient(135deg, #422006 0%, #78350f 100%);
+  border-color: #92400e;
+}
+[data-theme="dark"] .shoot-block-main .shoot-block-title { color: #fde68a; }
+[data-theme="dark"] .shoot-block-main .shoot-block-text { color: #fef3c7; }
+
+[data-theme="dark"] .shoot-block-angle {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  border-color: #4338ca;
+}
+[data-theme="dark"] .shoot-block-angle .shoot-block-title { color: #a5b4fc; }
+
+[data-theme="dark"] .shoot-block-action {
+  background: linear-gradient(135deg, #4c0519 0%, #831843 100%);
+  border-color: #be185d;
+}
+[data-theme="dark"] .shoot-block-action .shoot-block-title { color: #fda4af; }
+
+[data-theme="dark"] .shoot-list li { color: #cbd5e1; }
+
+[data-theme="dark"] .shoot-advanced {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .shoot-advanced > summary {
+  background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+}
+[data-theme="dark"] .shoot-advanced > summary:hover { background: #334155; }
+[data-theme="dark"] .shoot-advanced-title { color: #cbd5e1; }
+[data-theme="dark"] .shoot-advanced[open] > summary { background: #0c4a6e; }
+[data-theme="dark"] .shoot-advanced[open] > summary .shoot-advanced-title { color: #7dd3fc; }
+[data-theme="dark"] .shoot-advanced-body {
+  background: #0f172a;
+  border-top-color: #334155;
+}
+[data-theme="dark"] .shoot-advanced-item-title { color: #7dd3fc; }
+[data-theme="dark"] .shoot-advanced-item-text { color: #cbd5e1; }
+
+[data-theme="dark"] .common-tips-intro {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  border-color: #1e40af;
+}
+[data-theme="dark"] .common-tips-intro-text { color: #bfdbfe; }
+
+[data-theme="dark"] .common-tip-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .common-tip-header { border-bottom-color: #334155; }
+[data-theme="dark"] .common-tip-title { color: #f1f5f9; }
+[data-theme="dark"] .common-tip-advice { color: #cbd5e1; }
+[data-theme="dark"] .common-tip-grid { border-top-color: #334155; }
+[data-theme="dark"] .common-tip-photo { border-color: #334155; }
