@@ -1,11 +1,11 @@
 /* ============================================================
- * app-itinerary.js — v13.3
+ * app-itinerary.js — v13.4（ID 版）
  *
- * v13.3 變更：
- *   - ⭐ findShootTips：穩健查找拍攝建議（精確 → 正規化 → 部分匹配）
- *   - ⭐ 拍攝靈感 Modal 全新三層結構：
- *       照片輪播 → 拍照建議 → 角度/動作兩欄 → 進階資訊收合
- *   - ⭐ 通用拍攝技巧卡片化
+ * v13.4 變更：
+ *   - ⭐ 拍攝建議改用 ID 查找（d{day}-e{index}）
+ *   - ⭐ findShootTips 支援 ID + 標題雙軌查找
+ *   - ⭐ 改標題不再斷連結
+ *   - v13.3 拍攝靈感 Modal 三層結構
  *   - v13.2 摺疊小卡集中最底
  *   - 三層徽章系統
  * ============================================================ */
@@ -186,11 +186,22 @@ function renderWeatherDetail() {
   `;
 }
 
-// ==================== ⭐ findShootTips：穩健查找 ====================
-function findShootTips(eventTitle) {
-  if (!eventTitle || typeof shootTips === 'undefined') return null;
+// ==================== ⭐ findShootTips：ID + 標題雙軌查找 ====================
+/**
+ * 穩健查找拍攝建議
+ * @param {string} eventTitle - 景點標題（備用）
+ * @param {string} eventKey   - ID（優先，格式：d{day}-e{index}）
+ * @returns {object|null}
+ */
+function findShootTips(eventTitle, eventKey) {
+  if (typeof shootTips === 'undefined') return null;
 
-  // 1. 精確匹配
+  // 0. 優先：ID 查找
+  if (eventKey && shootTips[eventKey]) return shootTips[eventKey];
+
+  if (!eventTitle) return null;
+
+  // 1. 精確匹配標題（舊版相容）
   if (shootTips[eventTitle]) return shootTips[eventTitle];
 
   // 2. 正規化匹配
@@ -214,8 +225,12 @@ function findShootTips(eventTitle) {
   let bestScore = 0;
 
   for (const key of keys) {
+    // 跳過 ID 格式的 key（它們不會與標題相似）
+    if (/^d\d+-e\d+$/.test(key)) continue;
+
     const nk = normalize(key);
     if (nk.length < 4 || target.length < 4) continue;
+
     let score = 0;
     if (nk.includes(target) || target.includes(nk)) {
       score = Math.min(nk.length, target.length) * 2;
@@ -225,6 +240,7 @@ function findShootTips(eventTitle) {
       while (prefix < minLen && nk[prefix] === target[prefix]) prefix++;
       if (prefix >= 6) score = prefix;
     }
+
     if (score > bestScore) {
       bestScore = score;
       bestMatch = shootTips[key];
@@ -236,8 +252,7 @@ function findShootTips(eventTitle) {
     return bestMatch;
   }
 
-  console.warn('[shootTips] ❌ 找不到匹配：', eventTitle);
-  console.warn('[shootTips] 可用的 key 有：', keys);
+  console.warn('[shootTips] ❌ 找不到匹配：', eventTitle, '（key:', eventKey, '）');
   return null;
 }
 
@@ -335,7 +350,7 @@ function buildEventNavBtn(navUrl, eventTitle, navName) {
 }
 
 /* ============================================================
- * ⭐ v13.2：統一事件卡片內容
+ * ⭐ v13.2：統一事件卡片內容（摺疊小卡集中最底）
  * ============================================================ */
 function normalizeEventContent(section) {
   var collapsibles = section.querySelectorAll('.event-collapsible');
@@ -754,14 +769,17 @@ function renderDriveContent() { const container = document.getElementById('drive
 // ==================== 搶票攻略 ====================
 function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">首選方案</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/8 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>1/8 22:55 設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 15:30-19:15 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/15 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
 
-// ==================== ⭐ 拍攝靈感（v13.3 新版） ====================
+// ==================== ⭐ 拍攝靈感（v13.4 ID 版） ====================
 function openShootTipsModal(day, eventIndex) {
   const dayData = winterItineraries.find(d => d.day === day);
   if (!dayData) return;
   const event = dayData.events[eventIndex];
   if (!event) return;
 
-  const tips = findShootTips(event.title);
+  // ⭐ v13.4：優先使用 ID 查找
+  const eventKey = `d${day}-e${eventIndex}`;
+  const tips = findShootTips(event.title, eventKey);
+
   const content = document.getElementById("shoot-tips-content");
   const headerTitle = document.getElementById("shoot-tips-title");
 
@@ -772,7 +790,8 @@ function openShootTipsModal(day, eventIndex) {
       <div class="text-center py-12">
         <div class="text-5xl mb-3">🎬</div>
         <p class="text-sm font-bold text-slate-700 mb-1">這個景點還沒有拍攝建議</p>
-        <p class="text-xs text-slate-500">可以先參考「通用拍攝技巧」</p>
+        <p class="text-xs text-slate-500 mb-3">可以先參考「通用拍攝技巧」</p>
+        <p class="text-[10px] text-slate-400 font-mono bg-slate-50 rounded px-2 py-1 inline-block">ID: ${eventKey}</p>
       </div>`;
     showModal('shoot-tips-modal');
     document.getElementById('shoot-tips-modal').classList.remove('hidden');
@@ -920,7 +939,7 @@ function closeShootTipsModal() {
   setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300);
 }
 
-// ==================== ⭐ 通用拍攝技巧（v13.3 新版） ====================
+// ==================== ⭐ 通用拍攝技巧 ====================
 function openCommonTipsModal() {
   const m = document.getElementById('common-tips-modal');
   if (!m) return;
