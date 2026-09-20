@@ -1,14 +1,13 @@
 /* ============================================================
- * AppHeader v7.0
- * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [⚙️ 工具]
+ * AppHeader v8.0
+ * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [☰ 工具]（全部 SVG）
  * - Focus Card：出發前/中/後
  * - 工具選單：功能入口 + 安裝 App + 共享收據
  * - 全域搜尋：防抖 + 熱門關鍵字
  *
- * v7.0 變更（P1）：
- *   - 搜尋輸入加 150ms 防抖，避免每個字元都重算
- *   - 空結果時顯示熱門關鍵字標籤（可點擊）
- *   - 加入 aria-live 讓螢幕閱讀器能讀取結果
+ * v8.0 變更：
+ *   - ⭐ J1：所有 header 與工具選單 emoji 換成 inline SVG
+ *   - 加入 aria-label 提升無障礙
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -23,7 +22,27 @@ window.AppHeader = (function () {
   let _escKeyHandler = null;
   let _searchDebounceTimer = null;
 
-  // ⭐ 熱門關鍵字（標籤, 搜尋詞）
+  // ============================================================
+  // ⭐ J1：SVG 圖示庫
+  // ============================================================
+  const ICONS = {
+    search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>`,
+    weather: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`,
+    menu:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`,
+    gear:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+    overview:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h4M9 11V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v16M9 11h6M15 8h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/></svg>`,
+    ledger: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>`,
+    receipt:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16v18l-4-2-4 2-4-2-4 2z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>`,
+    install:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>`,
+    theme:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+    emergency:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>`,
+    ticket: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9a2 2 0 0 0 0 6v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 1 0-6V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/><line x1="13" y1="5" x2="13" y2="19"/></svg>`,
+    drive:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 17h14M5 17v2M19 17v2M6 10l1.5-4.5A2 2 0 0 1 9.4 4h5.2a2 2 0 0 1 1.9 1.5L18 10M4 10h16v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="7.5" cy="14.5" r="1"/><circle cx="16.5" cy="14.5" r="1"/></svg>`,
+    shoot:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
+    account:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>`,
+    close:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+  };
+
   const HOT_KEYWORDS = [
     { label: '🦊 狐狸村', kw: '狐狸村' },
     { label: '🥩 牛舌',   kw: '牛舌' },
@@ -336,7 +355,6 @@ window.AppHeader = (function () {
     haptic(6);
   }
 
-  // ⭐ P1：空結果顯示熱門關鍵字
   function renderSearchEmpty() {
     const tagsHtml = HOT_KEYWORDS.map(t =>
       `<button type="button" class="search-hot-tag" data-hot-kw="${escapeHtml(t.kw)}">${t.label}</button>`
@@ -350,7 +368,6 @@ window.AppHeader = (function () {
       </div>`;
   }
 
-  // ⭐ P1：綁定熱門標籤點擊事件
   function bindHotTagClicks() {
     const resultsEl = document.getElementById('search-results');
     if (!resultsEl) return;
@@ -729,6 +746,7 @@ window.AppHeader = (function () {
     const isConnected = _syncConnected;
     const ticketCd = getTicketCountdown();
     const showInstall = (typeof window.isInstallAvailable === "function") && window.isInstallAvailable();
+    const isDark = currentTheme === 'dark';
 
     panel.innerHTML = `
       ${progressItems.length > 0 ? `
@@ -741,22 +759,22 @@ window.AppHeader = (function () {
       <div class="tools-section">
         <div class="tools-section-label"><span>⚡</span> 快速操作</div>
         <button type="button" class="tools-item" data-tool-action="search">
-          <span class="tools-item-icon">🔍</span>
+          <span class="tools-item-icon">${ICONS.search}</span>
           <span class="tools-item-label">搜尋行程</span>
           <span class="tools-item-arrow">›</span>
         </button>
         <button type="button" class="tools-item" data-tool-action="overview">
-          <span class="tools-item-icon">📋</span>
+          <span class="tools-item-icon">${ICONS.overview}</span>
           <span class="tools-item-label">行程速覽</span>
           <span class="tools-item-arrow">›</span>
         </button>
         <button type="button" class="tools-item" data-tool-action="ledger">
-          <span class="tools-item-icon">📝</span>
+          <span class="tools-item-icon">${ICONS.ledger}</span>
           <span class="tools-item-label">快速記帳</span>
           <span class="tools-item-arrow">›</span>
         </button>
         <button type="button" class="tools-item" data-tool-action="receipts">
-          <span class="tools-item-icon">📸</span>
+          <span class="tools-item-icon">${ICONS.receipt}</span>
           <span class="tools-item-label">共享收據/憑證</span>
           <span class="tools-item-tag new">新增</span>
           <span class="tools-item-arrow">›</span>
@@ -767,7 +785,7 @@ window.AppHeader = (function () {
         <div class="tools-section">
           <div class="tools-section-label"><span>📲</span> 應用程式</div>
           <button type="button" class="tools-item" data-tool-action="install">
-            <span class="tools-item-icon">📲</span>
+            <span class="tools-item-icon">${ICONS.install}</span>
             <span class="tools-item-label">安裝 App 到桌面</span>
             <span class="tools-item-tag new">推薦</span>
             <span class="tools-item-arrow">›</span>
@@ -778,12 +796,12 @@ window.AppHeader = (function () {
       <div class="tools-section">
         <div class="tools-section-label"><span>🎨</span> 顯示與安全</div>
         <button type="button" class="tools-item" data-tool-action="theme">
-          <span class="tools-item-icon" id="theme-menu-icon">${currentTheme === 'dark' ? '☀️' : '🌙'}</span>
-          <span class="tools-item-label" id="theme-menu-label">${currentTheme === 'dark' ? '淺色模式' : '深色模式'}</span>
+          <span class="tools-item-icon">${ICONS.theme}</span>
+          <span class="tools-item-label">${isDark ? '淺色模式' : '深色模式'}</span>
           <span class="tools-item-arrow">›</span>
         </button>
         <button type="button" class="tools-item" data-tool-action="emergency">
-          <span class="tools-item-icon">🆘</span>
+          <span class="tools-item-icon">${ICONS.emergency}</span>
           <span class="tools-item-label">緊急資訊</span>
           <span class="tools-item-arrow">›</span>
         </button>
@@ -793,19 +811,19 @@ window.AppHeader = (function () {
         <div class="tools-section-label"><span>📚</span> 攻略參考</div>
         ${phase !== "after" ? `
           <button type="button" class="tools-item" data-tool-action="ticket">
-            <span class="tools-item-icon">⚔️</span>
+            <span class="tools-item-icon">${ICONS.ticket}</span>
             <span class="tools-item-label">搶票攻略</span>
             ${ticketCd ? `<span class="tools-item-tag hot">⏰ ${ticketCd}</span>` : ""}
             <span class="tools-item-arrow">›</span>
           </button>
         ` : ""}
         <button type="button" class="tools-item" data-tool-action="drive">
-          <span class="tools-item-icon">⚠️</span>
+          <span class="tools-item-icon">${ICONS.drive}</span>
           <span class="tools-item-label">雪地攻略</span>
           <span class="tools-item-arrow">›</span>
         </button>
         <button type="button" class="tools-item" data-tool-action="shoot">
-          <span class="tools-item-icon">📷</span>
+          <span class="tools-item-icon">${ICONS.shoot}</span>
           <span class="tools-item-label">拍攝技巧</span>
           <span class="tools-item-arrow">›</span>
         </button>
@@ -814,13 +832,13 @@ window.AppHeader = (function () {
       <div class="tools-section">
         <div class="tools-section-label"><span>⚙️</span> 帳戶</div>
         <button type="button" class="tools-item" data-tool-action="ledger">
-          <span class="tools-item-icon">💰</span>
+          <span class="tools-item-icon">${ICONS.ledger}</span>
           <span class="tools-item-label">隨行記帳本</span>
           <span class="tools-item-arrow">›</span>
         </button>
         ${currentUser ? `
           <button type="button" class="tools-item" data-tool-action="account">
-            <span class="tools-item-icon">${guest ? "👤" : "🙋"}</span>
+            <span class="tools-item-icon">${ICONS.account}</span>
             <span class="tools-item-label">${escapeHtml(currentUser)} · 帳戶設定</span>
             <span class="tools-item-arrow">›</span>
           </button>
@@ -883,16 +901,16 @@ window.AppHeader = (function () {
             <span class="brand-title">東北冬季親子自駕 2027</span>
           </div>
           <div class="brand-actions">
-            <button type="button" id="app-header-search" class="tools-toggle" title="搜尋行程">
-              <span class="tools-toggle-icon">🔍</span>
+            <button type="button" id="app-header-search" class="tools-toggle" title="搜尋行程" aria-label="搜尋行程">
+              <span class="tools-toggle-icon">${ICONS.search}</span>
               <span class="tools-toggle-text">搜尋</span>
             </button>
-            <button type="button" id="app-header-weather" class="tools-toggle" title="天氣預報">
-              <span class="tools-toggle-icon">⛅</span>
+            <button type="button" id="app-header-weather" class="tools-toggle" title="天氣預報" aria-label="天氣預報">
+              <span class="tools-toggle-icon">${ICONS.weather}</span>
               <span class="tools-toggle-text">天氣</span>
             </button>
-            <button type="button" id="tools-toggle" class="tools-toggle" title="工具選單">
-              <span class="tools-toggle-icon icon-gear">⚙️</span>
+            <button type="button" id="tools-toggle" class="tools-toggle" title="工具選單" aria-label="工具選單">
+              <span class="tools-toggle-icon icon-gear">${ICONS.gear}</span>
               <span class="tools-toggle-text">工具</span>
             </button>
           </div>
@@ -954,7 +972,6 @@ window.AppHeader = (function () {
       };
       document.addEventListener("keydown", _escKeyHandler);
 
-      // ⭐ P1：搜尋輸入加防抖（150ms）
       const searchInput = document.getElementById('search-input');
       if (searchInput) {
         searchInput.addEventListener('input', (e) => {

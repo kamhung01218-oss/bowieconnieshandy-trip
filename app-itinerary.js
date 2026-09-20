@@ -1,13 +1,10 @@
 /* ============================================================
- * app-itinerary.js — v13.4（ID 版）
+ * app-itinerary.js — v13.5（ID 版 + 天氣 icon 細分）
  *
- * v13.4 變更：
- *   - ⭐ 拍攝建議改用 ID 查找（d{day}-e{index}）
- *   - ⭐ findShootTips 支援 ID + 標題雙軌查找
- *   - ⭐ 改標題不再斷連結
- *   - v13.3 拍攝靈感 Modal 三層結構
- *   - v13.2 摺疊小卡集中最底
- *   - 三層徽章系統
+ * v13.5 變更：
+ *   - ⭐ J2：天氣 icon 從 4 種細分到 11 種（WMO code 完整映射）
+ *   - ⭐ J2：加入 wcat 分類，配合 CSS 光暈
+ *   - v13.4 拍攝建議 ID 查找
  * ============================================================ */
 
 // ==================== 天氣 ====================
@@ -31,11 +28,35 @@ const CLIMATE_SUN_TIMES = {
   "2027-01-27": { sunrise: "06:49", sunset: "16:41" }
 };
 
+/* ============================================================
+ * ⭐ J2：WMO Weather Code → Emoji + 分類
+ * ============================================================ */
+function weatherCodeToIconTag(code) {
+  code = Number(code);
+  if (isNaN(code)) return { icon: "🌡️", cat: "fog" };
+
+  if (code === 0)                    return { icon: "☀️",  cat: "clear" };
+  if (code === 1)                    return { icon: "🌤️", cat: "clear" };
+  if (code === 2)                    return { icon: "⛅",  cat: "cloud" };
+  if (code === 3)                    return { icon: "☁️",  cat: "cloud" };
+  if (code === 45 || code === 48)    return { icon: "🌫️", cat: "fog" };
+
+  if (code >= 51 && code <= 55)      return { icon: "🌦️", cat: "rain" };
+  if (code === 56 || code === 57)    return { icon: "🌧️", cat: "rain" };
+  if (code >= 61 && code <= 65)      return { icon: "🌧️", cat: "rain" };
+  if (code === 66 || code === 67)    return { icon: "🌧️", cat: "rain" };
+  if (code >= 71 && code <= 75)      return { icon: "❄️",  cat: "snow" };
+  if (code === 77)                   return { icon: "🌨️", cat: "snow" };
+  if (code >= 80 && code <= 82)      return { icon: "🌧️", cat: "rain" };
+  if (code === 85 || code === 86)    return { icon: "🌨️", cat: "snow" };
+  if (code >= 95 && code <= 99)      return { icon: "⛈️", cat: "storm" };
+
+  return { icon: "🌡️", cat: "fog" };
+}
+
+/* 相容舊呼叫：只回傳 emoji 字串 */
 function weatherCodeToIcon(code) {
-  if (code === 0) return "☀️";
-  if (code < 5) return "⛅";
-  if (code < 70) return "☁️";
-  return "❄️";
+  return weatherCodeToIconTag(code).icon;
 }
 
 async function fetchWeatherData() {
@@ -52,6 +73,7 @@ async function fetchWeatherData() {
         dateStr, location: loc.name,
         max: loc.climate.max, min: loc.climate.min, rain: loc.climate.rain,
         icon: "❄️",
+        wcat: "snow",
         current: null,
         sunrise: null, sunset: null,
         isClimate: true
@@ -65,17 +87,23 @@ async function fetchWeatherData() {
       if (!data.daily || !data.daily.time || data.daily.time.length === 0) return null;
       const sunrise = data.daily.sunrise?.[0]?.split("T")[1]?.substring(0, 5) || null;
       const sunset  = data.daily.sunset?.[0]?.split("T")[1]?.substring(0, 5) || null;
+
+      const dailyTag = weatherCodeToIconTag(data.daily.weather_code[0]);
+      const currentTag = data.current ? weatherCodeToIconTag(data.current.weather_code) : null;
+
       return {
         dateStr, location: loc.name,
         max: Math.round(data.daily.temperature_2m_max[0]),
         min: Math.round(data.daily.temperature_2m_min[0]),
         rain: data.daily.precipitation_probability_max[0] ?? 0,
-        icon: weatherCodeToIcon(data.daily.weather_code[0]),
+        icon: dailyTag.icon,
+        wcat: dailyTag.cat,
         current: data.current ? {
           temp: Math.round(data.current.temperature_2m),
           feels: Math.round(data.current.apparent_temperature),
           humidity: data.current.relative_humidity_2m,
-          icon: weatherCodeToIcon(data.current.weather_code)
+          icon: currentTag.icon,
+          wcat: currentTag.cat
         } : null,
         sunrise, sunset,
         isClimate: false
@@ -88,6 +116,7 @@ async function fetchWeatherData() {
     if (r) {
       window.weatherCache[r.dateStr] = {
         max: r.max, min: r.min, rain: r.rain, icon: r.icon,
+        wcat: r.wcat || "fog",
         location: r.location, current: r.current,
         sunrise: r.sunrise, sunset: r.sunset,
         isClimate: r.isClimate || false
@@ -119,6 +148,7 @@ function renderWeatherDetail() {
   const feels = heroData?.current?.feels ?? curTemp;
   const humidity = heroData?.current?.humidity ?? '--';
   const curIcon = heroData?.current?.icon ?? heroData?.icon ?? "⛅";
+  const curCat  = heroData?.current?.wcat ?? heroData?.wcat ?? "cloud";
 
   let advice = { icon: "🧥", text: "防風外套即可" };
   if (curTemp === null) advice = { icon: "⏳", text: "天氣資料載入中" };
@@ -133,7 +163,7 @@ function renderWeatherDetail() {
     const week = ["日","一","二","三","四","五","六"][d.getDay()];
     const isToday = ds === today;
     const loc = WEATHER_LOCATIONS[i + 1].name;
-    if (!w) return `<div class="forecast-row ${isToday ? 'today' : ''}"><div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div><div class="forecast-icon">⏳</div><div class="forecast-temp" style="color:#94a3b8;font-size:11px">${loc} · 暫無資料</div></div>`;
+    if (!w) return `<div class="forecast-row ${isToday ? 'today' : ''}"><div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div><div class="forecast-icon" data-wcat="cloud">⏳</div><div class="forecast-temp" style="color:#94a3b8;font-size:11px">${loc} · 暫無資料</div></div>`;
 
     const badge = w.isClimate
       ? '<span class="forecast-badge climate">🌡️ 氣候參考</span>'
@@ -149,7 +179,7 @@ function renderWeatherDetail() {
 
     return `<div class="forecast-row ${isToday ? 'today' : ''}">
       <div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div>
-      <div class="forecast-icon">${w.icon}</div>
+      <div class="forecast-icon" data-wcat="${w.wcat || 'cloud'}">${w.icon}</div>
       <div class="forecast-temp">
         <span class="forecast-temp-max">${w.max}°</span>
         <span class="text-slate-400 mx-1">/</span>
@@ -173,7 +203,7 @@ function renderWeatherDetail() {
 
   detail.innerHTML = `
     <div class="weather-hero">
-      <div class="weather-hero-icon">${curIcon}</div>
+      <div class="weather-hero-icon" data-wcat="${curCat}">${curIcon}</div>
       <div>
         <div class="weather-hero-temp">${curTemp !== null ? curTemp + '°C' : '--'}</div>
         <div class="weather-hero-meta">${curTemp !== null ? `體感 ${feels}°C · 濕度 ${humidity}% · ${heroLocName}` : heroLocName}</div>
@@ -187,24 +217,15 @@ function renderWeatherDetail() {
 }
 
 // ==================== ⭐ findShootTips：ID + 標題雙軌查找 ====================
-/**
- * 穩健查找拍攝建議
- * @param {string} eventTitle - 景點標題（備用）
- * @param {string} eventKey   - ID（優先，格式：d{day}-e{index}）
- * @returns {object|null}
- */
 function findShootTips(eventTitle, eventKey) {
   if (typeof shootTips === 'undefined') return null;
 
-  // 0. 優先：ID 查找
   if (eventKey && shootTips[eventKey]) return shootTips[eventKey];
 
   if (!eventTitle) return null;
 
-  // 1. 精確匹配標題（舊版相容）
   if (shootTips[eventTitle]) return shootTips[eventTitle];
 
-  // 2. 正規化匹配
   const normalize = (s) => String(s)
     .replace(/\s+/g, '')
     .replace(/[（）()【】\[\]「」『』""'']/g, '')
@@ -220,12 +241,10 @@ function findShootTips(eventTitle, eventKey) {
     if (normalize(key) === target) return shootTips[key];
   }
 
-  // 3. 部分匹配（最長共同片段）
   let bestMatch = null;
   let bestScore = 0;
 
   for (const key of keys) {
-    // 跳過 ID 格式的 key（它們不會與標題相似）
     if (/^d\d+-e\d+$/.test(key)) continue;
 
     const nk = normalize(key);
@@ -349,9 +368,6 @@ function buildEventNavBtn(navUrl, eventTitle, navName) {
   return html;
 }
 
-/* ============================================================
- * ⭐ v13.2：統一事件卡片內容（摺疊小卡集中最底）
- * ============================================================ */
 function normalizeEventContent(section) {
   var collapsibles = section.querySelectorAll('.event-collapsible');
   collapsibles.forEach(function(collapsible) {
@@ -540,6 +556,7 @@ function buildWeatherHtml(dateStr, weatherInfo) {
   if (!weatherInfo) return '';
   const { icon, max, min, rain } = weatherInfo;
   const location = weatherInfo.location || '';
+  const wcat = weatherInfo.wcat || (weatherInfo.isClimate ? 'snow' : 'cloud');
 
   if (weatherInfo.isClimate) {
     let climateAdvice = '🧥 冬季均溫，防風防水外套';
@@ -554,7 +571,7 @@ function buildWeatherHtml(dateStr, weatherInfo) {
     return `
       <div class="weather-card climate">
         <div class="weather-row-1">
-          <span class="weather-icon">${icon}</span>
+          <span class="weather-icon" data-wcat="${wcat}">${icon}</span>
           <span class="weather-loc">${dateStr.substring(5)} ${location}</span>
           <span class="weather-temp">${max}° / ${min}°</span>
           <span class="weather-climate-badge">🌡️ 氣候參考</span>
@@ -576,7 +593,7 @@ function buildWeatherHtml(dateStr, weatherInfo) {
   return `
     <div class="weather-card">
       <div class="weather-row-1">
-        <span class="weather-icon">${icon}</span>
+        <span class="weather-icon" data-wcat="${wcat}">${icon}</span>
         <span class="weather-loc">${dateStr.substring(5)} ${location}</span>
         <span class="weather-temp">${max}° / ${min}°</span>
         <span class="weather-rain">💧${rain}%</span>
@@ -769,14 +786,13 @@ function renderDriveContent() { const container = document.getElementById('drive
 // ==================== 搶票攻略 ====================
 function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">首選方案</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/8 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>1/8 22:55 設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 15:30-19:15 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/15 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
 
-// ==================== ⭐ 拍攝靈感（v13.4 ID 版） ====================
+// ==================== 拍攝靈感 ====================
 function openShootTipsModal(day, eventIndex) {
   const dayData = winterItineraries.find(d => d.day === day);
   if (!dayData) return;
   const event = dayData.events[eventIndex];
   if (!event) return;
 
-  // ⭐ v13.4：優先使用 ID 查找
   const eventKey = `d${day}-e${eventIndex}`;
   const tips = findShootTips(event.title, eventKey);
 
@@ -800,7 +816,6 @@ function openShootTipsModal(day, eventIndex) {
 
   let html = '';
 
-  // 第一層：照片輪播
   const photos = tips["參考照片"] || [];
   if (photos.length > 0) {
     const photosJson = escAttr(JSON.stringify(photos));
@@ -820,7 +835,6 @@ function openShootTipsModal(day, eventIndex) {
     html += `</div>`;
   }
 
-  // 第二層：拍照建議
   const advice = tips["拍照建議"] || "";
   if (advice) {
     html += `<div class="shoot-block shoot-block-main">
@@ -832,7 +846,6 @@ function openShootTipsModal(day, eventIndex) {
     </div>`;
   }
 
-  // 第三層：拍攝角度 + 人物動作（兩欄）
   const angles = tips["拍攝角度"] || [];
   const actions = tips["人物動作建議"] || [];
   if (angles.length > 0 || actions.length > 0) {
@@ -858,7 +871,6 @@ function openShootTipsModal(day, eventIndex) {
     html += `</div>`;
   }
 
-  // 第四層：進階資訊（收合）
   const pocket = tips["Pocket 3 參數"] || "";
   const vlogShots = tips["Vlog 必拍鏡頭"] || [];
   const bestTime = tips["最佳拍攝時間"] || "";
@@ -939,7 +951,7 @@ function closeShootTipsModal() {
   setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300);
 }
 
-// ==================== ⭐ 通用拍攝技巧 ====================
+// ==================== 通用拍攝技巧 ====================
 function openCommonTipsModal() {
   const m = document.getElementById('common-tips-modal');
   if (!m) return;
@@ -1120,7 +1132,7 @@ window.updateDayProgressDots = updateDayProgressDots;
 // ==================== 攻略 Modal 開關 ====================
 function toggleDriveModal() { const modal = document.getElementById('drive-modal'); if (modal.classList.contains('hidden')) { showModal('drive-modal'); modal.classList.remove('hidden'); setDriveTab('basic'); } else { hideModal('drive-modal'); setTimeout(() => modal.classList.add('hidden'), 300); } }
 function closeDriveModal() { hideModal('drive-modal'); setTimeout(() => document.getElementById('drive-modal').classList.add('hidden'), 300); }
-function toggleTicketModal() { const modal = document.getElementById('ticket-modal'); if (modal.classList.contains('hidden')) { showModal('ticket-modal'); modal.classList.remove('hidden'); renderTicketContent(); if (window._ticketTimer) clearInterval(window._ticketTimer); window._ticketTimer = setInterval(() => { if (!modal.classList.contains('hidden')) renderTicketContent(); else clearInterval(window._ticketTimer); }, 1000); } else { hideModal('ticket-modal'); setTimeout(() => modal.classList.add('hidden'), 300); if (window._ticketTimer) clearInterval(window._ticketTimer); } }
+function toggleTicketModal() { const modal = document.getElementById('ticket-modal'); if (modal.classList.contains('hidden')) { showModal('ticket-modal'); modal.classList.remove('hidden'); renderTicketContent(); if (window._ticketTimer) clearInterval(window._ticketTimer); window._ticketTimer = setInterval(() => { if (!modal.classList.contains('hidden')) renderTicketContent(); else clearInterval(window._ticketTimer); }, 1000); } else { hideModal('ticket-modal'); setTimeout(() => document.getElementById('ticket-modal').classList.add('hidden'), 300); if (window._ticketTimer) clearInterval(window._ticketTimer); } }
 function closeTicketModal() { hideModal('ticket-modal'); setTimeout(() => document.getElementById('ticket-modal').classList.add('hidden'), 300); if (window._ticketTimer) clearInterval(window._ticketTimer); }
 function openTripOverview() { const m = document.getElementById('trip-overview-modal'); if (m) { m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); renderTripOverview(); } }
 function closeTripOverview() { const m = document.getElementById('trip-overview-modal'); if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }

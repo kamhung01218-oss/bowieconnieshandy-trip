@@ -1,0 +1,174 @@
+/* ============================================================
+ * design-v14b.css — 動效與圖示優化
+ *
+ * 對應建議：
+ *   I1. 展開動畫縮短
+ *   I2. 減少過度 transition
+ *   I3. 載入中狀態
+ *   J1. emoji 換 SVG 的容器樣式
+ *   J2. 天氣 icon 分類光暈
+ * ============================================================ */
+
+/* ============================================================
+ * I1：展開動畫 — 0.5s → 0.3s
+ * ============================================================ */
+@keyframes magazine-fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+details.event-card[open] .event-content-wrapper > * {
+  animation: magazine-fadeInUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+details.event-card[open] .event-content-wrapper > *:nth-child(1) { animation-delay: 0.02s !important; }
+details.event-card[open] .event-content-wrapper > *:nth-child(2) { animation-delay: 0.06s !important; }
+details.event-card[open] .event-content-wrapper > *:nth-child(3) { animation-delay: 0.10s !important; }
+details.event-card[open] .event-content-wrapper > *:nth-child(4) { animation-delay: 0.14s !important; }
+details.event-card[open] .event-content-wrapper > *:nth-child(n+5) {
+  animation-delay: 0.16s !important;
+}
+
+details.event-card[open] .event-content-wrapper {
+  transition: max-height 0.24s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.2s ease,
+              padding 0.2s ease !important;
+}
+
+.glass-card.event-card .event-expand-icon {
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.18s !important;
+}
+
+/* ============================================================
+ * I2：只對真正會變的屬性加 transition
+ * ============================================================ */
+.event-action-btn {
+  transition: background 0.15s, transform 0.12s !important;
+}
+
+.tag {
+  transition: color 0.15s !important;
+}
+
+.event-title {
+  transition: color 0.2s !important;
+}
+
+.glass-card.event-card {
+  transition: box-shadow 0.25s ease, transform 0.2s ease !important;
+}
+
+.modal-tab,
+.skill-tab {
+  transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+}
+
+/* ============================================================
+ * I3：載入中狀態
+ * ============================================================ */
+.day-section[data-loading="true"] {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.skeleton-card {
+  background: linear-gradient(90deg,
+    rgba(241, 245, 249, 0.9) 0%,
+    rgba(224, 242, 254, 1) 50%,
+    rgba(241, 245, 249, 0.9) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+.event-card[data-bound="false"] .event-action-btn {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ============================================================
+ * J1：Header 按鈕 SVG 樣式
+ * ============================================================ */
+.app-header .tools-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.app-header .tools-toggle svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+  flex-shrink: 0;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.app-header .tools-toggle .tools-toggle-text {
+  line-height: 1;
+}
+
+.app-header .tools-item-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  stroke-width: 2;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================
+ * J2：天氣 icon 分類光暈
+ * ============================================================ */
+.weather-icon,
+.forecast-icon,
+.weather-hero-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08));
+}
+
+[data-wcat="clear"] {
+  filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.4));
+}
+
+[data-wcat="cloud"] {
+  filter: drop-shadow(0 0 4px rgba(148, 163, 184, 0.3));
+}
+
+[data-wcat="fog"] {
+  filter: drop-shadow(0 0 5px rgba(203, 213, 225, 0.45));
+}
+
+[data-wcat="rain"] {
+  filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.35));
+}
+
+[data-wcat="snow"] {
+  filter: drop-shadow(0 0 7px rgba(186, 230, 253, 0.6));
+}
+
+[data-wcat="storm"] {
+  filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.45));
+}
+
+[data-theme="dark"][data-wcat="snow"] {
+  filter: drop-shadow(0 0 8px rgba(125, 211, 252, 0.7));
+}
+[data-theme="dark"][data-wcat="rain"] {
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.55));
+}
+[data-theme="dark"][data-wcat="clear"] {
+  filter: drop-shadow(0 0 7px rgba(250, 204, 21, 0.6));
+}

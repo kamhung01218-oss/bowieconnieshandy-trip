@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🖼️ 圖片健康檢查</title>
+<style>
+  body { font-family: -apple-system, 'Noto Sans TC', sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
+  h1 { color: #38bdf8; font-size: 20px; margin-bottom: 8px; }
+  .sub { color: #64748b; font-size: 12px; margin-bottom: 20px; }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px; text-align: center; }
+  .stat .num { font-size: 24px; font-weight: 900; }
+  .stat.ok .num { color: #34d399; }
+  .stat.err .num { color: #f87171; }
+  .stat.warn .num { color: #fbbf24; }
+  .stat .lbl { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+  .row { display: flex; gap: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-left: 3px solid #38bdf8; border-radius: 8px; margin-bottom: 6px; font-size: 12px; }
+  .row.ok { border-left-color: #34d399; }
+  .row.err { border-left-color: #f87171; }
+  .row.warn { border-left-color: #fbbf24; }
+  .row img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+  .row .info { flex: 1; min-width: 0; }
+  .row .info .title { font-weight: 700; margin-bottom: 3px; }
+  .row .info .url { font-size: 10px; color: #64748b; word-break: break-all; font-family: monospace; }
+  .row .info .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; margin-left: 6px; }
+  .badge.ok { background: rgba(52,211,153,0.2); color: #6ee7b7; }
+  .badge.err { background: rgba(248,113,113,0.2); color: #fca5a5; }
+  .badge.warn { background: rgba(251,191,36,0.2); color: #fcd34d; }
+  .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; margin-bottom: 16px; background: #0ea5e9; color: white; }
+</style>
+</head>
+<body>
+<h1>🖼️ 圖片健康檢查</h1>
+<p class="sub">檢查 <code>data.js</code> 中所有圖片的載入狀態</p>
+
+<div class="summary">
+  <div class="stat ok"><div class="num" id="cnt-ok">0</div><div class="lbl">可載入</div></div>
+  <div class="stat err"><div class="num" id="cnt-err">0</div><div class="lbl">載入失敗</div></div>
+  <div class="stat warn"><div class="num" id="cnt-warn">0</div><div class="lbl">HTTP 警告</div></div>
+</div>
+
+<button class="btn" onclick="location.reload()">🔄 重新檢查</button>
+<div id="results"></div>
+
+<script src="./data.js"></script>
+<script>
+function extractImages() {
+  const urls = [];
+  winterItineraries.forEach(day => {
+    day.events.forEach((evt, idx) => {
+      if (evt.img) urls.push({ day: day.day, idx, title: evt.title, url: evt.img, type: 'top' });
+      if (evt.images) {
+        evt.images.forEach((u, i) => {
+          urls.push({ day: day.day, idx, title: evt.title, url: u, type: 'carousel-' + i });
+        });
+      }
+      // 從 content HTML 抓 <img src="...">
+      if (evt.content) {
+        const regex = /<img[^>]+src=["']([^"']+)["']/g;
+        let m;
+        while ((m = regex.exec(evt.content)) !== null) {
+          urls.push({ day: day.day, idx, title: evt.title, url: m[1], type: 'content' });
+        }
+      }
+    });
+  });
+  return urls;
+}
+
+async function checkAll() {
+  const container = document.getElementById('results');
+  const images = extractImages();
+  let ok = 0, err = 0, warn = 0;
+
+  for (const item of images) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    
+    const isHttp = item.url.startsWith('http://');
+    const testImg = new Image();
+    
+    const result = await new Promise(resolve => {
+      const timer = setTimeout(() => resolve('timeout'), 8000);
+      testImg.onload = () => { clearTimeout(timer); resolve('ok'); };
+      testImg.onerror = () => { clearTimeout(timer); resolve('error'); };
+      testImg.src = item.url;
+    });
+
+    let status = 'ok';
+    if (isHttp) { status = 'warn'; warn++; }
+    else if (result === 'ok') { status = 'ok'; ok++; }
+    else { status = 'err'; err++; }
+
+    row.classList.add(status);
+    
+    const badgeText = status === 'ok' ? '✅ 正常' 
+                    : status === 'warn' ? '⚠️ HTTP' 
+                    : '❌ 失敗';
+
+    row.innerHTML = `
+      <img src="${result === 'ok' ? item.url : ''}" onerror="this.style.display='none'">
+      <div class="info">
+        <div class="title">D${item.day} · ${escapeHtml(item.title)} <span class="badge ${status}">${badgeText}</span></div>
+        <div class="url">${escapeHtml(item.url)}</div>
+      </div>
+    `;
+    container.appendChild(row);
+    
+    document.getElementById('cnt-ok').textContent = ok;
+    document.getElementById('cnt-err').textContent = err;
+    document.getElementById('cnt-warn').textContent = warn;
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+window.addEventListener('DOMContentLoaded', checkAll);
+</script>
+</body>
+</html>
