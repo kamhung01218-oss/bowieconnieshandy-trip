@@ -1,10 +1,15 @@
 /* ============================================================
- * messages.js — 家庭廣播 v1.0（簡化版）
+ * messages.js — 家庭廣播 v1.1
+ *
+ * v1.1 變更：
+ *   - ⭐ 自動啟動 Firestore 訂閱（DOMContentLoaded 後）
+ *   - 不再依賴外部呼叫 subscribe
  * ============================================================ */
 window.Messages = (function () {
   let _cache = [];
   let _listeners = [];
   let _unsub = null;
+  let _started = false;
 
   function esc(s) {
     if (s == null) return '';
@@ -31,7 +36,6 @@ window.Messages = (function () {
     return s + '秒';
   }
 
-  // 過濾 + 排序
   function process(list) {
     const now = Date.now();
     return list
@@ -51,29 +55,43 @@ window.Messages = (function () {
     _listeners.forEach(cb => { try { cb(data); } catch(e){} });
   }
 
-  // 訂閱
+  // ⭐ 啟動 Firestore 訂閱
+  function startListener() {
+    if (_started) return;
+    if (!window.db) {
+      // 再等一下（db 可能還沒初始化）
+      setTimeout(startListener, 200);
+      return;
+    }
+    _started = true;
+    console.log('[Messages] 啟動 Firestore 訂閱');
+    _unsub = window.db
+      .collection('tohoku_trip').doc('messages')
+      .collection('items')
+      .orderBy('createdAt', 'desc')
+      .limit(30)
+      .onSnapshot(snap => {
+        _cache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        console.log('[Messages] 收到', _cache.length, '筆');
+        notify();
+      }, err => {
+        console.warn('[Messages] 訂閱錯誤:', err);
+        _started = false;  // 允許重試
+        setTimeout(startListener, 3000);
+      });
+  }
+
+  // 外部呼叫（可選，主要用於註冊 UI 更新 callback）
   function subscribe(cb) {
     _listeners.push(cb);
-    cb(process(_cache));
-
-    if (!_unsub && window.db) {
-      _unsub = window.db
-        .collection('tohoku_trip').doc('messages')
-        .collection('items')
-        .orderBy('createdAt', 'desc')
-        .limit(30)
-        .onSnapshot(snap => {
-          _cache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          notify();
-        }, err => console.warn('[Messages]', err));
-    }
+    cb(process(_cache));  // 立即用當前快取回呼一次
+    startListener();       // 確保訂閱已啟動
     return () => {
       const i = _listeners.indexOf(cb);
       if (i > -1) _listeners.splice(i, 1);
     };
   }
 
-  // 發送
   async function send(text, opts = {}) {
     if (!text || !text.trim()) return false;
     if (!window.db) { if (typeof showToast==='function') showToast('雲端未連線','⚠️'); return false; }
@@ -111,7 +129,6 @@ window.Messages = (function () {
     if (typeof showToast==='function') showToast('已刪除','🗑');
   }
 
-  // 卡片渲染
   function renderCard(limit = 2) {
     const list = process(_cache).slice(0, limit);
     if (list.length === 0) return '';
@@ -128,7 +145,6 @@ window.Messages = (function () {
     }).join('');
   }
 
-  // 完整列表
   function renderFull() {
     const list = process(_cache);
     if (list.length === 0) {
@@ -156,9 +172,19 @@ window.Messages = (function () {
     }).join('');
   }
 
+  // ⭐ 自動啟動：等 DOMContentLoaded 後再啟動（確保 window.db 就緒）
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(startListener, 300);
+    });
+  } else {
+    setTimeout(startListener, 300);
+  }
+
   return {
     subscribe, send, togglePin, remove, renderCard, renderFull,
     getAll: () => process(_cache),
-    getCount: () => process(_cache).length
+    getCount: () => process(_cache).length,
+    _start: startListener  // 給外部手動觸發用
   };
 })();
