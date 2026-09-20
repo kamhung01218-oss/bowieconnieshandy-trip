@@ -1739,3 +1739,393 @@ a:focus:not(:focus-visible) {
   background: linear-gradient(135deg, #0c2a5e, #1e3a8a);
   border-color: #3b82f6;
 }
+/* ============================================================
+ * 26. ⭐ 天氣警告 badge + Modal
+ * ============================================================ */
+
+.app-header .weather-alert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  margin-left: 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.15s;
+  vertical-align: middle;
+  animation: weather-badge-pulse 2s ease-in-out infinite;
+}
+.app-header .weather-alert-badge:active { transform: scale(0.94); }
+
+.app-header .weather-alert-badge.danger {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+.app-header .weather-alert-badge.warn {
+  background: #fffbeb;
+  color: #d97706;
+  border-color: #fcd34d;
+}
+.app-header .weather-alert-badge.info {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #93c5fd;
+}
+
+@keyframes weather-badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15); }
+}
+
+.weather-alert-card {
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border: 1.5px solid;
+}
+.weather-alert-card:last-child { margin-bottom: 0; }
+
+.weather-alert-card.danger {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border-color: #fca5a5;
+}
+.weather-alert-card.warn {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border-color: #fcd34d;
+}
+.weather-alert-card.info {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-color: #93c5fd;
+}
+
+.weather-alert-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.weather-alert-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.weather-alert-head-text { flex: 1; min-width: 0; }
+.weather-alert-name {
+  font-size: 14px;
+  font-weight: 900;
+  margin-bottom: 2px;
+}
+.weather-alert-card.danger .weather-alert-name { color: #7f1d1d; }
+.weather-alert-card.warn .weather-alert-name { color: #92400e; }
+.weather-alert-card.info .weather-alert-name { color: #1e40af; }
+
+.weather-alert-desc {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+.weather-alert-card.danger .weather-alert-desc { color: #991b1b; }
+.weather-alert-card.warn .weather-alert-desc { color: #b45309; }
+.weather-alert-card.info .weather-alert-desc { color: #1d4ed8; }
+
+.weather-alert-actions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px dashed rgba(0,0,0,0.1);
+  padding-top: 8px;
+}
+.weather-alert-actions li {
+  position: relative;
+  padding: 3px 0 3px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.weather-alert-actions li::before {
+  content: '✓';
+  position: absolute;
+  left: 2px;
+  top: 3px;
+  font-weight: 900;
+  font-size: 11px;
+}
+.weather-alert-card.danger .weather-alert-actions li { color: #7f1d1d; }
+.weather-alert-card.danger .weather-alert-actions li::before { color: #dc2626; }
+.weather-alert-card.warn .weather-alert-actions li { color: #78350f; }
+.weather-alert-card.warn .weather-alert-actions li::before { color: #d97706; }
+.weather-alert-card.info .weather-alert-actions li { color: #1e3a8a; }
+.weather-alert-card.info .weather-alert-actions li::before { color: #2563eb; }
+
+.weather-alert-empty {
+  text-align: center;
+  padding: 30px 20px;
+}
+
+[data-theme="dark"] .app-header .weather-alert-badge.danger {
+  background: #450a0a;
+  color: #fca5a5;
+  border-color: #7f1d1d;
+}
+[data-theme="dark"] .app-header .weather-alert-badge.warn {
+  background: #422006;
+  color: #fbbf24;
+  border-color: #92400e;
+}
+[data-theme="dark"] .app-header .weather-alert-badge.info {
+  background: #0c2a5e;
+  color: #93c5fd;
+  border-color: #1e40af;
+}
+
+[data-theme="dark"] .weather-alert-card.danger {
+  background: linear-gradient(135deg, #450a0a, #7f1d1d);
+  border-color: #991b1b;
+}
+[data-theme="dark"] .weather-alert-card.warn {
+  background: linear-gradient(135deg, #422006, #78350f);
+  border-color: #92400e;
+}
+[data-theme="dark"] .weather-alert-card.info {
+  background: linear-gradient(135deg, #0c2a5e, #1e3a8a);
+  border-color: #1e40af;
+}
+
+[data-theme="dark"] .weather-alert-card.danger .weather-alert-name { color: #fecaca; }
+[data-theme="dark"] .weather-alert-card.danger .weather-alert-desc { color: #fca5a5; }
+[data-theme="dark"] .weather-alert-card.danger .weather-alert-actions li { color: #fecaca; }
+
+[data-theme="dark"] .weather-alert-card.warn .weather-alert-name { color: #fde68a; }
+[data-theme="dark"] .weather-alert-card.warn .weather-alert-desc { color: #fbbf24; }
+[data-theme="dark"] .weather-alert-card.warn .weather-alert-actions li { color: #fde68a; }
+
+[data-theme="dark"] .weather-alert-card.info .weather-alert-name { color: #bfdbfe; }
+[data-theme="dark"] .weather-alert-card.info .weather-alert-desc { color: #93c5fd; }
+[data-theme="dark"] .weather-alert-card.info .weather-alert-actions li { color: #bfdbfe; }
+
+[data-theme="dark"] .weather-alert-actions {
+  border-top-color: rgba(255,255,255,0.1);
+}
+/* ============================================================
+ * 28. ⭐ v9.6：Focus Card 多地點天氣 + 日出日落兩行
+ * ============================================================ */
+
+/* 天氣行：垂直堆疊 */
+.app-header .focus-weather-row {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 4px !important;
+  padding-top: 6px !important;
+  margin-top: 4px !important;
+  border-top: 1px dashed var(--t-color-border) !important;
+}
+
+/* 地點 tab 列 */
+.app-header .focus-weather-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+  margin-bottom: 2px;
+}
+.app-header .focus-weather-tabs::-webkit-scrollbar { display: none; }
+
+.app-header .focus-weather-tab {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--t-color-border);
+  background: #f8fafc;
+  color: var(--t-color-text-mute);
+  font-size: 11px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-header .focus-weather-tab:active { transform: scale(0.94); }
+.app-header .focus-weather-tab.active {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+}
+
+/* 第一行：氣溫 + 建議 + 警告 badge */
+.app-header .focus-weather-line1 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--t-color-text-mute);
+}
+
+/* 第二行：日出日落 */
+.app-header .focus-weather-line2 {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.app-header .fw-sun {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.app-header .fw-sun-sep { opacity: 0.5; }
+.app-header .fw-sun-note {
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.7;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 2px;
+}
+
+/* 深色模式 */
+[data-theme="dark"] .app-header .focus-weather-tab {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+[data-theme="dark"] .app-header .focus-weather-tab.active {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: white;
+  border-color: transparent;
+}
+[data-theme="dark"] .app-header .focus-weather-line2 { color: #64748b; }
+[data-theme="dark"] .app-header .fw-sun-note { background: rgba(255, 255, 255, 0.08); }
+/* ============================================================
+ * 30. ⭐ v9.9：天氣卡片視覺優化
+ * ============================================================ */
+
+.app-header .focus-weather-line1 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--t-color-text-soft);
+  line-height: 1.45;
+}
+
+.app-header .focus-weather-line1 .fw-temp {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--t-color-text-main);
+  font-variant-numeric: tabular-nums;
+}
+
+.app-header .focus-weather-line2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  flex-wrap: wrap;
+}
+
+.app-header .fw-sun {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.app-header .fw-sun-sep {
+  opacity: 0.4;
+  font-weight: 400;
+}
+
+.app-header .fw-sun-note {
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.7;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 2px;
+}
+
+[data-theme="dark"] .app-header .focus-weather-line1 {
+  color: #cbd5e1;
+}
+[data-theme="dark"] .app-header .focus-weather-line1 .fw-temp {
+  color: #f1f5f9;
+}
+[data-theme="dark"] .app-header .focus-weather-line2 {
+  color: #64748b;
+}
+[data-theme="dark"] .app-header .fw-sun-note {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================
+ * 31. ⭐ 天氣 tab 更清晰
+ * ============================================================ */
+.app-header .focus-weather-tabs {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 3px;
+  margin-bottom: 3px;
+}
+.app-header .focus-weather-tabs::-webkit-scrollbar { display: none; }
+
+.app-header .focus-weather-tab {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--t-color-border);
+  background: #f8fafc;
+  color: var(--t-color-text-mute);
+  font-size: 11.5px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: 0.02em;
+}
+.app-header .focus-weather-tab:active { transform: scale(0.94); }
+.app-header .focus-weather-tab.active {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+}
+
+[data-theme="dark"] .app-header .focus-weather-tab {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+[data-theme="dark"] .app-header .focus-weather-tab.active {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: white;
+  border-color: transparent;
+}

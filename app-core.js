@@ -303,6 +303,7 @@ function initAppAfterLogin() {
       tripStart: TRIP_START, tripEnd: TRIP_END, tripDates: tripDates,
       ginzanTarget: GINZAN_TARGET, zaoTarget: ZAO_TARGET,
       itineraries: winterItineraries,
+weatherLocations: WEATHER_LOCATIONS, 
       weatherCache: () => window.weatherCache,
       callbacks: {
         onBooking: () => toggleBookingModal(),

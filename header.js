@@ -1,17 +1,13 @@
 /* ============================================================
- * AppHeader v9.4
- * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [☰ 工具]（全部 SVG）
+ * AppHeader v9.9
+ * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [☰ 工具]
  * - Focus Card：出發前 / 中 / 後
- * - 旅行中：家庭廣播（永遠顯示）+ 當前行程 + 導航/留言
- * - 工具選單：功能入口 + 安裝 App + 共享收據
- * - 全域搜尋：防抖 + 熱門關鍵字
+ * - 旅行中：家庭廣播 + 當前行程 + 多地點天氣切換 + 導航/留言
  *
- * v9.1：getTripPhase / getCurrentDayIndex 真實期間優先
- * v9.2：during 卡片按鈕 focus-cta-row-during + 留言快速模板
- * v9.3：卡片永遠顯示廣播區塊 + 訪客唯讀
- * v9.4：
- *   - ⭐ 位置分享：點「📍 我在這裡」自動取得 GPS 並發送
- *   - ⭐ 位置訊息顯示地圖按鈕
+ * v9.8：天氣警告改為單行文字
+ * v9.9：
+ *   - ⭐ getActiveWeatherLoc 優先選「非全天」時間匹配地點
+ *   - ⭐ 日出日落加中文標籤
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -25,10 +21,9 @@ window.AppHeader = (function () {
   let _docClickHandler = null;
   let _escKeyHandler = null;
   let _searchDebounceTimer = null;
+  let _selectedWeatherLocId = null;
+  let _selectedWeatherDayKey = null;
 
-  // ============================================================
-  // SVG 圖示庫
-  // ============================================================
   const ICONS = {
     search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>`,
     weather: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`,
@@ -57,17 +52,12 @@ window.AppHeader = (function () {
     { label: '♨️ 溫泉',   kw: '溫泉' }
   ];
 
-  // ============================================================
-  // 真實旅行期間優先，測試參數只在非旅行期間生效
-  // ============================================================
   function getTripPhase() {
     const now = Date.now();
     if (now >= _config.tripStart && now <= _config.tripEnd) return "during";
     try {
       const testPhase = new URLSearchParams(window.location.search).get('test');
-      if (testPhase === 'during' || testPhase === 'before' || testPhase === 'after') {
-        return testPhase;
-      }
+      if (testPhase === 'during' || testPhase === 'before' || testPhase === 'after') return testPhase;
     } catch (e) {}
     if (now < _config.tripStart) return "before";
     if (now > _config.tripEnd) return "after";
@@ -114,51 +104,28 @@ window.AppHeader = (function () {
   function getNextBigTask() {
     const now = Date.now();
     const cb = _config.callbacks || {};
-
     const ticketTasks = [
       { time: _config.ginzanTarget, label: "銀山 Fast Pass 搶票", emoji: "🎟️" },
       { time: _config.zaoTarget, label: "藏王纜車優先票", emoji: "🚠" }
     ].filter(t => {
       if (t.time <= now) return false;
-      const daysLeft = (t.time - now) / 86400000;
-      return daysLeft <= 14;
+      return (t.time - now) / 86400000 <= 14;
     }).sort((a, b) => a.time - b.time);
-
     if (ticketTasks.length > 0) {
       const t = ticketTasks[0];
       const daysLeft = Math.ceil((t.time - now) / 86400000);
-      return {
-        emoji: t.emoji,
-        label: t.label,
-        hint: `${daysLeft} 天後開賣，記得設鬧鐘`,
-        type: "ticket"
-      };
+      return { emoji: t.emoji, label: t.label, hint: `${daysLeft} 天後開賣，記得設鬧鐘`, type: "ticket" };
     }
-
     if (cb.getNextPendingBooking) {
       try {
         const booking = cb.getNextPendingBooking();
-        if (booking) {
-          return {
-            emoji: booking.icon,
-            label: booking.label,
-            hint: `還有 ${booking.remaining} 項未完成 · 點擊查看`,
-            type: "booking"
-          };
-        }
-      } catch (e) { console.warn("[AppHeader] getNextPendingBooking error:", e); }
+        if (booking) return { emoji: booking.icon, label: booking.label, hint: `還有 ${booking.remaining} 項未完成 · 點擊查看`, type: "booking" };
+      } catch (e) {}
     }
-
     if (now < _config.tripStart) {
       const daysLeft = Math.ceil((_config.tripStart - now) / 86400000);
-      return {
-        emoji: "✈️",
-        label: "出發前往仙台",
-        hint: `還有 ${daysLeft} 天 · 所有預訂已完成！`,
-        type: "trip"
-      };
+      return { emoji: "✈️", label: "出發前往仙台", hint: `還有 ${daysLeft} 天 · 所有預訂已完成！`, type: "trip" };
     }
-
     return null;
   }
 
@@ -178,10 +145,26 @@ window.AppHeader = (function () {
     return "🧥 防風外套即可";
   }
 
+  function getAlertLine(weather) {
+    if (!weather) return null;
+    const { min, rain } = weather;
+    if (typeof min === 'number' && min <= -10) {
+      return { level: 'danger', text: `⚠️ 極寒 ${min}°C，小孩勿久留戶外` };
+    }
+    if (typeof rain === 'number' && rain >= 80) {
+      return { level: 'warn', text: `🌨️ 降雪 ${rain}%，纜車可能停駛` };
+    }
+    if (typeof min === 'number' && min <= -5) {
+      return { level: 'warn', text: `❄️ 寒冷 ${min}°C，羽絨+雪靴必備` };
+    }
+    if (typeof rain === 'number' && rain >= 60) {
+      return { level: 'info', text: `🌧️ 降雪 ${rain}%，帶防水外套` };
+    }
+    return null;
+  }
+
   function escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, c => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-    }[c]));
+    return String(str).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
   function haptic(ms = 10) {
@@ -194,31 +177,24 @@ window.AppHeader = (function () {
       if (type === "booking" && cb.getBookingProgress) return cb.getBookingProgress();
       if (type === "equip" && cb.getEquipProgress) return cb.getEquipProgress();
       if (type === "shopping" && cb.getShoppingProgress) return cb.getShoppingProgress();
-    } catch (e) { console.warn("[AppHeader] progress callback error:", e); }
+    } catch (e) {}
     return { done: 0, total: 0 };
   }
 
   function renderProgressList(items) {
-    const valid = items.filter(it => {
-      const p = getProgressData(it.type);
-      return p.total > 0;
-    });
+    const valid = items.filter(it => getProgressData(it.type).total > 0);
     if (valid.length === 0) return "";
     const rows = valid.map(it => {
       const p = getProgressData(it.type);
       const percent = p.total > 0 ? Math.round((p.done / p.total) * 100) : 0;
       const done = p.done === p.total && p.total > 0;
-      return `
-        <button type="button" class="progress-item ${done ? 'done' : ''}" data-action="${it.action}">
-          <span class="progress-icon">${it.icon}</span>
-          <span class="progress-label">${escapeHtml(it.label)}</span>
-          <span class="progress-bar-mini">
-            <span class="progress-bar-mini-fill" style="width:${percent}%"></span>
-          </span>
-          <span class="progress-count">${p.done}/${p.total}</span>
-          <span class="progress-arrow">›</span>
-        </button>
-      `;
+      return `<button type="button" class="progress-item ${done ? 'done' : ''}" data-action="${it.action}">
+        <span class="progress-icon">${it.icon}</span>
+        <span class="progress-label">${escapeHtml(it.label)}</span>
+        <span class="progress-bar-mini"><span class="progress-bar-mini-fill" style="width:${percent}%"></span></span>
+        <span class="progress-count">${p.done}/${p.total}</span>
+        <span class="progress-arrow">›</span>
+      </button>`;
     }).join("");
     return `<div class="progress-list">${rows}</div>`;
   }
@@ -232,19 +208,16 @@ window.AppHeader = (function () {
 
   function getTicketCountdown() {
     const now = Date.now();
-    const ginzan = _config.ginzanTarget - now;
-    const zao = _config.zaoTarget - now;
     const candidates = [];
-    if (ginzan > 0) candidates.push(ginzan);
-    if (zao > 0) candidates.push(zao);
+    if (_config.ginzanTarget - now > 0) candidates.push(_config.ginzanTarget - now);
+    if (_config.zaoTarget - now > 0) candidates.push(_config.zaoTarget - now);
     if (candidates.length === 0) return null;
     const nearest = Math.min(...candidates);
     const days = Math.floor(nearest / 86400000);
     if (days > 0) return `${days}天`;
     const hours = Math.floor(nearest / 3600000);
     if (hours > 0) return `${hours}時`;
-    const mins = Math.max(1, Math.floor(nearest / 60000));
-    return `${mins}分`;
+    return `${Math.max(1, Math.floor(nearest / 60000))}分`;
   }
 
   function updateCountdownNumbers() {
@@ -253,17 +226,14 @@ window.AppHeader = (function () {
     if (!focusEl) return;
     const diff = _config.tripStart - Date.now();
     if (diff <= 0) return;
-
     const days = Math.floor(diff / 86400000);
     const hours = Math.floor((diff % 86400000) / 3600000);
     const minutes = Math.floor((diff % 3600000) / 60000);
     const seconds = Math.floor((diff % 60000) / 1000);
-
     updateCell(focusEl, "days", String(days));
     updateCell(focusEl, "hours", String(hours).padStart(2, "0"));
     updateCell(focusEl, "minutes", String(minutes).padStart(2, "0"));
     updateCell(focusEl, "seconds", String(seconds).padStart(2, "0"));
-
     const inlineEl = focusEl.querySelector("#focus-countdown-inline");
     if (inlineEl) {
       const dayEl = inlineEl.querySelector('[data-inline="days"]');
@@ -273,7 +243,6 @@ window.AppHeader = (function () {
       if (hourEl && hourEl.textContent !== String(hours).padStart(2, "0")) hourEl.textContent = String(hours).padStart(2, "0");
       if (minEl && minEl.textContent !== String(minutes).padStart(2, "0")) minEl.textContent = String(minutes).padStart(2, "0");
     }
-
     if (seconds % 30 === 0) {
       const fill = focusEl.querySelector(".focus-progress-fill");
       if (fill) fill.style.width = getPrepProgress() + "%";
@@ -302,9 +271,7 @@ window.AppHeader = (function () {
       const h = Math.floor(totalSec / 3600);
       const m = Math.floor((totalSec % 3600) / 60);
       const s = totalSec % 60;
-      el.textContent = h > 0
-        ? `⏱ ${h}時${String(m).padStart(2, "0")}分後`
-        : `⏱ ${m}分${String(s).padStart(2, "0")}秒後`;
+      el.textContent = h > 0 ? `⏱ ${h}時${String(m).padStart(2, "0")}分後` : `⏱ ${m}分${String(s).padStart(2, "0")}秒後`;
     } else {
       el.textContent = "🎬 即將開始";
     }
@@ -319,45 +286,19 @@ window.AppHeader = (function () {
     const kw = keyword.trim().toLowerCase();
     if (!kw) return [];
     const results = [];
-    const itineraries = _config.itineraries || [];
-
-    itineraries.forEach(day => {
+    (_config.itineraries || []).forEach(day => {
       const dayTitle = (day.title || "").toLowerCase();
       const daySubtitle = (day.subtitle || "").toLowerCase();
       if (dayTitle.includes(kw) || daySubtitle.includes(kw)) {
-        results.push({
-          day: day.day,
-          eventIndex: -1,
-          title: day.title,
-          location: "",
-          time: day.dateLabel,
-          match: "行程標題",
-          emoji: day.emoji || "📅"
-        });
+        results.push({ day: day.day, eventIndex: -1, title: day.title, location: "", time: day.dateLabel, emoji: day.emoji || "📅" });
       }
-
       (day.events || []).forEach((evt, idx) => {
-        const fields = [
-          evt.title || "",
-          evt.location || "",
-          evt.tag?.text || "",
-          stripHtml(evt.content || "")
-        ];
-        const hit = fields.some(f => f.toLowerCase().includes(kw));
-        if (hit) {
-          results.push({
-            day: day.day,
-            eventIndex: idx,
-            title: evt.title,
-            location: evt.location || "",
-            time: evt.time,
-            match: (evt.tag?.text || ""),
-            emoji: "📍"
-          });
+        const fields = [evt.title || "", evt.location || "", evt.tag?.text || "", stripHtml(evt.content || "")];
+        if (fields.some(f => f.toLowerCase().includes(kw))) {
+          results.push({ day: day.day, eventIndex: idx, title: evt.title, location: evt.location || "", time: evt.time, emoji: "📍" });
         }
       });
     });
-
     return results;
   }
 
@@ -366,17 +307,11 @@ window.AppHeader = (function () {
     if (!modal) return;
     const input = document.getElementById('search-input');
     const resultsEl = document.getElementById('search-results');
-
     if (input) input.value = "";
-    if (resultsEl) {
-      resultsEl.innerHTML = renderSearchEmpty();
-      bindHotTagClicks();
-    }
-
+    if (resultsEl) { resultsEl.innerHTML = renderSearchEmpty(); bindHotTagClicks(); }
     modal.style.display = 'flex';
     modal.classList.add('active');
     document.body.classList.add('modal-open');
-
     setTimeout(() => { if (input) input.focus(); }, 150);
     haptic(8);
   }
@@ -386,22 +321,18 @@ window.AppHeader = (function () {
     if (!modal) return;
     modal.classList.remove('active');
     setTimeout(() => { modal.style.display = 'none'; }, 250);
-    const anyOpen = document.querySelector('.modal-overlay.active');
-    if (!anyOpen) document.body.classList.remove('modal-open');
+    if (!document.querySelector('.modal-overlay.active')) document.body.classList.remove('modal-open');
     haptic(6);
   }
 
   function renderSearchEmpty() {
-    const tagsHtml = HOT_KEYWORDS.map(t =>
-      `<button type="button" class="search-hot-tag" data-hot-kw="${escapeHtml(t.kw)}">${t.label}</button>`
-    ).join('');
-    return `
-      <div class="search-empty">
-        <div style="font-size:36px;margin-bottom:8px">🔍</div>
-        <div style="font-size:13px;font-weight:700;color:#64748b">輸入關鍵字開始搜尋</div>
-        <div style="font-size:11px;color:#94a3b8;margin-top:6px">或點選熱門關鍵字</div>
-        <div class="search-hot-tags">${tagsHtml}</div>
-      </div>`;
+    const tagsHtml = HOT_KEYWORDS.map(t => `<button type="button" class="search-hot-tag" data-hot-kw="${escapeHtml(t.kw)}">${t.label}</button>`).join('');
+    return `<div class="search-empty">
+      <div style="font-size:36px;margin-bottom:8px">🔍</div>
+      <div style="font-size:13px;font-weight:700;color:#64748b">輸入關鍵字開始搜尋</div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:6px">或點選熱門關鍵字</div>
+      <div class="search-hot-tags">${tagsHtml}</div>
+    </div>`;
   }
 
   function bindHotTagClicks() {
@@ -411,52 +342,28 @@ window.AppHeader = (function () {
       btn.addEventListener('click', () => {
         const kw = btn.dataset.hotKw;
         const input = document.getElementById('search-input');
-        if (input) {
-          input.value = kw;
-          input.focus();
-          handleSearchInput(kw);
-        }
+        if (input) { input.value = kw; input.focus(); handleSearchInput(kw); }
         haptic(5);
       });
     });
   }
 
-  function renderSearchNoResult(kw) {
-    return `
-      <div class="search-empty">
-        <div style="font-size:36px;margin-bottom:8px">😕</div>
-        <div style="font-size:13px;font-weight:700;color:#64748b">找不到「${escapeHtml(kw)}」</div>
-        <div style="font-size:11px;color:#94a3b8;margin-top:4px">試試其他關鍵字</div>
-      </div>`;
-  }
-
   function renderSearchResults(results, kw) {
-    if (results.length === 0) return renderSearchNoResult(kw);
-
+    if (results.length === 0) return `<div class="search-empty"><div style="font-size:36px;margin-bottom:8px">😕</div><div style="font-size:13px;font-weight:700;color:#64748b">找不到「${escapeHtml(kw)}」</div></div>`;
     const grouped = {};
-    results.forEach(r => {
-      if (!grouped[r.day]) grouped[r.day] = [];
-      grouped[r.day].push(r);
-    });
+    results.forEach(r => { if (!grouped[r.day]) grouped[r.day] = []; grouped[r.day].push(r); });
     const dayNums = Object.keys(grouped).map(Number).sort((a, b) => a - b);
-
-    let html = `<div style="font-size:11px;color:#64748b;font-weight:700;padding:6px 4px 8px">
-      找到 <span style="color:#0284c7;font-weight:900">${results.length}</span> 個結果
-    </div>`;
-
+    let html = `<div style="font-size:11px;color:#64748b;font-weight:700;padding:6px 4px 8px">找到 <span style="color:#0284c7;font-weight:900">${results.length}</span> 個結果</div>`;
     dayNums.forEach(day => {
-      const items = grouped[day];
-      html += `<div class="search-day-group">`;
-      html += `<div class="search-day-label">Day ${day}</div>`;
-      items.forEach(item => {
+      html += `<div class="search-day-group"><div class="search-day-label">Day ${day}</div>`;
+      grouped[day].forEach(item => {
         const highlight = (text) => {
           if (!text) return "";
           const escaped = escapeHtml(text);
           const regex = new RegExp(`(${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
           return escaped.replace(regex, '<mark>$1</mark>');
         };
-        html += `<button type="button" class="search-result-item"
-          data-day="${item.day}" data-event-index="${item.eventIndex}">
+        html += `<button type="button" class="search-result-item" data-day="${item.day}" data-event-index="${item.eventIndex}">
           <div class="search-result-icon">${item.emoji}</div>
           <div class="search-result-main">
             <div class="search-result-title">${highlight(item.title)}</div>
@@ -470,70 +377,165 @@ window.AppHeader = (function () {
       });
       html += `</div>`;
     });
-
     return html;
   }
 
   function handleSearchInput(kw) {
     const resultsEl = document.getElementById('search-results');
     if (!resultsEl) return;
-    if (!kw.trim()) {
-      resultsEl.innerHTML = renderSearchEmpty();
-      bindHotTagClicks();
-      return;
-    }
-    const results = searchItinerary(kw);
-    resultsEl.innerHTML = renderSearchResults(results, kw);
-
+    if (!kw.trim()) { resultsEl.innerHTML = renderSearchEmpty(); bindHotTagClicks(); return; }
+    resultsEl.innerHTML = renderSearchResults(searchItinerary(kw), kw);
     resultsEl.querySelectorAll('.search-result-item').forEach(btn => {
       btn.addEventListener('click', () => {
-        const day = parseInt(btn.dataset.day);
-        const eventIndex = parseInt(btn.dataset.eventIndex);
         closeSearchModal();
-        setTimeout(() => jumpToSearchResult(day, eventIndex), 300);
+        setTimeout(() => jumpToSearchResult(parseInt(btn.dataset.day), parseInt(btn.dataset.eventIndex)), 300);
       });
     });
   }
 
   function jumpToSearchResult(day, eventIndex) {
-    if (typeof window.switchDay === "function") {
-      window.switchDay(day);
-    } else if (_config.callbacks.onScrollToDay) {
-      _config.callbacks.onScrollToDay(day);
-    }
-
+    if (typeof window.switchDay === "function") window.switchDay(day);
+    else if (_config.callbacks.onScrollToDay) _config.callbacks.onScrollToDay(day);
     setTimeout(() => {
       if (eventIndex < 0) {
         const section = document.getElementById('day-section-' + day);
         if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
-
       const section = document.getElementById('day-section-' + day);
       if (!section) return;
-      const cards = section.querySelectorAll('details.event-card');
-      const target = cards[eventIndex];
+      const target = section.querySelectorAll('details.event-card')[eventIndex];
       if (!target) return;
-
       target.open = true;
-
       setTimeout(() => {
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         target.style.transition = 'box-shadow 0.4s ease, border-color 0.4s ease';
         target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.55), 0 12px 32px -8px rgba(14, 165, 233, 0.5)';
         target.style.borderColor = 'rgba(14, 165, 233, 0.8)';
-        setTimeout(() => {
-          target.style.boxShadow = '';
-          target.style.borderColor = '';
-        }, 2000);
+        setTimeout(() => { target.style.boxShadow = ''; target.style.borderColor = ''; }, 2000);
       }, 200);
     }, 350);
-
     haptic(12);
   }
 
   // ============================================================
-  // 渲染廣播區塊 HTML（內部共用）
+  // 多地點天氣
+  // ============================================================
+  function getWeatherLocationsForDay(dayIdx) {
+    if (!_config.weatherLocations) return [];
+    return _config.weatherLocations[dayIdx + 1] || [];
+  }
+
+  function getActiveWeatherLoc(dayIdx, dateStr) {
+    const locs = getWeatherLocationsForDay(dayIdx);
+    if (locs.length === 0) return null;
+    if (locs.length === 1) return locs[0];
+
+    const dayKey = dateStr;
+    if (_selectedWeatherLocId && _selectedWeatherDayKey === dayKey) {
+      const selected = locs.find(l => l.id === _selectedWeatherLocId);
+      if (selected) return selected;
+    }
+
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+
+    const isTest = (() => {
+      try {
+        return new URLSearchParams(window.location.search).get('test') === 'during';
+      } catch (e) { return false; }
+    })();
+
+    let checkMin = nowMin;
+    if (isTest) checkMin = 10 * 60;
+
+    // ⭐ v9.9：優先選「非全天」且時間匹配的地點
+    for (const loc of locs) {
+      const [fh, fm] = loc.timeFrom.split(':').map(Number);
+      const [th, tm] = loc.timeTo.split(':').map(Number);
+      const from = fh * 60 + fm;
+      const to = th * 60 + tm;
+      const isAllDay = (from === 0 && to >= 23 * 60 + 59);
+      if (isAllDay) continue;
+      if (checkMin >= from && checkMin <= to) return loc;
+    }
+
+    // 沒有特殊地點匹配 → 找全天的那個
+    for (const loc of locs) {
+      const [fh, fm] = loc.timeFrom.split(':').map(Number);
+      const [th, tm] = loc.timeTo.split(':').map(Number);
+      const from = fh * 60 + fm;
+      const to = th * 60 + tm;
+      if (from === 0 && to >= 23 * 60 + 59) return loc;
+    }
+
+    return locs[0];
+  }
+
+  function getWeatherForLoc(dateStr, locId) {
+    if (!window.weatherCache) return null;
+    return window.weatherCache[dateStr + '|' + locId] || null;
+  }
+
+  function renderWeatherRow(dayIdx, dateStr) {
+    const locs = getWeatherLocationsForDay(dayIdx);
+    if (locs.length === 0) return '';
+
+    const activeLoc = getActiveWeatherLoc(dayIdx, dateStr);
+    if (!activeLoc) return '';
+
+    const weather = getWeatherForLoc(dateStr, activeLoc.id);
+    const temp = weather ? Math.round((weather.max + weather.min) / 2) : null;
+    const advice = weather ? getWeatherAdvice(temp, weather.rain) : '載入中...';
+
+    let tabsHtml = '';
+    if (locs.length > 1) {
+      tabsHtml = `<div class="focus-weather-tabs">` + locs.map(loc => {
+        const isActive = loc.id === activeLoc.id;
+        return `<button type="button" class="focus-weather-tab ${isActive ? 'active' : ''}" 
+          data-loc-id="${escapeHtml(loc.id)}" 
+          onclick="event.stopPropagation();window._AppHeader_switchWeatherLoc('${escapeHtml(loc.id)}','${escapeHtml(dateStr)}',${dayIdx})">
+          ${escapeHtml(loc.shortName || loc.name)}
+        </button>`;
+      }).join('') + `</div>`;
+    }
+
+    const alert = getAlertLine(weather);
+    const alertHtml = alert
+      ? `<div class="focus-weather-alert ${alert.level}">${alert.text}</div>`
+      : '';
+
+    let sunHtml = '';
+    if (weather && (weather.sunrise || weather.sunset)) {
+      sunHtml = `<div class="focus-weather-line2">
+        <span class="fw-sun">🌅 日出 ${weather.sunrise || '--'}</span>
+        <span class="fw-sun-sep">·</span>
+        <span class="fw-sun">🌇 日落 ${weather.sunset || '--'}</span>
+        ${weather.isClimate ? `<span class="fw-sun-note">參考</span>` : ''}
+      </div>`;
+    }
+
+    return `
+      <div class="focus-weather-row">
+        ${tabsHtml}
+        <div class="focus-weather-line1">
+          ${weather ? `${weather.icon} ${weather.min}°~${weather.max}° · ${advice}` : '⛅ 天氣載入中...'}
+        </div>
+        ${alertHtml}
+        ${sunHtml}
+      </div>
+    `;
+  }
+
+  window._AppHeader_switchWeatherLoc = function (locId, dateStr, dayIdx) {
+    _selectedWeatherLocId = locId;
+    _selectedWeatherDayKey = dateStr;
+    haptic(6);
+    renderFocusCard(true);
+  };
+
+  // ============================================================
+  // 廣播區塊 HTML
   // ============================================================
   function buildBroadcastHTML() {
     if (!window.Messages) return '';
@@ -541,7 +543,6 @@ window.AppHeader = (function () {
     const html = window.Messages.renderCard(2);
     const canWrite = window.Messages.canWrite();
     const emptyText = canWrite ? '尚無留言，點此發送第一則' : '訪客僅能閱讀';
-
     return `
       <div class="broadcast-block" id="broadcast-block" onclick="openMessagesModal()" style="cursor:pointer">
         <div class="broadcast-header">
@@ -550,21 +551,20 @@ window.AppHeader = (function () {
           <span class="broadcast-open-hint">點擊查看 →</span>
         </div>
         ${html || `<div class="broadcast-empty">${emptyText}</div>`}
-      </div>
-    `;
+      </div>`;
   }
 
   // ============================================================
   // renderFocusCard
   // ============================================================
-  function renderFocusCard() {
+  function renderFocusCard(force) {
     if (!_container) return;
     const focusEl = _container.querySelector("#app-header-focus");
     if (!focusEl) return;
     const phase = getTripPhase();
     const cb = _config.callbacks || {};
 
-    if (_lastRenderedPhase !== phase) {
+    if (force || _lastRenderedPhase !== phase) {
       _lastRenderedPhase = phase;
       let innerHTML = "";
 
@@ -582,117 +582,86 @@ window.AppHeader = (function () {
           { type: "equip",   icon: "🎒", label: "我的裝備", action: "equip"   }
         ]);
 
-        innerHTML = `
-          <div class="focus-inner">
-            <div class="focus-label">距離出發還有</div>
-
-            <div class="countdown-inline" id="focus-countdown-inline">
-              <span class="countdown-inline-num" data-inline="days">${days}</span>
-              <span class="countdown-inline-unit">天</span>
-              <span class="countdown-inline-num-sm" data-inline="hours">${String(hours).padStart(2, "0")}</span>
-              <span class="countdown-inline-unit-sm">時</span>
-              <span class="countdown-inline-num-sm" data-inline="minutes">${String(minutes).padStart(2, "0")}</span>
-              <span class="countdown-inline-unit-sm">分</span>
-            </div>
-
-            <div class="countdown-grid">
-              <div class="countdown-cell"><div class="countdown-value" data-cell="days">${days}</div><div class="countdown-unit">天</div></div>
-              <div class="countdown-cell"><div class="countdown-value" data-cell="hours">${String(hours).padStart(2, "0")}</div><div class="countdown-unit">時</div></div>
-              <div class="countdown-cell"><div class="countdown-value" data-cell="minutes">${String(minutes).padStart(2, "0")}</div><div class="countdown-unit">分</div></div>
-              <div class="countdown-cell" data-cell-block="seconds"><div class="countdown-value" data-cell="seconds">${String(seconds).padStart(2, "0")}</div><div class="countdown-unit">秒</div></div>
-            </div>
-
-            <div class="focus-progress-row">
-              <div class="focus-progress-track"><div class="focus-progress-fill" style="width:${progress}%"></div></div>
-              <div class="focus-progress-label">準備進度 ${Math.round(progress)}%</div>
-            </div>
-
-            ${progressRows}
-
-            ${task ? `
-              <div class="focus-task" data-action="${task.type === 'booking' ? 'booking' : task.type === 'ticket' ? 'ticket' : 'overview'}" style="cursor:pointer">
-                <span class="focus-task-icon">${task.emoji}</span>
-                <div style="flex:1;min-width:0">
-                  <div class="focus-task-text">下一個任務：${escapeHtml(task.label)}</div>
-                  <div style="font-size:11px;color:rgba(146,64,14,0.75);margin-top:2px">${escapeHtml(task.hint)}</div>
-                </div>
-                <span style="color:#92400e;font-size:16px;font-weight:900;flex-shrink:0">›</span>
-              </div>
-            ` : ""}
-
-            <div class="focus-cta-row" style="flex-wrap:wrap">
-              <button type="button" class="focus-cta focus-cta-primary" data-action="overview" style="flex:1 1 100%">
-                <span>📋</span> 行程速覽
-              </button>
-              <button type="button" class="focus-cta focus-cta-secondary" data-action="shopping" style="flex:1">
-                <span>🛍️</span> 購物
-              </button>
-              <button type="button" class="focus-cta focus-cta-secondary" data-action="ticket" style="flex:1">
-                <span>⚔️</span> 搶票
-              </button>
-            </div>
+        innerHTML = `<div class="focus-inner">
+          <div class="focus-label">距離出發還有</div>
+          <div class="countdown-inline" id="focus-countdown-inline">
+            <span class="countdown-inline-num" data-inline="days">${days}</span>
+            <span class="countdown-inline-unit">天</span>
+            <span class="countdown-inline-num-sm" data-inline="hours">${String(hours).padStart(2, "0")}</span>
+            <span class="countdown-inline-unit-sm">時</span>
+            <span class="countdown-inline-num-sm" data-inline="minutes">${String(minutes).padStart(2, "0")}</span>
+            <span class="countdown-inline-unit-sm">分</span>
           </div>
-        `;
+          <div class="countdown-grid">
+            <div class="countdown-cell"><div class="countdown-value" data-cell="days">${days}</div><div class="countdown-unit">天</div></div>
+            <div class="countdown-cell"><div class="countdown-value" data-cell="hours">${String(hours).padStart(2, "0")}</div><div class="countdown-unit">時</div></div>
+            <div class="countdown-cell"><div class="countdown-value" data-cell="minutes">${String(minutes).padStart(2, "0")}</div><div class="countdown-unit">分</div></div>
+            <div class="countdown-cell" data-cell-block="seconds"><div class="countdown-value" data-cell="seconds">${String(seconds).padStart(2, "0")}</div><div class="countdown-unit">秒</div></div>
+          </div>
+          <div class="focus-progress-row">
+            <div class="focus-progress-track"><div class="focus-progress-fill" style="width:${progress}%"></div></div>
+            <div class="focus-progress-label">準備進度 ${Math.round(progress)}%</div>
+          </div>
+          ${progressRows}
+          ${task ? `<div class="focus-task" data-action="${task.type === 'booking' ? 'booking' : task.type === 'ticket' ? 'ticket' : 'overview'}" style="cursor:pointer">
+            <span class="focus-task-icon">${task.emoji}</span>
+            <div style="flex:1;min-width:0">
+              <div class="focus-task-text">下一個任務：${escapeHtml(task.label)}</div>
+              <div style="font-size:11px;color:rgba(146,64,14,0.75);margin-top:2px">${escapeHtml(task.hint)}</div>
+            </div>
+            <span style="color:#92400e;font-size:16px;font-weight:900;flex-shrink:0">›</span>
+          </div>` : ""}
+          <div class="focus-cta-row" style="flex-wrap:wrap">
+            <button type="button" class="focus-cta focus-cta-primary" data-action="overview" style="flex:1 1 100%"><span>📋</span> 行程速覽</button>
+            <button type="button" class="focus-cta focus-cta-secondary" data-action="shopping" style="flex:1"><span>🛍️</span> 購物</button>
+            <button type="button" class="focus-cta focus-cta-secondary" data-action="ticket" style="flex:1"><span>⚔️</span> 搶票</button>
+          </div>
+        </div>`;
       } else if (phase === "during") {
         const dayIdx = getCurrentDayIndex();
         const dayData = dayIdx >= 0 ? _config.itineraries[dayIdx] : _config.itineraries[0];
-        const weatherMap = _config.weatherCache ? _config.weatherCache() : {};
-        const weather = weatherMap[_config.tripDates[dayIdx >= 0 ? dayIdx : 0]];
+        const dateStr = _config.tripDates[dayIdx >= 0 ? dayIdx : 0];
         const nextEvt = getNextEvent(dayData);
-        const temp = weather ? Math.round((weather.max + weather.min) / 2) : null;
-        const advice = weather ? getWeatherAdvice(temp, weather.rain) : "載入中...";
-
         const msgCount = window.Messages ? window.Messages.getCount() : 0;
         const broadcastHTML = buildBroadcastHTML();
+        const weatherRowHtml = renderWeatherRow(dayIdx >= 0 ? dayIdx : 0, dateStr);
 
-        innerHTML = `
-          <div class="focus-inner">
-            ${broadcastHTML}
-
-            <div class="focus-current">
-              <div class="focus-current-row">
-                <span class="focus-current-label">🎯 現在</span>
-                <span class="focus-current-title">${escapeHtml(dayData.title)}</span>
-              </div>
-              ${nextEvt ? `
-                <div class="focus-next-row">
-                  <span class="focus-next-label">⏭️ 下一站</span>
-                  <span class="focus-next-title">${escapeHtml(nextEvt.time.split(" - ")[0])} · ${escapeHtml(nextEvt.title)}</span>
-                </div>
-              ` : ''}
-              <div class="focus-weather-row">${weather ? `${weather.icon} ${weather.min}°~${weather.max}° · ${advice}` : '⛅ 天氣載入中...'}</div>
+        innerHTML = `<div class="focus-inner">
+          ${broadcastHTML}
+          <div class="focus-current">
+            <div class="focus-current-row">
+              <span class="focus-current-label">🎯 現在</span>
+              <span class="focus-current-title">${escapeHtml(dayData.title)}</span>
             </div>
-
-            <div class="focus-cta-row focus-cta-row-during">
-              <button type="button" class="focus-cta focus-cta-primary" data-action="navigate">
-                <span>📍</span> 導航
-              </button>
-              <button type="button" class="focus-cta focus-cta-secondary" data-action="messages">
-                <span>💬</span> 留言${msgCount > 0 ? `<span class="broadcast-badge">${msgCount}</span>` : ''}
-              </button>
-            </div>
+            ${nextEvt ? `<div class="focus-next-row">
+              <span class="focus-next-label">⏭️ 下一站</span>
+              <span class="focus-next-title">${escapeHtml(nextEvt.time.split(" - ")[0])} · ${escapeHtml(nextEvt.title)}</span>
+            </div>` : ''}
+            ${weatherRowHtml}
           </div>
-        `;
+          <div class="focus-cta-row focus-cta-row-during">
+            <button type="button" class="focus-cta focus-cta-primary" data-action="navigate"><span>📍</span> 導航</button>
+            <button type="button" class="focus-cta focus-cta-secondary" data-action="messages"><span>💬</span> 留言${msgCount > 0 ? `<span class="broadcast-badge">${msgCount}</span>` : ''}</button>
+          </div>
+        </div>`;
       } else {
         let totalExpenses = 0;
         if (cb.getExpenseCount) { try { totalExpenses = cb.getExpenseCount() || 0; } catch (e) {} }
         const shoppingP = getProgressData("shopping");
-        innerHTML = `
-          <div class="focus-inner">
-            <div class="focus-label">旅程圓滿結束</div>
-            <div class="focus-title">🎉 感謝這趟美好的雪國之旅</div>
-            <div class="focus-subtitle">7 天 · 4 大 2 小 · 無數美好回憶</div>
-            <div class="focus-stats">
-              <div class="focus-stat"><div class="num">7</div><div class="lbl">旅行天數</div></div>
-              <div class="focus-stat"><div class="num">${totalExpenses}</div><div class="lbl">記帳筆數</div></div>
-              <div class="focus-stat"><div class="num">${shoppingP.done}</div><div class="lbl">購物項目</div></div>
-            </div>
-            <div class="focus-cta-row">
-              <button type="button" class="focus-cta focus-cta-primary" data-action="overview"><span>📖</span> 回顧旅程</button>
-              <button type="button" class="focus-cta focus-cta-secondary" data-action="switchLedger"><span>💰</span> 查看記帳</button>
-            </div>
+        innerHTML = `<div class="focus-inner">
+          <div class="focus-label">旅程圓滿結束</div>
+          <div class="focus-title">🎉 感謝這趟美好的雪國之旅</div>
+          <div class="focus-subtitle">7 天 · 4 大 2 小 · 無數美好回憶</div>
+          <div class="focus-stats">
+            <div class="focus-stat"><div class="num">7</div><div class="lbl">旅行天數</div></div>
+            <div class="focus-stat"><div class="num">${totalExpenses}</div><div class="lbl">記帳筆數</div></div>
+            <div class="focus-stat"><div class="num">${shoppingP.done}</div><div class="lbl">購物項目</div></div>
           </div>
-        `;
+          <div class="focus-cta-row">
+            <button type="button" class="focus-cta focus-cta-primary" data-action="overview"><span>📖</span> 回顧旅程</button>
+            <button type="button" class="focus-cta focus-cta-secondary" data-action="switchLedger"><span>💰</span> 查看記帳</button>
+          </div>
+        </div>`;
       }
 
       focusEl.innerHTML = innerHTML;
@@ -764,9 +733,7 @@ window.AppHeader = (function () {
 
     const progressItems = [];
     const bookingP = getProgressData("booking");
-    if (bookingP.total > 0) {
-      progressItems.push({ icon: "📌", label: "行前預訂", done: bookingP.done, total: bookingP.total, action: "booking" });
-    }
+    if (bookingP.total > 0) progressItems.push({ icon: "📌", label: "行前預訂", done: bookingP.done, total: bookingP.total, action: "booking" });
     if (!guest) {
       const equipP = getProgressData("equip");
       progressItems.push({ icon: "🎒", label: "我的裝備", done: equipP.done, total: equipP.total, action: "equip" });
@@ -793,102 +760,42 @@ window.AppHeader = (function () {
     const isDark = currentTheme === 'dark';
 
     panel.innerHTML = `
-      ${progressItems.length > 0 ? `
-        <div class="tools-section">
-          <div class="tools-section-label"><span>📊</span> 我的清單</div>
-          ${progressHTML}
-        </div>
-      ` : ""}
-
+      ${progressItems.length > 0 ? `<div class="tools-section"><div class="tools-section-label"><span>📊</span> 我的清單</div>${progressHTML}</div>` : ""}
       <div class="tools-section">
         <div class="tools-section-label"><span>⚡</span> 快速操作</div>
-        <button type="button" class="tools-item" data-tool-action="search">
-          <span class="tools-item-icon">${ICONS.search}</span>
-          <span class="tools-item-label">搜尋行程</span>
-          <span class="tools-item-arrow">›</span>
-        </button>
-        <button type="button" class="tools-item" data-tool-action="overview">
-          <span class="tools-item-icon">${ICONS.overview}</span>
-          <span class="tools-item-label">行程速覽</span>
-          <span class="tools-item-arrow">›</span>
-        </button>
-        <button type="button" class="tools-item" data-tool-action="ledger">
-          <span class="tools-item-icon">${ICONS.ledger}</span>
-          <span class="tools-item-label">快速記帳</span>
-          <span class="tools-item-arrow">›</span>
-        </button>
-        <button type="button" class="tools-item" data-tool-action="receipts">
-          <span class="tools-item-icon">${ICONS.receipt}</span>
-          <span class="tools-item-label">共享收據/憑證</span>
-          <span class="tools-item-tag new">新增</span>
-          <span class="tools-item-arrow">›</span>
-        </button>
+        <button type="button" class="tools-item" data-tool-action="search"><span class="tools-item-icon">${ICONS.search}</span><span class="tools-item-label">搜尋行程</span><span class="tools-item-arrow">›</span></button>
+        <button type="button" class="tools-item" data-tool-action="overview"><span class="tools-item-icon">${ICONS.overview}</span><span class="tools-item-label">行程速覽</span><span class="tools-item-arrow">›</span></button>
+        <button type="button" class="tools-item" data-tool-action="ledger"><span class="tools-item-icon">${ICONS.ledger}</span><span class="tools-item-label">快速記帳</span><span class="tools-item-arrow">›</span></button>
+        <button type="button" class="tools-item" data-tool-action="receipts"><span class="tools-item-icon">${ICONS.receipt}</span><span class="tools-item-label">共享收據/憑證</span><span class="tools-item-tag new">新增</span><span class="tools-item-arrow">›</span></button>
       </div>
-
-      ${showInstall ? `
-        <div class="tools-section">
-          <div class="tools-section-label"><span>📲</span> 應用程式</div>
-          <button type="button" class="tools-item" data-tool-action="install">
-            <span class="tools-item-icon">${ICONS.install}</span>
-            <span class="tools-item-label">安裝 App 到桌面</span>
-            <span class="tools-item-tag new">推薦</span>
-            <span class="tools-item-arrow">›</span>
-          </button>
-        </div>
-      ` : ""}
-
+      ${showInstall ? `<div class="tools-section"><div class="tools-section-label"><span>📲</span> 應用程式</div>
+        <button type="button" class="tools-item" data-tool-action="install"><span class="tools-item-icon">${ICONS.install}</span><span class="tools-item-label">安裝 App 到桌面</span><span class="tools-item-tag new">推薦</span><span class="tools-item-arrow">›</span></button>
+      </div>` : ""}
       <div class="tools-section">
         <div class="tools-section-label"><span>🎨</span> 顯示與安全</div>
-        <button type="button" class="tools-item" data-tool-action="theme">
-          <span class="tools-item-icon">${ICONS.theme}</span>
-          <span class="tools-item-label">${isDark ? '淺色模式' : '深色模式'}</span>
-          <span class="tools-item-arrow">›</span>
-        </button>
-        <button type="button" class="tools-item" data-tool-action="emergency">
-          <span class="tools-item-icon">${ICONS.emergency}</span>
-          <span class="tools-item-label">緊急資訊</span>
-          <span class="tools-item-arrow">›</span>
-        </button>
+        <button type="button" class="tools-item" data-tool-action="theme"><span class="tools-item-icon">${ICONS.theme}</span><span class="tools-item-label">${isDark ? '淺色模式' : '深色模式'}</span><span class="tools-item-arrow">›</span></button>
+        <button type="button" class="tools-item" data-tool-action="emergency"><span class="tools-item-icon">${ICONS.emergency}</span><span class="tools-item-label">緊急資訊</span><span class="tools-item-arrow">›</span></button>
       </div>
-
       <div class="tools-section">
         <div class="tools-section-label"><span>📚</span> 攻略參考</div>
-        ${phase !== "after" ? `
-          <button type="button" class="tools-item" data-tool-action="ticket">
-            <span class="tools-item-icon">${ICONS.ticket}</span>
-            <span class="tools-item-label">搶票攻略</span>
-            ${ticketCd ? `<span class="tools-item-tag hot">⏰ ${ticketCd}</span>` : ""}
-            <span class="tools-item-arrow">›</span>
-          </button>
-        ` : ""}
-        <button type="button" class="tools-item" data-tool-action="drive">
-          <span class="tools-item-icon">${ICONS.drive}</span>
-          <span class="tools-item-label">雪地攻略</span>
+        ${phase !== "after" ? `<button type="button" class="tools-item" data-tool-action="ticket">
+          <span class="tools-item-icon">${ICONS.ticket}</span>
+          <span class="tools-item-label">搶票攻略</span>
+          ${ticketCd ? `<span class="tools-item-tag hot">⏰ ${ticketCd}</span>` : ""}
           <span class="tools-item-arrow">›</span>
-        </button>
-        <button type="button" class="tools-item" data-tool-action="shoot">
-          <span class="tools-item-icon">${ICONS.shoot}</span>
-          <span class="tools-item-label">拍攝技巧</span>
-          <span class="tools-item-arrow">›</span>
-        </button>
+        </button>` : ""}
+        <button type="button" class="tools-item" data-tool-action="drive"><span class="tools-item-icon">${ICONS.drive}</span><span class="tools-item-label">雪地攻略</span><span class="tools-item-arrow">›</span></button>
+        <button type="button" class="tools-item" data-tool-action="shoot"><span class="tools-item-icon">${ICONS.shoot}</span><span class="tools-item-label">拍攝技巧</span><span class="tools-item-arrow">›</span></button>
       </div>
-
       <div class="tools-section">
         <div class="tools-section-label"><span>⚙️</span> 帳戶</div>
-        <button type="button" class="tools-item" data-tool-action="ledger">
-          <span class="tools-item-icon">${ICONS.ledger}</span>
-          <span class="tools-item-label">隨行記帳本</span>
+        <button type="button" class="tools-item" data-tool-action="ledger"><span class="tools-item-icon">${ICONS.ledger}</span><span class="tools-item-label">隨行記帳本</span><span class="tools-item-arrow">›</span></button>
+        ${currentUser ? `<button type="button" class="tools-item" data-tool-action="account">
+          <span class="tools-item-icon">${ICONS.account}</span>
+          <span class="tools-item-label">${escapeHtml(currentUser)} · 帳戶設定</span>
           <span class="tools-item-arrow">›</span>
-        </button>
-        ${currentUser ? `
-          <button type="button" class="tools-item" data-tool-action="account">
-            <span class="tools-item-icon">${ICONS.account}</span>
-            <span class="tools-item-label">${escapeHtml(currentUser)} · 帳戶設定</span>
-            <span class="tools-item-arrow">›</span>
-          </button>
-        ` : ""}
+        </button>` : ""}
       </div>
-
       <div class="tools-section">
         <div class="tools-sync-status ${isConnected ? '' : 'disconnected'}">
           <span class="tools-sync-dot"></span>
@@ -904,15 +811,9 @@ window.AppHeader = (function () {
         setTimeout(() => {
           if (action === "search")  { openSearchModal(); return; }
           if (action === "install") { if (typeof window.triggerInstall === "function") window.triggerInstall(); return; }
-
           const map = {
-            booking: cb.onBooking,
-            equip: cb.onEquip,
-            shopping: cb.onShopping,
-            ticket: cb.onTicket,
-            drive: cb.onDrive,
-            shoot: cb.onShoot,
-            weather: cb.onWeather,
+            booking: cb.onBooking, equip: cb.onEquip, shopping: cb.onShopping,
+            ticket: cb.onTicket, drive: cb.onDrive, shoot: cb.onShoot, weather: cb.onWeather,
             overview: () => { cb.onOverview && cb.onOverview(); },
             ledger: () => cb.onSwitchTab && cb.onSwitchTab("ledger"),
             account: () => { if (typeof window.switchUser === "function") window.switchUser(); },
@@ -937,6 +838,8 @@ window.AppHeader = (function () {
       _lastRenderedPhase = null;
       _nextEventStartMs = null;
       _lastDuringRender = 0;
+      _selectedWeatherLocId = null;
+      _selectedWeatherDayKey = null;
 
       _container.innerHTML = `
         <div class="brand-bar">
@@ -959,42 +862,25 @@ window.AppHeader = (function () {
             </button>
           </div>
         </div>
-
         <div class="focus-card">
           <div id="app-header-focus" class="focus-inner">
             <div class="focus-loading"><div class="focus-spinner"></div></div>
           </div>
         </div>
-
         <div class="tools-menu-backdrop" id="tools-menu-backdrop"></div>
         <div class="tools-menu-panel" id="tools-menu-panel"></div>
       `;
 
-      const searchBtn = _container.querySelector("#app-header-search");
-      if (searchBtn) {
-        searchBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          openSearchModal();
-        });
-      }
-
-      const weatherBtn = _container.querySelector("#app-header-weather");
-      if (weatherBtn) {
-        weatherBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const cb = _config.callbacks || {};
-          if (cb.onWeather) cb.onWeather();
-          haptic(10);
-        });
-      }
+      _container.querySelector("#app-header-search")?.addEventListener("click", (e) => { e.stopPropagation(); openSearchModal(); });
+      _container.querySelector("#app-header-weather")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const cb = _config.callbacks || {};
+        if (cb.onWeather) cb.onWeather();
+        haptic(10);
+      });
 
       const toggleBtn = _container.querySelector("#tools-toggle");
-      if (toggleBtn) {
-        toggleBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          toggleToolsMenu();
-        });
-      }
+      if (toggleBtn) toggleBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleToolsMenu(); });
 
       const backdrop = _container.querySelector("#tools-menu-backdrop");
       if (backdrop) backdrop.addEventListener("click", () => closeToolsMenu());
@@ -1009,40 +895,29 @@ window.AppHeader = (function () {
       document.addEventListener("click", _docClickHandler);
 
       _escKeyHandler = (e) => {
-        if (e.key === "Escape") {
-          closeToolsMenu();
-          closeSearchModal();
-        }
+        if (e.key === "Escape") { closeToolsMenu(); closeSearchModal(); }
       };
       document.addEventListener("keydown", _escKeyHandler);
 
       const searchInput = document.getElementById('search-input');
       if (searchInput) {
         searchInput.addEventListener('input', (e) => {
-          const value = e.target.value;
           clearTimeout(_searchDebounceTimer);
-          _searchDebounceTimer = setTimeout(() => handleSearchInput(value), 150);
+          _searchDebounceTimer = setTimeout(() => handleSearchInput(e.target.value), 150);
         });
         searchInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
             clearTimeout(_searchDebounceTimer);
-            const firstResult = document.querySelector('.search-result-item');
-            if (firstResult) firstResult.click();
+            const first = document.querySelector('.search-result-item');
+            if (first) first.click();
           }
         });
       }
-
-      const searchClose = document.getElementById('search-close');
-      if (searchClose) {
-        searchClose.addEventListener('click', () => closeSearchModal());
-      }
-
+      document.getElementById('search-close')?.addEventListener('click', () => closeSearchModal());
       const searchBackdrop = document.getElementById('search-modal');
       if (searchBackdrop) {
-        searchBackdrop.addEventListener('click', (e) => {
-          if (e.target === searchBackdrop) closeSearchModal();
-        });
+        searchBackdrop.addEventListener('click', (e) => { if (e.target === searchBackdrop) closeSearchModal(); });
       }
 
       renderFocusCard();
@@ -1057,7 +932,7 @@ window.AppHeader = (function () {
           const now = Date.now();
           if (now - _lastDuringRender >= 60000) {
             _lastDuringRender = now;
-            renderFocusCard();
+            renderFocusCard(true);
           }
         }
       }, 1000);
@@ -1081,6 +956,8 @@ window.AppHeader = (function () {
       if (_container) _container.innerHTML = "";
       _config = null; _container = null;
       _lastRenderedPhase = null; _nextEventStartMs = null; _lastDuringRender = 0;
+      _selectedWeatherLocId = null;
+      _selectedWeatherDayKey = null;
     },
 
     _getConfig: () => _config
@@ -1093,7 +970,6 @@ window.AppHeader = (function () {
 function openNavigateMenu() {
   const cfg = window.AppHeader._getConfig();
   if (!cfg) return;
-
   const now = Date.now();
   let dayIdx = -1;
   for (let i = 0; i < cfg.tripDates.length; i++) {
@@ -1115,12 +991,10 @@ function openNavigateMenu() {
 
   const d = new Date();
   const nowMin = d.getHours() * 60 + d.getMinutes();
-
   let curIdx = -1;
   for (let i = 0; i < dayData.events.length; i++) {
     const evt = dayData.events[i];
-    const s = evt.time.split(" - ")[0].trim();
-    const [h, m] = s.split(":").map(Number);
+    const [h, m] = evt.time.split(" - ")[0].trim().split(":").map(Number);
     if (isNaN(h)) continue;
     const start = h * 60 + m;
     const endStr = evt.time.split(" - ")[1];
@@ -1144,16 +1018,12 @@ function openNavigateMenu() {
     const evt = dayData.events[i];
     opts.push({
       label: i === curIdx ? '▶ 當前' : (i === curIdx + 1 ? '下一個' : '下下個'),
-      time: evt.time,
-      title: evt.title,
-      navUrl: evt.navUrl,
-      navName: evt.navName || evt.title
+      time: evt.time, title: evt.title, navUrl: evt.navUrl
     });
   }
 
   const content = document.getElementById("navigate-menu-content");
   if (!content) return;
-
   content.innerHTML = opts.map(opt => {
     const url = opt.navUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(opt.title)}`;
     return `<a href="${url}" target="_blank" rel="noopener" class="navigate-option ${opt.label.startsWith('▶') ? 'current' : ''}" onclick="closeNavigateMenu()">
@@ -1165,11 +1035,7 @@ function openNavigateMenu() {
   }).join('');
 
   const m = document.getElementById("navigate-menu-modal");
-  if (m) {
-    m.style.display = 'flex';
-    m.classList.add('active');
-    document.body.classList.add('modal-open');
-  }
+  if (m) { m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); }
   if (navigator.vibrate) navigator.vibrate(8);
 }
 function closeNavigateMenu() {
@@ -1192,7 +1058,6 @@ function openMessagesModal() {
   m.classList.add('active');
   document.body.classList.add('modal-open');
 
-  // ⭐ 訪客唯讀：隱藏輸入區
   const canWrite = window.Messages ? window.Messages.canWrite() : false;
   const quickRow = m.querySelector('.msg-quick-row');
   const textarea = m.querySelector('#messages-input');
@@ -1220,25 +1085,16 @@ function openMessagesModal() {
   const expireOpt = document.getElementById("msg-opt-expire");
   const expireLabel = document.getElementById("msg-opt-expire-label");
 
-  // 重置狀態
   if (input) input.value = '';
   if (pinOpt) pinOpt.checked = false;
-  if (expireOpt) {
-    expireOpt.checked = false;
-    expireOpt.dataset.minutes = '30';
-  }
+  if (expireOpt) { expireOpt.checked = false; expireOpt.dataset.minutes = '30'; }
   if (expireLabel) expireLabel.textContent = '⏱️ 30 分鐘後自動隱藏';
-  if (btn) {
-    btn.disabled = true;
-    btn.classList.add('opacity-50');
-  }
+  if (btn) { btn.disabled = true; btn.classList.add('opacity-50'); }
 
-  // 快速模板
   m.querySelectorAll('[data-template]').forEach(tbtn => {
     tbtn.onclick = () => applyMessageTemplate(tbtn.dataset.template);
   });
 
-  // 輸入框
   if (input && btn) {
     input.oninput = () => {
       const hasText = !!input.value.trim();
@@ -1253,19 +1109,13 @@ function openMessagesModal() {
     };
   }
 
-  // 發送
-  if (btn) {
-    btn.onclick = sendMessageFromModal;
-  }
+  if (btn) btn.onclick = sendMessageFromModal;
 
-  // 過期選項 label 根據勾選更新
   if (expireOpt && expireLabel) {
     expireOpt.onchange = () => {
       if (expireOpt.checked) {
         const mins = parseInt(expireOpt.dataset.minutes || '30');
-        const label = mins >= 60
-          ? `${(mins / 60).toFixed(mins % 60 === 0 ? 0 : 1)} 小時`
-          : `${mins} 分鐘`;
+        const label = mins >= 60 ? `${(mins / 60).toFixed(mins % 60 === 0 ? 0 : 1)} 小時` : `${mins} 分鐘`;
         expireLabel.textContent = `⏱️ ${label}後自動隱藏`;
       } else {
         expireLabel.textContent = '⏱️ 不過期';
@@ -1296,8 +1146,7 @@ function applyMessageTemplate(type) {
     case 'meetup':
       input.value = `${hh}:${mm} 在 ___ 集合`;
       if (pinOpt) pinOpt.checked = true;
-      duration = 30;
-      label = '30 分鐘';
+      duration = 30; label = '30 分鐘';
       break;
     case 'remind':
       input.value = '記得帶 ___';
@@ -1307,11 +1156,9 @@ function applyMessageTemplate(type) {
     case 'urgent':
       input.value = '緊急！___';
       if (pinOpt) pinOpt.checked = true;
-      duration = 120;
-      label = '2 小時';
+      duration = 120; label = '2 小時';
       break;
     case 'location':
-      // ⭐ 位置分享：請求 GPS → 自動發送
       shareMyLocation();
       return;
   }
@@ -1321,36 +1168,26 @@ function applyMessageTemplate(type) {
     expireOpt.dataset.minutes = String(duration || 30);
   }
   if (expireLabel) {
-    expireLabel.textContent = duration > 0
-      ? `⏱️ ${label}後自動隱藏`
-      : '⏱️ 不過期';
+    expireLabel.textContent = duration > 0 ? `⏱️ ${label}後自動隱藏` : '⏱️ 不過期';
   }
 
   input.focus();
   const pos = input.value.indexOf('___');
-  if (pos >= 0) {
-    input.setSelectionRange(pos, pos + 3);
-  } else {
-    input.setSelectionRange(input.value.length, input.value.length);
-  }
+  if (pos >= 0) input.setSelectionRange(pos, pos + 3);
+  else input.setSelectionRange(input.value.length, input.value.length);
 
   if (btn && input.value.trim()) {
     btn.disabled = false;
     btn.classList.remove('opacity-50');
   }
-
   if (navigator.vibrate) navigator.vibrate(6);
 }
 
-/* ============================================================
- * 📍 位置分享：取得 GPS → 自動發送（30 分鐘過期）
- * ============================================================ */
 function shareMyLocation() {
   if (!window.Messages || !window.Messages.canWrite()) {
     if (typeof showToast === 'function') showToast('🔒 訪客無法分享位置', '⚠️');
     return;
   }
-
   if (!navigator.geolocation) {
     if (typeof showToast === 'function') showToast('此裝置不支援定位', '⚠️');
     return;
@@ -1358,62 +1195,34 @@ function shareMyLocation() {
 
   const btn = document.querySelector('[data-template="location"]');
   const originalHTML = btn ? btn.innerHTML : '';
-  if (btn) {
-    btn.innerHTML = '📡 取得位置中...';
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-  }
-
+  if (btn) { btn.innerHTML = '📡 取得位置中...'; btn.disabled = true; btn.style.opacity = '0.6'; }
   if (navigator.vibrate) navigator.vibrate(10);
 
   navigator.geolocation.getCurrentPosition(
     async (pos) => {
-      if (btn) {
-        btn.innerHTML = originalHTML;
-        btn.disabled = false;
-        btn.style.opacity = '';
-      }
-
+      if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; btn.style.opacity = ''; }
       const location = {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude,
         accuracy: pos.coords.accuracy ? Math.round(pos.coords.accuracy) : null
       };
-
       await window.Messages.send('📍 我在這裡', {
-        type: 'location',
-        location,
-        pinned: true,
-        duration: 30 * 60 * 1000  // 30 分鐘過期
+        type: 'location', location, pinned: true, duration: 30 * 60 * 1000
       });
-
-      if (typeof closeMessagesModal === 'function') {
-        setTimeout(() => closeMessagesModal(), 300);
-      }
+      if (typeof closeMessagesModal === 'function') setTimeout(() => closeMessagesModal(), 300);
     },
     (err) => {
-      if (btn) {
-        btn.innerHTML = originalHTML;
-        btn.disabled = false;
-        btn.style.opacity = '';
-      }
-
+      if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; btn.style.opacity = ''; }
       let msg = '定位失敗';
       if (err.code === 1) msg = '請允許使用位置權限';
       else if (err.code === 2) msg = '無法取得位置（訊號弱）';
       else if (err.code === 3) msg = '定位逾時，請再試';
-
       if (typeof showToast === 'function') showToast('📍 ' + msg, '⚠️');
       if (navigator.vibrate) navigator.vibrate(50);
     },
-    {
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 0
-    }
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
   );
 }
-
 window.shareMyLocation = shareMyLocation;
 
 function sendMessageFromModal() {
@@ -1421,37 +1230,24 @@ function sendMessageFromModal() {
   const pinOpt = document.getElementById("msg-opt-pin");
   const expireOpt = document.getElementById("msg-opt-expire");
   if (!input || !window.Messages) return;
-
   const text = input.value.trim();
   if (!text) return;
 
-  const opts = {
-    pinned: pinOpt ? pinOpt.checked : false,
-    duration: null
-  };
-
+  const opts = { pinned: pinOpt ? pinOpt.checked : false, duration: null };
   if (expireOpt && expireOpt.checked) {
     const mins = parseInt(expireOpt.dataset.minutes || '30');
     opts.duration = mins * 60 * 1000;
   }
-
   window.Messages.send(text, opts);
 
   input.value = '';
   if (pinOpt) pinOpt.checked = false;
-  if (expireOpt) {
-    expireOpt.checked = false;
-    expireOpt.dataset.minutes = '30';
-  }
+  if (expireOpt) { expireOpt.checked = false; expireOpt.dataset.minutes = '30'; }
   const expireLabel = document.getElementById("msg-opt-expire-label");
   if (expireLabel) expireLabel.textContent = '⏱️ 30 分鐘後自動隱藏';
 
   const btn = document.getElementById("messages-send-btn");
-  if (btn) {
-    btn.disabled = true;
-    btn.classList.add('opacity-50');
-  }
-
+  if (btn) { btn.disabled = true; btn.classList.add('opacity-50'); }
   input.focus();
 }
 
@@ -1500,9 +1296,7 @@ if (window.Messages) {
       if (msgBtn) {
         const count = window.Messages.getCount();
         const base = `<span>💬</span> 留言`;
-        msgBtn.innerHTML = count > 0
-          ? `${base}<span class="broadcast-badge">${count}</span>`
-          : base;
+        msgBtn.innerHTML = count > 0 ? `${base}<span class="broadcast-badge">${count}</span>` : base;
       }
     }
     const modal = document.getElementById("messages-modal");

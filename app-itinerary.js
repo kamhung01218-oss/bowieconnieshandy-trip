@@ -1,22 +1,81 @@
 /* ============================================================
- * app-itinerary.js — v13.5（ID 版 + 天氣 icon 細分）
+ * app-itinerary.js — v14.0（多地點天氣 + 移除行程卡片天氣框）
  *
- * v13.5 變更：
- *   - ⭐ J2：天氣 icon 從 4 種細分到 11 種（WMO code 完整映射）
- *   - ⭐ J2：加入 wcat 分類，配合 CSS 光暈
- *   - v13.4 拍攝建議 ID 查找
+ * v14.0 變更：
+ *   - ⭐ WEATHER_LOCATIONS 改為陣列結構（每天多個地點）
+ *   - ⭐ fetchWeatherData 支援多地點並行請求
+ *   - ⭐ 移除行程卡片的天氣框（天氣只在 Focus Card 顯示）
  * ============================================================ */
 
 // ==================== 天氣 ====================
+/* ⭐ v14.0：每天可有多個地點，timeFrom/timeTo 用於自動選當前時段 */
 const WEATHER_LOCATIONS = {
-  1: { name: "宮城仙台", lat: 38.2682, lon: 140.8694, climate: { max: 5, min: -1, rain: 30 } },
-  2: { name: "山形天童", lat: 38.3625, lon: 140.3694, climate: { max: 4, min: -2, rain: 35 } },
-  3: { name: "山形藏王", lat: 38.1656, lon: 140.3986, climate: { max: 0, min: -6, rain: 40 } },
-  4: { name: "宮城泉", lat: 38.3189, lon: 140.8831, climate: { max: 5, min: -1, rain: 30 } },
-  5: { name: "宮城白石", lat: 38.0022, lon: 140.6197, climate: { max: 4, min: -2, rain: 30 } },
-  6: { name: "宮城仙台", lat: 38.2682, lon: 140.8694, climate: { max: 5, min: -1, rain: 30 } },
-  7: { name: "宮城仙台", lat: 38.2682, lon: 140.8694, climate: { max: 5, min: -1, rain: 30 } }
+  1: [
+    { id: 'sendai_airport', name: '仙台機場', shortName: '機場',
+      lat: 38.1397, lon: 140.9169, timeFrom: '00:00', timeTo: '15:30',
+      climate: { max: 5, min: -1, rain: 30 } },
+    { id: 'akiu', name: '秋保溫泉', shortName: '秋保',
+      lat: 38.2263, lon: 140.7242, timeFrom: '15:30', timeTo: '23:59',
+      climate: { max: 3, min: -2, rain: 35 } }
+  ],
+  2: [
+    { id: 'tendo', name: '山形天童', shortName: '天童',
+      lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '15:00',
+      climate: { max: 4, min: -2, rain: 35 } },
+    { id: 'ginzan', name: '銀山溫泉', shortName: '銀山',
+      lat: 38.5747, lon: 140.5309, timeFrom: '15:00', timeTo: '23:59',
+      climate: { max: 1, min: -4, rain: 45 } }
+  ],
+  3: [
+    { id: 'zao', name: '藏王', shortName: '藏王',
+      lat: 38.1656, lon: 140.3986, timeFrom: '00:00', timeTo: '12:30',
+      climate: { max: -2, min: -8, rain: 50 } },
+    { id: 'yamagata', name: '山形', shortName: '山形',
+      lat: 38.2554, lon: 140.3396, timeFrom: '12:30', timeTo: '14:30',
+      climate: { max: 4, min: -2, rain: 35 } },
+    { id: 'sagae', name: '寒河江', shortName: '寒河江',
+      lat: 38.3807, lon: 140.2759, timeFrom: '14:30', timeTo: '15:30',
+      climate: { max: 3, min: -3, rain: 40 } },
+    { id: 'tendo', name: '山形天童', shortName: '天童',
+      lat: 38.3625, lon: 140.3694, timeFrom: '15:30', timeTo: '23:59',
+      climate: { max: 4, min: -2, rain: 35 } }
+  ],
+  4: [
+    { id: 'tendo', name: '山形天童', shortName: '天童',
+      lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '10:45',
+      climate: { max: 4, min: -2, rain: 35 } },
+    { id: 'spring_valley', name: 'Spring Valley 泉高原', shortName: '滑雪場',
+      lat: 38.3694, lon: 140.6908, timeFrom: '10:45', timeTo: '14:30',
+      climate: { max: 0, min: -5, rain: 40 } },
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台',
+      lat: 38.2682, lon: 140.8694, timeFrom: '14:30', timeTo: '23:59',
+      climate: { max: 5, min: -1, rain: 30 } }
+  ],
+  5: [
+  { id: 'sendai', name: '宮城仙台', shortName: '仙台',
+    lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '23:59',
+    climate: { max: 5, min: -1, rain: 30 } },
+  { id: 'zao_fox', name: '藏王狐狸村', shortName: '狐狸村',
+    lat: 38.0407, lon: 140.5322, timeFrom: '09:30', timeTo: '13:45',
+    climate: { max: 2, min: -3, rain: 35 } }
+],
+  6: [
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台',
+      lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '23:59',
+      climate: { max: 5, min: -1, rain: 30 } }
+  ],
+  7: [
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台',
+      lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '23:59',
+      climate: { max: 5, min: -1, rain: 30 } }
+  ]
 };
+
+/* ⭐ 相容函式：取得該天的主地點（第一個） */
+function getPrimaryLocation(dayIdx) {
+  const locs = WEATHER_LOCATIONS[dayIdx];
+  return (locs && locs.length > 0) ? locs[0] : null;
+}
 
 const CLIMATE_SUN_TIMES = {
   "2027-01-21": { sunrise: "06:52", sunset: "16:35" },
@@ -29,7 +88,7 @@ const CLIMATE_SUN_TIMES = {
 };
 
 /* ============================================================
- * ⭐ J2：WMO Weather Code → Emoji + 分類
+ * WMO Weather Code → Emoji + 分類
  * ============================================================ */
 function weatherCodeToIconTag(code) {
   code = Number(code);
@@ -54,29 +113,46 @@ function weatherCodeToIconTag(code) {
   return { icon: "🌡️", cat: "fog" };
 }
 
-/* 相容舊呼叫：只回傳 emoji 字串 */
 function weatherCodeToIcon(code) {
   return weatherCodeToIconTag(code).icon;
 }
 
+/* ============================================================
+ * ⭐ v14.0：多地點天氣抓取
+ * ============================================================ */
 async function fetchWeatherData() {
   const today = new Date();
   const tripStartDate = new Date(TRIP_START);
   const daysUntil = Math.floor((tripStartDate - today) / 86400000);
   const tooFar = daysUntil > 16;
 
-  const dayPromises = tripDates.map(async (dateStr, idx) => {
-    const loc = WEATHER_LOCATIONS[idx + 1];
+  // 收集所有 (date, location) 對
+  const tasks = [];
+  tripDates.forEach((dateStr, idx) => {
+    const locs = WEATHER_LOCATIONS[idx + 1] || [];
+    locs.forEach((loc) => {
+      tasks.push({ dateStr, dayIdx: idx, loc });
+    });
+  });
+
+  // 並行請求所有地點
+  const results = await Promise.all(tasks.map(async (task) => {
+    const { dateStr, loc } = task;
+    const key = dateStr + '|' + loc.id;
 
     if (tooFar) {
+      const sunRef = CLIMATE_SUN_TIMES[dateStr];
       return {
-        dateStr, location: loc.name,
-        max: loc.climate.max, min: loc.climate.min, rain: loc.climate.rain,
-        icon: "❄️",
-        wcat: "snow",
-        current: null,
-        sunrise: null, sunset: null,
-        isClimate: true
+        key,
+        data: {
+          dateStr, location: loc.name, locId: loc.id,
+          max: loc.climate.max, min: loc.climate.min, rain: loc.climate.rain,
+          icon: "❄️", wcat: "snow",
+          current: null,
+          sunrise: sunRef ? sunRef.sunrise : null,
+          sunset: sunRef ? sunRef.sunset : null,
+          isClimate: true
+        }
       };
     }
 
@@ -84,45 +160,58 @@ async function fetchWeatherData() {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=Asia%2FTokyo&start_date=${dateStr}&end_date=${dateStr}`;
       const res = await fetch(url);
       const data = await res.json();
-      if (!data.daily || !data.daily.time || data.daily.time.length === 0) return null;
+      if (!data.daily || !data.daily.time || data.daily.time.length === 0) {
+        return { key, data: null };
+      }
+
       const sunrise = data.daily.sunrise?.[0]?.split("T")[1]?.substring(0, 5) || null;
       const sunset  = data.daily.sunset?.[0]?.split("T")[1]?.substring(0, 5) || null;
-
       const dailyTag = weatherCodeToIconTag(data.daily.weather_code[0]);
       const currentTag = data.current ? weatherCodeToIconTag(data.current.weather_code) : null;
 
       return {
-        dateStr, location: loc.name,
-        max: Math.round(data.daily.temperature_2m_max[0]),
-        min: Math.round(data.daily.temperature_2m_min[0]),
-        rain: data.daily.precipitation_probability_max[0] ?? 0,
-        icon: dailyTag.icon,
-        wcat: dailyTag.cat,
-        current: data.current ? {
-          temp: Math.round(data.current.temperature_2m),
-          feels: Math.round(data.current.apparent_temperature),
-          humidity: data.current.relative_humidity_2m,
-          icon: currentTag.icon,
-          wcat: currentTag.cat
-        } : null,
-        sunrise, sunset,
-        isClimate: false
+        key,
+        data: {
+          dateStr, location: loc.name, locId: loc.id,
+          max: Math.round(data.daily.temperature_2m_max[0]),
+          min: Math.round(data.daily.temperature_2m_min[0]),
+          rain: data.daily.precipitation_probability_max[0] ?? 0,
+          icon: dailyTag.icon,
+          wcat: dailyTag.cat,
+          current: data.current ? {
+            temp: Math.round(data.current.temperature_2m),
+            feels: Math.round(data.current.apparent_temperature),
+            humidity: data.current.relative_humidity_2m,
+            icon: currentTag.icon,
+            wcat: currentTag.cat
+          } : null,
+          sunrise, sunset,
+          isClimate: false
+        }
       };
-    } catch (e) { return null; }
-  });
+    } catch (e) {
+      return { key, data: null };
+    }
+  }));
 
-  const results = await Promise.all(dayPromises);
+  // 寫入 cache
   results.forEach(r => {
-    if (r) {
-      window.weatherCache[r.dateStr] = {
-        max: r.max, min: r.min, rain: r.rain, icon: r.icon,
-        wcat: r.wcat || "fog",
-        location: r.location, current: r.current,
-        sunrise: r.sunrise, sunset: r.sunset,
-        isClimate: r.isClimate || false
-      };
+    if (r.data) {
+      window.weatherCache[r.key] = r.data;
     }
   });
+
+  // 相容層：每天主地點（第一個）也存到 weatherCache[dateStr]
+  tripDates.forEach((dateStr, idx) => {
+    const locs = WEATHER_LOCATIONS[idx + 1] || [];
+    if (locs.length > 0) {
+      const primaryKey = dateStr + '|' + locs[0].id;
+      if (window.weatherCache[primaryKey]) {
+        window.weatherCache[dateStr] = window.weatherCache[primaryKey];
+      }
+    }
+  });
+
   if (window.AppHeader) window.AppHeader.render();
   if (window._lastActiveDay) {
     const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
@@ -131,6 +220,9 @@ async function fetchWeatherData() {
   renderWeatherDetail();
 }
 
+/* ============================================================
+ * 天氣詳情 Modal（相容多地點，仍然以主地點為主）
+ * ============================================================ */
 function renderWeatherDetail() {
   const detail = document.getElementById('weather-detail-content');
   if (!detail) return;
@@ -140,8 +232,9 @@ function renderWeatherDetail() {
   const firstDayWeather = window.weatherCache[tripDates[0]];
   const isClimateMode = firstDayWeather?.isClimate === true;
 
-  let heroData = todayIdx >= 0 ? window.weatherCache[today] : firstDayWeather;
-  let heroLocName = todayIdx >= 0 ? WEATHER_LOCATIONS[todayIdx + 1].name : (firstDayWeather?.location || "宮城仙台");
+  let heroData = todayIdx >= 0 ? window.weatherCache[tripDates[todayIdx]] : firstDayWeather;
+  const primaryLoc = todayIdx >= 0 ? getPrimaryLocation(todayIdx) : getPrimaryLocation(0);
+  let heroLocName = heroData?.location || (primaryLoc ? primaryLoc.name : '宮城仙台');
 
   const curTemp = heroData?.current?.temp
     ?? (heroData ? Math.round((heroData.max + heroData.min) / 2) : null);
@@ -162,8 +255,9 @@ function renderWeatherDetail() {
     const d = new Date(ds);
     const week = ["日","一","二","三","四","五","六"][d.getDay()];
     const isToday = ds === today;
-    const loc = WEATHER_LOCATIONS[i + 1].name;
-    if (!w) return `<div class="forecast-row ${isToday ? 'today' : ''}"><div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div><div class="forecast-icon" data-wcat="cloud">⏳</div><div class="forecast-temp" style="color:#94a3b8;font-size:11px">${loc} · 暫無資料</div></div>`;
+    const loc = getPrimaryLocation(i);
+    const locName = loc ? loc.name : '';
+    if (!w) return `<div class="forecast-row ${isToday ? 'today' : ''}"><div class="forecast-date">${isToday ? "今天" : ds.substring(5)} (${week})</div><div class="forecast-icon" data-wcat="cloud">⏳</div><div class="forecast-temp" style="color:#94a3b8;font-size:11px">${locName} · 暫無資料</div></div>`;
 
     const badge = w.isClimate
       ? '<span class="forecast-badge climate">🌡️ 氣候參考</span>'
@@ -172,9 +266,6 @@ function renderWeatherDetail() {
     let sunRow = '';
     if (w.sunrise && w.sunset) {
       sunRow = `<div class="forecast-sun">🌅 ${w.sunrise} · 🌇 ${w.sunset}</div>`;
-    } else if (w.isClimate && CLIMATE_SUN_TIMES[ds]) {
-      const r = CLIMATE_SUN_TIMES[ds];
-      sunRow = `<div class="forecast-sun">🌅 ${r.sunrise} · 🌇 ${r.sunset} <span style="opacity:0.6">（參考）</span></div>`;
     }
 
     return `<div class="forecast-row ${isToday ? 'today' : ''}">
@@ -184,7 +275,7 @@ function renderWeatherDetail() {
         <span class="forecast-temp-max">${w.max}°</span>
         <span class="text-slate-400 mx-1">/</span>
         <span class="forecast-temp-min">${w.min}°</span>
-        <span style="font-size:11px;color:#94a3b8;margin-left:4px">${loc}</span>
+        <span style="font-size:11px;color:#94a3b8;margin-left:4px">${locName}</span>
         ${sunRow}
       </div>
       <div class="forecast-right">
@@ -216,7 +307,7 @@ function renderWeatherDetail() {
   `;
 }
 
-// ==================== ⭐ findShootTips：ID + 標題雙軌查找 ====================
+// ==================== findShootTips：ID + 標題雙軌查找 ====================
 function findShootTips(eventTitle, eventKey) {
   if (typeof shootTips === 'undefined') return null;
 
@@ -526,7 +617,7 @@ function renderDayItinerary(sectionId, dayData, force) {
   if (!section) return;
   var dateStr = tripDates[dayData.day - 1];
   var weatherInfo = window.weatherCache[dateStr] || null;
-  var weatherHtml = buildWeatherHtml(dateStr, weatherInfo);
+  var weatherHtml = '';  // ⭐ v14.0：移除行程卡片的天氣框
   var headerHtml = buildDayHeaderHtml(dayData, weatherHtml);
   var eventsHtml = buildEventsHtml(dayData);
   var diaryHtml = buildDiaryHtml(dayData);
@@ -552,6 +643,7 @@ function renderDayItinerary(sectionId, dayData, force) {
   window._renderedDays.add(dayData.day);
 }
 
+/* ⚠️ buildWeatherHtml 保留，但已不再使用；未來若想恢復很方便 */
 function buildWeatherHtml(dateStr, weatherInfo) {
   if (!weatherInfo) return '';
   const { icon, max, min, rain } = weatherInfo;
