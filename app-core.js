@@ -1,12 +1,11 @@
 /* ============================================================
- * app-core.js — v12.0
+ * app-core.js — v13.0
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
  *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
  *
- * v12.0 變更：
- *   - 匯率 FAB 縮小至 48px（配合 header.css v12.0）
- *   - 移除 Firebase Storage 上傳邏輯
- *   - 共享收據/憑證 Google Drive 資料夾傳送門
+ * v13.0 變更：
+ *   - ⭐ 新增 getInitialDay() 自動跳轉初始 Day
+ *   - ⭐ initAppAfterLogin() 使用初始 Day 渲染
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -80,6 +79,37 @@ let snowmanProgress = JSON.parse(localStorage.getItem("snowman_progress")) || 0;
 if (!window.weatherCache) window.weatherCache = {};
 
 window._renderedDays = new Set();
+
+// ==================== ⭐ 自動跳轉初始 Day ====================
+function getInitialDay() {
+  // 1. URL 有 ?day=N（測試 / 分享）
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlDay = urlParams.get('day');
+    if (urlDay) {
+      const n = parseInt(urlDay);
+      if (n >= 1 && n <= 7) return n;
+    }
+  } catch (e) {}
+
+  // 2. 旅行中 → 今天
+  const now = Date.now();
+  if (now >= TRIP_START && now <= TRIP_END) {
+    for (let i = 0; i < tripDates.length; i++) {
+      const s = new Date(tripDates[i] + "T00:00:00+08:00").getTime();
+      const e = new Date(tripDates[i] + "T23:59:59+08:00").getTime();
+      if (now >= s && now <= e) return i + 1;
+    }
+  }
+
+  // 3. 上次看過的 Day
+  const last = parseInt(localStorage.getItem('tohoku_last_day') || '0');
+  if (last >= 1 && last <= 7) return last;
+
+  // 4. 預設 D1
+  return 1;
+}
+window.getInitialDay = getInitialDay;
 
 // ==================== 用戶登入 ====================
 let selectedUser = null;
@@ -281,7 +311,9 @@ async function submitChangePin() {
 
 // ==================== 應用初始化 ====================
 function initAppAfterLogin() {
-  if (!window._lastActiveDay) window._lastActiveDay = 1;
+  // ⭐ v13.0：自動跳到初始 Day
+  const initialDay = getInitialDay();
+  window._lastActiveDay = initialDay;
 
   applyAppTheme(localStorage.getItem(APP_THEME_KEY) || 'light');
 
@@ -294,8 +326,31 @@ function initAppAfterLogin() {
 
   setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal', 'receipt-modal']);
 
-  renderDayItinerary('day-section-1', winterItineraries[0]);
-  setupImageFadeIn();
+  // ⭐ 只渲染初始 Day 的 section
+  renderDayItinerary(`day-section-${initialDay}`, winterItineraries[initialDay - 1]);
+  setupImageFadeIn(document);
+
+  // 隱藏所有 section，只顯示初始 Day
+document.querySelectorAll('.day-section').forEach(s => s.classList.add('hidden'));
+const initialSection = document.getElementById(`day-section-${initialDay}`);
+if (initialSection) initialSection.classList.remove('hidden');
+
+// ⭐ v14.2：一次完成「設定 active + 標記今天 + 自動置中」
+// 用 setTimeout 等 DOM 穩定後再執行
+setTimeout(() => {
+  if (window.initDayTabs) {
+    window.initDayTabs(initialDay);
+  } else {
+    // Fallback（若 initDayTabs 未載入）
+    document.querySelectorAll('#day-tabs-container button').forEach(btn => {
+      btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
+    });
+    const initialTab = document.getElementById(`tab-d${initialDay}`);
+    if (initialTab) initialTab.className = "day-tab active flex-shrink-0 transition";
+    if (window.updateDayTabTodayMark) window.updateDayTabTodayMark();
+  }
+  if (window.updateDayProgressDots) window.updateDayProgressDots();
+}, 80);
 
   if (window.AppHeader) {
     AppHeader.init({
@@ -303,7 +358,7 @@ function initAppAfterLogin() {
       tripStart: TRIP_START, tripEnd: TRIP_END, tripDates: tripDates,
       ginzanTarget: GINZAN_TARGET, zaoTarget: ZAO_TARGET,
       itineraries: winterItineraries,
-weatherLocations: WEATHER_LOCATIONS, 
+      weatherLocations: WEATHER_LOCATIONS,
       weatherCache: () => window.weatherCache,
       callbacks: {
         onBooking: () => toggleBookingModal(),
@@ -817,7 +872,6 @@ function openDriveFolder(url) {
 window.openReceiptModal = openReceiptModal;
 window.closeReceiptModal = closeReceiptModal;
 window.openDriveFolder = openDriveFolder;
-// ⭐ 開啟 Google 相簿共享相簿
 function openPhotoAlbum() {
   haptic(10);
   window.location.href = 'https://photos.app.goo.gl/Y8vBtxiH1e52C1337';

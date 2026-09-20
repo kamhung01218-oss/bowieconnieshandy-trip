@@ -2389,3 +2389,35 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .app-header .focus-next-title { color: #cbd5e1; }
 [data-theme="dark"] .app-header .focus-next-done { color: #64748b !important; }
 [data-theme="dark"] .app-header .focus-next-remain { color: #38bdf8; }
+/* ============================================================
+ * 35. ⭐ Day Tab「今天」標記（v14.3：改文字）
+ * ============================================================ */
+
+/* 今天 tab（非當前選中）：淺綠底 + 綠字 + 綠框 */
+.day-tab.has-today-mark {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5) !important;
+  color: #047857 !important;
+  border: 1.5px solid #10b981 !important;
+  font-weight: 900 !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25) !important;
+}
+
+/* 今天 + 當前選中：實心綠 */
+.day-tab.active.has-today-mark {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+}
+
+/* 深色模式 */
+[data-theme="dark"] .day-tab.has-today-mark {
+  background: linear-gradient(135deg, #064e3b, #065f46) !important;
+  color: #6ee7b7 !important;
+  border-color: #10b981 !important;
+}
+[data-theme="dark"] .day-tab.active.has-today-mark {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}

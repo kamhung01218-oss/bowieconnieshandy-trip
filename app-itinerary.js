@@ -1,14 +1,14 @@
 /* ============================================================
- * app-itinerary.js — v14.0（多地點天氣 + 移除行程卡片天氣框）
+ * app-itinerary.js — v14.2（多地點天氣 + 移除行程卡片天氣框）
  *
- * v14.0 變更：
- *   - ⭐ WEATHER_LOCATIONS 改為陣列結構（每天多個地點）
- *   - ⭐ fetchWeatherData 支援多地點並行請求
- *   - ⭐ 移除行程卡片的天氣框（天氣只在 Focus Card 顯示）
+ * v14.0：多地點天氣
+ * v14.1：updateDayTabTodayMark + switchDay 呼叫
+ * v14.2：
+ *   - ⭐ 新增 initDayTabs(initialDay) 一次完成初始化
+ *   - ⭐ 設定 active tab + 標記今天 + 自動置中
  * ============================================================ */
 
 // ==================== 天氣 ====================
-/* ⭐ v14.0：每天可有多個地點，timeFrom/timeTo 用於自動選當前時段 */
 const WEATHER_LOCATIONS = {
   1: [
     { id: 'sendai_airport', name: '仙台機場', shortName: '機場',
@@ -52,13 +52,13 @@ const WEATHER_LOCATIONS = {
       climate: { max: 5, min: -1, rain: 30 } }
   ],
   5: [
-  { id: 'sendai', name: '宮城仙台', shortName: '仙台',
-    lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '23:59',
-    climate: { max: 5, min: -1, rain: 30 } },
-  { id: 'zao_fox', name: '藏王狐狸村', shortName: '狐狸村',
-    lat: 38.0407, lon: 140.5322, timeFrom: '09:30', timeTo: '13:45',
-    climate: { max: 2, min: -3, rain: 35 } }
-],
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台',
+      lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '23:59',
+      climate: { max: 5, min: -1, rain: 30 } },
+    { id: 'zao_fox', name: '藏王狐狸村', shortName: '狐狸村',
+      lat: 38.0407, lon: 140.5322, timeFrom: '09:30', timeTo: '13:45',
+      climate: { max: 2, min: -3, rain: 35 } }
+  ],
   6: [
     { id: 'sendai', name: '宮城仙台', shortName: '仙台',
       lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '23:59',
@@ -71,7 +71,6 @@ const WEATHER_LOCATIONS = {
   ]
 };
 
-/* ⭐ 相容函式：取得該天的主地點（第一個） */
 function getPrimaryLocation(dayIdx) {
   const locs = WEATHER_LOCATIONS[dayIdx];
   return (locs && locs.length > 0) ? locs[0] : null;
@@ -87,19 +86,14 @@ const CLIMATE_SUN_TIMES = {
   "2027-01-27": { sunrise: "06:49", sunset: "16:41" }
 };
 
-/* ============================================================
- * WMO Weather Code → Emoji + 分類
- * ============================================================ */
 function weatherCodeToIconTag(code) {
   code = Number(code);
   if (isNaN(code)) return { icon: "🌡️", cat: "fog" };
-
   if (code === 0)                    return { icon: "☀️",  cat: "clear" };
   if (code === 1)                    return { icon: "🌤️", cat: "clear" };
   if (code === 2)                    return { icon: "⛅",  cat: "cloud" };
   if (code === 3)                    return { icon: "☁️",  cat: "cloud" };
   if (code === 45 || code === 48)    return { icon: "🌫️", cat: "fog" };
-
   if (code >= 51 && code <= 55)      return { icon: "🌦️", cat: "rain" };
   if (code === 56 || code === 57)    return { icon: "🌧️", cat: "rain" };
   if (code >= 61 && code <= 65)      return { icon: "🌧️", cat: "rain" };
@@ -109,7 +103,6 @@ function weatherCodeToIconTag(code) {
   if (code >= 80 && code <= 82)      return { icon: "🌧️", cat: "rain" };
   if (code === 85 || code === 86)    return { icon: "🌨️", cat: "snow" };
   if (code >= 95 && code <= 99)      return { icon: "⛈️", cat: "storm" };
-
   return { icon: "🌡️", cat: "fog" };
 }
 
@@ -117,16 +110,12 @@ function weatherCodeToIcon(code) {
   return weatherCodeToIconTag(code).icon;
 }
 
-/* ============================================================
- * ⭐ v14.0：多地點天氣抓取
- * ============================================================ */
 async function fetchWeatherData() {
   const today = new Date();
   const tripStartDate = new Date(TRIP_START);
   const daysUntil = Math.floor((tripStartDate - today) / 86400000);
   const tooFar = daysUntil > 16;
 
-  // 收集所有 (date, location) 對
   const tasks = [];
   tripDates.forEach((dateStr, idx) => {
     const locs = WEATHER_LOCATIONS[idx + 1] || [];
@@ -135,7 +124,6 @@ async function fetchWeatherData() {
     });
   });
 
-  // 並行請求所有地點
   const results = await Promise.all(tasks.map(async (task) => {
     const { dateStr, loc } = task;
     const key = dateStr + '|' + loc.id;
@@ -194,14 +182,12 @@ async function fetchWeatherData() {
     }
   }));
 
-  // 寫入 cache
   results.forEach(r => {
     if (r.data) {
       window.weatherCache[r.key] = r.data;
     }
   });
 
-  // 相容層：每天主地點（第一個）也存到 weatherCache[dateStr]
   tripDates.forEach((dateStr, idx) => {
     const locs = WEATHER_LOCATIONS[idx + 1] || [];
     if (locs.length > 0) {
@@ -220,9 +206,6 @@ async function fetchWeatherData() {
   renderWeatherDetail();
 }
 
-/* ============================================================
- * 天氣詳情 Modal（相容多地點，仍然以主地點為主）
- * ============================================================ */
 function renderWeatherDetail() {
   const detail = document.getElementById('weather-detail-content');
   if (!detail) return;
@@ -307,14 +290,11 @@ function renderWeatherDetail() {
   `;
 }
 
-// ==================== findShootTips：ID + 標題雙軌查找 ====================
+// ==================== findShootTips ====================
 function findShootTips(eventTitle, eventKey) {
   if (typeof shootTips === 'undefined') return null;
-
   if (eventKey && shootTips[eventKey]) return shootTips[eventKey];
-
   if (!eventTitle) return null;
-
   if (shootTips[eventTitle]) return shootTips[eventTitle];
 
   const normalize = (s) => String(s)
@@ -337,7 +317,6 @@ function findShootTips(eventTitle, eventKey) {
 
   for (const key of keys) {
     if (/^d\d+-e\d+$/.test(key)) continue;
-
     const nk = normalize(key);
     if (nk.length < 4 || target.length < 4) continue;
 
@@ -350,7 +329,6 @@ function findShootTips(eventTitle, eventKey) {
       while (prefix < minLen && nk[prefix] === target[prefix]) prefix++;
       if (prefix >= 6) score = prefix;
     }
-
     if (score > bestScore) {
       bestScore = score;
       bestMatch = shootTips[key];
@@ -617,7 +595,7 @@ function renderDayItinerary(sectionId, dayData, force) {
   if (!section) return;
   var dateStr = tripDates[dayData.day - 1];
   var weatherInfo = window.weatherCache[dateStr] || null;
-  var weatherHtml = '';  // ⭐ v14.0：移除行程卡片的天氣框
+  var weatherHtml = '';
   var headerHtml = buildDayHeaderHtml(dayData, weatherHtml);
   var eventsHtml = buildEventsHtml(dayData);
   var diaryHtml = buildDiaryHtml(dayData);
@@ -643,7 +621,6 @@ function renderDayItinerary(sectionId, dayData, force) {
   window._renderedDays.add(dayData.day);
 }
 
-/* ⚠️ buildWeatherHtml 保留，但已不再使用；未來若想恢復很方便 */
 function buildWeatherHtml(dateStr, weatherInfo) {
   if (!weatherInfo) return '';
   const { icon, max, min, rain } = weatherInfo;
@@ -1158,11 +1135,16 @@ function switchDay(day) {
   window._lastActiveDay = day;
   try { localStorage.setItem('tohoku_last_day', String(day)); } catch(e) {}
   haptic(6);
+
   const dayData = winterItineraries.find(d => d.day === day);
   if (dayData && !window._renderedDays.has(day)) { renderDayItinerary(`day-section-${day}`, dayData); }
   document.querySelectorAll("#day-tabs-container button").forEach(btn => { btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition"; });
   const activeTab = document.getElementById("tab-d" + day);
   if (activeTab) activeTab.className = "day-tab active flex-shrink-0 transition";
+
+  // ⭐ v14.2：重套今天標記
+  if (window.updateDayTabTodayMark) window.updateDayTabTodayMark();
+
   document.querySelectorAll(".day-section").forEach(s => s.classList.add("hidden"));
   const targetSection = document.getElementById("day-section-" + day);
   if (targetSection) {
@@ -1220,6 +1202,84 @@ function updateDayProgressDots() {
   }).join('');
 }
 window.updateDayProgressDots = updateDayProgressDots;
+
+// ==================== ⭐ v14.1：今天 tab 標記 ====================
+function updateDayTabTodayMark() {
+  // 1. 先重置所有 tab 文字
+  const originalTexts = {
+    1: 'D1 (1/21)', 2: 'D2 (1/22)', 3: 'D3 (1/23)',
+    4: 'D4 (1/24)', 5: 'D5 (1/25)', 6: 'D6 (1/26)', 7: 'D7 (1/27)'
+  };
+  document.querySelectorAll('#day-tabs-container button').forEach(btn => {
+    const dayNum = parseInt(btn.id.replace('tab-d', ''));
+    if (originalTexts[dayNum]) {
+      btn.textContent = originalTexts[dayNum];
+    }
+    btn.classList.remove('has-today-mark');
+  });
+
+  // 2. 計算今天
+  const now = Date.now();
+  let todayIdx = -1;
+  for (let i = 0; i < tripDates.length; i++) {
+    const s = new Date(tripDates[i] + "T00:00:00+08:00").getTime();
+    const e = new Date(tripDates[i] + "T23:59:59+08:00").getTime();
+    if (now >= s && now <= e) { todayIdx = i + 1; break; }
+  }
+
+  let testDay = -1;
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('test') === 'during') {
+      const d = parseInt(urlParams.get('day'));
+      if (d >= 1 && d <= 7) testDay = d;
+    }
+  } catch (e) {}
+
+  const effectiveToday = testDay >= 1 ? testDay : todayIdx;
+
+  // 3. 改文字 + 加 class
+  if (effectiveToday >= 1) {
+    const todayTab = document.getElementById(`tab-d${effectiveToday}`);
+    if (todayTab) {
+      todayTab.textContent = `D${effectiveToday} · 今天`;
+      todayTab.classList.add('has-today-mark');
+    }
+  }
+}
+window.updateDayTabTodayMark = updateDayTabTodayMark;
+// ==================== ⭐ v14.2：初始化 Day Tabs ====================
+function initDayTabs(initialDay) {
+  // 1. 重置所有 tab 樣式
+  document.querySelectorAll('#day-tabs-container button').forEach(btn => {
+    btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
+  });
+
+  // 2. 設定 active tab
+  const activeTab = document.getElementById('tab-d' + initialDay);
+  if (activeTab) {
+    activeTab.className = "day-tab active flex-shrink-0 transition";
+  }
+
+  // 3. 標記今天
+  updateDayTabTodayMark();
+
+  // 4. 自動置中 active tab（無動畫，瞬間完成）
+  if (activeTab) {
+    const container = document.getElementById('day-tabs-container');
+    if (container) {
+      requestAnimationFrame(() => {
+        const containerRect = container.getBoundingClientRect();
+        const tabRect = activeTab.getBoundingClientRect();
+        const targetScroll = container.scrollLeft
+          + tabRect.left - containerRect.left
+          - (containerRect.width - tabRect.width) / 2;
+        container.scrollTo({ left: Math.max(0, targetScroll), behavior: 'auto' });
+      });
+    }
+  }
+}
+window.initDayTabs = initDayTabs;
 
 // ==================== 攻略 Modal 開關 ====================
 function toggleDriveModal() { const modal = document.getElementById('drive-modal'); if (modal.classList.contains('hidden')) { showModal('drive-modal'); modal.classList.remove('hidden'); setDriveTab('basic'); } else { hideModal('drive-modal'); setTimeout(() => modal.classList.add('hidden'), 300); } }
