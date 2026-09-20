@@ -1,13 +1,11 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 2.1.0
- *  最後更新: 2026-09-18
+ *  版本: 2.2.0
+ *  最後更新: 2026-09-20
  *
- *  v2.1 變更：
- *    - 新增 highlight 欄位，標記重點行程
- *    - 配合三層徽章系統（⭐ 重點 / ⚪ 普通 / 🔄 彈性）
- *    - 內容結構優化：店名 / 描述分行，導航膠囊化
+ *  v2.2 變更：
+ *    - 補上 Nippon Rent-A-Car / 銀山溫泉 / 仔虎 / 水族館 導航連結
  * ============================================================
  */
 
@@ -66,7 +64,8 @@ const winterItineraries = [
         title: "提領 Nippon Rent-A-Car 7-8 人座雪地車",
         img: "https://rimage.gnst.jp/livejapan.com/public/img/spot/lj/01/45/lj0145539/lj0145539_6a39f0b20dd93_main.jpg",
         tag: { text: "🚗 冬季自駕", class: "tag-teal" },
-        navUrl: "",
+        navUrl: "https://maps.app.goo.gl/WQM6cUyrzgxWruNU7?g_st=ac",
+        navName: "Nippon Rent-A-Car",
         priority: "must",
         open: true,
         content: `
@@ -261,7 +260,8 @@ const winterItineraries = [
       title: "【極重要】銀山溫泉夢幻夜景",
       img: "https://mimigo.tw/wp-content/uploads/20230105083619_51.jpg",
       tag: { text: "🏮 大正浪漫", class: "tag-sky" },
-      navUrl: "",
+      navUrl: "https://maps.app.goo.gl/R5FCE8fhY6jMzqjr7?g_st=ac",
+      navName: "銀山溫泉",
       priority: "must",
       highlight: true,
       open: true,
@@ -829,7 +829,8 @@ const winterItineraries = [
       time: "10:00 - 12:30",
       title: "晨間二選一：海洋水族館 🐧 OR 溫室採草莓 🍓",
       tag: { text: "🎯 彈性早晨", class: "tag-sky" },
-      navUrl: "",
+      navUrl: "https://maps.app.goo.gl/BxaETtqtFLNmQoJf8?g_st=ac",
+      navName: "仙台海洋森林水族館",
       priority: "must",
       highlight: true,
       open: true,
@@ -877,7 +878,7 @@ const winterItineraries = [
       title: "極致和牛燒肉午餐 ➔ 【仔虎 利府店】",
       img: "https://matipura.com/CORE/wp-content/uploads/2021/03/DSC00724.jpg",
       tag: { text: "🥩 頂級和牛", class: "tag-amber" },
-      navUrl: "https://maps.app.goo.gl/n8F39N1Zq9q57g769",
+      navUrl: "https://maps.app.goo.gl/eS1zeHmvNL3zrtuFA",
       navName: "仔虎 利府店",
       priority: "must",
       highlight: true,
