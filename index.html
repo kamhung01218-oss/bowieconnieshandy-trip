@@ -37,7 +37,7 @@
 <script src="shoot-tips.js"></script>
 <script src="shopping.js"></script>
 <script src="emergency.js"></script>
-<script src="messages.js"></script>   <!-- ⭐ 新增 -->
+<script src="messages.js"></script>
 
 <!-- ⭐ 設計令牌必須最先載入 -->
 <link rel="stylesheet" href="./tokens.css">
@@ -663,21 +663,49 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 
   <!-- 💬 家庭廣播 Modal -->
-  <div id="messages-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeMessagesModal()">
-    <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-lg w-full relative" onclick="event.stopPropagation()" style="max-height:85vh">
-      <div class="modal-handle-area"><div class="modal-handle"></div></div>
-      <button onclick="closeMessagesModal()" class="modal-close">✕</button>
-      <div class="modal-scrollable px-5 pb-6 pt-2" style="display:flex;flex-direction:column;max-height:calc(85vh - 50px)">
-        <h2 class="text-lg font-black mb-4 flex items-center gap-2 shrink-0">
-          <span class="text-xl">📢</span> 家庭廣播
-        </h2>
+<div id="messages-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeMessagesModal()">
+  <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-lg w-full relative" onclick="event.stopPropagation()" style="max-height:88vh">
+    <div class="modal-handle-area"><div class="modal-handle"></div></div>
+    <button onclick="closeMessagesModal()" class="modal-close">✕</button>
+    <div class="modal-scrollable px-5 pb-6 pt-2" style="display:flex;flex-direction:column;max-height:calc(88vh - 50px)">
 
-        <div id="messages-list" style="flex:1;overflow-y:auto;margin-bottom:12px"></div>
+      <h2 class="text-lg font-black mb-3 flex items-center gap-2 shrink-0">
+        <span class="text-xl">📢</span> 家庭廣播
+      </h2>
 
-        <div style="display:flex;gap:8px;align-items:flex-end;border-top:1px solid #e2e8f0;padding-top:12px;flex-shrink:0">
-          <textarea id="messages-input" rows="1" placeholder="輸入訊息..." class="flex-1 border-2 border-slate-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:border-sky-400" style="max-height:80px"></textarea>
-          <button id="messages-send-btn" class="bg-sky-500 hover:bg-sky-600 active:scale-95 text-white font-black px-4 py-2 rounded-xl transition shrink-0">發送</button>
-        </div>
+      <!-- 訊息列表 -->
+      <div id="messages-list" style="flex:1;overflow-y:auto;margin-bottom:10px;min-height:80px"></div>
+
+      <!-- 快速模板 -->
+      <div class="msg-quick-row">
+        <button type="button" class="msg-quick-btn" data-template="meetup" title="集合時間">⏰ 集合</button>
+        <button type="button" class="msg-quick-btn" data-template="remind" title="提醒帶東西">🎒 提醒</button>
+        <button type="button" class="msg-quick-btn" data-template="urgent" title="緊急">🆘 緊急</button>
+        <button type="button" class="msg-quick-btn" data-template="location" title="我在這裡">📍 我在這裡</button>
+      </div>
+
+      <!-- 輸入框 -->
+      <textarea id="messages-input" rows="2" placeholder="輸入訊息..." 
+                class="msg-textarea" style="max-height:100px"></textarea>
+
+      <!-- 選項 -->
+      <div class="msg-options">
+        <label class="msg-option">
+          <input type="checkbox" id="msg-opt-pin">
+          <span>📌 置頂</span>
+        </label>
+        <label class="msg-option">
+          <input type="checkbox" id="msg-opt-expire">
+          <span id="msg-opt-expire-label">⏱️ 30 分鐘後自動隱藏</span>
+        </label>
+      </div>
+
+      <!-- 發送 -->
+      <button id="messages-send-btn" class="msg-send-btn">發送</button>
+
+    </div>
+  </div>
+</div>
 
         <p class="text-[11px] text-slate-400 mt-2 leading-relaxed shrink-0">
           💡 一般留言 24 小時後自動隱藏；點 📍 可置頂，重要訊息不會被洗掉。
@@ -686,9 +714,26 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
+  <!-- 🧪 旅行模擬控制器（出發後自動隱藏） -->
+  <div id="simulator-widget" class="simulator-widget hidden">
+    <div id="simulator-panel" class="simulator-panel">
+      <div class="simulator-title">
+        <span>🧪</span>
+        <span>模擬旅行中</span>
+      </div>
+      <div class="simulator-hint">選擇要預覽的 Day</div>
+      <div class="simulator-days" id="simulator-days"></div>
+      <button class="simulator-close" onclick="Simulator.close()">✕ 關閉模擬</button>
+    </div>
+    <button class="simulator-toggle" onclick="Simulator.togglePanel()">
+      🧪 模擬
+    </button>
+  </div>
+
   <script src="./app-core.js"></script>
   <script src="./app-lists.js"></script>
   <script src="./app-itinerary.js"></script>
   <script src="./header.js"></script>
+  <script src="./simulator.js"></script>
 </body>
 </html>

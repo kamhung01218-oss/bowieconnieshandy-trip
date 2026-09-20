@@ -1,14 +1,16 @@
 /* ============================================================
- * AppHeader v9.0
+ * AppHeader v9.2
  * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [☰ 工具]（全部 SVG）
  * - Focus Card：出發前 / 中 / 後
  * - 旅行中：家庭廣播 + 當前行程 + 導航/留言
  * - 工具選單：功能入口 + 安裝 App + 共享收據
  * - 全域搜尋：防抖 + 熱門關鍵字
  *
- * v9.0 變更：
- *   - ⭐ 情境面板：家庭廣播 + 導航選單
- *   - 移除舊的進度列表 / 天氣格子 / CTA
+ * v9.1：getTripPhase / getCurrentDayIndex 加入真實旅行期間優先判斷
+ * v9.2：
+ *   - during 卡片按鈕 wrapper 加 focus-cta-row-during（手機顯示留言）
+ *   - 留言板加入快速模板（集合/提醒/緊急/位置）
+ *   - 留言板加入置頂 + 過期選項
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -54,14 +56,40 @@ window.AppHeader = (function () {
     { label: '♨️ 溫泉',   kw: '溫泉' }
   ];
 
+  // ============================================================
+  // 真實旅行期間優先，測試參數只在非旅行期間生效
+  // ============================================================
   function getTripPhase() {
     const now = Date.now();
+    if (now >= _config.tripStart && now <= _config.tripEnd) return "during";
+    try {
+      const testPhase = new URLSearchParams(window.location.search).get('test');
+      if (testPhase === 'during' || testPhase === 'before' || testPhase === 'after') {
+        return testPhase;
+      }
+    } catch (e) {}
     if (now < _config.tripStart) return "before";
     if (now > _config.tripEnd) return "after";
     return "during";
   }
+
   function getCurrentDayIndex() {
     const now = Date.now();
+    if (now >= _config.tripStart && now <= _config.tripEnd) {
+      for (let i = 0; i < _config.tripDates.length; i++) {
+        const dayStart = new Date(_config.tripDates[i] + "T00:00:00+08:00").getTime();
+        const dayEnd = new Date(_config.tripDates[i] + "T23:59:59+08:00").getTime();
+        if (now >= dayStart && now <= dayEnd) return i;
+      }
+      return -1;
+    }
+    try {
+      const testDay = new URLSearchParams(window.location.search).get('day');
+      if (testDay) {
+        const idx = parseInt(testDay) - 1;
+        if (idx >= 0 && idx < _config.tripDates.length) return idx;
+      }
+    } catch (e) {}
     for (let i = 0; i < _config.tripDates.length; i++) {
       const dayStart = new Date(_config.tripDates[i] + "T00:00:00+08:00").getTime();
       const dayEnd = new Date(_config.tripDates[i] + "T23:59:59+08:00").getTime();
@@ -69,6 +97,7 @@ window.AppHeader = (function () {
     }
     return -1;
   }
+
   function getNextEvent(dayData) {
     if (!dayData) return null;
     const now = new Date();
@@ -80,6 +109,7 @@ window.AppHeader = (function () {
     }
     return dayData.events[dayData.events.length - 1];
   }
+
   function getNextBigTask() {
     const now = Date.now();
     const cb = _config.callbacks || {};
@@ -130,6 +160,7 @@ window.AppHeader = (function () {
 
     return null;
   }
+
   function getPrepProgress() {
     const now = Date.now();
     const PREP_START = _config.tripStart - 180 * 86400000;
@@ -137,6 +168,7 @@ window.AppHeader = (function () {
     if (now >= _config.tripStart) return 100;
     return Math.min(100, Math.max(0, ((now - PREP_START) / (_config.tripStart - PREP_START)) * 100));
   }
+
   function getWeatherAdvice(temp, rain) {
     if (temp < -10) return "🥶 極寒！小孩勿久留戶外";
     if (temp < -5) return "❄️ 羽絨 + 雪靴 + 毛帽";
@@ -144,11 +176,13 @@ window.AppHeader = (function () {
     if (rain >= 70) return "🌨️ 降雪中，路面濕滑";
     return "🧥 防風外套即可";
   }
+
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, c => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[c]));
   }
+
   function haptic(ms = 10) {
     if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} }
   }
@@ -498,7 +532,7 @@ window.AppHeader = (function () {
   }
 
   // ============================================================
-  // ⭐ renderFocusCard
+  // renderFocusCard
   // ============================================================
   function renderFocusCard() {
     if (!_container) return;
@@ -577,7 +611,6 @@ window.AppHeader = (function () {
           </div>
         `;
       } else if (phase === "during") {
-        // ⭐ 情境面板
         const dayIdx = getCurrentDayIndex();
         const dayData = dayIdx >= 0 ? _config.itineraries[dayIdx] : _config.itineraries[0];
         const weatherMap = _config.weatherCache ? _config.weatherCache() : {};
@@ -614,7 +647,7 @@ window.AppHeader = (function () {
               <div class="focus-weather-row">${weather ? `${weather.icon} ${weather.min}°~${weather.max}° · ${advice}` : '⛅ 天氣載入中...'}</div>
             </div>
 
-            <div class="focus-cta-row">
+            <div class="focus-cta-row focus-cta-row-during">
               <button type="button" class="focus-cta focus-cta-primary" data-action="navigate">
                 <span>📍</span> 導航
               </button>
@@ -1034,7 +1067,6 @@ window.AppHeader = (function () {
       _lastRenderedPhase = null; _nextEventStartMs = null; _lastDuringRender = 0;
     },
 
-    // ⭐ 給外部函式取得 config
     _getConfig: () => _config
   };
 })();
@@ -1052,6 +1084,15 @@ function openNavigateMenu() {
     const s = new Date(cfg.tripDates[i] + "T00:00:00+08:00").getTime();
     const e = new Date(cfg.tripDates[i] + "T23:59:59+08:00").getTime();
     if (now >= s && now <= e) { dayIdx = i; break; }
+  }
+  if (dayIdx < 0) {
+    try {
+      const testDay = new URLSearchParams(window.location.search).get('day');
+      if (testDay) {
+        const idx = parseInt(testDay) - 1;
+        if (idx >= 0 && idx < cfg.tripDates.length) dayIdx = idx;
+      }
+    } catch (e) {}
   }
   const dayData = cfg.itineraries[dayIdx >= 0 ? dayIdx : 0];
   if (!dayData || !dayData.events) return;
@@ -1137,23 +1178,177 @@ function openMessagesModal() {
 
   const btn = document.getElementById("messages-send-btn");
   const input = document.getElementById("messages-input");
-  if (btn && input) {
-    btn.onclick = () => {
-      const t = input.value.trim();
-      if (!t) return;
-      window.Messages.send(t);
-      input.value = '';
-      input.focus();
+  const pinOpt = document.getElementById("msg-opt-pin");
+  const expireOpt = document.getElementById("msg-opt-expire");
+  const expireLabel = document.getElementById("msg-opt-expire-label");
+
+  // 重置狀態
+  if (input) input.value = '';
+  if (pinOpt) pinOpt.checked = false;
+  if (expireOpt) {
+    expireOpt.checked = false;
+    expireOpt.dataset.minutes = '30';
+  }
+  if (expireLabel) expireLabel.textContent = '⏱️ 30 分鐘後自動隱藏';
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('opacity-50');
+  }
+
+  // 快速模板
+  m.querySelectorAll('[data-template]').forEach(tbtn => {
+    tbtn.onclick = () => applyMessageTemplate(tbtn.dataset.template);
+  });
+
+  // 輸入框
+  if (input && btn) {
+    input.oninput = () => {
+      const hasText = !!input.value.trim();
+      btn.disabled = !hasText;
+      btn.classList.toggle('opacity-50', !hasText);
     };
     input.onkeydown = (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        btn.click();
+        if (!btn.disabled) btn.click();
       }
     };
   }
+
+  // 發送
+  if (btn) {
+    btn.onclick = sendMessageFromModal;
+  }
+
+  // 過期選項 label 根據勾選更新
+  if (expireOpt && expireLabel) {
+    expireOpt.onchange = () => {
+      if (expireOpt.checked) {
+        const mins = parseInt(expireOpt.dataset.minutes || '30');
+        const label = mins >= 60
+          ? `${(mins / 60).toFixed(mins % 60 === 0 ? 0 : 1)} 小時`
+          : `${mins} 分鐘`;
+        expireLabel.textContent = `⏱️ ${label}後自動隱藏`;
+      } else {
+        expireLabel.textContent = '⏱️ 不過期';
+      }
+    };
+  }
+
   if (navigator.vibrate) navigator.vibrate(8);
 }
+
+function applyMessageTemplate(type) {
+  const input = document.getElementById("messages-input");
+  const pinOpt = document.getElementById("msg-opt-pin");
+  const expireOpt = document.getElementById("msg-opt-expire");
+  const expireLabel = document.getElementById("msg-opt-expire-label");
+  const btn = document.getElementById("messages-send-btn");
+  if (!input) return;
+
+  // 預設集合時間：現在 + 15 分鐘
+  const now = new Date();
+  const t = new Date(now.getTime() + 15 * 60 * 1000);
+  const hh = String(t.getHours()).padStart(2, '0');
+  const mm = String(t.getMinutes()).padStart(2, '0');
+
+  let duration = 30;
+  let label = '30 分鐘';
+
+  switch (type) {
+    case 'meetup':
+      input.value = `${hh}:${mm} 在 ___ 集合`;
+      if (pinOpt) pinOpt.checked = true;
+      duration = 30;
+      label = '30 分鐘';
+      break;
+    case 'remind':
+      input.value = '記得帶 ___';
+      if (pinOpt) pinOpt.checked = false;
+      duration = 0;
+      break;
+    case 'urgent':
+      input.value = '緊急！___';
+      if (pinOpt) pinOpt.checked = true;
+      duration = 120;
+      label = '2 小時';
+      break;
+    case 'location':
+      input.value = '我在這裡 📍';
+      if (pinOpt) pinOpt.checked = false;
+      duration = 60;
+      label = '1 小時';
+      break;
+  }
+
+  if (expireOpt) {
+    expireOpt.checked = duration > 0;
+    expireOpt.dataset.minutes = String(duration || 30);
+  }
+  if (expireLabel) {
+    expireLabel.textContent = duration > 0
+      ? `⏱️ ${label}後自動隱藏`
+      : '⏱️ 不過期';
+  }
+
+  // 游標定位到 ___ 或選取全部
+  input.focus();
+  const pos = input.value.indexOf('___');
+  if (pos >= 0) {
+    input.setSelectionRange(pos, pos + 3);
+  } else {
+    input.setSelectionRange(input.value.length, input.value.length);
+  }
+
+  // 啟用發送按鈕
+  if (btn && input.value.trim()) {
+    btn.disabled = false;
+    btn.classList.remove('opacity-50');
+  }
+
+  if (navigator.vibrate) navigator.vibrate(6);
+}
+
+function sendMessageFromModal() {
+  const input = document.getElementById("messages-input");
+  const pinOpt = document.getElementById("msg-opt-pin");
+  const expireOpt = document.getElementById("msg-opt-expire");
+  if (!input || !window.Messages) return;
+
+  const text = input.value.trim();
+  if (!text) return;
+
+  const opts = {
+    pinned: pinOpt ? pinOpt.checked : false,
+    duration: null
+  };
+
+  if (expireOpt && expireOpt.checked) {
+    const mins = parseInt(expireOpt.dataset.minutes || '30');
+    opts.duration = mins * 60 * 1000;
+  }
+
+  window.Messages.send(text, opts);
+
+  // 重置
+  input.value = '';
+  if (pinOpt) pinOpt.checked = false;
+  if (expireOpt) {
+    expireOpt.checked = false;
+    expireOpt.dataset.minutes = '30';
+  }
+  const expireLabel = document.getElementById("msg-opt-expire-label");
+  if (expireLabel) expireLabel.textContent = '⏱️ 30 分鐘後自動隱藏';
+
+  const btn = document.getElementById("messages-send-btn");
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('opacity-50');
+  }
+
+  input.focus();
+}
+
 function closeMessagesModal() {
   const m = document.getElementById("messages-modal");
   if (m) {
@@ -1162,6 +1357,7 @@ function closeMessagesModal() {
     if (!document.querySelector('.modal-overlay.active')) document.body.classList.remove('modal-open');
   }
 }
+
 function renderMessagesModal() {
   const listEl = document.getElementById("messages-list");
   if (!listEl || !window.Messages) return;
@@ -1178,7 +1374,6 @@ window.closeMessagesModal = closeMessagesModal;
  * ============================================================ */
 if (window.Messages) {
   window.Messages.subscribe(() => {
-    // 更新卡片
     if (window.AppHeader && window.AppHeader.getPhase && window.AppHeader.getPhase() === 'during') {
       const block = document.getElementById("broadcast-block");
       if (block) {
@@ -1192,7 +1387,6 @@ if (window.Messages) {
           block.remove();
         }
       }
-      // 更新 badge
       const msgBtn = document.querySelector('[data-action="messages"]');
       if (msgBtn) {
         const count = window.Messages.getCount();
@@ -1202,7 +1396,6 @@ if (window.Messages) {
           : base;
       }
     }
-    // 若留言板開著，更新列表
     const modal = document.getElementById("messages-modal");
     if (modal && modal.classList.contains('active')) renderMessagesModal();
   });
