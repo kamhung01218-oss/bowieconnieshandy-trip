@@ -2129,3 +2129,263 @@ a:focus:not(:focus-visible) {
   color: white;
   border-color: transparent;
 }
+/* ============================================================
+ * 33. ⭐ v9.10：留言 Day 標籤 + 今日摘要
+ * ============================================================ */
+
+/* Day 標籤（卡片 + 留言板） */
+.app-header .message-day-tag,
+.message-day-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  margin-right: 4px;
+  flex-shrink: 0;
+  vertical-align: middle;
+  transition: all 0.15s;
+}
+.app-header .message-day-tag:active,
+.message-day-tag:active {
+  transform: scale(0.92);
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+}
+
+/* 今日摘要區塊 */
+.today-summary {
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border: 1.5px solid #fed7aa;
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.today-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #9a3412;
+  letter-spacing: 0.03em;
+}
+
+.today-summary-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.today-summary-item {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(251, 146, 60, 0.3);
+  align-items: flex-start;
+}
+.today-summary-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.today-summary-dot {
+  font-size: 10px;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.today-summary-body { flex: 1; min-width: 0; }
+
+.today-summary-text {
+  font-size: 13px;
+  color: #7c2d12;
+  font-weight: 600;
+  line-height: 1.45;
+  word-break: break-word;
+}
+.today-summary-text strong {
+  color: #9a3412;
+  font-weight: 900;
+  margin-right: 2px;
+}
+
+.today-summary-meta {
+  font-size: 11px;
+  color: #c2410c;
+  font-weight: 700;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 深色模式 */
+[data-theme="dark"] .today-summary {
+  background: linear-gradient(135deg, #422006, #78350f);
+  border-color: #92400e;
+}
+[data-theme="dark"] .today-summary-header { color: #fde68a; }
+[data-theme="dark"] .today-summary-text { color: #fef3c7; }
+[data-theme="dark"] .today-summary-text strong { color: #fde68a; }
+[data-theme="dark"] .today-summary-meta { color: #fbbf24; }
+[data-theme="dark"] .today-summary-item { border-bottom-color: rgba(251, 146, 60, 0.2); }
+/* ============================================================
+ * 34. ⭐ Focus Card「現在行程」方案 A
+ * ============================================================ */
+
+/* 狀態區容器 */
+.app-header .focus-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* 現在進行中的事件 */
+.app-header .focus-now-block {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1.5px solid #93c5fd;
+  border-radius: 12px;
+  padding: 10px 12px;
+  position: relative;
+  overflow: hidden;
+}
+.app-header .focus-now-block.focus-now-idle {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  border-style: dashed;
+}
+
+.app-header .focus-now-label {
+  font-size: 11px;
+  font-weight: 900;
+  color: #0369a1;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.app-header .focus-now-block.focus-now-idle .focus-now-label {
+  color: #94a3b8;
+}
+
+.app-header .focus-now-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: #0c4a6e;
+  line-height: 1.4;
+  word-break: break-word;
+  margin-bottom: 4px;
+}
+.app-header .focus-now-idle-text {
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+}
+
+.app-header .focus-now-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0284c7;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 8px;
+}
+
+/* 進度條 */
+.app-header .focus-now-progress {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(2, 132, 199, 0.1);
+}
+.app-header .focus-now-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8, #0284c7);
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+}
+
+/* 下一站 */
+.app-header .focus-next-block {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.app-header .focus-next-label {
+  font-size: 11px;
+  font-weight: 900;
+  color: #475569;
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+}
+
+.app-header .focus-next-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #334155;
+  line-height: 1.4;
+  word-break: break-word;
+  margin-bottom: 2px;
+}
+.app-header .focus-next-done {
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+  font-size: 12.5px !important;
+}
+
+.app-header .focus-next-remain {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #0284c7;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 深色模式 */
+[data-theme="dark"] .app-header .focus-now-block {
+  background: linear-gradient(135deg, #0c4a6e, #075985);
+  border-color: #0369a1;
+}
+[data-theme="dark"] .app-header .focus-now-block.focus-now-idle {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .app-header .focus-now-label { color: #7dd3fc; }
+[data-theme="dark"] .app-header .focus-now-block.focus-now-idle .focus-now-label { color: #64748b; }
+[data-theme="dark"] .app-header .focus-now-title { color: #e0f2fe; }
+[data-theme="dark"] .app-header .focus-now-idle-text { color: #64748b !important; }
+[data-theme="dark"] .app-header .focus-now-time { color: #38bdf8; }
+[data-theme="dark"] .app-header .focus-now-progress {
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .app-header .focus-now-progress-fill {
+  background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+}
+[data-theme="dark"] .app-header .focus-next-block {
+  background: #0f172a;
+  border-color: #334155;
+}
+[data-theme="dark"] .app-header .focus-next-label { color: #94a3b8; }
+[data-theme="dark"] .app-header .focus-next-title { color: #cbd5e1; }
+[data-theme="dark"] .app-header .focus-next-done { color: #64748b !important; }
+[data-theme="dark"] .app-header .focus-next-remain { color: #38bdf8; }

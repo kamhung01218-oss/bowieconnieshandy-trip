@@ -1,13 +1,13 @@
 /* ============================================================
- * AppHeader v9.9
+ * AppHeader v9.12
  * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [☰ 工具]
  * - Focus Card：出發前 / 中 / 後
- * - 旅行中：家庭廣播 + 當前行程 + 多地點天氣切換 + 導航/留言
+ * - 旅行中：家庭廣播 + 當前事件（進度條）+ 下一站 + 多地點天氣
  *
- * v9.8：天氣警告改為單行文字
- * v9.9：
- *   - ⭐ getActiveWeatherLoc 優先選「非全天」時間匹配地點
- *   - ⭐ 日出日落加中文標籤
+ * v9.11：當前事件 + 進度條 + 剩餘時間
+ * v9.12：
+ *   - ⭐ getNowMinutes() 支援模擬時間
+ *   - ⭐ 模擬模式預設 10:30，可用 ?time=HH:MM 指定
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -16,7 +16,6 @@ window.AppHeader = (function () {
   let _tickTimer = null;
   let _syncConnected = true;
   let _lastRenderedPhase = null;
-  let _nextEventStartMs = null;
   let _lastDuringRender = 0;
   let _docClickHandler = null;
   let _escKeyHandler = null;
@@ -89,16 +88,33 @@ window.AppHeader = (function () {
     return -1;
   }
 
-  function getNextEvent(dayData) {
-    if (!dayData) return null;
+  // ⭐ v9.12：取得當前分鐘（支援模擬模式）
+  // - URL 有 ?time=HH:MM → 用指定時間
+  // - URL 有 ?test=during → 用預設 10:30
+  // - 否則用真實時間
+  function getNowMinutes() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+
+      const timeParam = urlParams.get('time');
+      if (timeParam) {
+        const m = timeParam.match(/^(\d{1,2}):(\d{2})$/);
+        if (m) {
+          const h = parseInt(m[1], 10);
+          const min = parseInt(m[2], 10);
+          if (h >= 0 && h <= 23 && min >= 0 && min <= 59) {
+            return h * 60 + min;
+          }
+        }
+      }
+
+      if (urlParams.get('test') === 'during') {
+        return 10 * 60 + 30;
+      }
+    } catch (e) {}
+
     const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    for (const evt of dayData.events) {
-      const start = evt.time.split(" - ")[0].trim();
-      const [h, m] = start.split(":").map(Number);
-      if (!isNaN(h) && h * 60 + m > currentMinutes) return evt;
-    }
-    return dayData.events[dayData.events.length - 1];
+    return now.getHours() * 60 + now.getMinutes();
   }
 
   function getNextBigTask() {
@@ -261,22 +277,6 @@ window.AppHeader = (function () {
     el.classList.add("tick");
   }
 
-  function updateNextEventCountdown() {
-    if (!_container) return;
-    const el = _container.querySelector("#focus-next-countdown");
-    if (!el || !_nextEventStartMs) return;
-    const remain = _nextEventStartMs - Date.now();
-    if (remain > 0) {
-      const totalSec = Math.floor(remain / 1000);
-      const h = Math.floor(totalSec / 3600);
-      const m = Math.floor((totalSec % 3600) / 60);
-      const s = totalSec % 60;
-      el.textContent = h > 0 ? `⏱ ${h}時${String(m).padStart(2, "0")}分後` : `⏱ ${m}分${String(s).padStart(2, "0")}秒後`;
-    } else {
-      el.textContent = "🎬 即將開始";
-    }
-  }
-
   function stripHtml(html) {
     if (!html) return "";
     return String(html).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -437,19 +437,8 @@ window.AppHeader = (function () {
       if (selected) return selected;
     }
 
-    const now = new Date();
-    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const checkMin = getNowMinutes();   // ⭐ v9.12
 
-    const isTest = (() => {
-      try {
-        return new URLSearchParams(window.location.search).get('test') === 'during';
-      } catch (e) { return false; }
-    })();
-
-    let checkMin = nowMin;
-    if (isTest) checkMin = 10 * 60;
-
-    // ⭐ v9.9：優先選「非全天」且時間匹配的地點
     for (const loc of locs) {
       const [fh, fm] = loc.timeFrom.split(':').map(Number);
       const [th, tm] = loc.timeTo.split(':').map(Number);
@@ -460,7 +449,6 @@ window.AppHeader = (function () {
       if (checkMin >= from && checkMin <= to) return loc;
     }
 
-    // 沒有特殊地點匹配 → 找全天的那個
     for (const loc of locs) {
       const [fh, fm] = loc.timeFrom.split(':').map(Number);
       const [th, tm] = loc.timeTo.split(':').map(Number);
@@ -533,6 +521,71 @@ window.AppHeader = (function () {
     haptic(6);
     renderFocusCard(true);
   };
+
+  // ============================================================
+  // 當前事件 / 下一站
+  // ============================================================
+  function getCurrentEventInfo(dayData) {
+    if (!dayData || !dayData.events) return null;
+    const nowMin = getNowMinutes();   // ⭐ v9.12
+
+    for (const evt of dayData.events) {
+      const startStr = evt.time.split(" - ")[0].trim();
+      const endStr = evt.time.split(" - ")[1];
+      const [sh, sm] = startStr.split(":").map(Number);
+      if (isNaN(sh)) continue;
+
+      const start = sh * 60 + sm;
+      let end = start + 120;
+      if (endStr) {
+        const [eh, em] = endStr.trim().split(":").map(Number);
+        if (!isNaN(eh)) end = eh * 60 + em;
+        if (end < start) end = 23 * 60 + 59;
+      }
+
+      if (nowMin >= start && nowMin <= end) {
+        const total = end - start;
+        const elapsed = nowMin - start;
+        const percent = total > 0 ? Math.min(100, Math.round((elapsed / total) * 100)) : 0;
+        return {
+          event: evt,
+          startTime: startStr,
+          endTime: endStr ? endStr.trim() : '',
+          remainMin: end - nowMin,
+          percent
+        };
+      }
+    }
+    return null;
+  }
+
+  function getNextEventInfo(dayData) {
+    if (!dayData || !dayData.events) return null;
+    const nowMin = getNowMinutes();   // ⭐ v9.12
+
+    for (const evt of dayData.events) {
+      const startStr = evt.time.split(" - ")[0].trim();
+      const [h, m] = startStr.split(":").map(Number);
+      if (isNaN(h)) continue;
+      const start = h * 60 + m;
+      if (start > nowMin) {
+        return {
+          event: evt,
+          startTime: startStr,
+          remainMin: start - nowMin
+        };
+      }
+    }
+    return null;
+  }
+
+  function formatRemainMin(min) {
+    if (min <= 0) return '即將結束';
+    if (min < 60) return `${min} 分鐘`;
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return m > 0 ? `${h} 小時 ${m} 分` : `${h} 小時`;
+  }
 
   // ============================================================
   // 廣播區塊 HTML
@@ -621,22 +674,60 @@ window.AppHeader = (function () {
         const dayIdx = getCurrentDayIndex();
         const dayData = dayIdx >= 0 ? _config.itineraries[dayIdx] : _config.itineraries[0];
         const dateStr = _config.tripDates[dayIdx >= 0 ? dayIdx : 0];
-        const nextEvt = getNextEvent(dayData);
         const msgCount = window.Messages ? window.Messages.getCount() : 0;
         const broadcastHTML = buildBroadcastHTML();
         const weatherRowHtml = renderWeatherRow(dayIdx >= 0 ? dayIdx : 0, dateStr);
 
+        const currentInfo = getCurrentEventInfo(dayData);
+        const nextInfo = getNextEventInfo(dayData);
+
+        let currentBlockHtml = '';
+        if (currentInfo) {
+          const timeRange = currentInfo.endTime
+            ? `${currentInfo.startTime} – ${currentInfo.endTime}`
+            : `${currentInfo.startTime} 起`;
+          currentBlockHtml = `
+            <div class="focus-now-block">
+              <div class="focus-now-label">🎯 現在進行</div>
+              <div class="focus-now-title">${escapeHtml(currentInfo.event.title)}</div>
+              <div class="focus-now-time">${escapeHtml(timeRange)} · 還有 ${formatRemainMin(currentInfo.remainMin)}</div>
+              <div class="focus-now-progress">
+                <div class="focus-now-progress-fill" style="width:${currentInfo.percent}%"></div>
+              </div>
+            </div>
+          `;
+        } else {
+          currentBlockHtml = `
+            <div class="focus-now-block focus-now-idle">
+              <div class="focus-now-label">🎯 現在</div>
+              <div class="focus-now-title focus-now-idle-text">空檔 · 自由時間</div>
+            </div>
+          `;
+        }
+
+        let nextBlockHtml = '';
+        if (nextInfo) {
+          nextBlockHtml = `
+            <div class="focus-next-block">
+              <div class="focus-next-label">⏭️ 下一站</div>
+              <div class="focus-next-title">${escapeHtml(nextInfo.startTime)} · ${escapeHtml(nextInfo.event.title)}</div>
+              <div class="focus-next-remain">還有 ${formatRemainMin(nextInfo.remainMin)}</div>
+            </div>
+          `;
+        } else {
+          nextBlockHtml = `
+            <div class="focus-next-block">
+              <div class="focus-next-label">⏭️ 下一站</div>
+              <div class="focus-next-title focus-next-done">今日行程已結束</div>
+            </div>
+          `;
+        }
+
         innerHTML = `<div class="focus-inner">
           ${broadcastHTML}
-          <div class="focus-current">
-            <div class="focus-current-row">
-              <span class="focus-current-label">🎯 現在</span>
-              <span class="focus-current-title">${escapeHtml(dayData.title)}</span>
-            </div>
-            ${nextEvt ? `<div class="focus-next-row">
-              <span class="focus-next-label">⏭️ 下一站</span>
-              <span class="focus-next-title">${escapeHtml(nextEvt.time.split(" - ")[0])} · ${escapeHtml(nextEvt.title)}</span>
-            </div>` : ''}
+          <div class="focus-status">
+            ${currentBlockHtml}
+            ${nextBlockHtml}
             ${weatherRowHtml}
           </div>
           <div class="focus-cta-row focus-cta-row-during">
@@ -666,7 +757,7 @@ window.AppHeader = (function () {
 
       focusEl.innerHTML = innerHTML;
       bindFocusActions(focusEl, cb);
-      if (phase === "during") { updateNextEventCountdown(); _lastDuringRender = Date.now(); }
+      if (phase === "during") { _lastDuringRender = Date.now(); }
     }
   }
 
@@ -836,7 +927,6 @@ window.AppHeader = (function () {
       _container = document.getElementById(config.containerId);
       if (!_container) { console.warn("[AppHeader] container not found:", config.containerId); return; }
       _lastRenderedPhase = null;
-      _nextEventStartMs = null;
       _lastDuringRender = 0;
       _selectedWeatherLocId = null;
       _selectedWeatherDayKey = null;
@@ -928,7 +1018,6 @@ window.AppHeader = (function () {
         if (phase !== _lastRenderedPhase) { renderFocusCard(); return; }
         if (phase === "before") updateCountdownNumbers();
         if (phase === "during") {
-          updateNextEventCountdown();
           const now = Date.now();
           if (now - _lastDuringRender >= 60000) {
             _lastDuringRender = now;
@@ -955,7 +1044,7 @@ window.AppHeader = (function () {
       if (_searchDebounceTimer) { clearTimeout(_searchDebounceTimer); _searchDebounceTimer = null; }
       if (_container) _container.innerHTML = "";
       _config = null; _container = null;
-      _lastRenderedPhase = null; _nextEventStartMs = null; _lastDuringRender = 0;
+      _lastRenderedPhase = null; _lastDuringRender = 0;
       _selectedWeatherLocId = null;
       _selectedWeatherDayKey = null;
     },
@@ -989,8 +1078,21 @@ function openNavigateMenu() {
   const dayData = cfg.itineraries[dayIdx >= 0 ? dayIdx : 0];
   if (!dayData || !dayData.events) return;
 
-  const d = new Date();
-  const nowMin = d.getHours() * 60 + d.getMinutes();
+  // ⭐ v9.12：用模擬時間
+  const nowMin = (function() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const timeParam = urlParams.get('time');
+      if (timeParam) {
+        const m = timeParam.match(/^(\d{1,2}):(\d{2})$/);
+        if (m) return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+      }
+      if (urlParams.get('test') === 'during') return 10 * 60 + 30;
+    } catch (e) {}
+    const d = new Date();
+    return d.getHours() * 60 + d.getMinutes();
+  })();
+
   let curIdx = -1;
   for (let i = 0; i < dayData.events.length; i++) {
     const evt = dayData.events[i];
@@ -1263,8 +1365,71 @@ function closeMessagesModal() {
 function renderMessagesModal() {
   const listEl = document.getElementById("messages-list");
   if (!listEl || !window.Messages) return;
-  listEl.innerHTML = window.Messages.renderFull();
+
+  let summaryHTML = '';
+  try {
+    const summary = window.Messages.getTodaySummary();
+    if (summary.items.length > 0) {
+      const itemRows = summary.items.map(m => {
+        const dot = m.pinned ? '🔴' : '⚪';
+        const cd = m.expiresAt ? ` · 還有 ${formatMsgCountdown(m.expiresAt - Date.now())}` : '';
+        return `<div class="today-summary-item">
+          <span class="today-summary-dot">${dot}</span>
+          <div class="today-summary-body">
+            <div class="today-summary-text"><strong>${escapeHtml(m.author)}</strong>：${escapeHtml(m.text)}</div>
+            <div class="today-summary-meta">${formatMsgTimeAgo(m.createdAt)}${cd}</div>
+          </div>
+        </div>`;
+      }).join('');
+
+      summaryHTML = `
+        <div class="today-summary">
+          <div class="today-summary-header">
+            <span>📌 重要提醒</span>
+            <span class="today-summary-count">${summary.items.length}</span>
+          </div>
+          ${itemRows}
+        </div>
+      `;
+    }
+  } catch (e) {
+    console.warn('[Messages] 摘要失敗', e);
+  }
+
+  listEl.innerHTML = summaryHTML + window.Messages.renderFull();
 }
+
+function formatMsgTimeAgo(ts) {
+  const d = Date.now() - ts;
+  if (d < 60000) return '剛剛';
+  if (d < 3600000) return Math.floor(d/60000) + ' 分鐘前';
+  if (d < 86400000) return Math.floor(d/3600000) + ' 小時前';
+  return Math.floor(d/86400000) + ' 天前';
+}
+function formatMsgCountdown(ms) {
+  if (ms <= 0) return '已到時間';
+  const s = Math.floor(ms/1000);
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  if (h > 0) return h + '時' + String(m).padStart(2,'0') + '分';
+  if (m > 0) return m + '分' + String(s%60).padStart(2,'0') + '秒';
+  return s + '秒';
+}
+
+window._Messages_jumpToDay = function (day) {
+  if (!day || day < 1 || day > 7) return;
+  closeMessagesModal();
+  setTimeout(() => {
+    if (typeof window.switchDay === 'function') {
+      window.switchDay(day);
+      setTimeout(() => {
+        const section = document.getElementById('day-section-' + day);
+        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }, 250);
+  if (navigator.vibrate) navigator.vibrate(10);
+};
 
 window.openNavigateMenu = openNavigateMenu;
 window.closeNavigateMenu = closeNavigateMenu;
@@ -1272,7 +1437,7 @@ window.openMessagesModal = openMessagesModal;
 window.closeMessagesModal = closeMessagesModal;
 
 /* ============================================================
- * 留言訂閱：即時更新卡片 + 留言板
+ * 留言訂閱
  * ============================================================ */
 if (window.Messages) {
   window.Messages.subscribe(() => {
