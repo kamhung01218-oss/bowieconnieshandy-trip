@@ -1,0 +1,270 @@
+/* ============================================================
+ * tokens.css — 設計令牌唯一來源（v1.0）
+ *
+ * ⚠️ 這是所有視覺決策的唯一來源。
+ *    其他 CSS 檔案不得再自行定義 :root 變數。
+ *
+ * 載入順序：必須在所有 CSS 之前
+ *   <link rel="stylesheet" href="./tokens.css">
+ *   <link rel="stylesheet" href="./header.css">
+ *   ...
+ * ============================================================ */
+
+:root {
+  /* ========== 1. 顏色：品牌 ========== */
+  --t-color-primary:         #0284c7;
+  --t-color-primary-dark:    #0369a1;
+  --t-color-primary-deep:    #0c4a6e;
+  --t-color-primary-light:   #bae6fd;
+  --t-color-primary-lighter: #e0f2fe;
+  --t-color-accent:          #0ea5e9;
+  --t-color-accent-warm:     #f59e0b;
+  --t-color-accent-warm-2:   #ea580c;
+
+  /* ========== 2. 顏色：表面 ========== */
+  --t-color-bg-1:            #f0f9ff;
+  --t-color-bg-2:            #e0f2fe;
+  --t-color-bg-3:            #f8fafc;
+  --t-color-surface:         #ffffff;
+  --t-color-surface-soft:    #fbfdff;
+  --t-color-surface-muted:   #f1f5f9;
+
+  /* ========== 3. 顏色：文字 ========== */
+  --t-color-text-main:       #0f172a;
+  --t-color-text-soft:       #334155;
+  --t-color-text-mute:       #475569;
+  --t-color-text-faint:      #64748b;
+
+  /* ========== 4. 顏色：邊框 ========== */
+  --t-color-border:          #e2e8f0;
+  --t-color-border-sky:      rgba(186, 230, 253, 0.6);
+
+  /* ========== 5. 顏色：語意 ========== */
+  --t-color-success:         #10b981;
+  --t-color-success-bg:      #ecfdf5;
+  --t-color-warning:         #f59e0b;
+  --t-color-warning-bg:      #fffbeb;
+  --t-color-danger:          #ef4444;
+  --t-color-danger-bg:       #fef2f2;
+  --t-color-info:            #0ea5e9;
+  --t-color-info-bg:         #f0f9ff;
+
+  /* ========== 6. 顏色：類別 ========== */
+  --t-color-cat-food:        #d97706;
+  --t-color-cat-transit:     #0284c7;
+  --t-color-cat-drive:       #059669;
+  --t-color-cat-hotel:       #4f46e5;
+  --t-color-cat-scenery:     #7c3aed;
+  --t-color-cat-shopping:    #e11d48;
+
+  /* ========== 7. 字體 ========== */
+  --t-font-sans: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --t-font-num:  'Playfair Display', 'Noto Sans TC', Georgia, serif;
+
+  /* ========== 8. 字級 ========== */
+  --t-fs-2xs:  12px;
+  --t-fs-xs:   13px;
+  --t-fs-sm:   14px;
+  --t-fs-base: 16px;
+  --t-fs-lg:   20px;
+  --t-fs-xl:   24px;
+  --t-fs-2xl:  28px;
+  --t-fs-3xl:  40px;
+
+  /* ========== 9. 行高 ========== */
+  --t-lh-tight: 1.35;
+  --t-lh-base:  1.65;
+  --t-lh-loose: 1.8;
+
+  /* ========== 10. 字距 ========== */
+  --t-ls-cn:   0.015em;
+  --t-ls-num: -0.01em;
+  --t-ls-caps: 0.08em;
+
+  /* ========== 11. 間距 ========== */
+  --t-space-0:  0;
+  --t-space-1:  4px;
+  --t-space-2:  8px;
+  --t-space-3:  12px;
+  --t-space-4:  16px;
+  --t-space-5:  20px;
+  --t-space-6:  24px;
+  --t-space-8:  32px;
+  --t-space-10: 40px;
+  --t-space-12: 48px;
+
+  /* ========== 12. 圓角 ========== */
+  --t-radius-sm:   8px;
+  --t-radius-md:   12px;
+  --t-radius-lg:   20px;
+  --t-radius-full: 9999px;
+
+  /* ========== 13. 陰影 ========== */
+  --t-shadow-sm:    0 1px 2px rgba(2, 132, 199, 0.06);
+  --t-shadow-card:  0 4px 12px rgba(2, 132, 199, 0.08);
+  --t-shadow-lg:    0 12px 32px -8px rgba(2, 132, 199, 0.18);
+  --t-shadow-focus: 0 0 0 3px rgba(56, 189, 248, 0.4);
+
+  /* ========== 14. 動效 ========== */
+  --t-duration-fast: 0.15s;
+  --t-duration-base: 0.25s;
+  --t-duration-slow: 0.4s;
+  --t-ease-out:      cubic-bezier(0.4, 0, 0.2, 1);
+  --t-ease-bounce:   cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ========== 15. 層級 ========== */
+  --t-z-base:    1;
+  --t-z-sticky:  40;
+  --t-z-nav:     100;
+  --t-z-modal:   200;
+  --t-z-toast:   300;
+  --t-z-fab:     9998;
+  --t-z-snow:    9999;
+
+  /* ========== 16. 佈局 ========== */
+  --t-nav-height:  60px;
+  --t-bottom-nav:  68px;
+  --t-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --t-safe-top:    env(safe-area-inset-top, 0px);
+}
+
+/* ============================================================
+ * 深色模式：只覆蓋顏色類令牌
+ * ============================================================ */
+[data-theme="dark"] {
+  --t-color-primary:         #0ea5e9;
+  --t-color-primary-dark:    #0284c7;
+  --t-color-primary-deep:    #7dd3fc;
+  --t-color-primary-light:   #334155;
+  --t-color-primary-lighter: #1e293b;
+  --t-color-accent:          #38bdf8;
+
+  --t-color-bg-1:            #0f172a;
+  --t-color-bg-2:            #1e293b;
+  --t-color-bg-3:            #0f172a;
+  --t-color-surface:         #1e293b;
+  --t-color-surface-soft:    #1e293b;
+  --t-color-surface-muted:   #334155;
+
+  --t-color-text-main:       #f1f5f9;
+  --t-color-text-soft:       #cbd5e1;
+  --t-color-text-mute:       #94a3b8;
+  --t-color-text-faint:      #64748b;
+
+  --t-color-border:          #334155;
+  --t-color-border-sky:      rgba(56, 189, 248, 0.2);
+
+  --t-color-success-bg:      #064e3b;
+  --t-color-warning-bg:      #422006;
+  --t-color-danger-bg:       #450a0a;
+  --t-color-info-bg:         #0c4a6e;
+
+  --t-shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.3);
+  --t-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --t-shadow-lg:   0 12px 32px -8px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================================
+ * ⭐ 相容層：舊變數名指向新令牌
+ *
+ * 這樣舊程式碼不用一次改完，之後可逐步移除。
+ * 如果你已完成全面遷移，可以刪除以下兩個區塊。
+ * ============================================================ */
+:root {
+  /* 品牌色 */
+  --sky-primary:       var(--t-color-primary);
+  --sky-primary-dark:  var(--t-color-primary-dark);
+  --sky-deep:          var(--t-color-primary-deep);
+  --sky-light:         var(--t-color-primary-light);
+  --sky-lighter:       var(--t-color-primary-lighter);
+  --sky-accent:        var(--t-color-accent);
+
+  /* 表面 */
+  --snow-bg-1:         var(--t-color-bg-1);
+  --snow-bg-2:         var(--t-color-bg-2);
+  --snow-bg-3:         var(--t-color-bg-3);
+  --card-bg:           var(--t-color-surface);
+  --card-bg-soft:      var(--t-color-surface-soft);
+
+  /* 文字 */
+  --text-main:         var(--t-color-text-main);
+  --text-soft:         var(--t-color-text-soft);
+  --text-mute:         var(--t-color-text-mute);
+  --text-faint:        var(--t-color-text-faint);
+
+  /* 邊框 */
+  --line-soft:         var(--t-color-border);
+  --line-sky:          var(--t-color-border-sky);
+
+  /* 字級（舊名） */
+  --fs-2xs:            var(--t-fs-2xs);
+  --fs-xs:             var(--t-fs-xs);
+  --fs-sm:             var(--t-fs-sm);
+  --fs-base:           var(--t-fs-base);
+  --fs-lg:             var(--t-fs-lg);
+  --fs-2xl:            var(--t-fs-2xl);
+  --fs-3xl:            var(--t-fs-3xl);
+
+  /* 行高字距 */
+  --lh-tight:          var(--t-lh-tight);
+  --lh-base:           var(--t-lh-base);
+  --lh-loose:          var(--t-lh-loose);
+  --ls-cn:             var(--t-ls-cn);
+  --ls-num:            var(--t-ls-num);
+  --ls-caps:           var(--t-ls-caps);
+
+  /* 圓角 */
+  --radius-sm:         var(--t-radius-sm);
+  --radius-md:         var(--t-radius-md);
+  --radius-lg:         var(--t-radius-lg);
+  --radius-full:       var(--t-radius-full);
+
+  /* 按鈕高度 */
+  --btn-sm:            36px;
+  --btn-md:            40px;
+  --btn-lg:            44px;
+
+  /* 字體 */
+  --font-sans:         var(--t-font-sans);
+  --font-num:          var(--t-font-num);
+
+  /* 佈局 */
+  --nav-height:        var(--t-nav-height);
+  --bottom-nav-height: var(--t-bottom-nav);
+  --safe-area-bottom:  var(--t-safe-bottom);
+  --safe-area-top:     var(--t-safe-top);
+
+  /* 類別色 */
+  --trip-food:         var(--t-color-cat-food);
+  --trip-transit:      var(--t-color-cat-transit);
+  --trip-drive:        var(--t-color-cat-drive);
+  --trip-hotel:        var(--t-color-cat-hotel);
+  --trip-scenery:      var(--t-color-cat-scenery);
+  --trip-shopping:     var(--t-color-cat-shopping);
+
+  /* 暖色強調 */
+  --accent-warm-1:     var(--t-color-accent-warm);
+  --accent-warm-2:     var(--t-color-accent-warm-2);
+  --accent-warm-glow:  rgba(245, 158, 11, 0.45);
+
+  /* 深色模式相容（dark.css 用） */
+  --dark-surface-1:    var(--t-color-bg-1);
+  --dark-surface-2:    var(--t-color-bg-2);
+  --dark-surface-3:    #334155;
+  --dark-surface-4:    #475569;
+  --dark-fg-1:         var(--t-color-text-main);
+  --dark-fg-2:         var(--t-color-text-soft);
+  --dark-fg-3:         var(--t-color-text-mute);
+  --dark-fg-4:         var(--t-color-text-faint);
+  --dark-border-1:     var(--t-color-border);
+  --dark-border-2:     #475569;
+  --dark-accent:       var(--t-color-accent);
+  --dark-accent-dark:  var(--t-color-primary-dark);
+  --dark-accent-light: var(--t-color-primary-deep);
+  --dark-success:      var(--t-color-success);
+  --dark-success-bg:   var(--t-color-success-bg);
+  --dark-warning:      var(--t-color-warning);
+  --dark-warning-bg:   var(--t-color-warning-bg);
+  --dark-danger:       var(--t-color-danger);
+  --dark-danger-bg:    var(--t-color-danger-bg);
+}

@@ -1,67 +1,21 @@
 /* ============================================================
- * ledger.css — 隨行記帳本樣式 v3.3
+ * ledger.css — 隨行記帳本樣式 v4.0（令牌化）
  *
  * v3.3 變更：
- *   - 移除 background-attachment: fixed（滾動效能最大殺手）
- *   - 移除 touch-action: pan-y（會造成「一截一截」感）
- *   - overscroll-behavior-y 改為 auto（恢復流暢動量）
- *   - 移除 backdrop-filter（節省 GPU）
- *   - 返回頂部按鈕 bottom 提高到 90px（避開導航欄）
+ *   - 移除 background-attachment: fixed
+ *   - 移除 touch-action: pan-y
+ *   - overscroll-behavior-y 改為 auto
+ *   - 移除 backdrop-filter
+ *   - 返回頂部按鈕 bottom 提高到 90px
+ *
+ * v4.0 變更：
+ *   - ⭐ 移除所有 :root 變數定義（已統一在 tokens.css）
+ *   - 深色模式只保留選擇器覆蓋
  * ============================================================ */
 
-:root {
-  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --snow-bg-1: #f0f9ff;
-  --snow-bg-2: #e0f2fe;
-  --card-bg: #ffffff;
-  --sky-primary: #0284c7;
-  --sky-primary-dark: #0369a1;
-  --sky-deep: #0c4a6e;
-  --sky-light: #bae6fd;
-  --sky-lighter: #e0f2fe;
-  --sky-accent: #0ea5e9;
-  --text-main: #1e293b;
-  --text-soft: #475569;
-  --text-mute: #64748b;
-  --text-faint: #94a3b8;
-  --line-soft: #e2e8f0;
-  --line-sky: rgba(186, 230, 253, 0.6);
-  --font-num: 'Playfair Display', Georgia, serif;
-
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-full: 9999px;
-
-  --btn-sm: 36px;
-  --btn-md: 40px;
-  --btn-lg: 44px;
-
-  --fs-2xs: 11px;
-  --fs-xs: 12px;
-  --fs-sm: 14px;
-  --fs-base: 16px;
-  --fs-lg: 20px;
-  --fs-2xl: 28px;
-}
-
-/* ============ 深色模式 ============ */
-[data-theme="dark"] {
-  --snow-bg-1: #0f172a;
-  --snow-bg-2: #1e293b;
-  --card-bg: #1e293b;
-  --sky-primary: #38bdf8;
-  --sky-primary-dark: #0ea5e9;
-  --sky-deep: #7dd3fc;
-  --sky-light: #334155;
-  --sky-lighter: #1e293b;
-  --text-main: #f1f5f9;
-  --text-soft: #cbd5e1;
-  --text-mute: #94a3b8;
-  --text-faint: #64748b;
-  --line-soft: #334155;
-  --line-sky: rgba(56, 189, 248, 0.2);
-}
+/* ============================================================
+ * 深色模式：只保留選擇器覆蓋
+ * ============================================================ */
 [data-theme="dark"] body {
   background: #0f172a;
   color: #f1f5f9;
@@ -90,23 +44,19 @@
 
 /* ============ 基礎 ============ */
 html {
-  background: var(--snow-bg-1);
-  /* ⭐ 移除 background-attachment: fixed */
+  background: var(--t-color-bg-1);
 }
 body {
   font-family: 'Noto Sans TC', sans-serif;
   -webkit-font-smoothing: antialiased;
-  /* ⭐ 移除 background-attachment: fixed，改用簡單靜態漸層 */
-  background: linear-gradient(180deg, var(--snow-bg-1) 0%, var(--snow-bg-2) 30%, #f8fafc 100%);
+  background: linear-gradient(180deg, var(--t-color-bg-1) 0%, var(--t-color-bg-2) 30%, #f8fafc 100%);
   background-size: 100% 100vh;
   background-repeat: no-repeat;
-  background-color: var(--snow-bg-1);
-  color: var(--text-main);
+  background-color: var(--t-color-bg-1);
+  color: var(--t-color-text-main);
   min-height: 100vh;
-  padding-bottom: calc(16px + var(--safe-area-bottom));
+  padding-bottom: calc(16px + var(--t-safe-bottom));
   -webkit-tap-highlight-color: transparent;
-  /* ⭐ 移除 overscroll-behavior-y: contain，恢復流暢動量 */
-  /* ⭐ 移除 touch-action: pan-y */
   overflow-x: hidden;
 }
 [data-theme="dark"] body {
@@ -208,7 +158,7 @@ body.modal-open [class*="fab"] {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 4px;
-  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  border-radius: var(--t-radius-sm) 0 0 var(--t-radius-sm);
 }
 
 .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; overflow: hidden; }
@@ -226,14 +176,14 @@ body.modal-open [class*="fab"] {
   cursor: grab;
   touch-action: none;
   background: linear-gradient(180deg, white 0%, rgba(255,255,255,0.85) 100%);
-  border-top-left-radius: var(--radius-lg);
-  border-top-right-radius: var(--radius-lg);
+  border-top-left-radius: var(--t-radius-lg);
+  border-top-right-radius: var(--t-radius-lg);
 }
 .modal-handle-area:active { cursor: grabbing; }
 .modal-handle {
   width: 40px;
   height: 5px;
-  border-radius: var(--radius-full);
+  border-radius: var(--t-radius-full);
   background: #cbd5e1;
   transition: background 0.2s, transform 0.2s;
 }
@@ -250,7 +200,6 @@ body.modal-open [class*="fab"] {
   inset: 0;
   z-index: 500;
   background: rgba(240,249,255,0.95);
-  /* ⭐ 移除 backdrop-filter */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -276,14 +225,13 @@ body.modal-open [class*="fab"] {
   z-index: 300;
   background: rgba(2, 132, 199, 0.95);
   color: white;
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 700;
   padding: 4px 10px;
-  border-radius: var(--radius-full);
+  border-radius: var(--t-radius-full);
   display: none;
   align-items: center;
   gap: 5px;
-  /* ⭐ 移除 backdrop-filter */
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 #sync-indicator.active { display: inline-flex; }
@@ -304,7 +252,7 @@ body.modal-open [class*="fab"] {
   padding: 8px 10px;
   margin: 10px 0 6px;
   background: linear-gradient(135deg, #eff6ff, #dbeafe);
-  border-radius: var(--radius-md);
+  border-radius: var(--t-radius-md);
   border-left: 4px solid #0284c7;
   box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08);
 }
@@ -319,22 +267,22 @@ body.modal-open [class*="fab"] {
   justify-content: center;
   width: 26px;
   height: 26px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--t-radius-sm);
   background: linear-gradient(135deg, #0284c7, #0369a1);
   color: white;
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 900;
   box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
   flex-shrink: 0;
 }
 .day-subtotal {
-  font-size: var(--fs-sm);
+  font-size: var(--t-fs-sm);
   font-weight: 900;
   color: #0369a1;
   font-variant-numeric: tabular-nums;
   background: rgba(255,255,255,0.7);
   padding: 3px 9px;
-  border-radius: var(--radius-full);
+  border-radius: var(--t-radius-full);
   border: 1px solid #bae6fd;
 }
 
@@ -346,18 +294,18 @@ body.modal-open [class*="fab"] {
   justify-content: center;
   gap: 2px;
   padding: 8px 2px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--t-radius-sm);
   background: #f8fafc;
   border: 1.5px solid #e2e8f0;
   color: #64748b;
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 800;
   transition: all 0.2s;
   cursor: pointer;
   min-height: 48px;
   width: 100%;
 }
-.cat-btn-compact .cat-icon { font-size: var(--fs-base); line-height: 1; }
+.cat-btn-compact .cat-icon { font-size: var(--t-fs-base); line-height: 1; }
 .cat-btn-compact:active { transform: scale(0.94); }
 .cat-btn-compact.active {
   background: linear-gradient(135deg, #0284c7, #0369a1);
@@ -373,8 +321,8 @@ body.modal-open [class*="fab"] {
   background: #ffffff;
   border: 1.5px solid #e2e8f0;
   color: #475569;
-  border-radius: var(--radius-full);
-  font-size: var(--fs-2xs);
+  border-radius: var(--t-radius-full);
+  font-size: var(--t-fs-2xs);
   font-weight: 800;
   cursor: pointer;
   white-space: nowrap;
@@ -396,7 +344,7 @@ body.modal-open [class*="fab"] {
 .budget-bar {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: var(--radius-md);
+  border-radius: var(--t-radius-md);
   padding: 12px 14px;
   box-shadow: 0 1px 3px rgba(2, 132, 199, 0.06);
 }
@@ -407,16 +355,16 @@ body.modal-open [class*="fab"] {
   margin-bottom: 6px;
 }
 .budget-label {
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 700;
-  color: var(--text-soft);
+  color: var(--t-color-text-soft);
 }
 .budget-label strong {
-  color: var(--sky-primary);
+  color: var(--t-color-primary);
   font-variant-numeric: tabular-nums;
 }
 .budget-pct {
-  font-size: var(--fs-sm);
+  font-size: var(--t-fs-sm);
   font-weight: 900;
   color: #0284c7;
   font-variant-numeric: tabular-nums;
@@ -426,14 +374,14 @@ body.modal-open [class*="fab"] {
 .budget-track {
   height: 8px;
   background: #e0f2fe;
-  border-radius: var(--radius-full);
+  border-radius: var(--t-radius-full);
   overflow: hidden;
   position: relative;
 }
 .budget-fill {
   height: 100%;
   background: linear-gradient(90deg, #38bdf8, #0284c7);
-  border-radius: var(--radius-full);
+  border-radius: var(--t-radius-full);
   transition: width 0.6s ease, background 0.3s;
 }
 .budget-fill.warning { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
@@ -442,8 +390,8 @@ body.modal-open [class*="fab"] {
   display: flex;
   justify-content: space-between;
   margin-top: 5px;
-  font-size: var(--fs-2xs);
-  color: var(--text-mute);
+  font-size: var(--t-fs-2xs);
+  color: var(--t-color-text-mute);
   font-weight: 700;
 }
 .budget-footer span { font-variant-numeric: tabular-nums; }
@@ -452,20 +400,20 @@ body.modal-open [class*="fab"] {
 .chart-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: var(--radius-md);
+  border-radius: var(--t-radius-md);
   padding: 12px 14px;
   box-shadow: 0 1px 3px rgba(2, 132, 199, 0.06);
 }
 .chart-title {
-  font-size: var(--fs-xs);
+  font-size: var(--t-fs-xs);
   font-weight: 900;
-  color: var(--text-soft);
+  color: var(--t-color-text-soft);
   margin-bottom: 10px;
 }
 
 /* 圓餅圖 */
 .category-pie-wrap { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.category-pie-empty { font-size: var(--fs-2xs); color: var(--text-faint); font-style: italic; padding: 12px 0; }
+.category-pie-empty { font-size: var(--t-fs-2xs); color: var(--t-color-text-faint); font-style: italic; padding: 12px 0; }
 .category-pie-circle {
   width: 100px;
   height: 100px;
@@ -484,7 +432,7 @@ body.modal-open [class*="fab"] {
 }
 [data-theme="dark"] .category-pie-circle::after { background: #1e293b; }
 .category-legend { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-.category-legend-item { display: flex; align-items: center; gap: 6px; font-size: var(--fs-2xs); color: var(--text-soft); }
+.category-legend-item { display: flex; align-items: center; gap: 6px; font-size: var(--t-fs-2xs); color: var(--t-color-text-soft); }
 .category-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .category-legend-label {
   flex: 1;
@@ -496,7 +444,7 @@ body.modal-open [class*="fab"] {
 }
 .category-legend-amt {
   font-weight: 900;
-  color: var(--text-main);
+  color: var(--t-color-text-main);
   font-variant-numeric: tabular-nums;
 }
 
@@ -518,9 +466,9 @@ body.modal-open [class*="fab"] {
   min-width: 0;
 }
 .daily-bar-amt {
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 800;
-  color: var(--sky-primary);
+  color: var(--t-color-primary);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -534,7 +482,7 @@ body.modal-open [class*="fab"] {
   box-shadow: 0 1px 3px rgba(2, 132, 199, 0.15);
 }
 .daily-bar.today { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
-.daily-bar-label { font-size: var(--fs-2xs); color: var(--text-mute); font-weight: 800; }
+.daily-bar-label { font-size: var(--t-fs-2xs); color: var(--t-color-text-mute); font-weight: 800; }
 
 /* Filter 按鈕 */
 .filter-btn { transition: all 0.2s; }
@@ -572,7 +520,6 @@ body.modal-open [class*="fab"] {
   border-radius: 50%;
   padding: 0;
   border: none;
-  /* ⭐ 移除 backdrop-filter，改用純色（效能更好） */
   background: rgba(15, 23, 42, 0.82);
   color: #ffffff;
   display: flex;

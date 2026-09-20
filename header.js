@@ -1,13 +1,14 @@
 /* ============================================================
- * AppHeader v8.0
+ * AppHeader v9.0
  * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [☰ 工具]（全部 SVG）
- * - Focus Card：出發前/中/後
+ * - Focus Card：出發前 / 中 / 後
+ * - 旅行中：家庭廣播 + 當前行程 + 導航/留言
  * - 工具選單：功能入口 + 安裝 App + 共享收據
  * - 全域搜尋：防抖 + 熱門關鍵字
  *
- * v8.0 變更：
- *   - ⭐ J1：所有 header 與工具選單 emoji 換成 inline SVG
- *   - 加入 aria-label 提升無障礙
+ * v9.0 變更：
+ *   - ⭐ 情境面板：家庭廣播 + 導航選單
+ *   - 移除舊的進度列表 / 天氣格子 / CTA
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -23,7 +24,7 @@ window.AppHeader = (function () {
   let _searchDebounceTimer = null;
 
   // ============================================================
-  // ⭐ J1：SVG 圖示庫
+  // SVG 圖示庫
   // ============================================================
   const ICONS = {
     search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>`,
@@ -496,6 +497,9 @@ window.AppHeader = (function () {
     haptic(12);
   }
 
+  // ============================================================
+  // ⭐ renderFocusCard
+  // ============================================================
   function renderFocusCard() {
     if (!_container) return;
     const focusEl = _container.querySelector("#app-header-focus");
@@ -573,61 +577,50 @@ window.AppHeader = (function () {
           </div>
         `;
       } else if (phase === "during") {
+        // ⭐ 情境面板
         const dayIdx = getCurrentDayIndex();
         const dayData = dayIdx >= 0 ? _config.itineraries[dayIdx] : _config.itineraries[0];
         const weatherMap = _config.weatherCache ? _config.weatherCache() : {};
         const weather = weatherMap[_config.tripDates[dayIdx >= 0 ? dayIdx : 0]];
         const nextEvt = getNextEvent(dayData);
-        const totalEvents = dayData.events.length;
-        const doneEvents = nextEvt ? dayData.events.indexOf(nextEvt) : totalEvents;
-        const progress = totalEvents > 0 ? Math.round((doneEvents / totalEvents) * 100) : 0;
         const temp = weather ? Math.round((weather.max + weather.min) / 2) : null;
         const advice = weather ? getWeatherAdvice(temp, weather.rain) : "載入中...";
-        _nextEventStartMs = null;
-        if (nextEvt) {
-          const startStr = nextEvt.time.split(" - ")[0].trim();
-          const [hh, mm] = startStr.split(":").map(Number);
-          if (!isNaN(hh) && !isNaN(mm)) {
-            const baseDate = new Date(_config.tripDates[dayIdx >= 0 ? dayIdx : 0]);
-            baseDate.setHours(hh, mm, 0, 0);
-            _nextEventStartMs = baseDate.getTime();
-          }
-        }
-        const progressRows = renderProgressList([
-          { type: "shopping", icon: "🛍️", label: "我的購物", action: "shopping" }
-        ]);
+
+        const hasMessages = window.Messages && window.Messages.getCount() > 0;
+        const msgCount = window.Messages ? window.Messages.getCount() : 0;
 
         innerHTML = `
           <div class="focus-inner">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-              <div style="flex:1;min-width:0">
-                <div class="focus-label" style="margin-bottom:4px">${escapeHtml(dayData.dateLabel)}</div>
-                <div class="focus-title">${escapeHtml(dayData.title)}</div>
-                ${dayData.subtitle ? `<div class="focus-subtitle">${escapeHtml(dayData.subtitle)}</div>` : ""}
+            ${hasMessages ? `
+              <div class="broadcast-block" id="broadcast-block">
+                <div class="broadcast-header">
+                  <span class="broadcast-title">📢 家庭廣播</span>
+                </div>
+                ${window.Messages.renderCard(2)}
               </div>
-              <div style="font-size:30px;flex-shrink:0">${dayData.emoji}</div>
+            ` : ''}
+
+            <div class="focus-current">
+              <div class="focus-current-row">
+                <span class="focus-current-label">🎯 現在</span>
+                <span class="focus-current-title">${escapeHtml(dayData.title)}</span>
+              </div>
+              ${nextEvt ? `
+                <div class="focus-next-row">
+                  <span class="focus-next-label">⏭️ 下一站</span>
+                  <span class="focus-next-title">${escapeHtml(nextEvt.time.split(" - ")[0])} · ${escapeHtml(nextEvt.title)}</span>
+                </div>
+              ` : ''}
+              <div class="focus-weather-row">${weather ? `${weather.icon} ${weather.min}°~${weather.max}° · ${advice}` : '⛅ 天氣載入中...'}</div>
             </div>
-            <div class="focus-weather-grid">
-              <div class="focus-weather-cell">
-                <div class="label">⛅ 天氣</div>
-                <div class="value">${weather ? `${weather.icon} ${weather.min}°~${weather.max}°` : "--"}</div>
-                <div style="font-size:11px;color:#64748b;margin-top:2px;line-height:1.3">${advice}</div>
-              </div>
-              <div class="focus-weather-cell">
-                <div class="label">⏰ 下個行程</div>
-                <div class="value" style="font-size:13px;line-height:1.3">${nextEvt ? nextEvt.time.split(" - ")[0] : "--"}</div>
-                <div style="font-size:11px;color:#94a3b8;margin-top:2px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nextEvt ? escapeHtml(nextEvt.title) : "--"}</div>
-                <div id="focus-next-countdown" style="font-size:11px;color:#0284c7;margin-top:3px;font-weight:800">--</div>
-              </div>
-            </div>
-            <div class="focus-progress-track" style="margin-top:10px"><div class="focus-progress-fill" style="width:${progress}%"></div></div>
-            <div class="focus-progress-label">今日進度 ${progress}% · 已完成 ${doneEvents} / ${totalEvents} 個行程</div>
-            ${progressRows}
+
             <div class="focus-cta-row">
-              <button type="button" class="focus-cta focus-cta-primary" data-action="overview"><span>📋</span> 行程速覽</button>
-              ${nextEvt && nextEvt.navUrl
-                ? `<a href="${escapeHtml(nextEvt.navUrl)}" target="_blank" class="focus-cta focus-cta-secondary"><span>📍</span> 導航</a>`
-                : `<button type="button" class="focus-cta focus-cta-secondary" data-action="weather"><span>⛅</span> 天氣</button>`}
+              <button type="button" class="focus-cta focus-cta-primary" data-action="navigate">
+                <span>📍</span> 導航
+              </button>
+              <button type="button" class="focus-cta focus-cta-secondary" data-action="messages">
+                <span>💬</span> 留言${msgCount > 0 ? `<span class="broadcast-badge">${msgCount}</span>` : ''}
+              </button>
             </div>
           </div>
         `;
@@ -671,6 +664,8 @@ window.AppHeader = (function () {
           case "weather":      cb.onWeather && cb.onWeather();     break;
           case "overview":     cb.onOverview && cb.onOverview();   break;
           case "switchLedger": cb.onSwitchTab && cb.onSwitchTab("ledger"); break;
+          case "navigate":     openNavigateMenu(); break;
+          case "messages":     openMessagesModal(); break;
           case "scrollToDay": {
             const idx = getCurrentDayIndex();
             const day = idx >= 0 ? idx + 1 : 1;
@@ -1037,6 +1032,178 @@ window.AppHeader = (function () {
       if (_container) _container.innerHTML = "";
       _config = null; _container = null;
       _lastRenderedPhase = null; _nextEventStartMs = null; _lastDuringRender = 0;
-    }
+    },
+
+    // ⭐ 給外部函式取得 config
+    _getConfig: () => _config
   };
 })();
+
+/* ============================================================
+ * 🧭 導航選單
+ * ============================================================ */
+function openNavigateMenu() {
+  const cfg = window.AppHeader._getConfig();
+  if (!cfg) return;
+
+  const now = Date.now();
+  let dayIdx = -1;
+  for (let i = 0; i < cfg.tripDates.length; i++) {
+    const s = new Date(cfg.tripDates[i] + "T00:00:00+08:00").getTime();
+    const e = new Date(cfg.tripDates[i] + "T23:59:59+08:00").getTime();
+    if (now >= s && now <= e) { dayIdx = i; break; }
+  }
+  const dayData = cfg.itineraries[dayIdx >= 0 ? dayIdx : 0];
+  if (!dayData || !dayData.events) return;
+
+  const d = new Date();
+  const nowMin = d.getHours() * 60 + d.getMinutes();
+
+  let curIdx = -1;
+  for (let i = 0; i < dayData.events.length; i++) {
+    const evt = dayData.events[i];
+    const s = evt.time.split(" - ")[0].trim();
+    const [h, m] = s.split(":").map(Number);
+    if (isNaN(h)) continue;
+    const start = h * 60 + m;
+    const endStr = evt.time.split(" - ")[1];
+    let end = start + 120;
+    if (endStr) {
+      const [eh, em] = endStr.trim().split(":").map(Number);
+      if (!isNaN(eh)) end = eh * 60 + em;
+    }
+    if (nowMin >= start && nowMin <= end) { curIdx = i; break; }
+  }
+  if (curIdx < 0) {
+    for (let i = 0; i < dayData.events.length; i++) {
+      const [h, m] = dayData.events[i].time.split(" - ")[0].trim().split(":").map(Number);
+      if (!isNaN(h) && h * 60 + m > nowMin) { curIdx = i; break; }
+    }
+  }
+  if (curIdx < 0) curIdx = 0;
+
+  const opts = [];
+  for (let i = curIdx; i < Math.min(curIdx + 3, dayData.events.length); i++) {
+    const evt = dayData.events[i];
+    opts.push({
+      label: i === curIdx ? '▶ 當前' : (i === curIdx + 1 ? '下一個' : '下下個'),
+      time: evt.time,
+      title: evt.title,
+      navUrl: evt.navUrl,
+      navName: evt.navName || evt.title
+    });
+  }
+
+  const content = document.getElementById("navigate-menu-content");
+  if (!content) return;
+
+  content.innerHTML = opts.map(opt => {
+    const url = opt.navUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(opt.title)}`;
+    return `<a href="${url}" target="_blank" rel="noopener" class="navigate-option ${opt.label.startsWith('▶') ? 'current' : ''}" onclick="closeNavigateMenu()">
+      <div class="navigate-option-label">${opt.label}</div>
+      <div class="navigate-option-title">${opt.title}</div>
+      <div class="navigate-option-time">${opt.time}</div>
+      <div class="navigate-option-arrow">›</div>
+    </a>`;
+  }).join('');
+
+  const m = document.getElementById("navigate-menu-modal");
+  if (m) {
+    m.style.display = 'flex';
+    m.classList.add('active');
+    document.body.classList.add('modal-open');
+  }
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+function closeNavigateMenu() {
+  const m = document.getElementById("navigate-menu-modal");
+  if (m) {
+    m.classList.remove('active');
+    setTimeout(() => { m.style.display = 'none'; }, 250);
+    if (!document.querySelector('.modal-overlay.active')) document.body.classList.remove('modal-open');
+  }
+}
+
+/* ============================================================
+ * 💬 家庭廣播
+ * ============================================================ */
+function openMessagesModal() {
+  const m = document.getElementById("messages-modal");
+  if (!m) return;
+  renderMessagesModal();
+  m.style.display = 'flex';
+  m.classList.add('active');
+  document.body.classList.add('modal-open');
+
+  const btn = document.getElementById("messages-send-btn");
+  const input = document.getElementById("messages-input");
+  if (btn && input) {
+    btn.onclick = () => {
+      const t = input.value.trim();
+      if (!t) return;
+      window.Messages.send(t);
+      input.value = '';
+      input.focus();
+    };
+    input.onkeydown = (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        btn.click();
+      }
+    };
+  }
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+function closeMessagesModal() {
+  const m = document.getElementById("messages-modal");
+  if (m) {
+    m.classList.remove('active');
+    setTimeout(() => { m.style.display = 'none'; }, 250);
+    if (!document.querySelector('.modal-overlay.active')) document.body.classList.remove('modal-open');
+  }
+}
+function renderMessagesModal() {
+  const listEl = document.getElementById("messages-list");
+  if (!listEl || !window.Messages) return;
+  listEl.innerHTML = window.Messages.renderFull();
+}
+
+window.openNavigateMenu = openNavigateMenu;
+window.closeNavigateMenu = closeNavigateMenu;
+window.openMessagesModal = openMessagesModal;
+window.closeMessagesModal = closeMessagesModal;
+
+/* ============================================================
+ * 留言訂閱：即時更新卡片
+ * ============================================================ */
+if (window.Messages) {
+  window.Messages.subscribe(() => {
+    // 更新卡片
+    if (window.AppHeader && window.AppHeader.getPhase && window.AppHeader.getPhase() === 'during') {
+      const block = document.getElementById("broadcast-block");
+      if (block) {
+        const html = window.Messages.renderCard(2);
+        if (html) {
+          block.innerHTML = `
+            <div class="broadcast-header"><span class="broadcast-title">📢 家庭廣播</span></div>
+            ${html}
+          `;
+        } else {
+          block.remove();
+        }
+      }
+      // 更新 badge
+      const msgBtn = document.querySelector('[data-action="messages"]');
+      if (msgBtn) {
+        const count = window.Messages.getCount();
+        const base = `<span>💬</span> 留言`;
+        msgBtn.innerHTML = count > 0
+          ? `${base}<span class="broadcast-badge">${count}</span>`
+          : base;
+      }
+    }
+    // 若留言板開著，更新列表
+    const modal = document.getElementById("messages-modal");
+    if (modal && modal.classList.contains('active')) renderMessagesModal();
+  });
+}

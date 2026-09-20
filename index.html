@@ -37,7 +37,10 @@
 <script src="shoot-tips.js"></script>
 <script src="shopping.js"></script>
 <script src="emergency.js"></script>
+<script src="messages.js"></script>   <!-- ⭐ 新增 -->
 
+<!-- ⭐ 設計令牌必須最先載入 -->
+<link rel="stylesheet" href="./tokens.css">
 <link rel="stylesheet" href="./header.css">
 <link rel="stylesheet" href="./style.css">
 <link rel="stylesheet" href="./dark.css">
@@ -45,14 +48,47 @@
 <link rel="stylesheet" href="./perf.css">
 <link rel="stylesheet" href="./design-v14.css">
 <link rel="stylesheet" href="./design-v14b.css">
+
 <script>
+/* ⭐ Tailwind 整合設計令牌：使用 var(--t-*) 讓深色模式自動跟隨 */
 tailwind.config = {
-  theme: { extend: { colors: {
-    winterBlue: { 50: "#f0f9ff", 100: "#e0f2fe", 600: "#0284c7", 800: "#075985", 900: "#0c4a6e" },
-    snowWhite: "#f8fafc", iceCyan: "#ecfeff"
-  } } }
-}
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: 'var(--t-color-primary)',
+          dark:    'var(--t-color-primary-dark)',
+          deep:    'var(--t-color-primary-deep)',
+          light:   'var(--t-color-primary-light)',
+        },
+        surface: {
+          DEFAULT: 'var(--t-color-surface)',
+          soft:    'var(--t-color-surface-soft)',
+          muted:   'var(--t-color-surface-muted)',
+        },
+        'text-main':  'var(--t-color-text-main)',
+        'text-soft':  'var(--t-color-text-soft)',
+        'text-mute':  'var(--t-color-text-mute)',
+        'text-faint': 'var(--t-color-text-faint)',
+        success: 'var(--t-color-success)',
+        warning: 'var(--t-color-warning)',
+        danger:  'var(--t-color-danger)',
+        info:    'var(--t-color-info)',
+      },
+      borderRadius: {
+        sm: 'var(--t-radius-sm)',
+        md: 'var(--t-radius-md)',
+        lg: 'var(--t-radius-lg)',
+      },
+      boxShadow: {
+        card: 'var(--t-shadow-card)',
+        lg:   'var(--t-shadow-lg)',
+      },
+    },
+  },
+};
 </script>
+
 <script>
 window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
@@ -199,8 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="text-center mb-5">
         <div class="text-4xl mb-2">❄️</div>
         <h2 class="text-xl font-black text-slate-900">請選擇你的身份</h2>
-    <p class="text-xs text-slate-500 mt-1">輸入 PIN 碼以進入你的專屬清單</p>
-<p class="text-[10px] text-slate-400 mt-1.5 bg-slate-50 rounded-lg py-1 px-2 inline-block">💡 首次使用請輸入家庭成員提供的 PIN 碼</p>
+        <p class="text-xs text-slate-500 mt-1">輸入 PIN 碼以進入你的專屬清單</p>
+        <p class="text-[10px] text-slate-400 mt-1.5 bg-slate-50 rounded-lg py-1 px-2 inline-block">💡 首次使用請輸入家庭成員提供的 PIN 碼</p>
       </div>
 
       <div class="grid grid-cols-2 gap-3 mb-5" id="user-grid">
@@ -233,12 +269,12 @@ document.addEventListener('DOMContentLoaded', () => {
           <button onclick="verifyUserPin()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3 rounded-xl transition active:scale-95">確認</button>
           <button onclick="cancelUserSelect()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition">取消</button>
         </div>
-          <p id="pin-error" class="text-xs text-red-500 font-bold mt-2 text-center hidden">⚠️ PIN 碼錯誤，請重試</p>
-  <p class="text-[10px] text-slate-400 mt-3 text-center leading-relaxed">
-    忘記 PIN 碼？<br>
-    請聯絡家庭管理員協助重置
-  </p>
-</div>
+        <p id="pin-error" class="text-xs text-red-500 font-bold mt-2 text-center hidden">⚠️ PIN 碼錯誤，請重試</p>
+        <p class="text-[10px] text-slate-400 mt-3 text-center leading-relaxed">
+          忘記 PIN 碼？<br>
+          請聯絡家庭管理員協助重置
+        </p>
+      </div>
     </div>
   </div>
 
@@ -307,7 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </div>
   </div>
-    <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！" style="left: 15px;">
+
+  <div id="snowman" class="walking-character" onclick="jump('snowman')" title="點我！" style="left: 15px;">
     <svg width="45" height="45" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="snowGrad" cx="50%" cy="30%" r="60%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dbeafe"/></radialGradient><linearGradient id="hatGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient></defs><circle cx="32" cy="48" r="13" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/><circle cx="32" cy="30" r="10" fill="url(#snowGrad)" stroke="#93c5fd" stroke-width="1.5"/><path d="M22 24 L42 24 L40 16 L24 16 Z" fill="url(#hatGrad)"/><rect x="26" y="14" width="12" height="3" rx="1.5" fill="#b91c1c"/><circle cx="32" cy="14" r="3" fill="#ef4444"/><path d="M26 34 Q32 38 38 34 L37 42 L27 42 Z" fill="#3b82f6"/><path d="M28 42 L28 48 L32 45 L36 48 L36 42" fill="#2563eb"/><circle cx="28" cy="28" r="2" fill="#1e293b"/><circle cx="36" cy="28" r="2" fill="#1e293b"/><ellipse cx="32" cy="31" rx="1.8" ry="3" fill="#f97316"/><path d="M26 35 Q32 40 38 35" stroke="#475569" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M22 32 L16 28" stroke="#92400e" stroke-width="2" stroke-linecap="round"/><path d="M42 32 L48 28" stroke="#92400e" stroke-width="2" stroke-linecap="round"/><ellipse cx="28" cy="45" rx="3" ry="1.5" fill="white" opacity="0.8"/></svg>
   </div>
   <div id="fox" class="walking-character" onclick="jump('fox')" title="點我！" style="right: 15px;">
@@ -336,7 +373,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <main class="max-w-6xl mx-auto px-4 mt-4">
         <div class="space-y-6">
           <div class="sticky top-0 z-40 bg-slate-50/95 backdrop-blur-md -mx-4 px-4 lg:mx-0 lg:px-0 py-2.5 border-b border-slate-200/50 shadow-sm transition-all day-tabs-wrapper">
-            <!-- ⭐ 快速跳轉圓點 -->
             <div class="day-progress-dots" id="day-progress-dots"></div>
             <div class="flex items-center gap-2">
               <button id="btn-today" onclick="scrollToToday()" class="hidden shrink-0 flex items-center gap-1 px-3 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[11px] font-black shadow-md border-0 transition active:scale-95"><span>📍</span><span class="hidden sm:inline">今天</span></button>
@@ -432,7 +468,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <button onclick="closeCurrencyModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6">
 
-        <!-- 標題列 -->
         <div class="flex items-center gap-2 mb-4">
           <span class="text-2xl">🪙</span>
           <div>
@@ -441,10 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <!-- 輸入區（兩個大卡片 + 中間交換按鈕） -->
         <div class="relative mb-4">
-
-          <!-- 🇯🇵 日圓 -->
           <div class="bg-gradient-to-br from-rose-50 to-white border-2 border-rose-200 rounded-2xl px-4 py-3 transition-all focus-within:border-rose-400 focus-within:shadow-lg focus-within:shadow-rose-100">
             <div class="flex items-center justify-between mb-1.5">
               <label class="text-[11px] font-black text-rose-700 tracking-wider">🇯🇵 日圓 JPY</label>
@@ -454,27 +486,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="flex items-baseline gap-2">
               <span class="text-2xl font-black text-rose-600 shrink-0">¥</span>
-              <input
-                type="text"
-                inputmode="decimal"
-                id="calc-jpy"
-                oninput='convertCurrency("jpy")'
-                onfocus="this.select()"
-                value="10000"
-                placeholder="0"
-                class="flex-1 min-w-0 text-3xl font-black text-rose-900 bg-transparent border-none outline-none text-right tabular-nums placeholder-rose-200">
+              <input type="text" inputmode="decimal" id="calc-jpy" oninput='convertCurrency("jpy")' onfocus="this.select()" value="10000" placeholder="0" class="flex-1 min-w-0 text-3xl font-black text-rose-900 bg-transparent border-none outline-none text-right tabular-nums placeholder-rose-200">
             </div>
           </div>
 
-          <!-- ⇅ 交換按鈕（浮在中間） -->
           <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-            <button onclick="swapCurrency()" title="交換"
-              class="w-9 h-9 rounded-full bg-white border-2 border-slate-300 text-slate-600 font-black shadow-md flex items-center justify-center text-base hover:border-sky-400 hover:text-sky-600 active:scale-90 transition">
-              ⇅
-            </button>
+            <button onclick="swapCurrency()" title="交換" class="w-9 h-9 rounded-full bg-white border-2 border-slate-300 text-slate-600 font-black shadow-md flex items-center justify-center text-base hover:border-sky-400 hover:text-sky-600 active:scale-90 transition">⇅</button>
           </div>
 
-          <!-- 🇭🇰 港幣 -->
           <div class="bg-gradient-to-br from-sky-50 to-white border-2 border-sky-200 rounded-2xl px-4 py-3 mt-2 transition-all focus-within:border-sky-400 focus-within:shadow-lg focus-within:shadow-sky-100">
             <div class="flex items-center justify-between mb-1.5">
               <label class="text-[11px] font-black text-sky-700 tracking-wider">🇭🇰 港幣 HKD</label>
@@ -484,25 +503,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="flex items-baseline gap-2">
               <span class="text-2xl font-black text-sky-600 shrink-0">$</span>
-              <input
-                type="text"
-                inputmode="decimal"
-                id="calc-hkd"
-                oninput='convertCurrency("hkd")'
-                onfocus="this.select()"
-                placeholder="0"
-                class="flex-1 min-w-0 text-3xl font-black text-sky-900 bg-transparent border-none outline-none text-right tabular-nums placeholder-sky-200">
+              <input type="text" inputmode="decimal" id="calc-hkd" oninput='convertCurrency("hkd")' onfocus="this.select()" placeholder="0" class="flex-1 min-w-0 text-3xl font-black text-sky-900 bg-transparent border-none outline-none text-right tabular-nums placeholder-sky-200">
             </div>
           </div>
-
         </div>
 
-        <!-- 快速金額 + 清除 -->
         <div class="flex items-center justify-between mb-2">
           <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">快速金額</span>
-          <button onclick='convertCurrency("clear")' class="text-[10px] text-slate-500 hover:text-red-500 transition font-bold flex items-center gap-1 bg-slate-100 hover:bg-red-50 px-2.5 py-1.5 rounded-full shrink-0 active:scale-95">
-            <span>🧹</span> 清除
-          </button>
+          <button onclick='convertCurrency("clear")' class="text-[10px] text-slate-500 hover:text-red-500 transition font-bold flex items-center gap-1 bg-slate-100 hover:bg-red-50 px-2.5 py-1.5 rounded-full shrink-0 active:scale-95"><span>🧹</span> 清除</button>
         </div>
         <div class="grid grid-cols-4 gap-1.5">
           <button onclick='quickConvert("jpy",1e3)' class="quick-amt">¥1千</button>
@@ -566,7 +574,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <h2 class="text-xl font-black mb-2 flex items-center gap-2"><span class="text-2xl">📁</span> 共享資料櫃</h2>
         <p class="text-xs text-slate-500 mb-5 leading-relaxed">全家人的旅行照片、租車資料、酒店訂單與收據，通通都在這裡。</p>
         
-        <!-- ⭐ 第一區：旅行相簿 -->
         <button onclick="openPhotoAlbum()" 
                 class="drive-folder-btn mb-4" 
                 style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border-color:#86efac;">
@@ -578,18 +585,14 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="drive-folder-arrow" style="color:#22c55e;">›</span>
         </button>
 
-        <!-- 分隔線 -->
         <div class="flex items-center gap-2 my-4">
           <div class="flex-1 h-px bg-slate-200"></div>
           <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">文件與收據</span>
           <div class="flex-1 h-px bg-slate-200"></div>
         </div>
 
-        <!-- ⭐ 第二區：Google Drive 資料夾 -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          
-          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1nG_pov6bLtfY1mxL5mPl7gp6Eb_fvxZA')" 
-                  class="drive-folder-btn">
+          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1nG_pov6bLtfY1mxL5mPl7gp6Eb_fvxZA')" class="drive-folder-btn">
             <span class="drive-folder-icon">🚗</span>
             <span class="drive-folder-info">
               <span class="drive-folder-title">租車資料</span>
@@ -598,8 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="drive-folder-arrow">›</span>
           </button>
 
-          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1e_SxcY3flho123h9cei6PV2vNCsGpBNx')" 
-                  class="drive-folder-btn">
+          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1e_SxcY3flho123h9cei6PV2vNCsGpBNx')" class="drive-folder-btn">
             <span class="drive-folder-icon">🏨</span>
             <span class="drive-folder-info">
               <span class="drive-folder-title">酒店訂單</span>
@@ -608,8 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="drive-folder-arrow">›</span>
           </button>
 
-          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1NH_5a0f-bSyp2sGo-mnty7VUgXPFIE-y')" 
-                  class="drive-folder-btn">
+          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1NH_5a0f-bSyp2sGo-mnty7VUgXPFIE-y')" class="drive-folder-btn">
             <span class="drive-folder-icon">🛍️</span>
             <span class="drive-folder-info">
               <span class="drive-folder-title">購物收據</span>
@@ -618,8 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="drive-folder-arrow">›</span>
           </button>
 
-          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1Be8UWtkkosodDK3gK1ipM56kTjPwGwFl')" 
-                  class="drive-folder-btn">
+          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1Be8UWtkkosodDK3gK1ipM56kTjPwGwFl')" class="drive-folder-btn">
             <span class="drive-folder-icon">🍜</span>
             <span class="drive-folder-info">
               <span class="drive-folder-title">餐飲收據</span>
@@ -628,8 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="drive-folder-arrow">›</span>
           </button>
 
-          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1XyMETso2S-UT-M5G3k_DRZqhbrpybNmo')" 
-                  class="drive-folder-btn sm:col-span-2">
+          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1XyMETso2S-UT-M5G3k_DRZqhbrpybNmo')" class="drive-folder-btn sm:col-span-2">
             <span class="drive-folder-icon">📁</span>
             <span class="drive-folder-info">
               <span class="drive-folder-title">其他文件</span>
@@ -637,10 +636,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </span>
             <span class="drive-folder-arrow">›</span>
           </button>
-
         </div>
 
-        <!-- 底部提示 -->
         <div class="mt-5 p-3 bg-sky-50 border border-sky-200 rounded-xl">
           <p class="text-[11px] text-sky-800 leading-relaxed">
             💡 點擊按鈕會開啟對應的 App 或瀏覽器。如果無法開啟，請確認你已登入正確的 Google 帳號，並擁有該資料夾的存取權限。
@@ -651,9 +648,43 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <!-- ============================================================ -->
-  <!-- 主應用邏輯（已拆分為四個檔案，載入順序不可調換） -->
-  <!-- ============================================================ -->
+  <!-- 🧭 導航選單 Modal -->
+  <div id="navigate-menu-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeNavigateMenu()">
+    <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-md w-full relative" onclick="event.stopPropagation()">
+      <div class="modal-handle-area"><div class="modal-handle"></div></div>
+      <button onclick="closeNavigateMenu()" class="modal-close">✕</button>
+      <div class="modal-scrollable px-5 pb-6 pt-2">
+        <h2 class="text-lg font-black mb-4 flex items-center gap-2">
+          <span class="text-xl">🧭</span> 導航到：
+        </h2>
+        <div id="navigate-menu-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 💬 家庭廣播 Modal -->
+  <div id="messages-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeMessagesModal()">
+    <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-lg w-full relative" onclick="event.stopPropagation()" style="max-height:85vh">
+      <div class="modal-handle-area"><div class="modal-handle"></div></div>
+      <button onclick="closeMessagesModal()" class="modal-close">✕</button>
+      <div class="modal-scrollable px-5 pb-6 pt-2" style="display:flex;flex-direction:column;max-height:calc(85vh - 50px)">
+        <h2 class="text-lg font-black mb-4 flex items-center gap-2 shrink-0">
+          <span class="text-xl">📢</span> 家庭廣播
+        </h2>
+
+        <div id="messages-list" style="flex:1;overflow-y:auto;margin-bottom:12px"></div>
+
+        <div style="display:flex;gap:8px;align-items:flex-end;border-top:1px solid #e2e8f0;padding-top:12px;flex-shrink:0">
+          <textarea id="messages-input" rows="1" placeholder="輸入訊息..." class="flex-1 border-2 border-slate-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:border-sky-400" style="max-height:80px"></textarea>
+          <button id="messages-send-btn" class="bg-sky-500 hover:bg-sky-600 active:scale-95 text-white font-black px-4 py-2 rounded-xl transition shrink-0">發送</button>
+        </div>
+
+        <p class="text-[11px] text-slate-400 mt-2 leading-relaxed shrink-0">
+          💡 一般留言 24 小時後自動隱藏；點 📍 可置頂，重要訊息不會被洗掉。
+        </p>
+      </div>
+    </div>
+  </div>
 
   <script src="./app-core.js"></script>
   <script src="./app-lists.js"></script>

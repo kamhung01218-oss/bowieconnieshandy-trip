@@ -7,51 +7,15 @@
  * v12.0 變更：
  *   - 匯率 FAB 縮小至 48px + 半透明 + hover 恢復
  *   - 深色模式完整適配
+ *
+ * ⭐ v13.0 變更：
+ *   - 移除所有 :root 變數定義（已移至 tokens.css）
+ *   - 只保留 header 專用變數 --app-header-safe-top
  * ============================================================ */
 
 :root {
+  /* ⭐ header 專用：其他變數請見 tokens.css */
   --app-header-safe-top: env(safe-area-inset-top, 0px);
-
-  --snow-bg-1: #f0f9ff;
-  --snow-bg-2: #e0f2fe;
-  --card-bg: #ffffff;
-
-  --sky-primary: #0284c7;
-  --sky-primary-dark: #0369a1;
-  --sky-deep: #0c4a6e;
-  --sky-light: #bae6fd;
-  --sky-lighter: #e0f2fe;
-  --sky-accent: #0ea5e9;
-
-  --text-main: #1e293b;
-  --text-soft: #475569;
-  --text-mute: #64748b;
-  --text-faint: #94a3b8;
-
-  --line-soft: #e2e8f0;
-  --line-sky: rgba(186, 230, 253, 0.6);
-
-  --amber-cta-1: #fbbf24;
-  --amber-cta-2: #f59e0b;
-  --amber-cta-3: #ea580c;
-
-  /* ⭐ 統一圓角與按鈕高度 */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-full: 9999px;
-
-  --btn-sm: 36px;
-  --btn-md: 40px;
-  --btn-lg: 44px;
-
-  /* ⭐ 統一字級 */
-  --fs-2xs: 11px;
-  --fs-xs: 12px;
-  --fs-sm: 14px;
-  --fs-base: 16px;
-  --fs-lg: 20px;
-  --fs-2xl: 28px;
 }
 
 /* ============================================================
@@ -117,7 +81,7 @@
 }
 
 .app-header .brand-title {
-  font-size: var(--fs-sm);
+  font-size: var(--t-fs-sm);
   font-weight: 900;
   letter-spacing: -0.01em;
   text-shadow: 0 1px 8px rgba(2, 132, 199, 0.4);
@@ -143,11 +107,11 @@
   gap: 5px;
   height: var(--btn-sm);
   padding: 0 12px 0 10px;
-  border-radius: var(--radius-full);
+  border-radius: var(--t-radius-full);
   background: #ffffff;
   color: #0369a1;
   font-family: inherit;
-  font-size: var(--fs-xs);
+  font-size: var(--t-fs-xs);
   font-weight: 900;
   letter-spacing: 0.02em;
   border: 1.5px solid rgba(255, 255, 255, 0.9);
@@ -168,7 +132,7 @@
 }
 
 .app-header .tools-toggle-text {
-  font-size: var(--fs-xs);
+  font-size: var(--t-fs-xs);
   font-weight: 900;
   white-space: nowrap;
 }
@@ -221,7 +185,7 @@
   position: relative;
   background: #ffffff;
   border: 1px solid rgba(186, 230, 253, 0.8);
-  border-radius: var(--radius-lg);
+  border-radius: var(--t-radius-lg);
   padding: 18px 18px 16px;
   box-shadow:
     0 4px 16px rgba(2, 132, 199, 0.15),
@@ -242,11 +206,11 @@
  * 標籤 / 標題
  * ============================================================ */
 .app-header .focus-label {
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--sky-primary);
+  color: var(--t-color-primary);
   margin-bottom: 8px;
   display: flex;
   align-items: center;
@@ -255,22 +219,22 @@
 .app-header .focus-label::before {
   content: '';
   width: 4px; height: 4px; border-radius: 50%;
-  background: var(--sky-primary);
-  box-shadow: 0 0 8px var(--sky-primary);
+  background: var(--t-color-primary);
+  box-shadow: 0 0 8px var(--t-color-primary);
   animation: app-header-pulse 1.5s infinite;
 }
 
 .app-header .focus-title {
-  font-size: var(--fs-base);
+  font-size: var(--t-fs-base);
   font-weight: 900;
-  color: var(--text-main);
+  color: var(--t-color-text-main);
   letter-spacing: -0.01em;
   line-height: 1.35;
 }
 
 .app-header .focus-subtitle {
-  font-size: var(--fs-xs);
-  color: var(--text-mute);
+  font-size: var(--t-fs-xs);
+  color: var(--t-color-text-mute);
   margin-top: 2px;
 }
 
@@ -287,7 +251,7 @@
 .app-header .countdown-cell {
   position: relative;
   background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
-  border: 1px solid var(--sky-light);
+  border: 1px solid var(--t-color-primary-light);
   border-radius: 14px;
   padding: 10px 2px;
   text-align: center;
@@ -312,25 +276,25 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   line-height: 1;
-  color: var(--sky-deep);
+  color: var(--t-color-primary-deep);
 }
 
 .app-header .countdown-unit {
   position: relative;
   z-index: 1;
   display: block;
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 800;
-  color: var(--sky-primary);
+  color: var(--t-color-primary);
   margin-top: 5px;
   letter-spacing: 0.1em;
 }
 
 .app-header .countdown-cell[data-cell-block="seconds"] .countdown-value {
-  color: var(--sky-deep);
+  color: var(--t-color-primary-deep);
 }
 .app-header .countdown-cell[data-cell-block="seconds"] .countdown-unit {
-  color: var(--sky-primary);
+  color: var(--t-color-primary);
 }
 
 .app-header .countdown-value.tick {
@@ -358,16 +322,16 @@
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 36px;
   font-weight: 700;
-  color: var(--sky-deep);
+  color: var(--t-color-primary-deep);
   line-height: 1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 
 .app-header .countdown-inline-unit {
-  font-size: var(--fs-sm);
+  font-size: var(--t-fs-sm);
   font-weight: 800;
-  color: var(--sky-primary);
+  color: var(--t-color-primary);
   margin-right: 14px;
   letter-spacing: 0.05em;
 }
@@ -376,16 +340,16 @@
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 22px;
   font-weight: 700;
-  color: var(--sky-deep);
+  color: var(--t-color-primary-deep);
   line-height: 1;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
 }
 
 .app-header .countdown-inline-unit-sm {
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 800;
-  color: var(--sky-primary);
+  color: var(--t-color-primary);
   margin-right: 10px;
   letter-spacing: 0.05em;
 }
@@ -397,15 +361,15 @@
 
 .app-header .focus-progress-track {
   height: 6px;
-  background: var(--sky-lighter);
-  border-radius: var(--radius-full);
+  background: var(--t-color-primary-lighter);
+  border-radius: var(--t-radius-full);
   overflow: hidden;
   position: relative;
 }
 .app-header .focus-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #38bdf8 0%, #0284c7 100%);
-  border-radius: var(--radius-full);
+  border-radius: var(--t-radius-full);
   transition: width 0.8s ease;
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
   position: relative;
@@ -427,8 +391,8 @@
 }
 
 .app-header .focus-progress-label {
-  font-size: var(--fs-2xs);
-  color: var(--text-mute);
+  font-size: var(--t-fs-2xs);
+  color: var(--t-color-text-mute);
   text-align: center;
   margin-top: 6px;
   font-weight: 700;
@@ -441,7 +405,7 @@
 .app-header .progress-list {
   margin-top: 12px;
   background: #f8fbff;
-  border: 1px solid var(--line-sky);
+  border: 1px solid var(--t-color-border-sky);
   border-radius: 14px;
   padding: 6px;
   display: flex;
@@ -459,15 +423,15 @@
   transition: all 0.2s;
   border: none;
   background: transparent;
-  color: var(--text-main);
+  color: var(--t-color-text-main);
   text-align: left;
   width: 100%;
 }
 .app-header .progress-item:active {
-  background: var(--sky-lighter);
+  background: var(--t-color-primary-lighter);
   transform: scale(0.98);
 }
-.app-header .progress-item:hover { background: var(--sky-lighter); }
+.app-header .progress-item:hover { background: var(--t-color-primary-lighter); }
 
 .app-header .progress-icon {
   font-size: 16px;
@@ -477,9 +441,9 @@
 }
 
 .app-header .progress-label {
-  font-size: var(--fs-xs);
+  font-size: var(--t-fs-xs);
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--t-color-text-main);
   flex-shrink: 0;
   min-width: 76px;
   white-space: nowrap;
@@ -488,14 +452,14 @@
 .app-header .progress-bar-mini {
   flex: 1;
   height: 5px;
-  background: var(--sky-lighter);
-  border-radius: var(--radius-full);
+  background: var(--t-color-primary-lighter);
+  border-radius: var(--t-radius-full);
   overflow: hidden;
   position: relative;
 }
 .app-header .progress-bar-mini-fill {
   height: 100%;
-  border-radius: var(--radius-full);
+  border-radius: var(--t-radius-full);
   background: linear-gradient(90deg, #38bdf8, #6366f1);
   transition: width 0.6s ease;
   box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
@@ -507,10 +471,10 @@
 .app-header .progress-item.done .progress-label { color: #059669; }
 
 .app-header .progress-count {
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
-  color: var(--sky-primary);
+  color: var(--t-color-primary);
   flex-shrink: 0;
   min-width: 44px;
   text-align: right;
@@ -518,14 +482,14 @@
 .app-header .progress-item.done .progress-count { color: #059669; }
 
 .app-header .progress-arrow {
-  font-size: var(--fs-sm);
-  color: var(--text-faint);
+  font-size: var(--t-fs-sm);
+  color: var(--t-color-text-faint);
   flex-shrink: 0;
   transition: transform 0.2s, color 0.2s;
 }
 .app-header .progress-item:active .progress-arrow {
   transform: translateX(2px);
-  color: var(--sky-primary);
+  color: var(--t-color-primary);
 }
 
 /* ============================================================
@@ -537,7 +501,7 @@
   gap: 8px;
   background: linear-gradient(135deg, #fef3c7, #fde68a);
   border: 1px solid rgba(251, 191, 36, 0.5);
-  border-radius: var(--radius-md);
+  border-radius: var(--t-radius-md);
   padding: 8px 10px;
   margin-top: 10px;
 }
@@ -545,7 +509,7 @@
 .app-header .focus-task-icon { font-size: 16px; flex-shrink: 0; }
 
 .app-header .focus-task-text {
-  font-size: var(--fs-xs);
+  font-size: var(--t-fs-xs);
   font-weight: 700;
   color: #92400e;
   line-height: 1.4;
@@ -563,21 +527,21 @@
 
 .app-header .focus-weather-cell {
   background: #f8fbff;
-  border: 1px solid var(--line-sky);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--t-color-border-sky);
+  border-radius: var(--t-radius-md);
   padding: 8px 10px;
 }
 
 .app-header .focus-weather-cell .label {
-  font-size: var(--fs-2xs);
-  color: var(--text-mute);
+  font-size: var(--t-fs-2xs);
+  color: var(--t-color-text-mute);
   font-weight: 800;
   letter-spacing: 0.05em;
 }
 .app-header .focus-weather-cell .value {
-  font-size: var(--fs-sm);
+  font-size: var(--t-fs-sm);
   font-weight: 900;
-  color: var(--text-main);
+  color: var(--t-color-text-main);
   margin-top: 1px;
 }
 
@@ -590,8 +554,8 @@
   justify-content: center;
   gap: 6px;
   padding: 10px 14px;
-  border-radius: var(--radius-md);
-  font-size: var(--fs-xs);
+  border-radius: var(--t-radius-md);
+  font-size: var(--t-fs-xs);
   font-weight: 800;
   transition: all 0.2s;
   flex: 1;
@@ -602,7 +566,7 @@
 }
 
 .app-header .focus-cta-primary {
-  background: linear-gradient(135deg, #0ea5e9, var(--sky-primary));
+  background: linear-gradient(135deg, #0ea5e9, var(--t-color-primary));
   color: white;
   box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
 }
@@ -613,11 +577,11 @@
 
 .app-header .focus-cta-secondary {
   background: rgba(255, 255, 255, 0.95);
-  border: 1.5px solid var(--sky-light);
-  color: var(--sky-primary-dark);
+  border: 1.5px solid var(--t-color-primary-light);
+  color: var(--t-color-primary-dark);
 }
 .app-header .focus-cta-secondary:active {
-  background: var(--sky-lighter);
+  background: var(--t-color-primary-lighter);
   transform: scale(0.97);
 }
 
@@ -639,20 +603,20 @@
 
 .app-header .focus-stat {
   background: #f8fbff;
-  border: 1px solid var(--line-sky);
+  border: 1px solid var(--t-color-border-sky);
   border-radius: 10px;
   padding: 8px 6px;
   text-align: center;
 }
 .app-header .focus-stat .num {
-  font-size: var(--fs-base);
+  font-size: var(--t-fs-base);
   font-weight: 900;
-  color: var(--sky-primary);
+  color: var(--t-color-primary);
   font-variant-numeric: tabular-nums;
 }
 .app-header .focus-stat .lbl {
-  font-size: var(--fs-2xs);
-  color: var(--text-mute);
+  font-size: var(--t-fs-2xs);
+  color: var(--t-color-text-mute);
   font-weight: 700;
   margin-top: 1px;
 }
@@ -667,8 +631,8 @@
   padding: 16px 0;
 }
 .app-header .focus-spinner {
-  border: 3px solid var(--sky-lighter);
-  border-top-color: var(--sky-primary);
+  border: 3px solid var(--t-color-primary-lighter);
+  border-top-color: var(--t-color-primary);
   border-radius: 50%;
   width: 24px;
   height: 24px;
@@ -706,8 +670,8 @@
   -webkit-overflow-scrolling: touch;
 
   background: #ffffff;
-  border: 1px solid var(--line-sky);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--t-color-border-sky);
+  border-radius: var(--t-radius-lg);
   box-shadow:
     0 20px 50px rgba(2, 132, 199, 0.2),
     0 0 0 1px rgba(255, 255, 255, 0.5);
@@ -720,7 +684,7 @@
   padding: 6px;
 
   scrollbar-width: thin;
-  scrollbar-color: var(--sky-light) transparent;
+  scrollbar-color: var(--t-color-primary-light) transparent;
 }
 .app-header .tools-menu-panel.active {
   opacity: 1;
@@ -729,7 +693,7 @@
 }
 .app-header .tools-menu-panel::-webkit-scrollbar { width: 4px; }
 .app-header .tools-menu-panel::-webkit-scrollbar-thumb {
-  background: var(--sky-light);
+  background: var(--t-color-primary-light);
   border-radius: 2px;
 }
 .app-header .tools-menu-panel::-webkit-scrollbar-track { background: transparent; }
@@ -738,22 +702,22 @@
 
 .app-header .tools-section { padding: 4px 0; }
 .app-header .tools-section:not(:last-child) {
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--t-color-border);
 }
 
 .app-header .tools-section-label {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 800;
   letter-spacing: 0.12em;
-  color: var(--text-faint);
+  color: var(--t-color-text-faint);
   padding: 8px 12px 4px;
   text-transform: uppercase;
 }
 .app-header .tools-section-label span {
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   letter-spacing: 0;
 }
 
@@ -765,8 +729,8 @@
   border-radius: 10px;
   border: none;
   background: transparent;
-  color: var(--text-main);
-  font-size: var(--fs-sm);
+  color: var(--t-color-text-main);
+  font-size: var(--t-fs-sm);
   font-weight: 700;
   width: 100%;
   text-align: left;
@@ -775,14 +739,14 @@
   font-family: inherit;
   min-height: var(--btn-md);
 }
-.app-header .tools-item:hover { background: var(--sky-lighter); }
+.app-header .tools-item:hover { background: var(--t-color-primary-lighter); }
 .app-header .tools-item:active {
-  background: var(--sky-light);
+  background: var(--t-color-primary-light);
   transform: scale(0.98);
 }
 
 .app-header .tools-item-icon {
-  font-size: var(--fs-base);
+  font-size: var(--t-fs-base);
   width: 22px;
   text-align: center;
   flex-shrink: 0;
@@ -800,10 +764,10 @@
   align-items: center;
   gap: 3px;
   padding: 2px 8px;
-  border-radius: var(--radius-full);
-  background: var(--sky-lighter);
-  color: var(--sky-primary-dark);
-  font-size: var(--fs-2xs);
+  border-radius: var(--t-radius-full);
+  background: var(--t-color-primary-lighter);
+  color: var(--t-color-primary-dark);
+  font-size: var(--t-fs-2xs);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
@@ -822,9 +786,9 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   padding: 2px 7px;
-  border-radius: var(--radius-full);
+  border-radius: var(--t-radius-full);
   font-weight: 900;
   letter-spacing: 0.03em;
   flex-shrink: 0;
@@ -840,14 +804,14 @@
 }
 
 .app-header .tools-item-arrow {
-  font-size: var(--fs-sm);
-  color: var(--text-faint);
+  font-size: var(--t-fs-sm);
+  color: var(--t-color-text-faint);
   flex-shrink: 0;
   transition: transform 0.15s, color 0.15s;
 }
 .app-header .tools-item:active .tools-item-arrow {
   transform: translateX(2px);
-  color: var(--sky-primary);
+  color: var(--t-color-primary);
 }
 
 .app-header .tools-sync-status {
@@ -855,9 +819,9 @@
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 700;
-  color: var(--text-mute);
+  color: var(--t-color-text-mute);
 }
 .app-header .tools-sync-dot {
   width: 6px;
@@ -884,8 +848,8 @@
 @media (min-width: 1024px) {
   .app-header .focus-card { padding: 0 24px; }
   .app-header .brand-bar { padding: 0 24px; }
-  .app-header .countdown-value { font-size: var(--fs-2xl); }
-  .app-header .countdown-unit { font-size: var(--fs-xs); }
+  .app-header .countdown-value { font-size: var(--t-fs-2xl); }
+  .app-header .countdown-unit { font-size: var(--t-fs-xs); }
   .app-header .tools-toggle { height: var(--btn-sm); padding: 0 14px 0 12px; }
 }
 
@@ -925,10 +889,10 @@
 @media (max-width: 360px) {
   .app-header .countdown-inline-num { font-size: 30px; }
   .app-header .countdown-inline-num-sm { font-size: 18px; }
-  .app-header .countdown-inline-unit { font-size: var(--fs-xs); margin-right: 10px; }
-  .app-header .countdown-inline-unit-sm { font-size: var(--fs-2xs); margin-right: 8px; }
+  .app-header .countdown-inline-unit { font-size: var(--t-fs-xs); margin-right: 10px; }
+  .app-header .countdown-inline-unit-sm { font-size: var(--t-fs-2xs); margin-right: 8px; }
 
-  .app-header .brand-title { font-size: var(--fs-xs); }
+  .app-header .brand-title { font-size: var(--t-fs-xs); }
   .app-header .brand-actions { gap: 4px; }
   .app-header .progress-label { min-width: 60px; }
   .app-header .tools-menu-panel {
@@ -1052,7 +1016,7 @@
   color: white;
   padding: 8px 12px;
   border-radius: 10px;
-  font-size: var(--fs-2xs);
+  font-size: var(--t-fs-2xs);
   font-weight: 700;
   pointer-events: none;
   opacity: 0;
