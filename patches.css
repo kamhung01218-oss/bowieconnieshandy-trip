@@ -1,12 +1,14 @@
 /* ============================================================
- * patches.css — 補丁集中區（v14.3）
+ * patches.css — 精簡版 v2.0
  *
  * 載入順序：tokens.css → style.css → dark.css → patches.css → perf.css
  *
- * v13.1：.event-title 響應式字級
- * v14.2：情境面板（家庭廣播 + 當前行程）
- * v14.3：旅行模擬控制器
+ * ⚠️ 維護原則：
+ *   1. 新樣式加到對應章節末尾，不要無限制在檔案尾部追加
+ *   2. 若需覆蓋舊樣式，直接修改該章節，不要新增「vN 修正版」
+ *   3. 已清理：原 28/30/31/34/36/38 章（被後續完全覆蓋）
  * ============================================================ */
+
 
 /* ============================================================
  * 1. iPhone 安全區修正
@@ -30,6 +32,7 @@
 [data-theme="dark"] .day-tabs-wrapper::before {
   background: rgba(15, 23, 42, 0.95);
 }
+
 
 /* ============================================================
  * 2. 共享檔案櫃按鈕
@@ -121,6 +124,7 @@
 [data-theme="dark"] .drive-folder-arrow { color: #475569; }
 [data-theme="dark"] .drive-folder-btn:active .drive-folder-arrow { color: #38bdf8; }
 
+
 /* ============================================================
  * 3. 解除內層折疊高度限制
  * ============================================================ */
@@ -131,6 +135,7 @@
 .event-collapsible::after {
   display: none !important;
 }
+
 
 /* ============================================================
  * 4. 卡片視覺（雜誌化 · 極簡）
@@ -309,6 +314,7 @@
   padding: 14px 0 16px !important;
 }
 
+
 /* ============================================================
  * 5. Tip blocks（低飽和）
  * ============================================================ */
@@ -341,6 +347,7 @@
   color: inherit !important;
   font-weight: 800 !important;
 }
+
 
 /* ============================================================
  * 6. 內層 details（三層次配色）
@@ -423,6 +430,7 @@
   color: #0284c7 !important;
 }
 
+
 /* ============================================================
  * 7. 導航連結膠囊
  * ============================================================ */
@@ -454,6 +462,7 @@
   transform: scale(0.96) !important;
 }
 
+
 /* ============================================================
  * 8. 節奏間距 + 行高
  * ============================================================ */
@@ -475,6 +484,7 @@
   padding: 4px 0 4px !important;
 }
 
+
 /* ============================================================
  * 9. 展開交錯動畫
  * ============================================================ */
@@ -494,8 +504,9 @@ details.event-card[open] .event-content-wrapper > *:nth-child(6) { animation-del
 details.event-card[open] .event-content-wrapper > *:nth-child(7) { animation-delay: 0.47s; }
 details.event-card[open] .event-content-wrapper > *:nth-child(8) { animation-delay: 0.54s; }
 
+
 /* ============================================================
- * 10. 深色模式集中適配
+ * 10. 深色模式集中適配（event-card 相關）
  * ============================================================ */
 [data-theme="dark"] .event-title { color: #e0f2fe !important; }
 [data-theme="dark"] .event-title::before {
@@ -564,16 +575,13 @@ details.event-card[open] .event-content-wrapper > *:nth-child(8) { animation-del
   border-color: #0369a1 !important;
   color: #7dd3fc !important;
 }
-
-/* ============================================================
- * 11. ⭐ 深色模式 FAB 白邊修正
- * ============================================================ */
 [data-theme="dark"] .bottom-nav .nav-fab {
   border-color: #1e293b !important;
 }
 
+
 /* ============================================================
- * 12. ⭐ 無障礙：focus-visible
+ * 11. 無障礙：focus-visible + 對比度
  * ============================================================ */
 button:focus-visible,
 a:focus-visible,
@@ -598,9 +606,7 @@ a:focus:not(:focus-visible) {
   outline: none;
 }
 
-/* ============================================================
- * 13. ⭐ 無障礙：天氣雨量對比度修正
- * ============================================================ */
+/* 天氣雨量對比度 */
 .forecast-rain {
   color: #0369a1 !important;
   background: rgba(3, 105, 161, 0.08) !important;
@@ -610,8 +616,9 @@ a:focus:not(:focus-visible) {
   background: rgba(125, 211, 252, 0.12) !important;
 }
 
+
 /* ============================================================
- * 14. ⭐ 搜尋熱門關鍵字
+ * 12. 搜尋熱門關鍵字
  * ============================================================ */
 .search-hot-tags {
   display: flex;
@@ -661,8 +668,9 @@ a:focus:not(:focus-visible) {
   color: #7dd3fc;
 }
 
+
 /* ============================================================
- * 15. 無障礙：prefers-reduced-motion
+ * 13. prefers-reduced-motion
  * ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   details.event-card[open] .event-content-wrapper > * {
@@ -676,11 +684,13 @@ a:focus:not(:focus-visible) {
   }
 }
 
+
 /* ============================================================
- * 16. ⭐ v13.0：統一事件卡片「轉換後的 details」樣式
+ * 14. tip-block-details（統一轉換後的 details 樣式）
  * ============================================================ */
 .glass-card.event-card .event-collapsible details.tip-block-details {
   border-left-color: #38bdf8 !important;
+  margin: 8px 0 !important;
 }
 .glass-card.event-card .event-collapsible details.tip-block-details.danger {
   border-left-color: #f87171 !important;
@@ -722,6 +732,11 @@ a:focus:not(:focus-visible) {
   background: #fefce8 !important;
   color: #713f12 !important;
 }
+.glass-card.event-card .event-collapsible details.tip-block-details[open] {
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(2, 132, 199, 0.08) !important;
+}
 [data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details.danger {
   border-left-color: #ef4444 !important;
 }
@@ -760,19 +775,15 @@ a:focus:not(:focus-visible) {
   background: #422006 !important;
   color: #fde68a !important;
 }
-.glass-card.event-card .event-collapsible details.tip-block-details[open] {
-  box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(2, 132, 199, 0.08) !important;
-}
 [data-theme="dark"] .glass-card.event-card .event-collapsible details.tip-block-details[open] {
   box-shadow:
     0 2px 6px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(56, 189, 248, 0.15) !important;
 }
 
+
 /* ============================================================
- * 17. ⭐ v13.2：摺疊小卡統一集中最底
+ * 15. 摺疊小卡統一集中最底
  * ============================================================ */
 .collapsible-divider {
   display: flex;
@@ -805,9 +816,6 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .collapsible-divider::after {
   background: linear-gradient(90deg, transparent, #334155, transparent);
 }
-.glass-card.event-card .event-collapsible details.tip-block-details {
-  margin: 8px 0 !important;
-}
 .glass-card.event-card .event-collapsible .collapsible-divider + details {
   margin-top: 0 !important;
 }
@@ -826,8 +834,9 @@ a:focus:not(:focus-visible) {
   display: none !important;
 }
 
+
 /* ============================================================
- * 18. ⭐ 拍攝靈感 / 通用拍攝技巧（v13.3）
+ * 16. 拍攝靈感 / 通用拍攝技巧
  * ============================================================ */
 .shoot-photo-hero {
   position: relative;
@@ -1117,6 +1126,8 @@ a:focus:not(:focus-visible) {
   text-transform: uppercase;
   margin-bottom: 6px;
 }
+
+/* 深色模式 */
 [data-theme="dark"] .shoot-photo-hero { background: #1e293b; }
 [data-theme="dark"] .shoot-photo-indicator { background: rgba(0,0,0,0.8); }
 [data-theme="dark"] .shoot-block {
@@ -1174,253 +1185,134 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .common-tip-grid { border-top-color: #334155; }
 [data-theme="dark"] .common-tip-photo { border-color: #334155; }
 
+
 /* ============================================================
- * 19. ⭐ v14.2：情境面板 — 家庭廣播 + 當前行程
+ * 17. 導航選單 Modal
  * ============================================================ */
-.app-header .broadcast-block {
-  background: linear-gradient(135deg, #fff7ed, #ffedd5);
-  border: 1.5px solid #fed7aa;
-  border-radius: 14px;
-  padding: 10px 12px;
-  margin-bottom: 10px;
+.navigate-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.15s;
 }
-.app-header .broadcast-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
-.app-header .broadcast-title { font-size: 11px; font-weight: 900; color: #9a3412; letter-spacing: 0.08em; }
-.app-header .broadcast-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px dashed rgba(251,146,60,0.3); align-items: flex-start; }
-.app-header .broadcast-item:last-child { border-bottom: none; padding-bottom: 0; }
-.app-header .broadcast-item.pinned { background: rgba(254,215,170,0.4); border-radius: 8px; padding: 6px 8px; margin: 2px -4px; border-bottom: none; }
-.app-header .broadcast-dot { font-size: 10px; flex-shrink: 0; margin-top: 3px; }
-.app-header .broadcast-body { flex: 1; min-width: 0; }
-.app-header .broadcast-text { font-size: 13px; color: #7c2d12; font-weight: 600; line-height: 1.4; word-break: break-word; }
-.app-header .broadcast-text strong { color: #9a3412; font-weight: 900; margin-right: 2px; }
-.app-header .broadcast-meta { font-size: 11px; color: #c2410c; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
-.app-header .broadcast-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 4px; background: #ef4444; color: white; font-size: 10px; font-weight: 900; border-radius: 999px; line-height: 1; }
-
-.app-header .focus-current { background: #f8fbff; border: 1px solid var(--t-color-border-sky); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
-.app-header .focus-current-row, .app-header .focus-next-row, .app-header .focus-weather-row { display: flex; align-items: baseline; gap: 8px; padding: 3px 0; }
-.app-header .focus-current-label, .app-header .focus-next-label { font-size: 11px; font-weight: 900; color: var(--t-color-primary); letter-spacing: 0.04em; flex-shrink: 0; min-width: 52px; }
-.app-header .focus-current-title { font-size: 14px; font-weight: 900; color: var(--t-color-text-main); line-height: 1.35; word-break: break-word; }
-.app-header .focus-next-title { font-size: 13px; font-weight: 700; color: var(--t-color-text-soft); line-height: 1.35; word-break: break-word; }
-.app-header .focus-weather-row { font-size: 12px; font-weight: 700; color: var(--t-color-text-mute); padding-top: 4px; margin-top: 2px; border-top: 1px dashed var(--t-color-border); }
-
-.navigate-option { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #f8fafc; border: 1.5px solid #e2e8f0; margin-bottom: 8px; text-decoration: none; color: inherit; transition: all 0.15s; }
-.navigate-option:active { transform: scale(0.98); background: #f0f9ff; border-color: #bae6fd; }
-.navigate-option.current { background: linear-gradient(135deg, #eff6ff, #dbeafe); border-color: #60a5fa; box-shadow: 0 2px 8px rgba(2,132,199,0.15); }
-.navigate-option-label { font-size: 11px; font-weight: 900; color: var(--t-color-primary); min-width: 48px; flex-shrink: 0; }
+.navigate-option:active {
+  transform: scale(0.98);
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
+.navigate-option.current {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-color: #60a5fa;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
+}
+.navigate-option-label {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--t-color-primary);
+  min-width: 48px;
+  flex-shrink: 0;
+}
 .navigate-option.current .navigate-option-label { color: #0369a1; }
-.navigate-option-title { flex: 1; min-width: 0; font-size: 14px; font-weight: 800; color: var(--t-color-text-main); line-height: 1.35; word-break: break-word; }
-.navigate-option-time { font-size: 12px; font-weight: 700; color: var(--t-color-text-mute); font-variant-numeric: tabular-nums; flex-shrink: 0; }
-.navigate-option-arrow { font-size: 18px; font-weight: 900; color: var(--t-color-text-faint); flex-shrink: 0; }
-
-.message-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
-.message-row.pinned { background: linear-gradient(135deg, #fff7ed, #ffedd5); border-color: #fed7aa; }
-.message-row-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
-.message-dot { font-size: 10px; flex-shrink: 0; }
-.message-author { font-size: 12px; font-weight: 900; color: var(--t-color-primary-dark); }
-.message-time { font-size: 11px; color: var(--t-color-text-mute); font-weight: 600; font-variant-numeric: tabular-nums; flex: 1; min-width: 0; }
-.message-actions { display: flex; gap: 2px; flex-shrink: 0; }
-.msg-action-btn { background: transparent; border: none; cursor: pointer; padding: 2px 4px; font-size: 13px; opacity: 0.5; transition: opacity 0.15s; border-radius: 4px; }
-.msg-action-btn:hover { opacity: 1; background: rgba(0,0,0,0.05); }
-.message-text { font-size: 14px; color: var(--t-color-text-main); line-height: 1.5; word-break: break-word; font-weight: 500; }
-
-[data-theme="dark"] .app-header .broadcast-block { background: linear-gradient(135deg, #422006, #78350f); border-color: #92400e; }
-[data-theme="dark"] .app-header .broadcast-title { color: #fde68a; }
-[data-theme="dark"] .app-header .broadcast-text { color: #fef3c7; }
-[data-theme="dark"] .app-header .broadcast-text strong { color: #fde68a; }
-[data-theme="dark"] .app-header .broadcast-meta { color: #fbbf24; }
-[data-theme="dark"] .app-header .broadcast-item.pinned { background: rgba(120,53,15,0.5); }
-[data-theme="dark"] .app-header .broadcast-item { border-bottom-color: rgba(251,146,60,0.2); }
-[data-theme="dark"] .app-header .focus-current { background: #0f172a; border-color: #334155; }
-[data-theme="dark"] .app-header .focus-current-title { color: #f1f5f9; }
-[data-theme="dark"] .app-header .focus-next-title { color: #cbd5e1; }
-[data-theme="dark"] .app-header .focus-weather-row { color: #94a3b8; border-top-color: #334155; }
-[data-theme="dark"] .navigate-option { background: #1e293b; border-color: #334155; }
-[data-theme="dark"] .navigate-option.current { background: linear-gradient(135deg, #0c4a6e, #075985); border-color: #0369a1; }
+.navigate-option-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--t-color-text-main);
+  line-height: 1.35;
+  word-break: break-word;
+}
+.navigate-option-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--t-color-text-mute);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.navigate-option-arrow {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--t-color-text-faint);
+  flex-shrink: 0;
+}
+[data-theme="dark"] .navigate-option {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .navigate-option.current {
+  background: linear-gradient(135deg, #0c4a6e, #075985);
+  border-color: #0369a1;
+}
 [data-theme="dark"] .navigate-option-title { color: #f1f5f9; }
 [data-theme="dark"] .navigate-option-label { color: #7dd3fc; }
 [data-theme="dark"] .navigate-option-time { color: #94a3b8; }
-[data-theme="dark"] .message-row { background: #1e293b; border-color: #334155; }
-[data-theme="dark"] .message-row.pinned { background: linear-gradient(135deg, #422006, #78350f); border-color: #92400e; }
-[data-theme="dark"] .message-author { color: #7dd3fc; }
-[data-theme="dark"] .message-time { color: #94a3b8; }
-[data-theme="dark"] .message-text { color: #f1f5f9; }
+
 
 /* ============================================================
- * 20. ⭐ v14.3：旅行模擬控制器
+ * 18. 家庭廣播留言板（Modal 內）
  * ============================================================ */
-.simulator-widget {
-  position: fixed;
-  left: 12px;
-  bottom: calc(68px + env(safe-area-inset-bottom, 0px) + 12px);
-  z-index: 9990;
-  font-family: inherit;
-  pointer-events: none;
-}
-.simulator-widget.hidden { display: none !important; }
-.simulator-widget > * { pointer-events: auto; }
 
-.simulator-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1.5px dashed #a78bfa;
-  background: rgba(255, 255, 255, 0.95);
-  color: #7c3aed;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
-  transition: all 0.15s;
-  font-family: inherit;
-}
-.simulator-toggle:active { transform: scale(0.95); }
-
-.simulator-panel {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
+/* 18.1 留言列 */
+.message-row {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 12px;
   margin-bottom: 8px;
-  background: white;
-  border: 1.5px solid #a78bfa;
-  border-radius: 14px;
-  padding: 12px;
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.25);
-  width: 220px;
-  opacity: 0;
-  transform: translateY(6px) scale(0.95);
-  transform-origin: bottom left;
-  pointer-events: none;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.simulator-panel.active {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
+.message-row.pinned {
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border-color: #fed7aa;
 }
-
-.simulator-title {
+.message-row-head {
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.message-dot { font-size: 10px; flex-shrink: 0; }
+.message-author {
   font-size: 12px;
   font-weight: 900;
-  color: #6d28d9;
-  margin-bottom: 4px;
+  color: var(--t-color-primary-dark);
 }
-.simulator-hint {
-  font-size: 10px;
-  color: #94a3b8;
+.message-time {
+  font-size: 11px;
+  color: var(--t-color-text-mute);
   font-weight: 600;
-  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+  flex: 1;
+  min-width: 0;
 }
-
-.simulator-days {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-.sim-day {
-  padding: 6px 0;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  color: #475569;
-  font-size: 11px;
-  font-weight: 800;
+.message-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.msg-action-btn {
+  background: transparent;
+  border: none;
   cursor: pointer;
-  transition: all 0.15s;
-  font-family: inherit;
+  padding: 2px 4px;
+  font-size: 13px;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+  border-radius: 4px;
 }
-.sim-day:active { transform: scale(0.94); }
-.sim-day.active {
-  background: linear-gradient(135deg, #a78bfa, #7c3aed);
-  color: white;
-  border-color: transparent;
-  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.4);
-}
-
-.simulator-close {
-  width: 100%;
-  padding: 6px;
-  border-radius: 8px;
-  border: 1px solid #fecaca;
-  background: #fef2f2;
-  color: #dc2626;
-  font-size: 11px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: all 0.15s;
-  font-family: inherit;
-}
-.simulator-close:active { transform: scale(0.97); }
-
-[data-theme="dark"] .simulator-toggle {
-  background: #1e293b;
-  color: #c4b5fd;
-  border-color: #7c3aed;
-}
-[data-theme="dark"] .simulator-panel {
-  background: #1e293b;
-  border-color: #7c3aed;
-}
-[data-theme="dark"] .simulator-title { color: #c4b5fd; }
-[data-theme="dark"] .simulator-hint { color: #64748b; }
-[data-theme="dark"] .sim-day {
-  background: #0f172a;
-  color: #cbd5e1;
-  border-color: #334155;
-}
-[data-theme="dark"] .sim-day.active {
-  background: linear-gradient(135deg, #a78bfa, #7c3aed);
-  color: white;
-}
-[data-theme="dark"] .simulator-close {
-  background: #450a0a;
-  border-color: #7f1d1d;
-  color: #fca5a5;
+.msg-action-btn:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+.message-text {
+  font-size: 14px;
+  color: var(--t-color-text-main);
+  line-height: 1.5;
+  word-break: break-word;
+  font-weight: 500;
 }
 
-/* 手機優化 */
-@media (max-width: 380px) {
-  .simulator-panel {
-    width: 200px;
-  }
-}
-/* ============================================================
- * 21. ⭐ 旅行中導航 + 留言按鈕：手機也要顯示
- * ============================================================ */
-@media (max-width: 767px) {
-  .app-header .focus-cta-row.focus-cta-row-during {
-    display: flex !important;
-    gap: 8px !important;
-  }
-  .app-header .focus-cta-row.focus-cta-row-during .focus-cta {
-    display: inline-flex !important;
-    flex: 1 1 50% !important;
-    min-width: 0 !important;
-  }
-}
-
-/* ============================================================
- * 22. ⭐ 模擬器藥丸：顯示當前狀態
- * ============================================================ */
-.simulator-toggle.active {
-  background: linear-gradient(135deg, #a78bfa, #7c3aed) !important;
-  color: white !important;
-  border-color: transparent !important;
-  border-style: solid !important;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4) !important;
-}
-/* ============================================================
- * 23. ⭐ 家庭廣播留言板：快速模板 + 選項
- * ============================================================ */
-
-/* 快速模板按鈕列 */
+/* 18.2 快速模板 + 輸入框 + 選項 + 發送 */
 .msg-quick-row {
   display: flex;
   gap: 6px;
@@ -1447,19 +1339,14 @@ a:focus:not(:focus-visible) {
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
 }
-.msg-quick-btn:active {
+.msg-quick-btn:active,
+.msg-quick-btn:hover {
   transform: scale(0.95);
   background: #f0f9ff;
   border-color: #bae6fd;
   color: #0284c7;
 }
-.msg-quick-btn:hover {
-  background: #f0f9ff;
-  border-color: #bae6fd;
-  color: #0284c7;
-}
 
-/* 輸入框 */
 .msg-textarea {
   width: 100%;
   padding: 10px 12px;
@@ -1475,14 +1362,9 @@ a:focus:not(:focus-visible) {
   flex-shrink: 0;
   line-height: 1.5;
 }
-.msg-textarea:focus {
-  border-color: #38bdf8;
-}
-.msg-textarea::placeholder {
-  color: #94a3b8;
-}
+.msg-textarea:focus { border-color: #38bdf8; }
+.msg-textarea::placeholder { color: #94a3b8; }
 
-/* 選項列 */
 .msg-options {
   display: flex;
   gap: 14px;
@@ -1530,7 +1412,6 @@ a:focus:not(:focus-visible) {
   line-height: 1;
 }
 
-/* 發送按鈕 */
 .msg-send-btn {
   width: 100%;
   padding: 12px;
@@ -1546,95 +1427,10 @@ a:focus:not(:focus-visible) {
   flex-shrink: 0;
   letter-spacing: 0.02em;
 }
-.msg-send-btn:active:not(:disabled) {
-  transform: scale(0.98);
-}
-.msg-send-btn:disabled {
-  cursor: not-allowed;
-}
+.msg-send-btn:active:not(:disabled) { transform: scale(0.98); }
+.msg-send-btn:disabled { cursor: not-allowed; }
 
-/* 深色模式 */
-[data-theme="dark"] .msg-quick-btn {
-  background: #1e293b;
-  border-color: #334155;
-  color: #cbd5e1;
-}
-[data-theme="dark"] .msg-quick-btn:active,
-[data-theme="dark"] .msg-quick-btn:hover {
-  background: #0c4a6e;
-  border-color: #0369a1;
-  color: #7dd3fc;
-}
-[data-theme="dark"] .msg-textarea {
-  background: #1e293b;
-  border-color: #334155;
-  color: #f1f5f9;
-}
-[data-theme="dark"] .msg-textarea:focus {
-  border-color: #0ea5e9;
-}
-[data-theme="dark"] .msg-textarea::placeholder {
-  color: #64748b;
-}
-[data-theme="dark"] .msg-option { color: #cbd5e1; }
-[data-theme="dark"] .msg-option input[type="checkbox"] {
-  background: #1e293b;
-  border-color: #475569;
-}
-[data-theme="dark"] .msg-option input[type="checkbox"]:checked {
-  background: #0ea5e9;
-  border-color: #0ea5e9;
-}
-/* ============================================================
- * 24. ⭐ 家庭廣播區塊：永遠顯示 + 訪客提示
- * ============================================================ */
-
-/* 廣播區塊永遠顯示 */
-.app-header .broadcast-block {
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.app-header .broadcast-block:hover {
-  background: linear-gradient(135deg, #ffedd5, #fed7aa);
-}
-
-/* 廣播標題列加數字 + 提示 */
-.app-header .broadcast-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 6px;
-  background: #ef4444;
-  color: white;
-  font-size: 10px;
-  font-weight: 900;
-  border-radius: 999px;
-  line-height: 1;
-  margin-left: 2px;
-}
-
-.app-header .broadcast-open-hint {
-  margin-left: auto;
-  font-size: 10px;
-  font-weight: 700;
-  color: #c2410c;
-  opacity: 0.7;
-}
-
-/* 空狀態 */
-.app-header .broadcast-empty {
-  font-size: 12px;
-  color: #c2410c;
-  opacity: 0.75;
-  padding: 4px 0;
-  font-weight: 600;
-  text-align: center;
-  font-style: italic;
-}
-
-/* 訪客提示 */
+/* 18.3 訪客提示 */
 .msg-guest-notice {
   display: flex;
   align-items: center;
@@ -1651,22 +1447,55 @@ a:focus:not(:focus-visible) {
   flex-shrink: 0;
 }
 
-/* 深色模式 */
-[data-theme="dark"] .app-header .broadcast-block:hover {
-  background: linear-gradient(135deg, #78350f, #92400e);
+/* 18.4 深色模式 */
+[data-theme="dark"] .message-row {
+  background: #1e293b;
+  border-color: #334155;
 }
-[data-theme="dark"] .app-header .broadcast-open-hint { color: #fbbf24; }
-[data-theme="dark"] .app-header .broadcast-empty { color: #fbbf24; }
+[data-theme="dark"] .message-row.pinned {
+  background: linear-gradient(135deg, #422006, #78350f);
+  border-color: #92400e;
+}
+[data-theme="dark"] .message-author { color: #7dd3fc; }
+[data-theme="dark"] .message-time { color: #94a3b8; }
+[data-theme="dark"] .message-text { color: #f1f5f9; }
+[data-theme="dark"] .msg-quick-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+[data-theme="dark"] .msg-quick-btn:active,
+[data-theme="dark"] .msg-quick-btn:hover {
+  background: #0c4a6e;
+  border-color: #0369a1;
+  color: #7dd3fc;
+}
+[data-theme="dark"] .msg-textarea {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+[data-theme="dark"] .msg-textarea:focus { border-color: #0ea5e9; }
+[data-theme="dark"] .msg-textarea::placeholder { color: #64748b; }
+[data-theme="dark"] .msg-option { color: #cbd5e1; }
+[data-theme="dark"] .msg-option input[type="checkbox"] {
+  background: #1e293b;
+  border-color: #475569;
+}
+[data-theme="dark"] .msg-option input[type="checkbox"]:checked {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+}
 [data-theme="dark"] .msg-guest-notice {
   background: #1e293b;
   border-color: #334155;
   color: #94a3b8;
 }
-/* ============================================================
- * 25. ⭐ 位置分享：地圖按鈕 + 位置訊息樣式
- * ============================================================ */
 
-/* 卡片上的「看地圖」按鈕 */
+
+/* ============================================================
+ * 19. 位置分享（地圖按鈕 + 位置訊息）
+ * ============================================================ */
 .app-header .broadcast-map-btn {
   display: inline-flex;
   align-items: center;
@@ -1687,8 +1516,6 @@ a:focus:not(:focus-visible) {
   transform: scale(0.95);
   background: linear-gradient(135deg, #bfdbfe, #93c5fd);
 }
-
-/* 留言板上的「在地圖開啟」按鈕 */
 .message-map-btn {
   display: inline-flex;
   align-items: center;
@@ -1709,14 +1536,10 @@ a:focus:not(:focus-visible) {
   transform: scale(0.96);
   background: linear-gradient(135deg, #bfdbfe, #93c5fd);
 }
-
-/* 位置訊息卡片：淡藍底 */
 .message-row.is-location {
   background: linear-gradient(135deg, #eff6ff, #dbeafe);
   border-color: #93c5fd;
 }
-
-/* 深色模式 */
 [data-theme="dark"] .app-header .broadcast-map-btn {
   background: linear-gradient(135deg, #1e3a8a, #1e40af);
   border-color: #3b82f6;
@@ -1725,7 +1548,6 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .app-header .broadcast-map-btn:active {
   background: linear-gradient(135deg, #1e40af, #2563eb);
 }
-
 [data-theme="dark"] .message-map-btn {
   background: linear-gradient(135deg, #1e3a8a, #1e40af);
   border-color: #3b82f6;
@@ -1734,15 +1556,163 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .message-map-btn:active {
   background: linear-gradient(135deg, #1e40af, #2563eb);
 }
-
 [data-theme="dark"] .message-row.is-location {
   background: linear-gradient(135deg, #0c2a5e, #1e3a8a);
   border-color: #3b82f6;
 }
-/* ============================================================
- * 26. ⭐ 天氣警告 badge + Modal
- * ============================================================ */
 
+
+/* ============================================================
+ * 20. 旅行模擬控制器
+ * ============================================================ */
+.simulator-widget {
+  position: fixed;
+  left: 12px;
+  bottom: calc(68px + env(safe-area-inset-bottom, 0px) + 12px);
+  z-index: 9990;
+  font-family: inherit;
+  pointer-events: none;
+}
+.simulator-widget.hidden { display: none !important; }
+.simulator-widget > * { pointer-events: auto; }
+
+.simulator-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1.5px dashed #a78bfa;
+  background: rgba(255, 255, 255, 0.95);
+  color: #7c3aed;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.simulator-toggle:active { transform: scale(0.95); }
+.simulator-toggle.active {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed) !important;
+  color: white !important;
+  border-color: transparent !important;
+  border-style: solid !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4) !important;
+}
+
+.simulator-panel {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 8px;
+  background: white;
+  border: 1.5px solid #a78bfa;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.25);
+  width: 220px;
+  opacity: 0;
+  transform: translateY(6px) scale(0.95);
+  transform-origin: bottom left;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.simulator-panel.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.simulator-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #6d28d9;
+  margin-bottom: 4px;
+}
+.simulator-hint {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.simulator-days {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.sim-day {
+  padding: 6px 0;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.sim-day:active { transform: scale(0.94); }
+.sim-day.active {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.4);
+}
+.simulator-close {
+  width: 100%;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.simulator-close:active { transform: scale(0.97); }
+
+[data-theme="dark"] .simulator-toggle {
+  background: #1e293b;
+  color: #c4b5fd;
+  border-color: #7c3aed;
+}
+[data-theme="dark"] .simulator-panel {
+  background: #1e293b;
+  border-color: #7c3aed;
+}
+[data-theme="dark"] .simulator-title { color: #c4b5fd; }
+[data-theme="dark"] .simulator-hint { color: #64748b; }
+[data-theme="dark"] .sim-day {
+  background: #0f172a;
+  color: #cbd5e1;
+  border-color: #334155;
+}
+[data-theme="dark"] .sim-day.active {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  color: white;
+}
+[data-theme="dark"] .simulator-close {
+  background: #450a0a;
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+@media (max-width: 380px) {
+  .simulator-panel { width: 200px; }
+}
+
+
+/* ============================================================
+ * 21. 天氣警告 Modal（給未來使用的獨立區塊）
+ * ============================================================ */
 .app-header .weather-alert-badge {
   display: inline-flex;
   align-items: center;
@@ -1760,7 +1730,6 @@ a:focus:not(:focus-visible) {
   animation: weather-badge-pulse 2s ease-in-out infinite;
 }
 .app-header .weather-alert-badge:active { transform: scale(0.94); }
-
 .app-header .weather-alert-badge.danger {
   background: #fef2f2;
   color: #dc2626;
@@ -1776,12 +1745,10 @@ a:focus:not(:focus-visible) {
   color: #2563eb;
   border-color: #93c5fd;
 }
-
 @keyframes weather-badge-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
   50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15); }
 }
-
 .weather-alert-card {
   border-radius: 14px;
   padding: 14px 16px;
@@ -1789,7 +1756,6 @@ a:focus:not(:focus-visible) {
   border: 1.5px solid;
 }
 .weather-alert-card:last-child { margin-bottom: 0; }
-
 .weather-alert-card.danger {
   background: linear-gradient(135deg, #fef2f2, #fee2e2);
   border-color: #fca5a5;
@@ -1802,18 +1768,13 @@ a:focus:not(:focus-visible) {
   background: linear-gradient(135deg, #eff6ff, #dbeafe);
   border-color: #93c5fd;
 }
-
 .weather-alert-head {
   display: flex;
   align-items: flex-start;
   gap: 10px;
   margin-bottom: 8px;
 }
-.weather-alert-icon {
-  font-size: 24px;
-  flex-shrink: 0;
-  line-height: 1;
-}
+.weather-alert-icon { font-size: 24px; flex-shrink: 0; line-height: 1; }
 .weather-alert-head-text { flex: 1; min-width: 0; }
 .weather-alert-name {
   font-size: 14px;
@@ -1823,7 +1784,6 @@ a:focus:not(:focus-visible) {
 .weather-alert-card.danger .weather-alert-name { color: #7f1d1d; }
 .weather-alert-card.warn .weather-alert-name { color: #92400e; }
 .weather-alert-card.info .weather-alert-name { color: #1e40af; }
-
 .weather-alert-desc {
   font-size: 12px;
   font-weight: 600;
@@ -1832,7 +1792,6 @@ a:focus:not(:focus-visible) {
 .weather-alert-card.danger .weather-alert-desc { color: #991b1b; }
 .weather-alert-card.warn .weather-alert-desc { color: #b45309; }
 .weather-alert-card.info .weather-alert-desc { color: #1d4ed8; }
-
 .weather-alert-actions {
   list-style: none;
   padding: 0;
@@ -1861,11 +1820,7 @@ a:focus:not(:focus-visible) {
 .weather-alert-card.warn .weather-alert-actions li::before { color: #d97706; }
 .weather-alert-card.info .weather-alert-actions li { color: #1e3a8a; }
 .weather-alert-card.info .weather-alert-actions li::before { color: #2563eb; }
-
-.weather-alert-empty {
-  text-align: center;
-  padding: 30px 20px;
-}
+.weather-alert-empty { text-align: center; padding: 30px 20px; }
 
 [data-theme="dark"] .app-header .weather-alert-badge.danger {
   background: #450a0a;
@@ -1882,7 +1837,6 @@ a:focus:not(:focus-visible) {
   color: #93c5fd;
   border-color: #1e40af;
 }
-
 [data-theme="dark"] .weather-alert-card.danger {
   background: linear-gradient(135deg, #450a0a, #7f1d1d);
   border-color: #991b1b;
@@ -1895,245 +1849,23 @@ a:focus:not(:focus-visible) {
   background: linear-gradient(135deg, #0c2a5e, #1e3a8a);
   border-color: #1e40af;
 }
-
 [data-theme="dark"] .weather-alert-card.danger .weather-alert-name { color: #fecaca; }
 [data-theme="dark"] .weather-alert-card.danger .weather-alert-desc { color: #fca5a5; }
 [data-theme="dark"] .weather-alert-card.danger .weather-alert-actions li { color: #fecaca; }
-
 [data-theme="dark"] .weather-alert-card.warn .weather-alert-name { color: #fde68a; }
 [data-theme="dark"] .weather-alert-card.warn .weather-alert-desc { color: #fbbf24; }
 [data-theme="dark"] .weather-alert-card.warn .weather-alert-actions li { color: #fde68a; }
-
 [data-theme="dark"] .weather-alert-card.info .weather-alert-name { color: #bfdbfe; }
 [data-theme="dark"] .weather-alert-card.info .weather-alert-desc { color: #93c5fd; }
 [data-theme="dark"] .weather-alert-card.info .weather-alert-actions li { color: #bfdbfe; }
-
 [data-theme="dark"] .weather-alert-actions {
   border-top-color: rgba(255,255,255,0.1);
 }
-/* ============================================================
- * 28. ⭐ v9.6：Focus Card 多地點天氣 + 日出日落兩行
- * ============================================================ */
 
-/* 天氣行：垂直堆疊 */
-.app-header .focus-weather-row {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 4px !important;
-  padding-top: 6px !important;
-  margin-top: 4px !important;
-  border-top: 1px dashed var(--t-color-border) !important;
-}
-
-/* 地點 tab 列 */
-.app-header .focus-weather-tabs {
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding-bottom: 2px;
-  margin-bottom: 2px;
-}
-.app-header .focus-weather-tabs::-webkit-scrollbar { display: none; }
-
-.app-header .focus-weather-tab {
-  flex-shrink: 0;
-  padding: 3px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--t-color-border);
-  background: #f8fafc;
-  color: var(--t-color-text-mute);
-  font-size: 11px;
-  font-weight: 800;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-}
-.app-header .focus-weather-tab:active { transform: scale(0.94); }
-.app-header .focus-weather-tab.active {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: white;
-  border-color: transparent;
-  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
-}
-
-/* 第一行：氣溫 + 建議 + 警告 badge */
-.app-header .focus-weather-line1 {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--t-color-text-mute);
-}
-
-/* 第二行：日出日落 */
-.app-header .focus-weather-line2 {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #94a3b8;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
-}
-
-.app-header .fw-sun {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-.app-header .fw-sun-sep { opacity: 0.5; }
-.app-header .fw-sun-note {
-  font-size: 10px;
-  font-weight: 600;
-  opacity: 0.7;
-  background: rgba(0, 0, 0, 0.05);
-  padding: 1px 5px;
-  border-radius: 4px;
-  margin-left: 2px;
-}
-
-/* 深色模式 */
-[data-theme="dark"] .app-header .focus-weather-tab {
-  background: #1e293b;
-  border-color: #334155;
-  color: #94a3b8;
-}
-[data-theme="dark"] .app-header .focus-weather-tab.active {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: white;
-  border-color: transparent;
-}
-[data-theme="dark"] .app-header .focus-weather-line2 { color: #64748b; }
-[data-theme="dark"] .app-header .fw-sun-note { background: rgba(255, 255, 255, 0.08); }
-/* ============================================================
- * 30. ⭐ v9.9：天氣卡片視覺優化
- * ============================================================ */
-
-.app-header .focus-weather-line1 {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--t-color-text-soft);
-  line-height: 1.45;
-}
-
-.app-header .focus-weather-line1 .fw-temp {
-  font-size: 13px;
-  font-weight: 900;
-  color: var(--t-color-text-main);
-  font-variant-numeric: tabular-nums;
-}
-
-.app-header .focus-weather-line2 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #94a3b8;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
-  flex-wrap: wrap;
-}
-
-.app-header .fw-sun {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  white-space: nowrap;
-}
-
-.app-header .fw-sun-sep {
-  opacity: 0.4;
-  font-weight: 400;
-}
-
-.app-header .fw-sun-note {
-  font-size: 10px;
-  font-weight: 600;
-  opacity: 0.7;
-  background: rgba(0, 0, 0, 0.05);
-  padding: 1px 5px;
-  border-radius: 4px;
-  margin-left: 2px;
-}
-
-[data-theme="dark"] .app-header .focus-weather-line1 {
-  color: #cbd5e1;
-}
-[data-theme="dark"] .app-header .focus-weather-line1 .fw-temp {
-  color: #f1f5f9;
-}
-[data-theme="dark"] .app-header .focus-weather-line2 {
-  color: #64748b;
-}
-[data-theme="dark"] .app-header .fw-sun-note {
-  background: rgba(255, 255, 255, 0.08);
-}
 
 /* ============================================================
- * 31. ⭐ 天氣 tab 更清晰
+ * 22. 今日摘要 + Day 標籤
  * ============================================================ */
-.app-header .focus-weather-tabs {
-  display: flex;
-  gap: 5px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: 3px;
-  margin-bottom: 3px;
-}
-.app-header .focus-weather-tabs::-webkit-scrollbar { display: none; }
-
-.app-header .focus-weather-tab {
-  flex-shrink: 0;
-  padding: 4px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--t-color-border);
-  background: #f8fafc;
-  color: var(--t-color-text-mute);
-  font-size: 11.5px;
-  font-weight: 800;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-  letter-spacing: 0.02em;
-}
-.app-header .focus-weather-tab:active { transform: scale(0.94); }
-.app-header .focus-weather-tab.active {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: white;
-  border-color: transparent;
-  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
-}
-
-[data-theme="dark"] .app-header .focus-weather-tab {
-  background: #1e293b;
-  border-color: #334155;
-  color: #94a3b8;
-}
-[data-theme="dark"] .app-header .focus-weather-tab.active {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: white;
-  border-color: transparent;
-}
-/* ============================================================
- * 33. ⭐ v9.10：留言 Day 標籤 + 今日摘要
- * ============================================================ */
-
-/* Day 標籤（卡片 + 留言板） */
 .app-header .message-day-tag,
 .message-day-tag {
   display: inline-flex;
@@ -2160,7 +1892,6 @@ a:focus:not(:focus-visible) {
   background: linear-gradient(135deg, #0284c7, #0369a1);
 }
 
-/* 今日摘要區塊 */
 .today-summary {
   background: linear-gradient(135deg, #fff7ed, #ffedd5);
   border: 1.5px solid #fed7aa;
@@ -2168,7 +1899,6 @@ a:focus:not(:focus-visible) {
   padding: 10px 12px;
   margin-bottom: 14px;
 }
-
 .today-summary-header {
   display: flex;
   align-items: center;
@@ -2179,7 +1909,6 @@ a:focus:not(:focus-visible) {
   color: #9a3412;
   letter-spacing: 0.03em;
 }
-
 .today-summary-count {
   display: inline-flex;
   align-items: center;
@@ -2193,7 +1922,6 @@ a:focus:not(:focus-visible) {
   font-size: 11px;
   font-weight: 900;
 }
-
 .today-summary-item {
   display: flex;
   gap: 8px;
@@ -2205,15 +1933,12 @@ a:focus:not(:focus-visible) {
   border-bottom: none;
   padding-bottom: 0;
 }
-
 .today-summary-dot {
   font-size: 10px;
   flex-shrink: 0;
   margin-top: 4px;
 }
-
 .today-summary-body { flex: 1; min-width: 0; }
-
 .today-summary-text {
   font-size: 13px;
   color: #7c2d12;
@@ -2226,7 +1951,6 @@ a:focus:not(:focus-visible) {
   font-weight: 900;
   margin-right: 2px;
 }
-
 .today-summary-meta {
   font-size: 11px;
   color: #c2410c;
@@ -2234,8 +1958,6 @@ a:focus:not(:focus-visible) {
   margin-top: 2px;
   font-variant-numeric: tabular-nums;
 }
-
-/* 深色模式 */
 [data-theme="dark"] .today-summary {
   background: linear-gradient(135deg, #422006, #78350f);
   border-color: #92400e;
@@ -2245,24 +1967,449 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .today-summary-text strong { color: #fde68a; }
 [data-theme="dark"] .today-summary-meta { color: #fbbf24; }
 [data-theme="dark"] .today-summary-item { border-bottom-color: rgba(251, 146, 60, 0.2); }
-/* ============================================================
- * 34. ⭐ Focus Card「現在行程」方案 A
- * ============================================================ */
 
-/* 狀態區容器 */
-.app-header .focus-status {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 10px;
+
+/* ============================================================
+ * 23. Day Tab「今天」標記
+ * ============================================================ */
+.day-tab.has-today-mark {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5) !important;
+  color: #047857 !important;
+  border: 1.5px solid #10b981 !important;
+  font-weight: 900 !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25) !important;
+}
+.day-tab.active.has-today-mark {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+}
+[data-theme="dark"] .day-tab.has-today-mark {
+  background: linear-gradient(135deg, #064e3b, #065f46) !important;
+  color: #6ee7b7 !important;
+  border-color: #10b981 !important;
+}
+[data-theme="dark"] .day-tab.active.has-today-mark {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
 }
 
-/* 現在進行中的事件 */
+
+/* ============================================================
+ * 24. Focus Card 完整樣式
+ *
+ * ⚠️ 這裡是 Focus Card 的單一來源。舊版本已刪除。
+ *    包含：廣播分級、天氣條、現在進行、下一站、CTA
+ * ============================================================ */
+
+/* ---- 24.1 廣播區塊基礎 ---- */
+.app-header .broadcast-block {
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border: 1.5px solid #fed7aa;
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.app-header .broadcast-block:hover {
+  background: linear-gradient(135deg, #ffedd5, #fed7aa);
+}
+.app-header .broadcast-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.app-header .broadcast-title {
+  font-size: 11px;
+  font-weight: 900;
+  color: #9a3412;
+  letter-spacing: 0.08em;
+}
+.app-header .broadcast-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  border-radius: 999px;
+  line-height: 1;
+  margin-left: 2px;
+}
+.app-header .broadcast-open-hint {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: #c2410c;
+  opacity: 0.7;
+}
+.app-header .broadcast-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 4px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  border-radius: 999px;
+  line-height: 1;
+}
+
+/* ---- 24.2 廣播：置頂（完整顯示）---- */
+.app-header .broadcast-pinned-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1.5px solid #fbbf24;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px -2px rgba(217, 119, 6, 0.2);
+}
+.app-header .broadcast-pinned-row:last-of-type { margin-bottom: 0; }
+.app-header .broadcast-pinned-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.app-header .broadcast-pin {
+  font-size: 14px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.app-header .broadcast-pinned-text {
+  font-size: 14px;
+  font-weight: 900;
+  color: #78350f;
+  line-height: 1.4;
+  word-break: break-word;
+  flex: 1;
+  min-width: 0;
+}
+.app-header .broadcast-pinned-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-left: 20px;
+}
+.app-header .broadcast-countdown {
+  font-size: 12px;
+  font-weight: 900;
+  color: #b45309;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.app-header .broadcast-countdown.urgent {
+  color: #dc2626;
+  background: rgba(254, 226, 226, 0.9);
+  animation: broadcast-countdown-pulse 1.5s ease-in-out infinite;
+}
+@keyframes broadcast-countdown-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.app-header .broadcast-mini-nav {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 10px;
+  background: white;
+  border: 1px solid #fbbf24;
+  border-radius: 999px;
+  color: #b45309;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-header .broadcast-mini-nav:active {
+  transform: scale(0.95);
+  background: #fef3c7;
+}
+
+/* ---- 24.3 廣播：置頂過多 ---- */
+.app-header .broadcast-more-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px dashed #fbbf24;
+  border-radius: 8px;
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-header .broadcast-more-btn:active {
+  background: rgba(255, 255, 255, 0.9);
+  transform: scale(0.98);
+}
+.app-header .broadcast-more-arrow {
+  margin-left: auto;
+  font-weight: 900;
+}
+
+/* ---- 24.4 廣播：非置頂（折疊成一行）---- */
+.app-header .broadcast-unpinned-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(217, 119, 6, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-header .broadcast-unpinned-row:active {
+  background: rgba(255, 255, 255, 0.8);
+  transform: scale(0.99);
+}
+.app-header .broadcast-unpinned-dot {
+  font-size: 10px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.app-header .broadcast-unpinned-body { flex: 1; min-width: 0; }
+.app-header .broadcast-unpinned-text {
+  font-size: 12.5px;
+  color: #7c2d12;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-header .broadcast-unpinned-text strong {
+  color: #9a3412;
+  font-weight: 900;
+  margin-right: 2px;
+}
+.app-header .broadcast-unpinned-meta {
+  font-size: 10.5px;
+  color: #c2410c;
+  font-weight: 700;
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.app-header .broadcast-unpinned-more {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 7px;
+  background: rgba(217, 119, 6, 0.15);
+  color: #b45309;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- 24.5 廣播：空狀態 ---- */
+.app-header .broadcast-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1.5px dashed rgba(217, 119, 6, 0.3);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #b45309;
+  font-style: normal;
+  text-align: center;
+}
+.app-header .broadcast-empty::before {
+  content: '💬';
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ---- 24.6 天氣條（純色淺藍 + 大圖示）---- */
+.app-header .focus-weather-row {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 6px !important;
+  padding: 12px 14px !important;
+  margin: 0 0 10px !important;
+  border: 1px solid #dbeafe !important;
+  border-radius: 14px !important;
+  background: #f0f9ff !important;
+  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.06) !important;
+}
+.app-header .focus-weather-line1 {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #075985 !important;
+}
+.app-header .focus-weather-line1 .fw-icon {
+  font-size: 24px !important;
+  line-height: 1 !important;
+  flex-shrink: 0;
+}
+.app-header .focus-weather-line1 .fw-temp {
+  font-size: 19px !important;
+  font-weight: 900 !important;
+  color: #0c4a6e !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.app-header .focus-weather-line1 .fw-advice {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #0369a1 !important;
+  margin-left: auto;
+  text-align: right;
+}
+.app-header .focus-weather-line2 {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  font-variant-numeric: tabular-nums;
+  padding-top: 2px;
+}
+.app-header .focus-weather-line2 .fw-sun {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+.app-header .focus-weather-line2 .fw-sun-sep { opacity: 0.4; }
+.app-header .focus-weather-line2 .fw-sun-note {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  background: rgba(2, 132, 199, 0.08);
+  color: #0369a1;
+  border-radius: 4px;
+  margin-left: 2px;
+}
+
+/* 地點 tab */
+.app-header .focus-weather-tabs {
+  display: flex !important;
+  gap: 4px !important;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+  margin-bottom: 2px;
+}
+.app-header .focus-weather-tabs::-webkit-scrollbar { display: none; }
+.app-header .focus-weather-tab {
+  flex-shrink: 0;
+  padding: 3px 10px !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  border: 1px solid #dbeafe !important;
+  color: #0369a1 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-header .focus-weather-tab:active { transform: scale(0.94); }
+.app-header .focus-weather-tab.active {
+  background: #0ea5e9 !important;
+  color: white !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.3) !important;
+}
+
+/* 警告行（獨立黃底，不影響整條配色）*/
+.app-header .focus-weather-alert {
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  padding: 6px 10px !important;
+  border-radius: 8px !important;
+  line-height: 1.4 !important;
+  margin-top: 2px;
+}
+.app-header .focus-weather-alert.danger {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border-left: 3px solid #dc2626 !important;
+}
+.app-header .focus-weather-alert.warn {
+  background: #fffbeb !important;
+  color: #78350f !important;
+  border-left: 3px solid #f59e0b !important;
+}
+.app-header .focus-weather-alert.info {
+  background: #eff6ff !important;
+  color: #1e40af !important;
+  border-left: 3px solid #3b82f6 !important;
+}
+
+/* ---- 24.7 狀態區（現在 + 下一站）---- */
+.app-header .focus-status {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  margin-bottom: 4px !important;
+}
+
+/* 可點擊（現在/下一站）*/
+.app-header .focus-jumpable {
+  display: block !important;
+  width: 100% !important;
+  text-align: left !important;
+  font-family: inherit !important;
+  cursor: pointer !important;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.app-header .focus-jumpable:active {
+  transform: scale(0.985);
+}
+
+/* 現在進行中 */
 .app-header .focus-now-block {
   background: linear-gradient(135deg, #eff6ff, #dbeafe);
   border: 1.5px solid #93c5fd;
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   position: relative;
   overflow: hidden;
 }
@@ -2270,8 +2417,8 @@ a:focus:not(:focus-visible) {
   background: #f8fafc;
   border-color: #e2e8f0;
   border-style: dashed;
+  cursor: default;
 }
-
 .app-header .focus-now-label {
   font-size: 11px;
   font-weight: 900;
@@ -2280,24 +2427,39 @@ a:focus:not(:focus-visible) {
   margin-bottom: 4px;
   text-transform: uppercase;
 }
-.app-header .focus-now-block.focus-now-idle .focus-now-label {
-  color: #94a3b8;
-}
-
+.app-header .focus-now-block.focus-now-idle .focus-now-label { color: #94a3b8; }
 .app-header .focus-now-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 900;
   color: #0c4a6e;
   line-height: 1.4;
   word-break: break-word;
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.app-header .focus-now-ending {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 8px;
+  background: #fef3c7;
+  color: #b45309;
+  border-radius: 999px;
+  animation: ending-pulse 1.5s ease-in-out infinite;
+}
+@keyframes ending-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 .app-header .focus-now-idle-text {
   color: #94a3b8 !important;
   font-weight: 700 !important;
   font-size: 13px !important;
 }
-
 .app-header .focus-now-time {
   font-size: 12px;
   font-weight: 700;
@@ -2305,8 +2467,6 @@ a:focus:not(:focus-visible) {
   font-variant-numeric: tabular-nums;
   margin-bottom: 8px;
 }
-
-/* 進度條 */
 .app-header .focus-now-progress {
   height: 5px;
   background: rgba(255, 255, 255, 0.7);
@@ -2321,15 +2481,18 @@ a:focus:not(:focus-visible) {
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
 }
+.app-header .focus-now-progress-fill.urgent {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+}
 
 /* 下一站 */
 .app-header .focus-next-block {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 8px 12px;
+  padding: 10px 14px;
 }
-
 .app-header .focus-next-label {
   font-size: 11px;
   font-weight: 900;
@@ -2338,9 +2501,8 @@ a:focus:not(:focus-visible) {
   margin-bottom: 3px;
   text-transform: uppercase;
 }
-
 .app-header .focus-next-title {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 800;
   color: #334155;
   line-height: 1.4;
@@ -2352,15 +2514,154 @@ a:focus:not(:focus-visible) {
   font-weight: 700 !important;
   font-size: 12.5px !important;
 }
-
+.app-header .focus-next-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
 .app-header .focus-next-remain {
   font-size: 11.5px;
   font-weight: 800;
   color: #0284c7;
   font-variant-numeric: tabular-nums;
 }
+.app-header .focus-next-arrow {
+  margin-left: auto;
+  font-size: 18px;
+  font-weight: 900;
+  color: #94a3b8;
+  transition: transform 0.15s, color 0.15s;
+}
+.app-header .focus-jumpable:active .focus-next-arrow {
+  transform: translateX(3px);
+  color: #0284c7;
+}
 
-/* 深色模式 */
+/* ---- 24.8 CTA（購物 / 留言）---- */
+.app-header .focus-cta-row.focus-cta-row-during {
+  display: flex !important;
+  gap: 8px !important;
+  margin-top: 12px !important;
+}
+.app-header .focus-cta-row.focus-cta-row-during .focus-cta {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  padding: 11px 12px !important;
+  font-size: 13px !important;
+  gap: 5px !important;
+  border-radius: 10px !important;
+  white-space: nowrap;
+}
+.app-header .focus-cta-row.focus-cta-row-during .focus-cta span:first-child {
+  font-size: 15px;
+}
+@media (max-width: 767px) {
+  .app-header .focus-cta-row.focus-cta-row-during {
+    display: flex !important;
+  }
+  .app-header .focus-cta-row.focus-cta-row-during .focus-cta {
+    display: inline-flex !important;
+    flex: 1 1 0 !important;
+  }
+}
+
+/* ---- 24.9 Focus Card 深色模式 ---- */
+[data-theme="dark"] .app-header .broadcast-block {
+  background: linear-gradient(135deg, #422006, #78350f);
+  border-color: #92400e;
+}
+[data-theme="dark"] .app-header .broadcast-block:hover {
+  background: linear-gradient(135deg, #78350f, #92400e);
+}
+[data-theme="dark"] .app-header .broadcast-title { color: #fde68a; }
+[data-theme="dark"] .app-header .broadcast-open-hint { color: #fbbf24; }
+
+[data-theme="dark"] .app-header .broadcast-pinned-row {
+  background: linear-gradient(135deg, #422006 0%, #78350f 100%);
+  border-color: #92400e;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] .app-header .broadcast-pinned-text { color: #fde68a; }
+[data-theme="dark"] .app-header .broadcast-countdown {
+  background: rgba(0, 0, 0, 0.3);
+  color: #fbbf24;
+}
+[data-theme="dark"] .app-header .broadcast-countdown.urgent {
+  background: rgba(127, 29, 29, 0.6);
+  color: #fca5a5;
+}
+[data-theme="dark"] .app-header .broadcast-mini-nav {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: #92400e;
+  color: #fbbf24;
+}
+[data-theme="dark"] .app-header .broadcast-mini-nav:active {
+  background: rgba(0, 0, 0, 0.5);
+}
+[data-theme="dark"] .app-header .broadcast-more-btn {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: #92400e;
+  color: #fbbf24;
+}
+[data-theme="dark"] .app-header .broadcast-more-btn:active {
+  background: rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] .app-header .broadcast-unpinned-row {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(251, 191, 36, 0.2);
+}
+[data-theme="dark"] .app-header .broadcast-unpinned-row:active {
+  background: rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] .app-header .broadcast-unpinned-text { color: #fef3c7; }
+[data-theme="dark"] .app-header .broadcast-unpinned-text strong { color: #fde68a; }
+[data-theme="dark"] .app-header .broadcast-unpinned-meta { color: #fbbf24; }
+[data-theme="dark"] .app-header .broadcast-unpinned-more {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+[data-theme="dark"] .app-header .broadcast-empty {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(251, 191, 36, 0.25);
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .app-header .focus-weather-row {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .app-header .focus-weather-line1 { color: #bae6fd !important; }
+[data-theme="dark"] .app-header .focus-weather-line1 .fw-temp { color: #e0f2fe !important; }
+[data-theme="dark"] .app-header .focus-weather-line1 .fw-advice { color: #7dd3fc !important; }
+[data-theme="dark"] .app-header .focus-weather-line2 { color: #64748b !important; }
+[data-theme="dark"] .app-header .focus-weather-line2 .fw-sun-note {
+  background: rgba(125, 211, 252, 0.15);
+  color: #7dd3fc;
+}
+[data-theme="dark"] .app-header .focus-weather-tab {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #7dd3fc !important;
+}
+[data-theme="dark"] .app-header .focus-weather-tab.active {
+  background: #0ea5e9 !important;
+  color: white !important;
+}
+[data-theme="dark"] .app-header .focus-weather-alert.danger {
+  background: #450a0a !important;
+  color: #fecaca !important;
+}
+[data-theme="dark"] .app-header .focus-weather-alert.warn {
+  background: #422006 !important;
+  color: #fde68a !important;
+}
+[data-theme="dark"] .app-header .focus-weather-alert.info {
+  background: #0c2a5e !important;
+  color: #bfdbfe !important;
+}
+
 [data-theme="dark"] .app-header .focus-now-block {
   background: linear-gradient(135deg, #0c4a6e, #075985);
   border-color: #0369a1;
@@ -2370,16 +2671,14 @@ a:focus:not(:focus-visible) {
   border-color: #334155;
 }
 [data-theme="dark"] .app-header .focus-now-label { color: #7dd3fc; }
-[data-theme="dark"] .app-header .focus-now-block.focus-now-idle .focus-now-label { color: #64748b; }
 [data-theme="dark"] .app-header .focus-now-title { color: #e0f2fe; }
-[data-theme="dark"] .app-header .focus-now-idle-text { color: #64748b !important; }
+[data-theme="dark"] .app-header .focus-now-ending {
+  background: #422006;
+  color: #fde68a;
+}
 [data-theme="dark"] .app-header .focus-now-time { color: #38bdf8; }
 [data-theme="dark"] .app-header .focus-now-progress {
   background: rgba(0, 0, 0, 0.3);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-[data-theme="dark"] .app-header .focus-now-progress-fill {
-  background: linear-gradient(90deg, #38bdf8, #0ea5e9);
 }
 [data-theme="dark"] .app-header .focus-next-block {
   background: #0f172a;
@@ -2389,35 +2688,4 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .app-header .focus-next-title { color: #cbd5e1; }
 [data-theme="dark"] .app-header .focus-next-done { color: #64748b !important; }
 [data-theme="dark"] .app-header .focus-next-remain { color: #38bdf8; }
-/* ============================================================
- * 35. ⭐ Day Tab「今天」標記（v14.3：改文字）
- * ============================================================ */
-
-/* 今天 tab（非當前選中）：淺綠底 + 綠字 + 綠框 */
-.day-tab.has-today-mark {
-  background: linear-gradient(135deg, #ecfdf5, #d1fae5) !important;
-  color: #047857 !important;
-  border: 1.5px solid #10b981 !important;
-  font-weight: 900 !important;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25) !important;
-}
-
-/* 今天 + 當前選中：實心綠 */
-.day-tab.active.has-today-mark {
-  background: linear-gradient(135deg, #10b981, #059669) !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
-}
-
-/* 深色模式 */
-[data-theme="dark"] .day-tab.has-today-mark {
-  background: linear-gradient(135deg, #064e3b, #065f46) !important;
-  color: #6ee7b7 !important;
-  border-color: #10b981 !important;
-}
-[data-theme="dark"] .day-tab.active.has-today-mark {
-  background: linear-gradient(135deg, #10b981, #059669) !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
-}
+[data-theme="dark"] .app-header .focus-next-arrow { color: #64748b; }
