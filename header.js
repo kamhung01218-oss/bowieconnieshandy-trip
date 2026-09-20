@@ -1,16 +1,17 @@
 /* ============================================================
- * AppHeader v9.2
+ * AppHeader v9.4
  * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [☰ 工具]（全部 SVG）
  * - Focus Card：出發前 / 中 / 後
- * - 旅行中：家庭廣播 + 當前行程 + 導航/留言
+ * - 旅行中：家庭廣播（永遠顯示）+ 當前行程 + 導航/留言
  * - 工具選單：功能入口 + 安裝 App + 共享收據
  * - 全域搜尋：防抖 + 熱門關鍵字
  *
- * v9.1：getTripPhase / getCurrentDayIndex 加入真實旅行期間優先判斷
- * v9.2：
- *   - during 卡片按鈕 wrapper 加 focus-cta-row-during（手機顯示留言）
- *   - 留言板加入快速模板（集合/提醒/緊急/位置）
- *   - 留言板加入置頂 + 過期選項
+ * v9.1：getTripPhase / getCurrentDayIndex 真實期間優先
+ * v9.2：during 卡片按鈕 focus-cta-row-during + 留言快速模板
+ * v9.3：卡片永遠顯示廣播區塊 + 訪客唯讀
+ * v9.4：
+ *   - ⭐ 位置分享：點「📍 我在這裡」自動取得 GPS 並發送
+ *   - ⭐ 位置訊息顯示地圖按鈕
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -532,6 +533,28 @@ window.AppHeader = (function () {
   }
 
   // ============================================================
+  // 渲染廣播區塊 HTML（內部共用）
+  // ============================================================
+  function buildBroadcastHTML() {
+    if (!window.Messages) return '';
+    const count = window.Messages.getCount();
+    const html = window.Messages.renderCard(2);
+    const canWrite = window.Messages.canWrite();
+    const emptyText = canWrite ? '尚無留言，點此發送第一則' : '訪客僅能閱讀';
+
+    return `
+      <div class="broadcast-block" id="broadcast-block" onclick="openMessagesModal()" style="cursor:pointer">
+        <div class="broadcast-header">
+          <span class="broadcast-title">📢 家庭廣播</span>
+          ${count > 0 ? `<span class="broadcast-count">${count}</span>` : ''}
+          <span class="broadcast-open-hint">點擊查看 →</span>
+        </div>
+        ${html || `<div class="broadcast-empty">${emptyText}</div>`}
+      </div>
+    `;
+  }
+
+  // ============================================================
   // renderFocusCard
   // ============================================================
   function renderFocusCard() {
@@ -619,19 +642,12 @@ window.AppHeader = (function () {
         const temp = weather ? Math.round((weather.max + weather.min) / 2) : null;
         const advice = weather ? getWeatherAdvice(temp, weather.rain) : "載入中...";
 
-        const hasMessages = window.Messages && window.Messages.getCount() > 0;
         const msgCount = window.Messages ? window.Messages.getCount() : 0;
+        const broadcastHTML = buildBroadcastHTML();
 
         innerHTML = `
           <div class="focus-inner">
-            ${hasMessages ? `
-              <div class="broadcast-block" id="broadcast-block">
-                <div class="broadcast-header">
-                  <span class="broadcast-title">📢 家庭廣播</span>
-                </div>
-                ${window.Messages.renderCard(2)}
-              </div>
-            ` : ''}
+            ${broadcastHTML}
 
             <div class="focus-current">
               <div class="focus-current-row">
@@ -1176,6 +1192,28 @@ function openMessagesModal() {
   m.classList.add('active');
   document.body.classList.add('modal-open');
 
+  // ⭐ 訪客唯讀：隱藏輸入區
+  const canWrite = window.Messages ? window.Messages.canWrite() : false;
+  const quickRow = m.querySelector('.msg-quick-row');
+  const textarea = m.querySelector('#messages-input');
+  const options = m.querySelector('.msg-options');
+  const sendBtn = m.querySelector('#messages-send-btn');
+  const guestNotice = m.querySelector('.msg-guest-notice');
+
+  if (canWrite) {
+    if (quickRow) quickRow.style.display = '';
+    if (textarea) textarea.style.display = '';
+    if (options) options.style.display = '';
+    if (sendBtn) sendBtn.style.display = '';
+    if (guestNotice) guestNotice.style.display = 'none';
+  } else {
+    if (quickRow) quickRow.style.display = 'none';
+    if (textarea) textarea.style.display = 'none';
+    if (options) options.style.display = 'none';
+    if (sendBtn) sendBtn.style.display = 'none';
+    if (guestNotice) guestNotice.style.display = 'flex';
+  }
+
   const btn = document.getElementById("messages-send-btn");
   const input = document.getElementById("messages-input");
   const pinOpt = document.getElementById("msg-opt-pin");
@@ -1246,7 +1284,6 @@ function applyMessageTemplate(type) {
   const btn = document.getElementById("messages-send-btn");
   if (!input) return;
 
-  // 預設集合時間：現在 + 15 分鐘
   const now = new Date();
   const t = new Date(now.getTime() + 15 * 60 * 1000);
   const hh = String(t.getHours()).padStart(2, '0');
@@ -1274,11 +1311,9 @@ function applyMessageTemplate(type) {
       label = '2 小時';
       break;
     case 'location':
-      input.value = '我在這裡 📍';
-      if (pinOpt) pinOpt.checked = false;
-      duration = 60;
-      label = '1 小時';
-      break;
+      // ⭐ 位置分享：請求 GPS → 自動發送
+      shareMyLocation();
+      return;
   }
 
   if (expireOpt) {
@@ -1291,7 +1326,6 @@ function applyMessageTemplate(type) {
       : '⏱️ 不過期';
   }
 
-  // 游標定位到 ___ 或選取全部
   input.focus();
   const pos = input.value.indexOf('___');
   if (pos >= 0) {
@@ -1300,7 +1334,6 @@ function applyMessageTemplate(type) {
     input.setSelectionRange(input.value.length, input.value.length);
   }
 
-  // 啟用發送按鈕
   if (btn && input.value.trim()) {
     btn.disabled = false;
     btn.classList.remove('opacity-50');
@@ -1308,6 +1341,80 @@ function applyMessageTemplate(type) {
 
   if (navigator.vibrate) navigator.vibrate(6);
 }
+
+/* ============================================================
+ * 📍 位置分享：取得 GPS → 自動發送（30 分鐘過期）
+ * ============================================================ */
+function shareMyLocation() {
+  if (!window.Messages || !window.Messages.canWrite()) {
+    if (typeof showToast === 'function') showToast('🔒 訪客無法分享位置', '⚠️');
+    return;
+  }
+
+  if (!navigator.geolocation) {
+    if (typeof showToast === 'function') showToast('此裝置不支援定位', '⚠️');
+    return;
+  }
+
+  const btn = document.querySelector('[data-template="location"]');
+  const originalHTML = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.innerHTML = '📡 取得位置中...';
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+  }
+
+  if (navigator.vibrate) navigator.vibrate(10);
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      if (btn) {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        btn.style.opacity = '';
+      }
+
+      const location = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        accuracy: pos.coords.accuracy ? Math.round(pos.coords.accuracy) : null
+      };
+
+      await window.Messages.send('📍 我在這裡', {
+        type: 'location',
+        location,
+        pinned: true,
+        duration: 30 * 60 * 1000  // 30 分鐘過期
+      });
+
+      if (typeof closeMessagesModal === 'function') {
+        setTimeout(() => closeMessagesModal(), 300);
+      }
+    },
+    (err) => {
+      if (btn) {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        btn.style.opacity = '';
+      }
+
+      let msg = '定位失敗';
+      if (err.code === 1) msg = '請允許使用位置權限';
+      else if (err.code === 2) msg = '無法取得位置（訊號弱）';
+      else if (err.code === 3) msg = '定位逾時，請再試';
+
+      if (typeof showToast === 'function') showToast('📍 ' + msg, '⚠️');
+      if (navigator.vibrate) navigator.vibrate(50);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0
+    }
+  );
+}
+
+window.shareMyLocation = shareMyLocation;
 
 function sendMessageFromModal() {
   const input = document.getElementById("messages-input");
@@ -1330,7 +1437,6 @@ function sendMessageFromModal() {
 
   window.Messages.send(text, opts);
 
-  // 重置
   input.value = '';
   if (pinOpt) pinOpt.checked = false;
   if (expireOpt) {
@@ -1370,22 +1476,25 @@ window.openMessagesModal = openMessagesModal;
 window.closeMessagesModal = closeMessagesModal;
 
 /* ============================================================
- * 留言訂閱：即時更新卡片
+ * 留言訂閱：即時更新卡片 + 留言板
  * ============================================================ */
 if (window.Messages) {
   window.Messages.subscribe(() => {
     if (window.AppHeader && window.AppHeader.getPhase && window.AppHeader.getPhase() === 'during') {
       const block = document.getElementById("broadcast-block");
       if (block) {
+        const count = window.Messages.getCount();
         const html = window.Messages.renderCard(2);
-        if (html) {
-          block.innerHTML = `
-            <div class="broadcast-header"><span class="broadcast-title">📢 家庭廣播</span></div>
-            ${html}
-          `;
-        } else {
-          block.remove();
-        }
+        const canWrite = window.Messages.canWrite();
+        const emptyText = canWrite ? '尚無留言，點此發送第一則' : '訪客僅能閱讀';
+        block.innerHTML = `
+          <div class="broadcast-header">
+            <span class="broadcast-title">📢 家庭廣播</span>
+            ${count > 0 ? `<span class="broadcast-count">${count}</span>` : ''}
+            <span class="broadcast-open-hint">點擊查看 →</span>
+          </div>
+          ${html || `<div class="broadcast-empty">${emptyText}</div>`}
+        `;
       }
       const msgBtn = document.querySelector('[data-action="messages"]');
       if (msgBtn) {

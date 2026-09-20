@@ -1585,3 +1585,157 @@ a:focus:not(:focus-visible) {
   background: #0ea5e9;
   border-color: #0ea5e9;
 }
+/* ============================================================
+ * 24. ⭐ 家庭廣播區塊：永遠顯示 + 訪客提示
+ * ============================================================ */
+
+/* 廣播區塊永遠顯示 */
+.app-header .broadcast-block {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.app-header .broadcast-block:hover {
+  background: linear-gradient(135deg, #ffedd5, #fed7aa);
+}
+
+/* 廣播標題列加數字 + 提示 */
+.app-header .broadcast-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  border-radius: 999px;
+  line-height: 1;
+  margin-left: 2px;
+}
+
+.app-header .broadcast-open-hint {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: #c2410c;
+  opacity: 0.7;
+}
+
+/* 空狀態 */
+.app-header .broadcast-empty {
+  font-size: 12px;
+  color: #c2410c;
+  opacity: 0.75;
+  padding: 4px 0;
+  font-weight: 600;
+  text-align: center;
+  font-style: italic;
+}
+
+/* 訪客提示 */
+.msg-guest-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+/* 深色模式 */
+[data-theme="dark"] .app-header .broadcast-block:hover {
+  background: linear-gradient(135deg, #78350f, #92400e);
+}
+[data-theme="dark"] .app-header .broadcast-open-hint { color: #fbbf24; }
+[data-theme="dark"] .app-header .broadcast-empty { color: #fbbf24; }
+[data-theme="dark"] .msg-guest-notice {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+/* ============================================================
+ * 25. ⭐ 位置分享：地圖按鈕 + 位置訊息樣式
+ * ============================================================ */
+
+/* 卡片上的「看地圖」按鈕 */
+.app-header .broadcast-map-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 3px 10px;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  border: 1px solid #93c5fd;
+  border-radius: 999px;
+  color: #1e40af;
+  font-size: 11px;
+  font-weight: 900;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: all 0.15s;
+}
+.app-header .broadcast-map-btn:active {
+  transform: scale(0.95);
+  background: linear-gradient(135deg, #bfdbfe, #93c5fd);
+}
+
+/* 留言板上的「在地圖開啟」按鈕 */
+.message-map-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  border: 1.5px solid #93c5fd;
+  border-radius: 999px;
+  color: #1e40af;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: all 0.15s;
+}
+.message-map-btn:active {
+  transform: scale(0.96);
+  background: linear-gradient(135deg, #bfdbfe, #93c5fd);
+}
+
+/* 位置訊息卡片：淡藍底 */
+.message-row.is-location {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-color: #93c5fd;
+}
+
+/* 深色模式 */
+[data-theme="dark"] .app-header .broadcast-map-btn {
+  background: linear-gradient(135deg, #1e3a8a, #1e40af);
+  border-color: #3b82f6;
+  color: #bfdbfe;
+}
+[data-theme="dark"] .app-header .broadcast-map-btn:active {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+}
+
+[data-theme="dark"] .message-map-btn {
+  background: linear-gradient(135deg, #1e3a8a, #1e40af);
+  border-color: #3b82f6;
+  color: #bfdbfe;
+}
+[data-theme="dark"] .message-map-btn:active {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+}
+
+[data-theme="dark"] .message-row.is-location {
+  background: linear-gradient(135deg, #0c2a5e, #1e3a8a);
+  border-color: #3b82f6;
+}
