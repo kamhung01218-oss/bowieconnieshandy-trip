@@ -1,0 +1,302 @@
+/* ============================================================
+ * design-v15.css — 統一圓角、陰影、色彩（v1.0）
+ *
+ * 載入順序：... → design-v14b.css → design-v15.css（最後）
+ *
+ * 對應改動：
+ *   4.  色彩：藍色 8 種 → 3 種，狀態色 5 種 → 3 種
+ *   5.1 圓角：統一 4 級（12 / 16 / 24 / full）
+ *   5.2 陰影：統一 3 層（sm / card / lg）
+ * ============================================================ */
+
+
+/* ============================================================
+ * 5.1 圓角統一
+ * ============================================================ */
+
+/* ---- 12px：按鈕、輸入框、標籤容器 ---- */
+.app-header .focus-cta,
+.event-action-btn,
+.checklist-item,
+.cat-btn-compact,
+.expand-btn,
+.navigate-option,
+.drive-folder-btn,
+.numbered-card,
+.ticket-meta-item,
+.emergency-call-btn,
+.emergency-hotel-row,
+.emergency-guide,
+.quick-amt,
+.search-result-item,
+.focus-now-block,
+.focus-next-block,
+.modal-close,
+.search-close-btn {
+  border-radius: 12px !important;
+}
+.search-close-btn,
+.modal-close,
+.day-dot {
+  border-radius: 9999px !important;  /* 例外：圓形 */
+}
+
+/* ---- 16px：卡片、列表項、內層容器 ---- */
+.glass-card,
+.glass-card.event-card,
+.event-image-carousel,
+.mini-card,
+.shoot-block,
+.shoot-advanced,
+.common-tip-card,
+.category-group,
+.weather-hero,
+.weather-card,
+.forecast-row,
+.overview-day-content,
+.receipt-folder-btn,
+.shopping-item-row {
+  border-radius: 16px !important;
+}
+
+/* ---- 24px：Modal、大區塊 ---- */
+.modal-box,
+.focus-inner,
+.shoot-photo-hero,
+.ticket-card,
+.search-modal-box,
+.tools-menu-panel,
+.more-menu {
+  border-radius: 24px !important;
+}
+
+/* ---- full：膠囊、圓、徽章 ---- */
+.day-tab,
+.skill-tab,
+.modal-tab,
+.timeline-stamp-time,
+.tag,
+.badge,
+.event-priority-badge,
+.emergency-hotel-day,
+.currency-fab,
+.back-to-top-btn,
+.nav-fab,
+.msg-quick-btn,
+.msg-send-btn,
+.search-hot-tag,
+.day-subtotal {
+  border-radius: 9999px !important;
+}
+
+
+/* ============================================================
+ * 5.2 陰影統一（3 層）
+ * ============================================================ */
+
+/* ---- 卡片：預設用 --t-shadow-card ---- */
+.glass-card,
+.glass-card.event-card,
+.chart-card,
+.ticket-card,
+.numbered-card,
+.modal-box,
+.tools-menu-panel,
+.search-modal-box,
+.more-menu {
+  box-shadow: var(--t-shadow-card) !important;
+}
+
+/* ---- 展開 / 聚焦：用 --t-shadow-lg ---- */
+.glass-card.event-card[open],
+.modal-box,
+.tools-menu-panel,
+.search-modal-box.active .search-modal-box {
+  box-shadow: var(--t-shadow-lg) !important;
+}
+
+/* ---- 懸浮：用 --t-shadow-sm ---- */
+.event-action-btn,
+.quick-amt {
+  box-shadow: var(--t-shadow-sm) !important;
+}
+
+/* ---- 移除多餘陰影 ---- */
+.modal-close,
+.search-close-btn,
+.expand-btn {
+  box-shadow: none !important;
+}
+
+
+/* ============================================================
+ * 4. 色彩統一
+ * ============================================================ */
+
+/* ---- 4.1 藍色系統：只用 3 種 ---- */
+
+/* 主色調：--t-blue-main（#0284c7） */
+.app-header .focus-cta-primary,
+.btn-gradient {
+  background: var(--t-blue-main) !important;
+  background-image: linear-gradient(135deg, #0ea5e9, var(--t-blue-main)) !important;
+  border-color: transparent !important;
+}
+
+/* 淺底：--t-blue-light（#e0f2fe） */
+.tag,
+.event-action-btn,
+.quick-amt,
+.focus-weather-tab:not(.active),
+.timeline-stamp-time {
+  background-color: var(--t-blue-light) !important;
+}
+
+/* 深字：--t-blue-deep（#0c4a6e） */
+.event-title,
+.focus-now-title,
+.focus-next-title,
+.event-action-btn,
+.timeline-stamp-time {
+  color: var(--t-blue-deep) !important;
+}
+
+/* ---- 4.2 狀態色：只用 3 種 ---- */
+
+/* 進行中（暖橙） */
+.timeline-item.status-active .timeline-stamp-time {
+  background: var(--t-status-active) !important;
+  background-image: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+  border-color: #f59e0b !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.4) !important;
+}
+
+.timeline-item.status-active .timeline-node {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+  box-shadow:
+    0 0 0 2.5px var(--t-color-bg-1),
+    0 0 12px 2px rgba(245, 158, 11, 0.5) !important;
+}
+
+/* 下一個（藍） */
+.timeline-item.status-next .timeline-stamp-time {
+  background: var(--t-blue-light) !important;
+  background-image: linear-gradient(135deg, #e0f2fe, #bae6fd) !important;
+  border-color: #7dd3fc !important;
+  color: var(--t-blue-deep) !important;
+  box-shadow: none !important;
+}
+
+.timeline-item.status-next .timeline-node {
+  background: linear-gradient(135deg, #7dd3fc, var(--t-blue-main)) !important;
+  box-shadow:
+    0 0 0 2.5px var(--t-color-bg-1),
+    0 1px 5px rgba(2, 132, 199, 0.4) !important;
+}
+
+/* 未開始（藍，較淡） */
+.timeline-item.status-upcoming .timeline-stamp-time {
+  background: var(--t-blue-light) !important;
+  background-image: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
+  border-color: #bae6fd !important;
+  color: var(--t-blue-deep) !important;
+}
+
+/* 已完成（灰） */
+.timeline-item.status-done .timeline-stamp-time {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: var(--t-status-done) !important;
+  text-decoration: line-through !important;
+  text-decoration-color: #cbd5e1 !important;
+  box-shadow: none !important;
+}
+
+
+/* ============================================================
+ * 4.3 深色模式對應
+ * ============================================================ */
+
+/* 藍色系統 */
+[data-theme="dark"] .event-title,
+[data-theme="dark"] .focus-now-title,
+[data-theme="dark"] .focus-next-title {
+  color: var(--t-blue-deep) !important;  /* 已是 #e0f2fe */
+}
+
+[data-theme="dark"] .tag,
+[data-theme="dark"] .event-action-btn,
+[data-theme="dark"] .quick-amt {
+  background-color: var(--t-blue-light) !important;  /* 已是 #0c4a6e */
+  color: var(--t-blue-deep) !important;
+}
+
+[data-theme="dark"] .timeline-stamp-time {
+  background: var(--t-blue-light) !important;
+  background-image: none !important;
+  color: var(--t-blue-deep) !important;
+  border-color: #0369a1 !important;
+}
+
+/* 進行中：維持暖橙，但降飽和 */
+[data-theme="dark"] .timeline-item.status-active .timeline-stamp-time {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+  color: #1c1c1f !important;
+  border-color: transparent !important;
+}
+
+[data-theme="dark"] .timeline-item.status-active .timeline-node {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+  box-shadow:
+    0 0 0 2.5px var(--t-color-bg-1),
+    0 0 12px 2px rgba(245, 158, 11, 0.55) !important;
+}
+
+/* 下一個：深色底用深藍 */
+[data-theme="dark"] .timeline-item.status-next .timeline-stamp-time {
+  background: linear-gradient(135deg, #0c4a6e, #075985) !important;
+  color: #7dd3fc !important;
+  border-color: #0369a1 !important;
+}
+
+/* 已完成：深灰 */
+[data-theme="dark"] .timeline-item.status-done .timeline-stamp-time {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #64748b !important;
+}
+
+
+/* ============================================================
+ * 修正：圓角變化後的特殊元件
+ * ============================================================ */
+
+/* 圓角 24px 但需要保留內部小圓角 */
+.modal-box .modal-handle-area {
+  border-top-left-radius: 24px !important;
+  border-top-right-radius: 24px !important;
+}
+
+/* 圖片輪播：不因外部圓角而變形 */
+.event-image-carousel .carousel-img {
+  border-radius: 0 !important;
+}
+
+/* 內部小元件保持 full */
+.event-priority-badge,
+.badge {
+  border-radius: 9999px !important;
+}
+
+/* 分類 header 與 body 銜接處不圓 */
+.category-group .category-header {
+  border-radius: 16px 16px 0 0 !important;
+}
+.category-group.collapsed .category-header,
+.category-group:not(.expanded) .category-header {
+  border-radius: 16px !important;
+}
+.category-group .category-body-inner {
+  border-radius: 0 0 16px 16px !important;
+}

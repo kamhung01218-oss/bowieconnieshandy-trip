@@ -1,13 +1,10 @@
 /* ============================================================
- * tokens.css — 設計令牌唯一來源（v1.0）
+ * tokens.css — 設計令牌唯一來源（v2.0）
  *
- * ⚠️ 這是所有視覺決策的唯一來源。
- *    其他 CSS 檔案不得再自行定義 :root 變數。
- *
- * 載入順序：必須在所有 CSS 之前
- *   <link rel="stylesheet" href="./tokens.css">
- *   <link rel="stylesheet" href="./header.css">
- *   ...
+ * v2.0 變更：
+ *   - ⭐ 圓角統一為 4 級：12 / 16 / 24 / full
+ *   - ⭐ 陰影統一為 3 層：sm / card / lg
+ *   - ⭐ 新增語意色（藍色 3 種、狀態 3 種）
  * ============================================================ */
 
 :root {
@@ -93,15 +90,15 @@
   --t-space-10: 40px;
   --t-space-12: 48px;
 
-  /* ========== 12. 圓角 ========== */
-  --t-radius-sm:   8px;
-  --t-radius-md:   12px;
-  --t-radius-lg:   20px;
-  --t-radius-full: 9999px;
+  /* ========== 12. 圓角（⭐ v2.0：統一 4 級） ========== */
+  --t-radius-sm:   12px;   /* 按鈕、輸入框、標籤容器 */
+  --t-radius-md:   16px;   /* 卡片、列表項、內層容器 */
+  --t-radius-lg:   24px;   /* Modal、大區塊 */
+  --t-radius-full: 9999px; /* 膠囊、圓形、徽章 */
 
-  /* ========== 13. 陰影 ========== */
+  /* ========== 13. 陰影（⭐ v2.0：統一 3 層） ========== */
   --t-shadow-sm:    0 1px 2px rgba(2, 132, 199, 0.06);
-  --t-shadow-card:  0 4px 12px rgba(2, 132, 199, 0.08);
+  --t-shadow-card:  0 4px 12px -2px rgba(2, 132, 199, 0.10);
   --t-shadow-lg:    0 12px 32px -8px rgba(2, 132, 199, 0.18);
   --t-shadow-focus: 0 0 0 3px rgba(56, 189, 248, 0.4);
 
@@ -126,10 +123,24 @@
   --t-bottom-nav:  68px;
   --t-safe-bottom: env(safe-area-inset-bottom, 0px);
   --t-safe-top:    env(safe-area-inset-top, 0px);
+
+  /* ============================================================
+   * 17. 語意色：藍色（⭐ v2.0：8 種收斂為 3 種）
+   * ============================================================ */
+  --t-blue-main:  #0284c7;   /* 主色：按鈕、強調、連結 */
+  --t-blue-light: #e0f2fe;   /* 淺底：hover、badge、tag */
+  --t-blue-deep:  #0c4a6e;   /* 深字：標題、強調文字 */
+
+  /* ============================================================
+   * 18. 語意色：狀態（⭐ v2.0：5 種收斂為 3 種）
+   * ============================================================ */
+  --t-status-active: #f59e0b;  /* 進行中：暖橙 */
+  --t-status-next:   #0ea5e9;  /* 下一個：藍 */
+  --t-status-done:   #94a3b8;  /* 已完成：灰 */
 }
 
 /* ============================================================
- * 深色模式：只覆蓋顏色類令牌
+ * 深色模式：只覆蓋顏色與陰影
  * ============================================================ */
 [data-theme="dark"] {
   --t-color-primary:         #0ea5e9;
@@ -159,19 +170,20 @@
   --t-color-danger-bg:       #450a0a;
   --t-color-info-bg:         #0c4a6e;
 
-  --t-shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.3);
-  --t-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --t-shadow-lg:   0 12px 32px -8px rgba(0, 0, 0, 0.5);
+  --t-shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.3);
+  --t-shadow-card:  0 4px 12px -2px rgba(0, 0, 0, 0.4);
+  --t-shadow-lg:    0 12px 32px -8px rgba(0, 0, 0, 0.5);
+
+  /* ⭐ 語意色：深色模式 */
+  --t-blue-main:  #38bdf8;
+  --t-blue-light: #0c4a6e;
+  --t-blue-deep:  #e0f2fe;
 }
 
 /* ============================================================
- * ⭐ 相容層：舊變數名指向新令牌
- *
- * 這樣舊程式碼不用一次改完，之後可逐步移除。
- * 如果你已完成全面遷移，可以刪除以下兩個區塊。
+ * 相容層：舊變數名指向新令牌（之後可逐步移除）
  * ============================================================ */
 :root {
-  /* 品牌色 */
   --sky-primary:       var(--t-color-primary);
   --sky-primary-dark:  var(--t-color-primary-dark);
   --sky-deep:          var(--t-color-primary-deep);
@@ -179,24 +191,20 @@
   --sky-lighter:       var(--t-color-primary-lighter);
   --sky-accent:        var(--t-color-accent);
 
-  /* 表面 */
   --snow-bg-1:         var(--t-color-bg-1);
   --snow-bg-2:         var(--t-color-bg-2);
   --snow-bg-3:         var(--t-color-bg-3);
   --card-bg:           var(--t-color-surface);
   --card-bg-soft:      var(--t-color-surface-soft);
 
-  /* 文字 */
   --text-main:         var(--t-color-text-main);
   --text-soft:         var(--t-color-text-soft);
   --text-mute:         var(--t-color-text-mute);
   --text-faint:        var(--t-color-text-faint);
 
-  /* 邊框 */
   --line-soft:         var(--t-color-border);
   --line-sky:          var(--t-color-border-sky);
 
-  /* 字級（舊名） */
   --fs-2xs:            var(--t-fs-2xs);
   --fs-xs:             var(--t-fs-xs);
   --fs-sm:             var(--t-fs-sm);
@@ -205,7 +213,6 @@
   --fs-2xl:            var(--t-fs-2xl);
   --fs-3xl:            var(--t-fs-3xl);
 
-  /* 行高字距 */
   --lh-tight:          var(--t-lh-tight);
   --lh-base:           var(--t-lh-base);
   --lh-loose:          var(--t-lh-loose);
@@ -213,28 +220,23 @@
   --ls-num:            var(--t-ls-num);
   --ls-caps:           var(--t-ls-caps);
 
-  /* 圓角 */
   --radius-sm:         var(--t-radius-sm);
   --radius-md:         var(--t-radius-md);
   --radius-lg:         var(--t-radius-lg);
   --radius-full:       var(--t-radius-full);
 
-  /* 按鈕高度 */
   --btn-sm:            36px;
   --btn-md:            40px;
   --btn-lg:            44px;
 
-  /* 字體 */
   --font-sans:         var(--t-font-sans);
   --font-num:          var(--t-font-num);
 
-  /* 佈局 */
   --nav-height:        var(--t-nav-height);
   --bottom-nav-height: var(--t-bottom-nav);
   --safe-area-bottom:  var(--t-safe-bottom);
   --safe-area-top:     var(--t-safe-top);
 
-  /* 類別色 */
   --trip-food:         var(--t-color-cat-food);
   --trip-transit:      var(--t-color-cat-transit);
   --trip-drive:        var(--t-color-cat-drive);
@@ -242,12 +244,10 @@
   --trip-scenery:      var(--t-color-cat-scenery);
   --trip-shopping:     var(--t-color-cat-shopping);
 
-  /* 暖色強調 */
   --accent-warm-1:     var(--t-color-accent-warm);
   --accent-warm-2:     var(--t-color-accent-warm-2);
   --accent-warm-glow:  rgba(245, 158, 11, 0.45);
 
-  /* 深色模式相容（dark.css 用） */
   --dark-surface-1:    var(--t-color-bg-1);
   --dark-surface-2:    var(--t-color-bg-2);
   --dark-surface-3:    #334155;
