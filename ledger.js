@@ -1,6 +1,12 @@
 /* ============================================================
- * ledger.js — 隨行記帳本主邏輯 v2.6
- * v2.6：字級收斂（9/10/12.5px → 11/12px）
+ * ledger.js — 隨行記帳本主邏輯 v2.7
+ *
+ * v2.6：字級收斂
+ * v2.7：
+ *   - ⭐ 統計卡片第 2 格：今日支出 / 平均每日 動態切換
+ *   - ⭐ 圖表區可折疊（預設折疊）
+ *   - ⭐ 更多選單（CSV / 文字 / 清空）
+ *   - ⭐ View as 移到頂欄
  * ============================================================ */
 'use strict';
 
@@ -200,6 +206,11 @@ let state = {
 let editingExpenseId = null;
 let lastExpense = null;
 
+/* ⭐ v2.7：圖表折疊狀態（預設折疊，存 localStorage） */
+const CHARTS_KEY = 'tohoku_ledger_charts_expanded';
+let chartsExpanded = false;
+try { chartsExpanded = localStorage.getItem(CHARTS_KEY) === '1'; } catch (e) {}
+
 let pendingWrites = 0;
 function incPendingWrites() {
   pendingWrites++;
@@ -373,6 +384,52 @@ function toggleCollapsible(sectionId) {
   a.style.transform = s.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
   haptic(5);
 }
+
+/* ⭐ v2.7：圖表折疊切換 */
+function toggleCharts() {
+  chartsExpanded = !chartsExpanded;
+  try { localStorage.setItem(CHARTS_KEY, chartsExpanded ? '1' : '0'); } catch (e) {}
+  applyChartsState();
+  haptic(6);
+}
+function applyChartsState() {
+  const content = document.getElementById('charts-content');
+  const icon = document.getElementById('charts-toggle-icon');
+  const hint = document.getElementById('charts-toggle-hint');
+  if (!content) return;
+  if (chartsExpanded) {
+    content.classList.remove('hidden');
+    content.classList.add('animating');
+    setTimeout(() => content.classList.remove('animating'), 400);
+    if (icon) { icon.textContent = '▾'; icon.classList.add('expanded'); }
+    if (hint) hint.textContent = '點擊收合';
+  } else {
+    content.classList.add('hidden');
+    if (icon) { icon.textContent = '▸'; icon.classList.remove('expanded'); }
+    if (hint) hint.textContent = '點擊展開';
+  }
+}
+
+/* ⭐ v2.7：更多選單 */
+function toggleMoreMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('more-menu');
+  if (!menu) return;
+  menu.classList.toggle('hidden');
+  haptic(6);
+}
+function closeMoreMenu() {
+  const menu = document.getElementById('more-menu');
+  if (menu) menu.classList.add('hidden');
+}
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('more-menu');
+  if (!menu || menu.classList.contains('hidden')) return;
+  if (menu.contains(e.target)) return;
+  const trigger = e.target.closest('button[onclick*="toggleMoreMenu"]');
+  if (trigger) return;
+  closeMoreMenu();
+});
 
 /* ============================================================
  * 十六、篩選
@@ -687,7 +744,6 @@ function openEditExpenseModal(expenseId) {
   });
 }
 
-/* 分攤資料標準化 */
 function normalizeSplitWith(raw, totalHKD) {
   if (!Array.isArray(raw) || raw.length === 0) return members.map(m => ({ name: m, amount: 0 }));
   if (typeof raw[0] === 'string') {
@@ -698,7 +754,6 @@ function normalizeSplitWith(raw, totalHKD) {
 }
 
 function renderLedgerSelectors() {
-  // 付款人
   const payerGrid = document.getElementById("payer-grid");
   if (payerGrid) {
     payerGrid.innerHTML = "";
@@ -713,7 +768,6 @@ function renderLedgerSelectors() {
       payerGrid.appendChild(btn);
     });
   }
-  // 分攤成員
   const splittersGrid = document.getElementById("splitters-grid");
   if (splittersGrid) {
     splittersGrid.innerHTML = "";
@@ -730,7 +784,6 @@ function renderLedgerSelectors() {
       splittersGrid.appendChild(btn);
     });
   }
-  // 自訂分攤輸入框
   const customInputs = document.getElementById('custom-split-inputs');
   if (customInputs) {
     if (state.customSplitEnabled) {
@@ -1038,18 +1091,35 @@ function updateLedgerUI() {
   state.expenses.forEach(e => total += e.amountInHKD);
   document.getElementById("stat-total").innerText = `${total.toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
   document.getElementById("stat-count").innerText = `${state.expenses.length} 筆`;
+
+  /* ⭐ v2.7：統計卡片第 2 格邏輯
+   *   1. 若有 Day 篩選 → 顯示該 Day 支出
+   *   2. 否則若今天在旅行中 → 顯示今日支出
+   *   3. 否則 → 顯示平均每日
+   */
   const statDayValue = document.getElementById("stat-day-value");
   const statDayLabel = document.getElementById("stat-day-label");
   if (statDayValue && statDayLabel) {
-    if (activeFilters.day === 0) {
-      const uniqueDays = new Set(state.expenses.map(e => e.day)).size || 1;
-      const avgPerDay = total / uniqueDays;
-      statDayLabel.textContent = "平均每日";
-      statDayValue.innerText = `${avgPerDay.toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
-    } else {
+    if (activeFilters.day !== 0) {
       const dayTotal = state.expenses.filter(e => e.day === activeFilters.day).reduce((s, e) => s + e.amountInHKD, 0);
       statDayLabel.textContent = `Day ${activeFilters.day} 支出`;
       statDayValue.innerText = `${dayTotal.toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
+    } else {
+      const today = new Date().toISOString().slice(0, 10);
+      const todayIdx = TRIP_DATES.indexOf(today);
+      if (todayIdx >= 0) {
+        // 旅行中：顯示今日支出
+        const dayNum = todayIdx + 1;
+        const todayTotal = state.expenses.filter(e => e.day === dayNum).reduce((s, e) => s + e.amountInHKD, 0);
+        statDayLabel.textContent = "今日支出";
+        statDayValue.innerText = `${todayTotal.toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
+      } else {
+        // 非旅行：顯示平均每日
+        const uniqueDays = new Set(state.expenses.map(e => e.day)).size || 1;
+        const avgPerDay = total / uniqueDays;
+        statDayLabel.textContent = "平均每日";
+        statDayValue.innerText = `${avgPerDay.toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
+      }
     }
   }
   renderBudgetBar(total);
@@ -1072,7 +1142,13 @@ function renderExpensesList() {
   if (!container) return;
   container.innerHTML = "";
   if (state.expenses.length === 0) {
-    container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-12">尚無記錄</div>';
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🧾</div>
+        <div class="empty-state-title">尚無記帳記錄</div>
+        <div class="empty-state-desc">點下方「＋記帳」開始記錄</div>
+        <button type="button" onclick="openExpenseModal()" class="empty-state-cta">＋ 新增第一筆</button>
+      </div>`;
     return;
   }
   let filtered = [...state.expenses];
@@ -1595,6 +1671,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initSnowEffect();
   initRandomCharacters();
   initExchangeRates();
+  applyChartsState();  /* ⭐ v2.7：套用圖表折疊狀態 */
 
   const paySelect = document.getElementById('payment-method-select');
   if (paySelect) {
@@ -1660,3 +1737,7 @@ window.closeBudgetModal = closeBudgetModal;
 window.saveBudget = saveBudget;
 window.clearBudget = clearBudget;
 window.scrollToTop = scrollToTop;
+/* ⭐ v2.7 新增 */
+window.toggleCharts = toggleCharts;
+window.toggleMoreMenu = toggleMoreMenu;
+window.closeMoreMenu = closeMoreMenu;

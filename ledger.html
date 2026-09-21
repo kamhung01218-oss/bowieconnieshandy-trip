@@ -85,14 +85,19 @@
 
 <div id="ledger-root" class="max-w-4xl mx-auto px-4 pt-4 pb-16 space-y-4">
 
-  <!-- 頂部工具列 -->
-  <div class="bg-white border border-slate-200 p-2 rounded-2xl shadow-sm flex items-center justify-between gap-3">
+  <!-- 頂部工具列（⭐ 加入 View as selector） -->
+  <div class="bg-white border border-slate-200 p-2 rounded-2xl shadow-sm flex items-center justify-between gap-2">
     <div class="flex items-center gap-1.5 flex-wrap min-w-0">
       <span id="cloud-sync-badge" class="text-[11px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-slate-200 shrink-0">
         <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 連線中…
       </span>
-      <span class="text-xs font-black text-slate-800 truncate">隨行記帳本</span>
       <span id="current-user-badge" class="text-[11px] px-2 py-0.5 rounded-full font-bold hidden"></span>
+      <div class="flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shrink-0">
+        <span class="text-[10px] text-slate-500 font-bold">👀</span>
+        <select id="ledger-view-as" onchange="changeViewAs(this.value)" class="text-[11px] font-black bg-transparent text-sky-700 outline-none cursor-pointer py-0.5">
+          <option value="余生">余生</option><option value="bowie">bowie</option><option value="shandy">shandy</option><option value="connie">connie</option>
+        </select>
+      </div>
     </div>
     <div class="flex items-center gap-1.5 shrink-0">
       <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition text-sm" title="切換主題">🌙</button>
@@ -131,7 +136,7 @@
   </div>
 
   <!-- 主卡片 -->
-  <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden min-h-[500px]">
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden min-h-[500px]">
     <div class="border-b border-slate-200 bg-slate-50 p-1.5 flex gap-1.5 overflow-x-auto scrollbar-none">
       <button id="tab-records-btn" onclick='switchLedgerSubTab("records")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black bg-white text-sky-900 shadow-sm transition flex flex-col items-center justify-center"><span class="text-base">📝</span><span>明細</span></button>
       <button id="tab-balances-btn" onclick='switchLedgerSubTab("balances")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center"><span class="text-base">⚖️</span><span>結算</span></button>
@@ -141,28 +146,32 @@
 
     <!-- 明細 -->
     <div id="subview-records" class="p-3 space-y-3">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
-        <h4 class="text-sm font-bold text-slate-800">記錄清單</h4>
-        <div class="flex flex-wrap items-center gap-2">
-          <input id="search-input" oninput="renderExpensesList()" placeholder="🔍 搜尋" class="text-xs border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500/50 w-32">
-          <select id="sort-select" onchange="renderExpensesList()" class="text-xs border border-slate-300 rounded-lg px-2 py-1.5 bg-white focus:outline-none">
-            <option value="newest">最新優先</option><option value="oldest">最舊優先</option><option value="amountHigh">金額高→低</option><option value="amountLow">金額低→高</option>
-          </select>
-          <div class="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 shadow-inner">
-            <span class="text-[11px] text-slate-500 font-bold">👀</span>
-            <select id="ledger-view-as" onchange="changeViewAs(this.value)" class="text-xs font-black bg-transparent text-sky-700 outline-none cursor-pointer">
-              <option value="余生">余生</option><option value="bowie">bowie</option><option value="shandy">shandy</option><option value="connie">connie</option>
-            </select>
+      <!-- ⭐ 精簡工具列：搜尋 + 排序 + 更多 -->
+      <div class="flex items-center gap-2 mb-1">
+        <input id="search-input" oninput="renderExpensesList()" placeholder="🔍 搜尋" class="flex-1 min-w-0 text-xs border border-slate-300 rounded-lg px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
+        <select id="sort-select" onchange="renderExpensesList()" class="text-xs border border-slate-300 rounded-lg px-2 py-2 bg-white focus:outline-none shrink-0">
+          <option value="newest">最新優先</option><option value="oldest">最舊優先</option><option value="amountHigh">金額高→低</option><option value="amountLow">金額低→高</option>
+        </select>
+        <div class="relative shrink-0">
+          <button type="button" onclick="toggleMoreMenu(event)" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition text-lg font-black" title="更多">⋯</button>
+          <div id="more-menu" class="more-menu hidden">
+            <button type="button" onclick="closeMoreMenu();exportCSV()" class="more-menu-item">
+              <span>📊</span><span>匯出 CSV</span>
+            </button>
+            <button type="button" onclick="closeMoreMenu();exportLedgerText()" class="more-menu-item">
+              <span>📥</span><span>匯出文字</span>
+            </button>
+            <div class="more-menu-divider"></div>
+            <button type="button" onclick="closeMoreMenu();openConfirmModal()" class="more-menu-item danger">
+              <span>🗑</span><span>清空所有記帳</span>
+            </button>
           </div>
-          <button onclick="exportCSV()" class="text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded transition">📊 CSV</button>
-          <button onclick="exportLedgerText()" class="text-[11px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded transition">📥 文字</button>
-          <button onclick="openConfirmModal()" class="text-[11px] font-bold text-red-500 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 px-2 py-1 rounded transition">🗑 清空</button>
         </div>
       </div>
 
       <div class="mb-3 space-y-2">
         <div class="flex gap-1.5 overflow-x-auto scrollbar-none pb-1">
-          <button onclick="toggleFilter('day', 0)" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="day" data-value="0">全部天數</button>
+          <button onclick="toggleFilter('day', 0)" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="day" data-value="0">全部</button>
           <button onclick="toggleFilter('day', 1)" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="day" data-value="1">D1</button>
           <button onclick="toggleFilter('day', 2)" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="day" data-value="2">D2</button>
           <button onclick="toggleFilter('day', 3)" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="day" data-value="3">D3</button>
@@ -172,32 +181,46 @@
           <button onclick="toggleFilter('day', 7)" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="day" data-value="7">D7</button>
         </div>
         <div class="flex gap-1.5 overflow-x-auto scrollbar-none pb-1">
-          <button onclick="toggleFilter('category', 'all')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="all">全部類別</button>
-          <button onclick="toggleFilter('category', '餐飲')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="餐飲">餐飲</button>
-          <button onclick="toggleFilter('category', '交通')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="交通">交通</button>
-          <button onclick="toggleFilter('category', '住宿')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="住宿">住宿</button>
-          <button onclick="toggleFilter('category', '購物')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="購物">購物</button>
-          <button onclick="toggleFilter('category', '門票/活動')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="門票/活動">門票/活動</button>
-          <button onclick="clearAllFilters()" class="shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition">清除篩選</button>
+          <button onclick="toggleFilter('category', 'all')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="all">全部</button>
+          <button onclick="toggleFilter('category', '餐飲')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="餐飲">🍜 餐飲</button>
+          <button onclick="toggleFilter('category', '交通')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="交通">🚗 交通</button>
+          <button onclick="toggleFilter('category', '住宿')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="住宿">🏨 住宿</button>
+          <button onclick="toggleFilter('category', '購物')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="購物">🛍️ 購物</button>
+          <button onclick="toggleFilter('category', '門票/活動')" class="filter-btn shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-sky-50 hover:text-sky-700 transition" data-type="category" data-value="門票/活動">🎟️ 門票</button>
+          <button onclick="clearAllFilters()" class="shrink-0 px-3 py-1.5 text-xs font-bold rounded-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition">✕ 清除</button>
         </div>
       </div>
 
-      <!-- 圖表區 -->
-      <div id="charts-section" class="space-y-3 mb-3">
-        <div class="chart-card">
-          <h5 class="chart-title">📊 類別佔比</h5>
-          <div id="category-pie" class="category-pie-wrap">
-            <div class="category-pie-empty">尚無資料</div>
+      <!-- ⭐ 圖表區（可折疊） -->
+      <div id="charts-section" class="space-y-2 mb-3">
+        <button type="button" onclick="toggleCharts()" class="chart-toggle-btn">
+          <span class="chart-toggle-label">
+            <span id="charts-toggle-icon">▸</span>
+            <span>📊 圖表分析</span>
+          </span>
+          <span id="charts-toggle-hint" class="text-[11px] text-slate-400 font-medium">點擊展開</span>
+        </button>
+        <div id="charts-content" class="charts-content space-y-3 hidden">
+          <div class="chart-card">
+            <h5 class="chart-title">📊 類別佔比</h5>
+            <div id="category-pie" class="category-pie-wrap">
+              <div class="category-pie-empty">尚無資料</div>
+            </div>
           </div>
-        </div>
-        <div class="chart-card">
-          <h5 class="chart-title">📅 每日支出</h5>
-          <div id="daily-chart" class="daily-chart"></div>
+          <div class="chart-card">
+            <h5 class="chart-title">📅 每日支出</h5>
+            <div id="daily-chart" class="daily-chart"></div>
+          </div>
         </div>
       </div>
 
       <div class="space-y-2" id="records-list-container">
-        <div class="text-slate-400 text-xs italic text-center py-12">尚無記錄</div>
+        <div class="empty-state">
+          <div class="empty-state-icon">🧾</div>
+          <div class="empty-state-title">尚無記帳記錄</div>
+          <div class="empty-state-desc">點下方「＋記帳」開始記錄</div>
+          <button type="button" onclick="openExpenseModal()" class="empty-state-cta">＋ 新增第一筆</button>
+        </div>
       </div>
     </div>
 
@@ -247,7 +270,7 @@
   </div>
 </div>
 
-<!-- 記帳 Modal (精簡版，完全修復橫向溢出) -->
+<!-- 記帳 Modal -->
 <div id="expense-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300" onclick="closeExpenseModal()"></div>
 <div id="expense-modal" class="fixed bottom-0 left-0 right-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-full md:max-w-lg bg-white rounded-t-3xl md:rounded-3xl shadow-2xl z-[70] transform translate-y-full md:translate-y-8 md:scale-95 opacity-0 hidden transition-all duration-300 flex flex-col max-h-[92vh] md:max-h-[85vh] overflow-hidden">
   <div class="shrink-0 flex justify-center pt-3 pb-2 md:hidden cursor-grab active:cursor-grabbing" id="expense-modal-handle">
@@ -263,7 +286,6 @@
   
   <div class="flex-1 overflow-y-auto p-4 md:p-6 pb-24 space-y-5 scrollbar-none bg-slate-50/50 w-full">
 
-    <!-- 快速模板 (單行橫向滑動，移除負邊距) -->
     <div class="flex gap-2 overflow-x-auto scrollbar-none pb-1 w-full">
       <button type="button" class="template-pill" data-template-idx="0">🍽️ 午餐</button>
       <button type="button" class="template-pill" data-template-idx="1">🍽️ 晚餐</button>
@@ -279,9 +301,7 @@
       <button type="button" class="template-pill" data-template-idx="11">🎁 伴手禮</button>
     </div>
 
-    <!-- 核心輸入區 -->
     <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-4">
-      <!-- 金額與幣別 -->
       <div>
         <label class="block text-xs font-bold text-slate-600 mb-1.5">💰 金額</label>
         <div class="flex gap-2 w-full">
@@ -298,13 +318,11 @@
         </div>
       </div>
 
-      <!-- 說明 -->
       <div>
         <label class="block text-xs font-bold text-slate-600 mb-1">📝 說明</label>
         <input id="ledger-desc" placeholder="例如：晚餐" class="w-full border border-slate-300 bg-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50">
       </div>
 
-      <!-- 類別 (改為 3 列，絕不擠壓) -->
       <div>
         <label class="block text-xs font-bold text-slate-600 mb-1.5">📂 類別</label>
         <div class="grid grid-cols-3 gap-2" id="category-grid">
@@ -321,7 +339,6 @@
       </div>
     </div>
 
-    <!-- 進階設定 (折疊) -->
     <details class="bg-white border border-slate-200 rounded-2xl shadow-sm group">
       <summary class="flex items-center justify-between px-4 py-3 cursor-pointer list-none select-none">
         <span class="text-xs font-bold text-slate-600">⚙️ 進階設定（付款人、分攤、日期、備註）</span>
@@ -329,7 +346,6 @@
       </summary>
       <div class="px-4 pb-4 space-y-4 border-t border-slate-100 pt-3 w-full">
         
-        <!-- 日期與付款方式 -->
         <div class="grid grid-cols-2 gap-3 w-full">
           <div class="min-w-0">
             <label class="block text-xs font-bold text-slate-600 mb-1">📅 日期</label>
@@ -348,13 +364,11 @@
           </div>
         </div>
 
-        <!-- 付款人 -->
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5">👤 誰先付款？</label>
           <div class="grid grid-cols-4 gap-1.5" id="payer-grid"></div>
         </div>
 
-        <!-- 分攤成員 -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
             <label class="text-xs font-bold text-slate-600">👥 分擔成員</label>
@@ -368,7 +382,6 @@
           </div>
         </div>
 
-        <!-- 備註 -->
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1">📌 備註</label>
           <textarea id="ledger-remark" rows="2" placeholder="例如：xx餐廳、四人份…" class="block w-full border border-slate-300 bg-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none"></textarea>
@@ -376,7 +389,6 @@
       </div>
     </details>
 
-    <!-- 用上次記錄按鈕 (放在底部) -->
     <div class="text-center pt-2">
       <button type="button" onclick="useLastExpense()" class="text-[11px] font-bold text-slate-400 hover:text-sky-600 underline">📋 沿用上一次的記錄</button>
     </div>

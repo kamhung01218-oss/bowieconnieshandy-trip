@@ -1,16 +1,10 @@
 /* ============================================================
- * ledger.css — 隨行記帳本樣式 v4.0（令牌化）
+ * ledger.css — 隨行記帳本樣式 v4.1
  *
- * v3.3 變更：
- *   - 移除 background-attachment: fixed
- *   - 移除 touch-action: pan-y
- *   - overscroll-behavior-y 改為 auto
- *   - 移除 backdrop-filter
- *   - 返回頂部按鈕 bottom 提高到 90px
- *
- * v4.0 變更：
- *   - ⭐ 移除所有 :root 變數定義（已統一在 tokens.css）
- *   - 深色模式只保留選擇器覆蓋
+ * v4.0：令牌化（移除 :root 定義）
+ * v4.1：
+ *   - ⭐ 每日柱狀圖高度 110 → 140（修正穿頂）
+ *   - ⭐ 新增：圖表折疊、更多選單、空狀態
  * ============================================================ */
 
 /* ============================================================
@@ -411,6 +405,59 @@ body.modal-open [class*="fab"] {
   margin-bottom: 10px;
 }
 
+/* ⭐ 圖表折疊按鈕 */
+.chart-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--t-radius-md);
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+  text-align: left;
+}
+.chart-toggle-btn:active { background: #f1f5f9; }
+.chart-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--t-fs-xs);
+  font-weight: 900;
+  color: #334155;
+}
+#charts-toggle-icon {
+  display: inline-block;
+  transition: transform 0.25s ease;
+  color: #0284c7;
+  font-size: 12px;
+}
+#charts-toggle-icon.expanded { transform: rotate(90deg); }
+
+.charts-content {
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.3s ease;
+}
+.charts-content.hidden { display: none; }
+.charts-content.animating {
+  animation: charts-expand 0.35s ease;
+}
+@keyframes charts-expand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+[data-theme="dark"] .chart-toggle-btn {
+  background: #0f172a;
+  border-color: #334155;
+}
+[data-theme="dark"] .chart-toggle-btn:active { background: #1e293b; }
+[data-theme="dark"] .chart-toggle-label { color: #cbd5e1; }
+[data-theme="dark"] #charts-toggle-icon { color: #7dd3fc; }
+
 /* 圓餅圖 */
 .category-pie-wrap { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .category-pie-empty { font-size: var(--t-fs-2xs); color: var(--t-color-text-faint); font-style: italic; padding: 12px 0; }
@@ -448,14 +495,15 @@ body.modal-open [class*="fab"] {
   font-variant-numeric: tabular-nums;
 }
 
-/* 每日柱狀圖 */
+/* ⭐ 每日柱狀圖（v4.1：高度 110 → 140，修正穿頂） */
 .daily-chart {
   display: flex;
   align-items: flex-end;
   justify-content: space-around;
   gap: 4px;
-  height: 110px;
+  height: 140px;
   padding-top: 8px;
+  overflow: visible;
 }
 .daily-bar-wrap {
   flex: 1;
@@ -491,6 +539,112 @@ body.modal-open [class*="fab"] {
   color: white !important;
   border-color: #0284c7 !important;
 }
+
+/* ⭐ 更多選單 */
+.more-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  min-width: 180px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px -8px rgba(2, 132, 199, 0.25), 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 6px;
+  animation: more-menu-in 0.15s ease;
+  transform-origin: top right;
+}
+.more-menu.hidden { display: none; }
+@keyframes more-menu-in {
+  from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.more-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.more-menu-item:active { background: #f1f5f9; }
+.more-menu-item.danger { color: #dc2626; }
+.more-menu-item.danger:active { background: #fef2f2; }
+.more-menu-item span:first-child {
+  font-size: 15px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.more-menu-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 4px 8px;
+}
+[data-theme="dark"] .more-menu {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .more-menu-item { color: #cbd5e1; }
+[data-theme="dark"] .more-menu-item:active { background: #334155; }
+[data-theme="dark"] .more-menu-item.danger { color: #fca5a5; }
+[data-theme="dark"] .more-menu-item.danger:active { background: #450a0a; }
+[data-theme="dark"] .more-menu-divider { background: #334155; }
+
+/* ⭐ 空狀態 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  text-align: center;
+}
+.empty-state-icon {
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+.empty-state-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #334155;
+  margin-bottom: 4px;
+}
+.empty-state-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.empty-state-cta {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+  transition: all 0.15s;
+}
+.empty-state-cta:active { transform: scale(0.96); }
+[data-theme="dark"] .empty-state-title { color: #cbd5e1; }
+[data-theme="dark"] .empty-state-desc { color: #64748b; }
 
 /* Toast */
 #toast { background: rgba(15, 23, 42, 0.95); }
