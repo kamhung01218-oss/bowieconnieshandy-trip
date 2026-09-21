@@ -1,12 +1,21 @@
 /* ============================================================
- * app-itinerary.js — v14.2（多地點天氣 + 移除行程卡片天氣框）
+ * app-itinerary.js — v14.4（折疊縮圖 + 預設折疊開關）
  *
  * v14.0：多地點天氣
  * v14.1：updateDayTabTodayMark + switchDay 呼叫
  * v14.2：
  *   - ⭐ 新增 initDayTabs(initialDay) 一次完成初始化
  *   - ⭐ 設定 active tab + 標記今天 + 自動置中
+ * v14.3：
+ *   - ⭐ 折疊狀態顯示縮圖（有圖用圖，沒圖用分類色 emoji 塊）
+ * v14.4：
+ *   - ⭐ 新增 CARD_DEFAULT_OPEN 開關（預設全部折疊）
  * ============================================================ */
+
+// ==================== ⭐ v14.5：卡片折疊模式 ====================
+// true  = 全部強制折疊（忽略 data.js 的 open 設定）
+// false = 尊重 data.js 的 open 設定（舊行為）
+const CARD_FORCE_COLLAPSED = true;
 
 // ==================== 天氣 ====================
 const WEATHER_LOCATIONS = {
@@ -383,6 +392,44 @@ function buildEventActionsHtml(day, index, eventTitle, shoppingCount) {
   return html;
 }
 
+// ⭐ v14.3：折疊縮圖（有圖用圖，沒圖用分類色 emoji 塊）
+const TAG_EMOJI_FALLBACK = {
+  'tag-teal':   '🚗',
+  'tag-amber':  '🍽️',
+  'tag-indigo': '🏨',
+  'tag-sky':    '❄️',
+  'tag-rose':   '🛍️',
+};
+
+function extractLeadingEmoji(str) {
+  if (!str) return '';
+  const s = String(str).trim();
+  const first = Array.from(s)[0];
+  if (!first) return '';
+  // 非 ASCII 且非 CJK 漢字 → 視為 emoji
+  if (/[^\x00-\x7F]/.test(first) && !/[\u4E00-\u9FFF]/.test(first)) return first;
+  return '';
+}
+
+function buildEventThumb(event) {
+  // 1. 有圖 → 用圖
+  const imgUrl = (Array.isArray(event.images) && event.images[0]) || event.img;
+  if (imgUrl) {
+    return `<div class="event-thumb has-image" aria-hidden="true">
+      <img src="${escAttr(imgUrl)}" alt="" loading="lazy" decoding="async">
+    </div>`;
+  }
+
+  // 2. 沒圖 → 用分類色 + emoji
+  const emoji = extractLeadingEmoji(event.tag?.text)
+             || TAG_EMOJI_FALLBACK[event.tag?.class]
+             || '📍';
+  const colorClass = event.tag?.class ? ` ${event.tag.class}` : '';
+  return `<div class="event-thumb is-icon${colorClass}" aria-hidden="true">
+    <span>${emoji}</span>
+  </div>`;
+}
+
 function buildEventImage(imgUrl, eventTitle, images) {
   if (images && Array.isArray(images) && images.length > 1) {
     return buildImageCarousel(images, eventTitle);
@@ -714,13 +761,16 @@ function buildSingleEventHtml(dayData, event, index) {
     tagClass = ' ' + event.tag.class.replace('tag-', 'card-');
   }
 
+  // ⭐ v14.5：卡片折疊模式
+var shouldOpen = CARD_FORCE_COLLAPSED ? false : (event.open === true);
+
   var html = '<div class="timeline-item" data-time="' + escapeHtml(startTime) + '" data-end-time="' + escapeHtml(endTime) + '" data-day="' + dayData.day + '">';
   html += '<div class="timeline-marker">';
   html += '<div class="timeline-node"></div>';
   html += timeStamp;
   html += '</div>';
   html += '<div class="timeline-card">';
-  html += '<details data-day="' + dayData.day + '" data-index="' + index + '" class="group glass-card rounded-2xl relative overflow-hidden event-card' + tagClass + '"' + (event.open ? ' open' : '') + '>';
+  html += '<details data-day="' + dayData.day + '" data-index="' + index + '" class="group glass-card rounded-2xl relative overflow-hidden event-card' + tagClass + '"' + (shouldOpen ? ' open' : '') + '>';
   html += '<div class="itinerary-cat-strip"></div>';
   html += '<summary class="event-summary">';
   html += '<div class="event-summary-info">';
@@ -732,6 +782,8 @@ function buildSingleEventHtml(dayData, event, index) {
     html += '<div class="event-location">📍 ' + escapeHtml(event.location) + '</div>';
   }
   html += '</div>';
+  // ⭐ v14.3：折疊縮圖插入點（在 info 與 actions 之間）
+  html += buildEventThumb(event);
   html += '<div class="event-summary-actions">';
   html += actionsHtml;
   html += '<div class="event-expand-icon">';
@@ -1248,6 +1300,7 @@ function updateDayTabTodayMark() {
   }
 }
 window.updateDayTabTodayMark = updateDayTabTodayMark;
+
 // ==================== ⭐ v14.2：初始化 Day Tabs ====================
 function initDayTabs(initialDay) {
   // 1. 重置所有 tab 樣式

@@ -1,11 +1,18 @@
 /* ============================================================
- * AppHeader v15.3
- * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [☰ 工具]
+ * AppHeader v15.6
+ * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [🔄 重整] + [☰ 工具]
  * - Focus Card：出發前 / 中 / 後
  * - 旅行中順序：廣播 → 天氣 → 現在 → 下一站 → CTA(購物/留言)
  *
- * v15.3 變更：
- *   - ⭐ 天氣條日出日落加上「日出 / 日落」文字標籤
+ * v15.5 變更：
+ *   - ⭐ 下拉改為「同步資料」（天氣 + 匯率 + 雲端）
+ *
+ * v15.6 變更：
+ *   - ⭐ 修正下拉同步無效問題
+ *       1. 改用 window.fetchWeatherData / window.fetchLiveRates
+ *       2. 加 console log 方便除錯
+ *       3. 同步完成後強制重繪當前 Day + Focus Card
+ *       4. 加可見的視覺回饋（Focus Card 閃爍）
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -24,6 +31,7 @@ window.AppHeader = (function () {
   const ICONS = {
     search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>`,
     weather: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`,
+    refresh: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><polyline points="21 3 21 8 16 8"/></svg>`,
     menu:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`,
     gear:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
     overview:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h4M9 11V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v16M9 11h6M15 8h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/></svg>`,
@@ -238,6 +246,183 @@ window.AppHeader = (function () {
     if (hours > 0) return `${hours}時`;
     return `${Math.max(1, Math.floor(nearest / 60000))}分`;
   }
+
+  // ============================================================
+  // ⭐ v15.4：重整頁面（按鈕觸發）
+  // ============================================================
+  async function hardReload() {
+    const btn = _container?.querySelector("#app-header-reload");
+    if (btn && btn.classList.contains('refreshing')) return;
+    if (btn) btn.classList.add('refreshing');
+    haptic(12);
+
+    if (typeof showToast === 'function') {
+      showToast('🔄 正在重整頁面…', '⏳');
+    }
+
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(reg => reg.update().catch(() => {})));
+      }
+    } catch (e) {
+      console.warn('[hardReload] SW update 失敗', e);
+    }
+
+    setTimeout(() => {
+      try {
+        window.location.reload();
+      } catch (e) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('_r', Date.now());
+        window.location.replace(url.toString());
+      }
+    }, 350);
+  }
+  window._AppHeader_hardReload = hardReload;
+
+  // ============================================================
+  // ⭐ v15.6：同步所有資料（下拉觸發）
+  //   1. 天氣（window.fetchWeatherData）
+  //   2. 匯率（window.fetchLiveRates）
+  //   3. 雲端（checkedItems / customBookingItems / userData / userPins）
+  //   4. 強制重繪當前 Day + Focus Card
+  // ============================================================
+  async function syncAllData() {
+    console.log('[sync] 🚀 開始同步');
+    haptic(12);
+
+    let okCount = 0;
+    let failCount = 0;
+
+    // ───── 1. 天氣 ─────
+    if (typeof window.fetchWeatherData === 'function') {
+      try {
+        console.log('[sync] → 天氣…');
+        await window.fetchWeatherData();
+        okCount++;
+        console.log('[sync] ✓ 天氣');
+      } catch (e) {
+        failCount++;
+        console.warn('[sync] ✗ 天氣', e);
+      }
+    } else {
+      console.warn('[sync] ⚠️ window.fetchWeatherData 不存在');
+    }
+
+    // ───── 2. 匯率 ─────
+    if (typeof window.fetchLiveRates === 'function') {
+      try {
+        console.log('[sync] → 匯率…');
+        await window.fetchLiveRates();
+        okCount++;
+        console.log('[sync] ✓ 匯率');
+      } catch (e) {
+        failCount++;
+        console.warn('[sync] ✗ 匯率', e);
+      }
+    } else {
+      console.warn('[sync] ⚠️ window.fetchLiveRates 不存在');
+    }
+
+    // ───── 3. 雲端 ─────
+    if (window.dbRef) {
+      try {
+        console.log('[sync] → 雲端…');
+        const docSnap = await window.dbRef.get();
+        if (docSnap.exists) {
+          const cloudData = docSnap.data() || {};
+
+          // checkedItems（保留本地非 booking 項目）
+          try {
+            const localNonBooking = {};
+            const curChecked = (typeof state !== 'undefined' && state.checkedItems) || {};
+            Object.keys(curChecked).forEach(k => {
+              if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) {
+                localNonBooking[k] = curChecked[k];
+              }
+            });
+            if (cloudData.checkedItems && typeof state !== 'undefined') {
+              state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking };
+            }
+          } catch (e) { console.warn('[sync] checkedItems', e); }
+
+          // customBookingItems
+          if (Array.isArray(cloudData.customBookingItems)) {
+            try {
+              window.customBookingItems = cloudData.customBookingItems.slice();
+              if (typeof customBookingItems !== 'undefined') {
+                customBookingItems = window.customBookingItems;
+              }
+              localStorage.setItem("custom_booking_items", JSON.stringify(cloudData.customBookingItems));
+            } catch (e) { console.warn('[sync] customBookingItems', e); }
+          }
+
+          // userData / userPins
+          if (cloudData.userData) {
+            try {
+              window.cloudUserData = cloudData.userData;
+              if (typeof cloudUserData !== 'undefined') cloudUserData = cloudData.userData;
+            } catch (e) {}
+          }
+          if (cloudData.userPins) {
+            try {
+              window.cloudUserPins = cloudData.userPins;
+              if (typeof cloudUserPins !== 'undefined') cloudUserPins = cloudData.userPins;
+            } catch (e) {}
+          }
+
+          // 重新渲染清單
+          if (typeof window.saveLocalCheckedItems === 'function') window.saveLocalCheckedItems();
+          if (typeof window.renderBookingChecklist === 'function') window.renderBookingChecklist();
+          if (typeof window.renderEquipChecklist === 'function') window.renderEquipChecklist();
+          if (typeof window.renderAllShoppingContent === 'function') window.renderAllShoppingContent();
+        }
+        okCount++;
+        console.log('[sync] ✓ 雲端');
+      } catch (e) {
+        failCount++;
+        console.warn('[sync] ✗ 雲端', e);
+      }
+    } else {
+      console.warn('[sync] ⚠️ window.dbRef 不存在');
+    }
+
+    console.log(`[sync] 🏁 完成 ok=${okCount} fail=${failCount}`);
+
+    // ───── 4. 強制重繪 ─────
+    try {
+      // 4.1 重繪 Focus Card
+      _lastRenderedPhase = null;
+      renderFocusCard(true);
+
+      // 4.2 重繪當前 Day（讓行程卡片的天氣框更新）
+      if (window._lastActiveDay && typeof window.renderDayItinerary === 'function') {
+        const dayData = window.winterItineraries?.find(d => d.day === window._lastActiveDay);
+        if (dayData) {
+          window.renderDayItinerary(`day-section-${dayData.day}`, dayData, true);
+        }
+      }
+    } catch (e) {
+      console.warn('[sync] 重繪失敗', e);
+    }
+
+    // 5. 視覺回饋：Focus Card 閃一下
+    try {
+      const focusEl = _container?.querySelector("#app-header-focus");
+      if (focusEl) {
+        focusEl.classList.add('sync-flash');
+        setTimeout(() => focusEl.classList.remove('sync-flash'), 900);
+      }
+    } catch (e) {}
+
+    haptic(15);
+
+    if (failCount > 0) {
+      throw new Error(`部分同步失敗 (${failCount} 項)`);
+    }
+  }
+  window._AppHeader_syncAll = syncAllData;
 
   // ============================================================
   // 出發前：倒數更新
@@ -475,7 +660,7 @@ window.AppHeader = (function () {
   }
 
   // ============================================================
-  // ⭐ 天氣條（純色淺藍 + 大圖示 + 日出日落文字）
+  // ⭐ 天氣條
   // ============================================================
   function renderWeatherRow(dayIdx, dateStr) {
     const locs = getWeatherLocationsForDay(dayIdx);
@@ -488,7 +673,6 @@ window.AppHeader = (function () {
     const temp = weather ? Math.round((weather.max + weather.min) / 2) : null;
     const advice = weather ? getWeatherAdvice(temp, weather.rain) : '載入中...';
 
-    // 地點 tab
     let tabsHtml = '';
     if (locs.length > 1) {
       tabsHtml = `<div class="focus-weather-tabs">` + locs.map(loc => {
@@ -501,13 +685,11 @@ window.AppHeader = (function () {
       }).join('') + `</div>`;
     }
 
-    // 警告
     const alert = getAlertLine(weather);
     const alertHtml = alert
       ? `<div class="focus-weather-alert ${alert.level}">${alert.text}</div>`
       : '';
 
-    // 主行：大圖示 + 大溫度 + 建議
     let line1Html = '';
     if (weather) {
       line1Html = `
@@ -518,7 +700,6 @@ window.AppHeader = (function () {
       line1Html = `<span class="fw-icon">⛅</span><span class="fw-advice">天氣載入中...</span>`;
     }
 
-    // ⭐ 日出日落（加上文字標籤）
     let sunHtml = '';
     if (weather && (weather.sunrise || weather.sunset)) {
       sunHtml = `<div class="focus-weather-line2">
@@ -547,7 +728,7 @@ window.AppHeader = (function () {
   };
 
   // ============================================================
-  // 當前 / 下一站事件（含 eventIndex）
+  // 當前 / 下一站事件
   // ============================================================
   function getCurrentEventInfo(dayData) {
     if (!dayData || !dayData.events) return null;
@@ -617,7 +798,7 @@ window.AppHeader = (function () {
   }
 
   // ============================================================
-  // 廣播分級（置頂完整 + 非置頂折疊）
+  // 廣播分級
   // ============================================================
   function buildBroadcastHTML() {
     if (!window.Messages) return '';
@@ -740,7 +921,6 @@ window.AppHeader = (function () {
       _lastRenderedPhase = phase;
       let innerHTML = "";
 
-      // ─────────── BEFORE ───────────
       if (phase === "before") {
         const now = Date.now();
         const diff = _config.tripStart - now;
@@ -791,7 +971,6 @@ window.AppHeader = (function () {
           </div>
         </div>`;
       }
-      // ─────────── DURING ───────────
       else if (phase === "during") {
         const dayIdx = getCurrentDayIndex();
         const actualDayIdx = dayIdx >= 0 ? dayIdx : 0;
@@ -800,13 +979,11 @@ window.AppHeader = (function () {
         const dayNum = actualDayIdx + 1;
         const msgCount = window.Messages ? window.Messages.getCount() : 0;
 
-        // ⭐ 順序：廣播 → 天氣 → 現在 → 下一站 → CTA
         const broadcastHTML = buildBroadcastHTML();
         const weatherRowHtml = renderWeatherRow(actualDayIdx, dateStr);
         const currentInfo = getCurrentEventInfo(dayData);
         const nextInfo = getNextEventInfo(dayData);
 
-        // ─── 現在進行 ───
         let currentBlockHtml = '';
         if (currentInfo) {
           const timeRange = currentInfo.endTime
@@ -837,7 +1014,6 @@ window.AppHeader = (function () {
           `;
         }
 
-        // ─── 下一站 ───
         let nextBlockHtml = '';
         if (nextInfo) {
           nextBlockHtml = `
@@ -862,7 +1038,6 @@ window.AppHeader = (function () {
           `;
         }
 
-        // CTA：只有購物 + 留言
         innerHTML = `<div class="focus-inner">
           ${broadcastHTML}
           ${weatherRowHtml}
@@ -876,7 +1051,6 @@ window.AppHeader = (function () {
           </div>
         </div>`;
       }
-      // ─────────── AFTER ───────────
       else {
         let totalExpenses = 0;
         if (cb.getExpenseCount) { try { totalExpenses = cb.getExpenseCount() || 0; } catch (e) {} }
@@ -906,9 +1080,6 @@ window.AppHeader = (function () {
     }
   }
 
-  // ============================================================
-  // 綁定事件
-  // ============================================================
   function bindFocusActions(focusEl, cb) {
     focusEl.querySelectorAll("[data-action]").forEach(el => {
       el.addEventListener("click", () => {
@@ -934,7 +1105,6 @@ window.AppHeader = (function () {
       });
     });
 
-    // ⭐ 點擊「現在進行中 / 下一站」跳轉到行程卡片
     focusEl.querySelectorAll("[data-jump-day]").forEach(el => {
       el.addEventListener("click", () => {
         const day = parseInt(el.dataset.jumpDay, 10);
@@ -1140,6 +1310,10 @@ window.AppHeader = (function () {
               <span class="tools-toggle-icon">${ICONS.weather}</span>
               <span class="tools-toggle-text">天氣</span>
             </button>
+            <button type="button" id="app-header-reload" class="tools-toggle" title="重整頁面" aria-label="重整頁面">
+              <span class="tools-toggle-icon">${ICONS.refresh}</span>
+              <span class="tools-toggle-text">重整</span>
+            </button>
             <button type="button" id="tools-toggle" class="tools-toggle" title="工具選單" aria-label="工具選單">
               <span class="tools-toggle-icon icon-gear">${ICONS.gear}</span>
               <span class="tools-toggle-text">工具</span>
@@ -1161,6 +1335,11 @@ window.AppHeader = (function () {
         const cb = _config.callbacks || {};
         if (cb.onWeather) cb.onWeather();
         haptic(10);
+      });
+
+      _container.querySelector("#app-header-reload")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        hardReload();
       });
 
       const toggleBtn = _container.querySelector("#tools-toggle");
@@ -1225,6 +1404,8 @@ window.AppHeader = (function () {
 
     render() { _lastRenderedPhase = null; renderFocusCard(); },
     getPhase() { return getTripPhase(); },
+    syncAll() { return syncAllData(); },
+    reload()  { return hardReload(); },
 
     setSyncState(connected) {
       _syncConnected = !!connected;
@@ -1664,3 +1845,145 @@ if (window.Messages) {
     if (modal && modal.classList.contains('active')) renderMessagesModal();
   });
 }
+
+/* ============================================================
+ * ☁️ 下拉同步資料（頁面頂部下拉觸發）
+ * ============================================================ */
+(function setupPullToSync() {
+  const THRESHOLD = 75;    // 觸發距離（px）
+  const MAX_PULL  = 120;   // 最大下拉距離
+  const DAMPING   = 0.55;  // 阻尼係數
+
+  let startY = 0;
+  let pullDistance = 0;
+  let pulling = false;
+  let triggered = false;
+
+  const indicator = document.createElement('div');
+  indicator.id = 'pull-sync-indicator';
+  indicator.innerHTML = `
+    <div class="pull-sync-inner">
+      <span class="pull-sync-icon">⬇️</span>
+      <span class="pull-sync-text">下拉同步資料</span>
+    </div>
+  `;
+  document.body.appendChild(indicator);
+
+  const iconEl = indicator.querySelector('.pull-sync-icon');
+  const textEl = indicator.querySelector('.pull-sync-text');
+
+  const isModalOpen = () => !!document.querySelector('.modal-overlay.active');
+  const getScrollY = () => window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+
+  function updateIndicator() {
+    indicator.classList.add('active');
+    indicator.style.transform = `translateX(-50%) translateY(${pullDistance}px)`;
+    indicator.style.opacity = String(Math.min(1, pullDistance / 40));
+    if (pullDistance >= THRESHOLD) {
+      iconEl.textContent = '☁️';
+      textEl.textContent = '放開即可同步';
+    } else {
+      iconEl.textContent = '⬇️';
+      textEl.textContent = '下拉同步資料';
+    }
+  }
+
+  function resetIndicator() {
+    indicator.style.transition = 'transform 0.25s ease, opacity 0.2s ease';
+    indicator.style.transform = 'translateX(-50%) translateY(0)';
+    indicator.style.opacity = '0';
+    setTimeout(() => {
+      indicator.classList.remove('active');
+      iconEl.classList.remove('spinning');
+      iconEl.textContent = '⬇️';
+      textEl.textContent = '下拉同步資料';
+      indicator.style.transition = '';
+    }, 250);
+    pullDistance = 0;
+    triggered = false;
+  }
+
+  async function triggerSync() {
+    console.log('[pull-sync] 觸發同步');
+    indicator.style.transition = 'transform 0.2s ease';
+    indicator.style.transform = `translateX(-50%) translateY(${THRESHOLD}px)`;
+    indicator.style.opacity = '1';
+    iconEl.textContent = '⏳';
+    iconEl.classList.add('spinning');
+    textEl.textContent = '正在同步…';
+
+    try {
+      if (typeof window._AppHeader_syncAll === 'function') {
+        await window._AppHeader_syncAll();
+      } else {
+        console.warn('[pull-sync] _AppHeader_syncAll 不存在，改用 fallback');
+        if (typeof window.fetchWeatherData === 'function') {
+          await window.fetchWeatherData().catch(e => console.warn(e));
+        }
+        if (typeof window.fetchLiveRates === 'function') {
+          await window.fetchLiveRates().catch(e => console.warn(e));
+        }
+      }
+      iconEl.classList.remove('spinning');
+      iconEl.textContent = '✅';
+      textEl.textContent = '同步完成';
+
+      if (typeof showToast === 'function') showToast('✅ 已同步最新資料', '☁️');
+    } catch (e) {
+      console.warn('[pull-sync] failed', e);
+      iconEl.classList.remove('spinning');
+      iconEl.textContent = '⚠️';
+      textEl.textContent = '部分同步失敗';
+      if (typeof showToast === 'function') showToast('⚠️ ' + (e.message || '同步失敗'), '⚠️');
+    }
+
+    setTimeout(resetIndicator, 900);
+  }
+
+  window.addEventListener('touchstart', (e) => {
+    if (isModalOpen()) return;
+    if (getScrollY() > 5) return;
+    if (e.touches.length !== 1) return;
+    startY = e.touches[0].clientY;
+    pulling = true;
+    pullDistance = 0;
+    triggered = false;
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (!pulling) return;
+    if (isModalOpen()) { pulling = false; resetIndicator(); return; }
+    if (getScrollY() > 5) { pulling = false; resetIndicator(); return; }
+
+    const diff = e.touches[0].clientY - startY;
+    if (diff <= 0) {
+      pullDistance = 0;
+      if (!triggered) resetIndicator();
+      return;
+    }
+    pullDistance = Math.min(MAX_PULL, diff * DAMPING);
+    if (pullDistance > 5) {
+      indicator.style.transition = '';
+      updateIndicator();
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', () => {
+    if (!pulling) return;
+    pulling = false;
+    if (pullDistance >= THRESHOLD) {
+      triggered = true;
+      triggerSync();
+    } else {
+      resetIndicator();
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchcancel', () => {
+    if (!pulling) return;
+    pulling = false;
+    resetIndicator();
+  }, { passive: true });
+
+  console.log('[pull-sync] 已註冊下拉同步手勢');
+})();

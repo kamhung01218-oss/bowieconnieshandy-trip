@@ -2689,3 +2689,155 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .app-header .focus-next-done { color: #64748b !important; }
 [data-theme="dark"] .app-header .focus-next-remain { color: #38bdf8; }
 [data-theme="dark"] .app-header .focus-next-arrow { color: #64748b; }
+/* ============================================================
+ * 26. 下拉同步資料指示器 + 重整按鈕動畫 + Focus Card 閃爍
+ * ============================================================ */
+#pull-sync-indicator {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 56px);
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  z-index: 9990;
+  pointer-events: none;
+  opacity: 0;
+}
+.pull-sync-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid #bae6fd;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.22);
+  font-size: 12px;
+  font-weight: 800;
+  color: #0369a1;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  white-space: nowrap;
+  font-family: var(--t-font-sans, -apple-system, BlinkMacSystemFont, 'Noto Sans TC', sans-serif);
+}
+.pull-sync-icon {
+  font-size: 15px;
+  line-height: 1;
+  display: inline-block;
+}
+.pull-sync-icon.spinning {
+  animation: pull-sync-spin 0.8s linear infinite;
+}
+@keyframes pull-sync-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 重整按鈕：重整中讓圖示轉起來 */
+#app-header-reload.refreshing .tools-toggle-icon svg {
+  animation: pull-sync-spin 0.8s linear infinite;
+}
+
+/* Focus Card 同步完成時閃一下 */
+.app-header .focus-inner.sync-flash {
+  animation: sync-flash 0.9s ease;
+}
+@keyframes sync-flash {
+  0%   { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+  30%  { box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.45),
+                     0 4px 16px rgba(2, 132, 199, 0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+}
+
+/* 深色模式 */
+[data-theme="dark"] .pull-sync-inner {
+  background: rgba(30, 41, 59, 0.96);
+  border-color: #0369a1;
+  color: #7dd3fc;
+}
+
+/* 無障礙：減少動效 */
+@media (prefers-reduced-motion: reduce) {
+  .pull-sync-icon.spinning,
+  #app-header-reload.refreshing .tools-toggle-icon svg {
+    animation: none !important;
+  }
+  .app-header .focus-inner.sync-flash {
+    animation: none !important;
+  }
+}
+/* ============================================================
+ * 25. 折疊縮圖（有圖用圖，沒圖用 emoji 塊）
+ * ============================================================ */
+.event-thumb { display: none; }
+
+details.event-card:not([open]) .event-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* 有圖 */
+.event-thumb.has-image {
+  background: #f1f5f9;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
+}
+.event-thumb.has-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 沒圖：彩色 emoji 塊 */
+.event-thumb.is-icon {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 1px solid #bae6fd;
+}
+.event-thumb.is-icon span {
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(2, 132, 199, 0.2));
+}
+.event-thumb.is-icon.tag-teal   { background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-color: #a7f3d0; }
+.event-thumb.is-icon.tag-amber  { background: linear-gradient(135deg, #fffbeb, #fef3c7); border-color: #fde68a; }
+.event-thumb.is-icon.tag-indigo { background: linear-gradient(135deg, #eef2ff, #e0e7ff); border-color: #c7d2fe; }
+.event-thumb.is-icon.tag-sky    { background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-color: #ddd6fe; }
+.event-thumb.is-icon.tag-rose   { background: linear-gradient(135deg, #fff1f2, #ffe4e6); border-color: #fecdd3; }
+
+/* 標題區預留空間 */
+details.event-card:not([open]) .event-summary-info {
+  padding-right: 78px;
+}
+
+/* 手機 */
+@media (max-width: 480px) {
+  details.event-card:not([open]) .event-thumb {
+    width: 56px; height: 56px;
+    top: 12px; right: 14px;
+    border-radius: 10px;
+  }
+  details.event-card:not([open]) .event-thumb.is-icon span { font-size: 24px; }
+  details.event-card:not([open]) .event-summary-info { padding-right: 68px; }
+}
+
+/* 深色模式 */
+[data-theme="dark"] .event-thumb.has-image {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(125, 211, 252, 0.15);
+}
+[data-theme="dark"] .event-thumb.is-icon {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border-color: #475569;
+}
+[data-theme="dark"] .event-thumb.is-icon.tag-teal   { background: linear-gradient(135deg, #064e3b, #065f46); border-color: #10b981; }
+[data-theme="dark"] .event-thumb.is-icon.tag-amber  { background: linear-gradient(135deg, #422006, #78350f); border-color: #92400e; }
+[data-theme="dark"] .event-thumb.is-icon.tag-indigo { background: linear-gradient(135deg, #1e1b4b, #312e81); border-color: #4338ca; }
+[data-theme="dark"] .event-thumb.is-icon.tag-sky    { background: linear-gradient(135deg, #2e1065, #4c1d95); border-color: #6d28d9; }
+[data-theme="dark"] .event-thumb.is-icon.tag-rose   { background: linear-gradient(135deg, #4c0519, #831843); border-color: #be185d; }
