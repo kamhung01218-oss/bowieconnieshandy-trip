@@ -1,21 +1,16 @@
 /* ============================================================
- * app-itinerary.js — v15.0（Phase 2：行程附件）
+ * app-itinerary.js — v15.2（附件 + 備註整合）
  *
- * v14.0：多地點天氣
- * v14.1：updateDayTabTodayMark + switchDay 呼叫
- * v14.2：
- *   - ⭐ 新增 initDayTabs(initialDay) 一次完成初始化
- *   - ⭐ 設定 active tab + 標記今天 + 自動置中
- * v14.3：
- *   - ⭐ 折疊狀態顯示縮圖（有圖用圖，沒圖用分類色 emoji 塊）
- * v14.4：
- *   - ⭐ 新增 CARD_DEFAULT_OPEN 開關（預設全部折疊）
- * v15.0（Phase 2）：
- *   - ⭐ 行程附件：卡片展開後顯示「📎 附件」區
- *   - ⭐ 折疊時顯示「📎 N」徽章
+ * v14.x：多地點天氣 / Day tabs / 折疊縮圖
+ * v15.0：Phase 2 附件
+ * v15.1：無附件時不佔空間
+ * v15.2：
+ *   - ⭐ 附件 + 備註合併為「📎 資料」按鈕
+ *   - ⭐ 動作列加入「📎 資料」按鈕（含總數徽章）
+ *   - ⭐ 展開後顯示附件縮圖 + 備註（共用容器）
  * ============================================================ */
 
-// ==================== ⭐ v14.5：卡片折疊模式 ====================
+// ==================== ⭐ 卡片折疊模式 ====================
 // true  = 全部強制折疊（忽略 data.js 的 open 設定）
 // false = 尊重 data.js 的 open 設定（舊行為）
 const CARD_FORCE_COLLAPSED = true;
@@ -384,13 +379,29 @@ function buildTimePill(startTime, endTime) {
 }
 function buildTagHtml(tag) { if (!tag || !tag.text) return ''; return '<span class="tag ' + (tag.class ? escapeHtml(tag.class) : '') + '">' + escapeHtml(tag.text) + '</span>'; }
 
-function buildEventActionsHtml(day, index, eventTitle, shoppingCount) {
+// ⭐ v15.2：動作列加入「📎 資料」按鈕
+function buildEventActionsHtml(day, index, eventTitle, shoppingCount, dayKey) {
   var safeTitle = escAttr(eventTitle);
-  var badge = '';
-  if (shoppingCount > 0) { badge = '<span class="badge">' + shoppingCount + '</span>'; }
+  var shoppingBadge = '';
+  if (shoppingCount > 0) { shoppingBadge = '<span class="badge">' + shoppingCount + '</span>'; }
+
+  // ⭐ 附件 + 備註總數
+  var total = 0;
+  if (window.Uploads && dayKey) {
+    if (typeof window.Uploads.getAttachments === 'function') total += window.Uploads.getAttachments(dayKey).length;
+    if (typeof window.Uploads.getEventNote === 'function') {
+      var n = window.Uploads.getEventNote(dayKey);
+      if (n && n.text) total += 1;
+    }
+  }
+  var dataBadge = total > 0 ? '<span class="badge">' + total + '</span>' : '';
+
   var html = '<div class="event-action-buttons">';
   html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShootTipsModal(' + day + ',' + index + ')">🎬 拍攝</button>';
-  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShoppingModal(this.dataset.eventTitle)" data-event-title="' + safeTitle + '">🛍️ 購物' + badge + '</button>';
+  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShoppingModal(this.dataset.eventTitle)" data-event-title="' + safeTitle + '">🛍️ 購物' + shoppingBadge + '</button>';
+  if (dayKey) {
+    html += '<button type="button" class="event-action-btn" data-action="event-data" onclick="event.preventDefault();event.stopPropagation();Uploads.openEventData(\'' + dayKey + '\', this.dataset.eventTitle)" data-event-title="' + safeTitle + '">📎 資料' + dataBadge + '</button>';
+  }
   html += '</div>';
   return html;
 }
@@ -409,21 +420,17 @@ function extractLeadingEmoji(str) {
   const s = String(str).trim();
   const first = Array.from(s)[0];
   if (!first) return '';
-  // 非 ASCII 且非 CJK 漢字 → 視為 emoji
   if (/[^\x00-\x7F]/.test(first) && !/[\u4E00-\u9FFF]/.test(first)) return first;
   return '';
 }
 
 function buildEventThumb(event) {
-  // 1. 有圖 → 用圖
   const imgUrl = (Array.isArray(event.images) && event.images[0]) || event.img;
   if (imgUrl) {
     return `<div class="event-thumb has-image" aria-hidden="true">
       <img src="${escAttr(imgUrl)}" alt="" loading="lazy" decoding="async">
     </div>`;
   }
-
-  // 2. 沒圖 → 用分類色 + emoji
   const emoji = extractLeadingEmoji(event.tag?.text)
              || TAG_EMOJI_FALLBACK[event.tag?.class]
              || '📍';
@@ -667,6 +674,11 @@ function renderDayItinerary(sectionId, dayData, force) {
 
     autoWrapMiniCards(dayData);
     bindCarouselScroll(dayData);
+
+    // ⭐ v15.2：渲染附件 + 備註
+    if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
+      window.Uploads.renderAllAttachments();
+    }
   }, 150);
   window._renderedDays.add(dayData.day);
 }
@@ -741,9 +753,7 @@ function buildDayHeaderHtml(dayData, weatherHtml) {
 
 function buildEventsHtml(dayData) { var html = ''; for (var i = 0; i < dayData.events.length; i++) { html += buildSingleEventHtml(dayData, dayData.events[i], i); } return html; }
 
-// ============================================================
-// ⭐ v15.0：buildSingleEventHtml（含 Phase 2 附件）
-// ============================================================
+// ⭐ v15.2：buildSingleEventHtml（動作列含「📎 資料」按鈕 + 展開後顯示附件/備註）
 function buildSingleEventHtml(dayData, event, index) {
   var timeParts = event.time.split(' - ');
   var startTime = timeParts[0].trim();
@@ -751,7 +761,11 @@ function buildSingleEventHtml(dayData, event, index) {
   var shoppingItems = loadShoppingItems(event.title);
   var timeStamp = buildTimePill(startTime, endTime);
   var tagHtml = buildTagHtml(event.tag);
-  var actionsHtml = buildEventActionsHtml(dayData.day, index, event.title, shoppingItems.length);
+
+  // ⭐ 附件 key
+  var attDayKey = 'd' + dayData.day + '-e' + index;
+
+  var actionsHtml = buildEventActionsHtml(dayData.day, index, event.title, shoppingItems.length, attDayKey);
   var imageHtml = buildEventImage(event.img, event.title, event.images);
   var navBtnHtml = buildEventNavBtn(event.navUrl, event.title, event.navName);
 
@@ -762,21 +776,11 @@ function buildSingleEventHtml(dayData, event, index) {
     priorityBadge = '<span class="event-priority-badge optional">🔄 彈性</span>';
   }
 
-  // ⭐ v15.0：附件徽章
-  var attDayKey = 'd' + dayData.day + '-e' + index;
-  var attCount = (window.Uploads && typeof window.Uploads.getAttachments === 'function')
-    ? window.Uploads.getAttachments(attDayKey).length
-    : 0;
-  var attBadge = attCount > 0
-    ? '<span class="event-att-badge">📎 ' + attCount + '</span>'
-    : '';
-
   var tagClass = '';
   if (event.tag && event.tag.class) {
     tagClass = ' ' + event.tag.class.replace('tag-', 'card-');
   }
 
-  // ⭐ v14.5：卡片折疊模式
   var shouldOpen = CARD_FORCE_COLLAPSED ? false : (event.open === true);
 
   var html = '<div class="timeline-item" data-time="' + escapeHtml(startTime) + '" data-end-time="' + escapeHtml(endTime) + '" data-day="' + dayData.day + '">';
@@ -789,15 +793,14 @@ function buildSingleEventHtml(dayData, event, index) {
   html += '<div class="itinerary-cat-strip"></div>';
   html += '<summary class="event-summary">';
   html += '<div class="event-summary-info">';
-  if (tagHtml || priorityBadge || attBadge) {
-    html += '<div class="event-tag-row">' + tagHtml + priorityBadge + attBadge + '</div>';
+  if (tagHtml || priorityBadge) {
+    html += '<div class="event-tag-row">' + tagHtml + priorityBadge + '</div>';
   }
   html += '<h3 class="event-title">' + escapeHtml(event.title) + '</h3>';
   if (event.location) {
     html += '<div class="event-location">📍 ' + escapeHtml(event.location) + '</div>';
   }
   html += '</div>';
-  // ⭐ v14.3：折疊縮圖插入點（在 info 與 actions 之間）
   html += buildEventThumb(event);
   html += '<div class="event-summary-actions">';
   html += actionsHtml;
@@ -809,17 +812,13 @@ function buildSingleEventHtml(dayData, event, index) {
   html += '<div class="event-content-wrapper p-3 pt-0 pb-4 border-t border-slate-50/80 bg-slate-50/30">';
   html += imageHtml;
   html += navBtnHtml;
+  // ⭐ v15.2：附件 + 備註區（空容器，由 renderAllAttachments 填）
+  html += '<div class="event-attachments" data-day="' + dayData.day + '" data-index="' + index + '" style="display:none"></div>';
   html += '<div class="event-collapsible" id="collapsible-' + dayData.day + '-' + index + '">' + event.content + '</div>';
   html += '<button type="button" class="expand-btn hidden" data-expand-btn="' + dayData.day + '-' + index + '" onclick="toggleContent(' + dayData.day + ', ' + index + ')">';
   html += '<span>展開完整攻略</span>';
   html += '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
   html += '</button>';
-  // ⭐ v15.0：附件區
-  html += '<div class="event-attachments" data-day="' + dayData.day + '" data-index="' + index + '">';
-  html += (window.Uploads && typeof window.Uploads.buildAttachmentsInnerHtml === 'function')
-    ? window.Uploads.buildAttachmentsInnerHtml(attDayKey)
-    : '';
-  html += '</div>';
   html += '</div>';
   html += '</details>';
   html += '</div>';
@@ -1215,7 +1214,6 @@ function switchDay(day) {
   const activeTab = document.getElementById("tab-d" + day);
   if (activeTab) activeTab.className = "day-tab active flex-shrink-0 transition";
 
-  // ⭐ v14.2：重套今天標記
   if (window.updateDayTabTodayMark) window.updateDayTabTodayMark();
 
   document.querySelectorAll(".day-section").forEach(s => s.classList.add("hidden"));
@@ -1247,6 +1245,13 @@ function switchDay(day) {
 
   setTimeout(updateTimelineStatus, 50);
   if (window.updateDayProgressDots) window.updateDayProgressDots();
+
+  // ⭐ v15.2：切換 Day 後重新渲染附件/備註
+  setTimeout(() => {
+    if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
+      window.Uploads.renderAllAttachments();
+    }
+  }, 100);
 }
 
 // ==================== 快速跳轉圓點 ====================
@@ -1276,9 +1281,8 @@ function updateDayProgressDots() {
 }
 window.updateDayProgressDots = updateDayProgressDots;
 
-// ==================== ⭐ v14.1：今天 tab 標記 ====================
+// ==================== 今天 tab 標記 ====================
 function updateDayTabTodayMark() {
-  // 1. 先重置所有 tab 文字
   const originalTexts = {
     1: 'D1 (1/21)', 2: 'D2 (1/22)', 3: 'D3 (1/23)',
     4: 'D4 (1/24)', 5: 'D5 (1/25)', 6: 'D6 (1/26)', 7: 'D7 (1/27)'
@@ -1291,7 +1295,6 @@ function updateDayTabTodayMark() {
     btn.classList.remove('has-today-mark');
   });
 
-  // 2. 計算今天
   const now = Date.now();
   let todayIdx = -1;
   for (let i = 0; i < tripDates.length; i++) {
@@ -1311,7 +1314,6 @@ function updateDayTabTodayMark() {
 
   const effectiveToday = testDay >= 1 ? testDay : todayIdx;
 
-  // 3. 改文字 + 加 class
   if (effectiveToday >= 1) {
     const todayTab = document.getElementById(`tab-d${effectiveToday}`);
     if (todayTab) {
@@ -1322,23 +1324,19 @@ function updateDayTabTodayMark() {
 }
 window.updateDayTabTodayMark = updateDayTabTodayMark;
 
-// ==================== ⭐ v14.2：初始化 Day Tabs ====================
+// ==================== 初始化 Day Tabs ====================
 function initDayTabs(initialDay) {
-  // 1. 重置所有 tab 樣式
   document.querySelectorAll('#day-tabs-container button').forEach(btn => {
     btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
   });
 
-  // 2. 設定 active tab
   const activeTab = document.getElementById('tab-d' + initialDay);
   if (activeTab) {
     activeTab.className = "day-tab active flex-shrink-0 transition";
   }
 
-  // 3. 標記今天
   updateDayTabTodayMark();
 
-  // 4. 自動置中 active tab（無動畫，瞬間完成）
   if (activeTab) {
     const container = document.getElementById('day-tabs-container');
     if (container) {

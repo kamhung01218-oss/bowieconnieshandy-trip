@@ -183,6 +183,13 @@ document.addEventListener('DOMContentLoaded', () => {
           window.Uploads.renderAllAttachments();
         }
       }
+      // ⭐ v3.0：行程備註（共享）
+      if (cloudData.eventNotes && typeof cloudData.eventNotes === 'object') {
+        window.cloudEventNotes = cloudData.eventNotes;
+        if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
+          window.Uploads.renderAllAttachments();
+        }
+      }
       saveLocalCheckedItems();
       restoreChecklistUI();
     } catch (err) { console.warn("[Snapshot merge error]", err); }
@@ -377,7 +384,186 @@ document.addEventListener('DOMContentLoaded', () => {
   padding: 8px 0 4px;
 }
 
-/* 深色模式 */
+/* ⭐ Modal 內：橫向加入附件按鈕 */
+.event-att-add-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1.5px dashed #cbd5e1;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.event-att-add-line:active {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #0284c7;
+}
+.event-att-add-line-icon { font-size: 16px; font-weight: 900; }
+
+/* ⭐ 展開後：備註顯示 */
+.event-note-display {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #fffbeb;
+  border-left: 3px solid #fbbf24;
+  border-radius: 0 10px 10px 0;
+  font-size: 13px;
+  color: #78350f;
+  line-height: 1.6;
+}
+.event-note-icon { flex-shrink: 0; font-size: 14px; }
+.event-note-text { word-break: break-word; white-space: pre-wrap; }
+
+/* ⭐ 行程資料 Modal */
+.event-data-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.event-data-tab {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.event-data-tab:active { transform: scale(0.97); }
+.event-data-tab.active {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 3px 10px rgba(14, 165, 233, 0.3);
+}
+.event-data-tab .tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  color: #475569;
+  font-size: 10.5px;
+  font-weight: 900;
+  line-height: 1;
+}
+.event-data-tab.active .tab-count {
+  background: rgba(255,255,255,0.3);
+  color: white;
+}
+
+/* Modal 內備註輸入 */
+.event-note-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #0f172a;
+  background: #ffffff;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+  line-height: 1.6;
+  min-height: 120px;
+}
+.event-note-textarea:focus { border-color: #38bdf8; }
+.event-note-textarea::placeholder { color: #94a3b8; }
+
+.event-note-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.event-note-meta {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 700;
+  flex: 1;
+  min-width: 0;
+}
+.event-note-save-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.event-note-save-btn:active { transform: scale(0.97); }
+
+.event-note-readonly {
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  font-size: 13.5px;
+  color: #334155;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 80px;
+}
+.event-note-readonly.event-note-empty { color: #94a3b8; font-style: italic; }
+
+/* ⭐ 動作列：3 個按鈕並排時縮小 */
+.event-action-buttons {
+  display: flex;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.event-action-btn {
+  padding: 8px 10px !important;
+  font-size: 12px !important;
+  min-height: 36px !important;
+  gap: 3px !important;
+  flex-shrink: 1 !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+}
+.event-action-btn .badge {
+  font-size: 10px !important;
+  padding: 0 4px !important;
+}
+
+/* 深色模式：附件 */
 [data-theme="dark"] .event-att-badge {
   background: #0c4a6e;
   color: #7dd3fc;
@@ -403,6 +589,43 @@ document.addEventListener('DOMContentLoaded', () => {
   color: #7dd3fc;
 }
 [data-theme="dark"] .event-att-empty { color: #64748b; }
+[data-theme="dark"] .event-att-add-line {
+  background: #1e293b;
+  border-color: #475569;
+  color: #94a3b8;
+}
+[data-theme="dark"] .event-att-add-line:active {
+  background: #0c4a6e;
+  border-color: #0369a1;
+  color: #7dd3fc;
+}
+
+/* 深色模式：備註 */
+[data-theme="dark"] .event-note-display {
+  background: #422006;
+  border-left-color: #f59e0b;
+  color: #fde68a;
+}
+[data-theme="dark"] .event-data-tabs { border-bottom-color: #334155; }
+[data-theme="dark"] .event-data-tab {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+[data-theme="dark"] .event-data-tab .tab-count {
+  background: #334155;
+  color: #cbd5e1;
+}
+[data-theme="dark"] .event-note-textarea {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+[data-theme="dark"] .event-note-readonly {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
 </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
@@ -839,6 +1062,33 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </div>
   </div>
+
+  <!-- ⭐ v3.0：行程資料 Modal（附件 + 備註） -->
+  <div id="event-data-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="Uploads.closeEventData()">
+    <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()" style="max-height:88vh">
+      <div class="modal-handle-area" data-drag-handle="event-data-modal"><div class="modal-handle"></div></div>
+      <button onclick="Uploads.closeEventData()" class="modal-close">✕</button>
+      <div class="modal-scrollable px-5 pb-6 pt-2">
+        <h2 id="event-data-title" class="text-lg font-black mb-3 flex items-center gap-2">
+          <span class="text-xl">📎</span> 資料
+        </h2>
+
+        <!-- Tab -->
+        <div class="event-data-tabs">
+          <button type="button" data-event-data-tab="attach" class="event-data-tab active" onclick="Uploads.switchEventDataTab('attach')">
+            📎 附件 <span class="tab-count">0</span>
+          </button>
+          <button type="button" data-event-data-tab="note" class="event-data-tab" onclick="Uploads.switchEventDataTab('note')">
+            📝 備註
+          </button>
+        </div>
+
+        <div id="event-data-attach-panel"></div>
+        <div id="event-data-note-panel" class="hidden"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ⚠️ 天氣警告 Modal -->
 <div id="weather-alert-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeWeatherAlertModal()">
   <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-md w-full relative" onclick="event.stopPropagation()" style="max-height:85vh">
@@ -853,7 +1103,6 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 </div>
-
 
   <!-- 🧭 導航選單 Modal -->
   <div id="navigate-menu-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeNavigateMenu()">
@@ -949,6 +1198,6 @@ document.addEventListener('DOMContentLoaded', () => {
   <script src="./app-itinerary.js"></script>
   <script src="./header.js"></script>
   <script src="./simulator.js"></script>
-  
+
 </body>
 </html>
