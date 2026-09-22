@@ -1,10 +1,14 @@
 /* ============================================================
- * app-uploads.js — 通用上傳 + 行程附件 v2.1（Phase 2）
+ * app-uploads.js — 通用上傳 + 行程附件 v2.2（Phase 2）
  *
  * v2.1 變更：
  *   - ⭐ 更換 imgbb API Key
  *   - ⭐ 修復手機點擊無反應（改用 position:fixed 取代 display:none）
  *   - ⭐ 加入 Console log 方便除錯
+ *
+ * v2.2 變更：
+ *   - ⭐ _saveAttachments 加入樂觀更新
+ *     上傳/刪除後立即重繪，不用等 Firestore 回傳
  *
  * 資料結構（Firestore: tohoku_trip/shared_expenses）
  *   attachments: {
@@ -228,10 +232,16 @@
   }
 
   // ============================================================
-  // ⭐ Phase 2：附件寫入 Firestore
+  // ⭐ Phase 2：附件寫入 Firestore（v2.2 樂觀更新）
   // ============================================================
   async function _saveAttachments(dayKey, list) {
     if (!window.dbRef) throw new Error('雲端未連線');
+
+    // ⭐ v2.2：先樂觀更新本地快取 + 立即重繪（不用等 Firestore）
+    window.cloudAttachments[dayKey] = list;
+    renderAllAttachments();
+
+    // 再寫入雲端
     const docSnap = await window.dbRef.get();
     const cloudData = docSnap.exists ? docSnap.data() : {};
     const attachments = { ...(cloudData.attachments || {}) };
@@ -594,5 +604,5 @@
     openAttLightbox
   };
 
-  console.log('[Uploads] v2.1（Phase 2 + 手機修復）載入完成');
+  console.log('[Uploads] v2.2（樂觀更新）載入完成');
 })();
