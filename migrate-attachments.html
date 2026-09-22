@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>📎 附件資料遷移工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Noto Sans TC', sans-serif;
+    background: #0f172a; color: #e2e8f0;
+    padding: 20px; min-height: 100vh;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 900; margin-bottom: 8px; color: #38bdf8; }
+  .sub { font-size: 12px; color: #64748b; margin-bottom: 20px; line-height: 1.7; }
+  .sub code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; color: #7dd3fc; font-size: 11px; }
+  .warn-box {
+    background: rgba(251,191,36,0.1);
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 12px; padding: 12px 14px;
+    font-size: 12px; color: #fcd34d;
+    margin-bottom: 20px; line-height: 1.7;
+  }
+  .stat { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+  .stat .num { font-size: 28px; font-weight: 900; color: #38bdf8; }
+  .stat .lbl { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .btn {
+    padding: 12px 18px; border-radius: 10px; border: none;
+    font-size: 13px; font-weight: 800; cursor: pointer;
+    font-family: inherit; color: white;
+  }
+  .btn-primary { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+  .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
+  .btn-ghost { background: rgba(255,255,255,0.08); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.15); }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .log {
+    background: rgba(0,0,0,0.35); border-radius: 10px;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 11px; line-height: 1.7;
+    color: #94a3b8; padding: 12px; max-height: 400px;
+    overflow-y: auto; white-space: pre-wrap;
+    word-break: break-all; margin-top: 12px;
+  }
+  .status {
+    padding: 12px 14px; border-radius: 10px;
+    font-size: 12px; font-weight: 700;
+    margin-bottom: 16px; display: flex;
+    align-items: center; gap: 8px;
+  }
+  .status.loading { background: rgba(56,189,248,0.15); color: #7dd3fc; }
+  .status.ok { background: rgba(52,211,153,0.15); color: #6ee7b7; }
+  .status.err { background: rgba(248,113,113,0.15); color: #fca5a5; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📎 附件資料遷移工具</h1>
+  <p class="sub">
+    將 Firestore 裡的舊 key（<code>d{day}-e{index}</code>）遷移到新 ID（<code>event.id</code>）。<br>
+    執行後，附件和備註將跟隨 <code>event.id</code> 走，日後調換行程順序不會錯位。
+  </p>
+
+  <div class="warn-box">
+    ⚠️ <strong>執行順序非常重要</strong><br>
+    1. 先執行 <code>node add-event-ids.js</code> 為 data.js 加 id<br>
+    2. 立刻執行此工具遷移（此時 data.js 結構必須與原本一致）<br>
+    3. 完成後才可任意修改行程結構
+  </div>
+
+  <div id="status" class="status loading">
+    <span>⏳</span>
+    <span id="status-text">正在連線 Firebase…</span>
+  </div>
+
+  <div class="stat">
+    <div class="num" id="cnt-keys">0</div>
+    <div class="lbl">目前附件 key 總數（含舊格式）</div>
+  </div>
+  <div class="stat">
+    <div class="num" id="cnt-tomigrate">0</div>
+    <div class="lbl">需要遷移的 key 數量</div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btn-ghost" onclick="reloadData()">🔃 重新讀取</button>
+    <button class="btn btn-success" id="btn-migrate" onclick="runMigration()" disabled>🚀 執行遷移</button>
+  </div>
+
+  <div class="log" id="log">等待操作…</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+<script src="./data.js"></script>
+<script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
+  authDomain: "tohoku-winter-trip.firebaseapp.com",
+  projectId: "tohoku-winter-trip",
+  storageBucket: "tohoku-winter-trip.firebasestorage.app",
+  messagingSenderId: "991555590088",
+  appId: "1:991555590088:web:afb089890d7d546821d2fd"
+};
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+const dbRef = db.collection("tohoku_trip").doc("shared_expenses");
+
+const statusEl = document.getElementById("status");
+const statusText = document.getElementById("status-text");
+const logEl = document.getElementById("log");
+const btnMigrate = document.getElementById("btn-migrate");
+
+let _pendingMigration = null;
+
+function log(msg) {
+  const t = new Date().toLocaleTimeString("zh-HK");
+  logEl.textContent = `[${t}] ${msg}\n` + logEl.textContent;
+}
+
+function setStatus(type, text) {
+  statusEl.className = "status " + type;
+  statusText.textContent = text;
+}
+
+// ⭐ 建立舊 key → 新 id 的映射
+function buildKeyMap() {
+  const map = {};
+  if (typeof winterItineraries === 'undefined') {
+    log("❌ 找不到 winterItineraries（data.js 未載入）");
+    return null;
+  }
+
+  let missingId = 0;
+  winterItineraries.forEach(day => {
+    day.events.forEach((evt, idx) => {
+      const oldKey = `d${day.day}-e${idx}`;
+      if (evt.id) {
+        map[oldKey] = evt.id;
+      } else {
+        missingId++;
+      }
+    });
+  });
+
+  if (missingId > 0) {
+    log(`⚠️ 有 ${missingId} 個事件沒有 id，請先執行 node add-event-ids.js`);
+  }
+  log(`✅ 已建立 ${Object.keys(map).length} 個 key 映射`);
+  return map;
+}
+
+async function reloadData() {
+  logEl.textContent = '';
+  setStatus("loading", "正在讀取雲端…");
+  btnMigrate.disabled = true;
+
+  try {
+    await firebase.auth().signInAnonymously();
+    log("✅ Firebase 匿名登入完成");
+
+    const keyMap = buildKeyMap();
+    if (!keyMap) return;
+
+    const snap = await dbRef.get();
+    const data = snap.exists ? snap.data() : {};
+    const attachments = data.attachments || {};
+    const eventNotes = data.eventNotes || {};
+
+    const allKeys = new Set([
+      ...Object.keys(attachments),
+      ...Object.keys(eventNotes)
+    ]);
+
+    document.getElementById("cnt-keys").textContent = allKeys.size;
+
+    const toMigrate = [];
+    allKeys.forEach(key => {
+      if (keyMap[key]) {
+        toMigrate.push({ oldKey: key, newKey: keyMap[key] });
+      }
+    });
+
+    document.getElementById("cnt-tomigrate").textContent = toMigrate.length;
+
+    _pendingMigration = { attachments, eventNotes, keyMap, toMigrate };
+
+    if (toMigrate.length === 0) {
+      setStatus("ok", "✅ 沒有需要遷移的 key（可能已遷移，或結構未變）");
+      btnMigrate.disabled = true;
+    } else {
+      setStatus("ok", `✅ 準備就緒，共 ${toMigrate.length} 個 key 需要遷移`);
+      btnMigrate.disabled = false;
+
+      log("");
+      log("📋 預覽（前 10 筆）：");
+      toMigrate.slice(0, 10).forEach(t => {
+        log(`   • ${t.oldKey}  →  ${t.newKey}`);
+      });
+      if (toMigrate.length > 10) {
+        log(`   ... 還有 ${toMigrate.length - 10} 筆`);
+      }
+    }
+  } catch (e) {
+    setStatus("err", "❌ " + e.message);
+    log("❌ " + e.message);
+  }
+}
+
+async function runMigration() {
+  if (!_pendingMigration) return;
+  if (!confirm(`確定要遷移 ${_pendingMigration.toMigrate.length} 個 key 嗎？此操作無法撤銷。`)) return;
+
+  btnMigrate.disabled = true;
+  setStatus("loading", "遷移中…");
+
+  try {
+    const { attachments, eventNotes, keyMap } = _pendingMigration;
+
+    // 遷移 attachments
+    const newAttachments = {};
+    Object.keys(attachments).forEach(key => {
+      const newKey = keyMap[key] || key;
+      newAttachments[newKey] = attachments[key];
+    });
+
+    // 遷移 eventNotes
+    const newNotes = {};
+    Object.keys(eventNotes).forEach(key => {
+      const newKey = keyMap[key] || key;
+      newNotes[newKey] = eventNotes[key];
+    });
+
+    // 寫回 Firestore
+    await dbRef.set({
+      attachments: newAttachments,
+      eventNotes: newNotes,
+      updatedAt: Date.now()
+    }, { merge: true });
+
+    // 立即重新讀取確認
+    const snap = await dbRef.get();
+    const afterData = snap.data();
+    const afterAttachments = afterData.attachments || {};
+    const afterNotes = afterData.eventNotes || {};
+    const newKeys = new Set([
+      ...Object.keys(afterAttachments),
+      ...Object.keys(afterNotes)
+    ]);
+
+    log("");
+    log(`✅ 遷移完成`);
+    log(`   ├─ 附件 key 總數：${Object.keys(afterAttachments).length}`);
+    log(`   ├─ 備註 key 總數：${Object.keys(afterNotes).length}`);
+    log(`   └─ 目前全部 key 總數：${newKeys.size}`);
+
+    // 顯示新 key 格式
+    const sample = Array.from(newKeys).slice(0, 5);
+    log("");
+    log("📋 新 key 範例：");
+    sample.forEach(k => log(`   • ${k}`));
+
+    setStatus("ok", "🎉 遷移成功！");
+    document.getElementById("cnt-tomigrate").textContent = "0";
+    _pendingMigration = null;
+  } catch (e) {
+    setStatus("err", "❌ 遷移失敗：" + e.message);
+    log("❌ " + e.message);
+    btnMigrate.disabled = false;
+  }
+}
+
+// 啟動
+reloadData();
+</script>
+</body>
+</html>

@@ -2965,3 +2965,152 @@ details.event-card:not([open]) .event-expand-icon svg {
 [data-theme="dark"] details.event-card:not([open]) .event-expand-icon svg {
   color: #64748b !important;
 }
+/* ============================================================
+ * 27. 附件區：與攻略內容之間加分隔線（v16.3）
+ * ============================================================ */
+.event-content-wrapper .event-attachments:not(:empty) {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+[data-theme="dark"] .event-content-wrapper .event-attachments:not(:empty) {
+  border-top-color: #334155;
+}
+
+/* 手機：縮小一點間距 */
+@media (max-width: 480px) {
+  .event-content-wrapper .event-attachments:not(:empty) {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+}
+/* 附件區：與攻略內容之間加分隔線 */
+.event-content-wrapper .event-attachments:not(:empty) {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed #e2e8f0;
+}
+[data-theme="dark"] .event-content-wrapper .event-attachments:not(:empty) {
+  border-top-color: #334155;
+}
+@media (max-width: 480px) {
+  .event-content-wrapper .event-attachments:not(:empty) {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+}
+/* 折疊時：資料按鈕獨立膠囊 */
+details.event-card:not([open]) .event-action-btn-data {
+  padding: 7px 14px !important;
+  min-height: 34px !important;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+  color: #ffffff !important;
+  border-radius: 999px !important;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+}
+details.event-card:not([open]) .event-action-btn-data:active {
+  transform: scale(0.94);
+}
+details.event-card:not([open]) .event-action-btn-data .badge {
+  background: rgba(255, 255, 255, 0.32) !important;
+  color: #ffffff !important;
+}
+/* ============================================================
+ * 28. 資料徽章雙入口顯示控制（v17.2）
+ *
+ * 折疊時：標籤列的 .event-inline-data-badge 顯示
+ * 展開時：動作列的 .event-action-btn-data 顯示
+ * ============================================================ */
+
+/* ───── 標籤列徽章：只在折疊時顯示 ───── */
+details.event-card:not([open]) .event-inline-data-badge {
+  display: inline-flex !important;
+}
+details.event-card[open] .event-inline-data-badge {
+  display: none !important;
+}
+
+/* ───── 動作列資料按鈕：只在展開時顯示 ───── */
+details.event-card:not([open]) .event-action-btn-data {
+  display: none !important;
+}
+details.event-card[open] .event-action-btn-data {
+  display: inline-flex !important;
+}
+
+/* ───── 折疊時：拍攝/購物整組隱藏 ───── */
+details.event-card:not([open]) .event-action-buttons {
+  display: none !important;
+}
+
+/* ───── 標籤列徽章樣式 ───── */
+.event-inline-data-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 9px 2px 7px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 1px 4px rgba(14, 165, 233, 0.3);
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  line-height: 1.4;
+  text-transform: none;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.event-inline-data-badge:active {
+  transform: scale(0.94);
+  box-shadow: 0 1px 2px rgba(14, 165, 233, 0.5);
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+}
+.event-inline-data-badge-icon {
+  font-size: 12px;
+  line-height: 1;
+  display: inline-block;
+}
+.event-inline-data-badge-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 手機縮小 */
+@media (max-width: 480px) {
+  .event-inline-data-badge {
+    padding: 2px 8px 2px 6px;
+    font-size: 11px;
+  }
+  .event-inline-data-badge-count {
+    min-width: 14px;
+    height: 14px;
+    font-size: 9.5px;
+  }
+}
+
+/* 深色模式 */
+[data-theme="dark"] .event-inline-data-badge {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  box-shadow: 0 1px 4px rgba(14, 165, 233, 0.5);
+}
+[data-theme="dark"] .event-inline-data-badge:active {
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+}

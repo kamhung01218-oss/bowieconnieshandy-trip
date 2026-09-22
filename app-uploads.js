@@ -1,16 +1,10 @@
 /* ============================================================
- * app-uploads.js — 通用上傳 + 行程資料 v3.2
+ * app-uploads.js — 通用上傳 + 行程資料 v3.5
  *
- * v2.x：附件功能
- * v3.0：
- *   - ⭐ 合併「附件 + 備註」為「📎 資料」Modal
- *   - ⭐ 新增 eventNotes 共享備註
- *   - ⭐ buildAttachmentsInnerHtml 支援 showAddBtn 參數
- * v3.1：
- *   - ⭐ renderAllAttachments 同步更新「右上角縮圖徽章」
- * v3.2：
- *   - ⭐ 徽章位置從右上角改為「標籤列」（與 tag 並排）
- *   - ⭐ 有資料時顯示「📎 資料 (N)」，無資料時隱藏
+ * v3.4：使用 data-event-key
+ * v3.5：
+ *   - ⭐ 同時更新「標籤列徽章」和「動作列按鈕徽章」
+ *   - ⭐ 標籤列徽章只在有資料時存在（沒資料自動移除）
  * ============================================================ */
 
 (function () {
@@ -25,7 +19,6 @@
   if (!window.cloudAttachments) window.cloudAttachments = {};
   if (!window.cloudEventNotes) window.cloudEventNotes = {};
 
-  // 當前 Modal 開啟的行程
   let _currentEventKey = null;
   let _currentEventTitle = '';
   let _currentTab = 'attach';
@@ -52,6 +45,15 @@
     return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   }
   function _genId() { return 'ph-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
+
+  function _getEventKeyFromEl(el) {
+    if (!el) return null;
+    if (el.dataset.eventKey) return el.dataset.eventKey;
+    const day = el.dataset.day;
+    const index = el.dataset.index;
+    if (day != null && index != null) return `d${day}-e${index}`;
+    return null;
+  }
 
   // ============================================================
   // 圖片壓縮
@@ -152,27 +154,18 @@
     else window.open(urls[idx], '_blank');
   }
 
-  // ============================================================
-  // 附件讀取
-  // ============================================================
   function getAttachments(dayKey) {
     if (!dayKey) return [];
     const list = window.cloudAttachments && window.cloudAttachments[dayKey];
     return Array.isArray(list) ? list : [];
   }
 
-  // ============================================================
-  // 備註讀取
-  // ============================================================
   function getEventNote(dayKey) {
     if (!dayKey) return null;
     const notes = window.cloudEventNotes;
     return (notes && notes[dayKey]) ? notes[dayKey] : null;
   }
 
-  // ============================================================
-  // 附件寫入 Firestore
-  // ============================================================
   async function _saveAttachments(dayKey, list) {
     if (!window.dbRef) throw new Error('雲端未連線');
     window.cloudAttachments[dayKey] = list;
@@ -186,9 +179,6 @@
     await window.dbRef.set({ attachments, updatedAt: Date.now() }, { merge: true });
   }
 
-  // ============================================================
-  // 備註寫入 Firestore
-  // ============================================================
   async function _saveNote(dayKey, noteObj) {
     if (!window.dbRef) throw new Error('雲端未連線');
     window.cloudEventNotes[dayKey] = noteObj;
@@ -202,9 +192,6 @@
     await window.dbRef.set({ eventNotes, updatedAt: Date.now() }, { merge: true });
   }
 
-  // ============================================================
-  // 上傳流程
-  // ============================================================
   function pickAndUpload(dayKey) {
     if (!_canWrite()) { _toast('🔒 訪客無法上傳', '⚠️'); return; }
     const input = document.createElement('input');
@@ -243,9 +230,6 @@
     if (result.failed.length > 0) setTimeout(() => _toast(`⚠️ ${result.failed.length} 張上傳失敗`, '⚠️'), 1500);
   }
 
-  // ============================================================
-  // 刪除附件
-  // ============================================================
   async function deleteAttachment(dayKey, attId) {
     if (!_canWrite()) { _toast('🔒 訪客無法刪除', '⚠️'); return; }
     const list = getAttachments(dayKey);
@@ -259,12 +243,9 @@
     catch (e) { _toast('❌ 刪除失敗', '⚠️'); }
   }
 
-  // ============================================================
-  // 附件區 HTML（展開後 + Modal 內共用）
-  // ============================================================
   function buildAttachmentsInnerHtml(dayKey, options) {
     const opts = options || {};
-    const showAddBtn = opts.showAddBtn !== false; // 預設顯示
+    const showAddBtn = opts.showAddBtn !== false;
     const list = getAttachments(dayKey);
     const writable = _canWrite();
     const me = _currentUser();
@@ -309,15 +290,14 @@
   }
 
   // ============================================================
-  // ⭐ v3.2：重新渲染所有附件區 + 動作列徽章 + 標籤列徽章
+  // ⭐ v3.5：同步更新標籤列徽章 + 動作列按鈕徽章
   // ============================================================
   function renderAllAttachments() {
-    // ───── 1. 展開後的附件區 ─────
+    // ───── 1. 附件內容區 ─────
     document.querySelectorAll('.event-attachments').forEach(el => {
-      const day = el.dataset.day;
-      const index = el.dataset.index;
-      if (day == null || index == null) return;
-      const dayKey = `d${day}-e${index}`;
+      const dayKey = _getEventKeyFromEl(el);
+      if (!dayKey) return;
+
       const list = getAttachments(dayKey);
       const note = getEventNote(dayKey);
       let inner = '';
@@ -343,17 +323,48 @@
       el.style.display = inner ? '' : 'none';
     });
 
-    // ───── 2. 動作列徽章 + 標籤列徽章 ─────
+    // ───── 2. 標籤列徽章 + 動作列按鈕徽章 ─────
     document.querySelectorAll('details.event-card').forEach(card => {
-      const day = card.dataset.day;
-      const index = card.dataset.index;
-      if (day == null || index == null) return;
-      const dayKey = `d${day}-e${index}`;
-      const total = getAttachments(dayKey).length + (getEventNote(dayKey)?.text ? 1 : 0);
+      const dayKey = _getEventKeyFromEl(card);
+      if (!dayKey) return;
 
-      // 2a. 動作列「📎 資料」徽章
+      const total = getAttachments(dayKey).length + (getEventNote(dayKey)?.text ? 1 : 0);
+      const titleEl = card.querySelector('.event-title');
+      const eventTitle = titleEl ? titleEl.textContent.trim() : '';
+
+      // 2a. 標籤列徽章（折疊時顯示）
+      const tagRow = card.querySelector('.event-tag-row');
+      if (tagRow) {
+        let inlineBadge = tagRow.querySelector('.event-inline-data-badge');
+        if (total > 0) {
+          if (inlineBadge) {
+            const countEl = inlineBadge.querySelector('.event-inline-data-badge-count');
+            if (countEl) countEl.textContent = total;
+          } else {
+            inlineBadge = document.createElement('button');
+            inlineBadge.type = 'button';
+            inlineBadge.className = 'event-inline-data-badge';
+            inlineBadge.setAttribute('data-action', 'event-data');
+            inlineBadge.setAttribute('data-event-key', dayKey);
+            inlineBadge.setAttribute('data-event-title', eventTitle);
+            inlineBadge.setAttribute('aria-label', '查看資料');
+            inlineBadge.innerHTML = '<span class="event-inline-data-badge-icon">📎</span><span>資料</span><span class="event-inline-data-badge-count">' + total + '</span>';
+            inlineBadge.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.Uploads.openEventData(dayKey, eventTitle);
+            });
+            tagRow.appendChild(inlineBadge);
+          }
+        } else if (inlineBadge) {
+          inlineBadge.remove();
+        }
+      }
+
+      // 2b. 動作列按鈕徽章（展開時顯示）
       const btn = card.querySelector('.event-action-btn[data-action="event-data"]');
       if (btn) {
+        btn.dataset.eventKey = dayKey;
         let badge = btn.querySelector('.badge');
         if (total > 0) {
           if (badge) badge.textContent = total;
@@ -367,38 +378,6 @@
           badge.remove();
         }
       }
-
-      // ⭐ 2b. 標籤列徽章（與 tag 並排）
-      const tagRow = card.querySelector('.event-tag-row');
-      if (tagRow) {
-        let inlineBadge = tagRow.querySelector('.event-inline-data-badge');
-        if (total > 0) {
-          // 有資料 → 顯示（或更新數量）
-          const titleEl = card.querySelector('.event-title');
-          const eventTitle = titleEl ? titleEl.textContent.trim() : '';
-          if (inlineBadge) {
-            const countEl = inlineBadge.querySelector('.event-inline-data-badge-count');
-            if (countEl) countEl.textContent = total;
-          } else {
-            inlineBadge = document.createElement('button');
-            inlineBadge.type = 'button';
-            inlineBadge.className = 'event-inline-data-badge';
-            inlineBadge.setAttribute('data-action', 'event-data');
-            inlineBadge.setAttribute('data-event-title', eventTitle);
-            inlineBadge.setAttribute('aria-label', '查看資料');
-            inlineBadge.innerHTML = '<span class="event-inline-data-badge-icon">📎</span><span>資料</span><span class="event-inline-data-badge-count">' + total + '</span>';
-            inlineBadge.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              window.Uploads.openEventData(dayKey, eventTitle);
-            });
-            tagRow.appendChild(inlineBadge);
-          }
-        } else if (inlineBadge) {
-          // 沒資料 → 隱藏
-          inlineBadge.remove();
-        }
-      }
     });
   }
 
@@ -408,9 +387,6 @@
     openLightbox(urls, index);
   }
 
-  // ============================================================
-  // ⭐ 行程資料 Modal（附件 + 備註）
-  // ============================================================
   function openEventData(dayKey, eventTitle) {
     _currentEventKey = dayKey;
     _currentEventTitle = eventTitle || '';
@@ -460,7 +436,6 @@
     const list = getAttachments(dayKey);
     const note = getEventNote(dayKey);
 
-    // Tab 樣式
     if (tabAttach) tabAttach.classList.toggle('active', _currentTab === 'attach');
     if (tabNote) tabNote.classList.toggle('active', _currentTab === 'note');
     if (tabAttach) {
@@ -468,16 +443,13 @@
       if (cnt) cnt.textContent = list.length;
     }
 
-    // 面板切換
     attachPanel.classList.toggle('hidden', _currentTab !== 'attach');
     notePanel.classList.toggle('hidden', _currentTab !== 'note');
 
-    // 附件面板
     if (_currentTab === 'attach') {
       attachPanel.innerHTML = buildAttachmentsInnerHtml(dayKey, { showAddBtn: true });
     }
 
-    // 備註面板
     if (_currentTab === 'note') {
       const isWritable = _canWrite();
       let noteHtml = '';
@@ -520,19 +492,12 @@
     }
   }
 
-  // ============================================================
-  // 測試 UI
-  // ============================================================
   function test() {
     const existing = document.getElementById('__uploads-test-modal');
     if (existing) existing.remove();
-    // ... 略，保留原邏輯
     _toast('測試 UI 保留舊版，無需使用', '🧪');
   }
 
-  // ============================================================
-  // 掛到 window
-  // ============================================================
   window.Uploads = {
     compress, uploadBlob, uploadFiles, openLightbox, test,
     canWrite: _canWrite, currentUser: _currentUser,
@@ -543,7 +508,6 @@
     pickAndUpload,
     deleteAttachment,
     openAttLightbox,
-    // 行程資料 Modal
     openEventData,
     closeEventData,
     switchEventDataTab,
@@ -551,5 +515,5 @@
     renderEventDataModal
   };
 
-  console.log('[Uploads] v3.2（附件 + 備註 + 標籤列徽章）載入完成');
+  console.log('[Uploads] v3.5（雙徽章同步）載入完成');
 })();

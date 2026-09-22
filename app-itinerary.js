@@ -1,24 +1,14 @@
 /* ============================================================
- * app-itinerary.js — v16.1（標籤列資料徽章版）
+ * app-itinerary.js — v17.2
  *
- * v14.x：多地點天氣 / Day tabs / 折疊縮圖
- * v15.0：Phase 2 附件
- * v15.1：無附件時不佔空間
- * v15.2：
- *   - ⭐ 附件 + 備註合併為「📎 資料」按鈕
- *   - ⭐ 動作列加入「📎 資料」按鈕（含總數徽章）
- *   - ⭐ 展開後顯示附件縮圖 + 備註（共用容器）
- * v16.0：
- *   - ⭐ 折疊時右上角顯示「縮圖 + 📎 資料徽章」
- *   - ⭐ 展開後多張圖片改為 2 格並排（第 2 張疊加 +N）
- * v16.1：
- *   - ⭐ 資料徽章從右上角移到「標籤列」（與 🛬 抵達雪國 並排）
- *   - ⭐ 右上角只保留縮圖
+ * v17.1：資料按鈕獨立於 event-action-buttons
+ * v17.2：
+ *   - ⭐ 標籤列加入折疊專用的「📎 資料 N」徽章
+ *   - ⭐ 展開時動作列顯示「📎 資料」按鈕
+ *   - ⭐ 折疊時：標籤列徽章顯示、拍攝/購物隱藏
+ *   - ⭐ 沒資料時：折疊徽章不生成（不佔空間）
  * ============================================================ */
 
-// ==================== ⭐ 卡片折疊模式 ====================
-// true  = 全部強制折疊（忽略 data.js 的 open 設定）
-// false = 尊重 data.js 的 open 設定（舊行為）
 const CARD_FORCE_COLLAPSED = true;
 
 // ==================== 天氣 ====================
@@ -385,13 +375,12 @@ function buildTimePill(startTime, endTime) {
 }
 function buildTagHtml(tag) { if (!tag || !tag.text) return ''; return '<span class="tag ' + (tag.class ? escapeHtml(tag.class) : '') + '">' + escapeHtml(tag.text) + '</span>'; }
 
-// ⭐ v15.2：動作列加入「📎 資料」按鈕
+// ⭐ v17.2：動作列只放「展開專用」的資料按鈕 + 拍攝/購物
 function buildEventActionsHtml(day, index, eventTitle, shoppingCount, dayKey) {
   var safeTitle = escAttr(eventTitle);
   var shoppingBadge = '';
   if (shoppingCount > 0) { shoppingBadge = '<span class="badge">' + shoppingCount + '</span>'; }
 
-  // ⭐ 附件 + 備註總數
   var total = 0;
   if (window.Uploads && dayKey) {
     if (typeof window.Uploads.getAttachments === 'function') total += window.Uploads.getAttachments(dayKey).length;
@@ -402,17 +391,35 @@ function buildEventActionsHtml(day, index, eventTitle, shoppingCount, dayKey) {
   }
   var dataBadge = total > 0 ? '<span class="badge">' + total + '</span>' : '';
 
-  var html = '<div class="event-action-buttons">';
+  var html = '';
+  // ⭐ 展開專用的資料按鈕（折疊時被 CSS 隱藏）
+  if (dayKey) {
+    html += '<button type="button" class="event-action-btn event-action-btn-data" data-action="event-data" data-event-key="' + escAttr(dayKey) + '" onclick="event.preventDefault();event.stopPropagation();Uploads.openEventData(this.dataset.eventKey, this.dataset.eventTitle)" data-event-title="' + safeTitle + '">📎 資料' + dataBadge + '</button>';
+  }
+  html += '<div class="event-action-buttons">';
   html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShootTipsModal(' + day + ',' + index + ')">🎬 拍攝</button>';
   html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShoppingModal(this.dataset.eventTitle)" data-event-title="' + safeTitle + '">🛍️ 購物' + shoppingBadge + '</button>';
-  if (dayKey) {
-    html += '<button type="button" class="event-action-btn" data-action="event-data" onclick="event.preventDefault();event.stopPropagation();Uploads.openEventData(\'' + dayKey + '\', this.dataset.eventTitle)" data-event-title="' + safeTitle + '">📎 資料' + dataBadge + '</button>';
-  }
   html += '</div>';
   return html;
 }
 
-// ⭐ v14.3：折疊縮圖（有圖用圖，沒圖用分類色 emoji 塊）
+// ⭐ v17.2：折疊專用的資料徽章（放在標籤列）
+function buildInlineDataBadge(dayKey, eventTitle, dataCount) {
+  if (!dayKey || dataCount <= 0) return '';
+  var safeKey = escAttr(dayKey);
+  var safeTitle = escAttr(eventTitle);
+  return '<button type="button" class="event-inline-data-badge"'
+    + ' data-action="event-data"'
+    + ' data-event-key="' + safeKey + '"'
+    + ' data-event-title="' + safeTitle + '"'
+    + ' onclick="event.preventDefault();event.stopPropagation();Uploads.openEventData(this.dataset.eventKey, this.dataset.eventTitle)"'
+    + ' aria-label="查看資料">'
+    + '<span class="event-inline-data-badge-icon">📎</span>'
+    + '<span>資料</span>'
+    + '<span class="event-inline-data-badge-count">' + dataCount + '</span>'
+    + '</button>';
+}
+
 const TAG_EMOJI_FALLBACK = {
   'tag-teal':   '🚗',
   'tag-amber':  '🍽️',
@@ -430,7 +437,6 @@ function extractLeadingEmoji(str) {
   return '';
 }
 
-// ⭐ v16.1：折疊縮圖（純縮圖，不含資料徽章）
 function buildEventThumb(event) {
   const imgUrl = (Array.isArray(event.images) && event.images[0]) || event.img;
 
@@ -453,9 +459,7 @@ function buildEventThumb(event) {
   </div>`;
 }
 
-// ⭐ v16.0：多張圖 → 2 格並排（第 2 張疊加 +N）
 function buildEventImage(imgUrl, eventTitle, images) {
-  // 多張圖：並排顯示（最多 2 張）
   if (images && Array.isArray(images) && images.length > 1) {
     var safeAlt = escAttr(eventTitle);
     var urlsJson = escAttr(JSON.stringify(images));
@@ -472,7 +476,6 @@ function buildEventImage(imgUrl, eventTitle, images) {
     html += '</div>';
     return html;
   }
-  // 單張圖
   if (!imgUrl) return '';
   var safeImg = escAttr(imgUrl);
   var safeAlt2 = escAttr(eventTitle);
@@ -521,7 +524,6 @@ function openLightboxCarousel(imgEl) {
 }
 window.openLightboxCarousel = openLightboxCarousel;
 
-// ⭐ v16.0：Grid 圖片點擊 → 開燈箱
 function bindImageGridClicks(section) {
   var grids = section.querySelectorAll('.event-image-grid');
   grids.forEach(function(grid) {
@@ -732,7 +734,6 @@ function renderDayItinerary(sectionId, dayData, force) {
     bindCarouselScroll(dayData);
     bindImageGridClicks(section);
 
-    // ⭐ v15.2：渲染附件 + 備註
     if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
       window.Uploads.renderAllAttachments();
     }
@@ -810,7 +811,7 @@ function buildDayHeaderHtml(dayData, weatherHtml) {
 
 function buildEventsHtml(dayData) { var html = ''; for (var i = 0; i < dayData.events.length; i++) { html += buildSingleEventHtml(dayData, dayData.events[i], i); } return html; }
 
-// ⭐ v16.1：buildSingleEventHtml（標籤列資料徽章 + 右上角縮圖）
+// ⭐ v17.2：buildSingleEventHtml（標籤列 + 動作列 雙資料入口）
 function buildSingleEventHtml(dayData, event, index) {
   var timeParts = event.time.split(' - ');
   var startTime = timeParts[0].trim();
@@ -819,10 +820,9 @@ function buildSingleEventHtml(dayData, event, index) {
   var timeStamp = buildTimePill(startTime, endTime);
   var tagHtml = buildTagHtml(event.tag);
 
-  // ⭐ 附件 key
-  var attDayKey = 'd' + dayData.day + '-e' + index;
+  var attDayKey = event.id || ('d' + dayData.day + '-e' + index);
 
-  // ⭐ 計算資料數量（附件 + 備註）
+  // 計算資料數量
   var dataCount = 0;
   if (window.Uploads && attDayKey) {
     if (typeof window.Uploads.getAttachments === 'function') {
@@ -834,21 +834,8 @@ function buildSingleEventHtml(dayData, event, index) {
     }
   }
 
-  // ⭐ v16.1：標籤列資料徽章（與 tag 並排）
-  var dataBadgeHtml = '';
-  if (dataCount > 0) {
-    var safeKey = escAttr(attDayKey);
-    var safeTitle = escAttr(event.title);
-    dataBadgeHtml = '<button type="button" class="event-inline-data-badge"'
-      + ' data-action="event-data"'
-      + ' data-event-title="' + safeTitle + '"'
-      + ' onclick="event.preventDefault();event.stopPropagation();Uploads.openEventData(\'' + safeKey + '\', this.dataset.eventTitle)"'
-      + ' aria-label="查看資料">'
-      + '<span class="event-inline-data-badge-icon">📎</span>'
-      + '<span>資料</span>'
-      + '<span class="event-inline-data-badge-count">' + dataCount + '</span>'
-      + '</button>';
-  }
+  // ⭐ 折疊專用：標籤列的資料徽章（只有有資料時才生成）
+  var inlineDataBadge = buildInlineDataBadge(attDayKey, event.title, dataCount);
 
   var actionsHtml = buildEventActionsHtml(dayData.day, index, event.title, shoppingItems.length, attDayKey);
   var imageHtml = buildEventImage(event.img, event.title, event.images);
@@ -874,20 +861,19 @@ function buildSingleEventHtml(dayData, event, index) {
   html += timeStamp;
   html += '</div>';
   html += '<div class="timeline-card">';
-  html += '<details data-day="' + dayData.day + '" data-index="' + index + '" class="group glass-card rounded-2xl relative overflow-hidden event-card' + tagClass + '"' + (shouldOpen ? ' open' : '') + '>';
+  html += '<details data-day="' + dayData.day + '" data-index="' + index + '" data-event-key="' + escAttr(attDayKey) + '" class="group glass-card rounded-2xl relative overflow-hidden event-card' + tagClass + '"' + (shouldOpen ? ' open' : '') + '>';
   html += '<div class="itinerary-cat-strip"></div>';
   html += '<summary class="event-summary">';
   html += '<div class="event-summary-info">';
-  // ⭐ 標籤列：tag + 重點 + 📎 資料
-  if (tagHtml || priorityBadge || dataBadgeHtml) {
-    html += '<div class="event-tag-row">' + tagHtml + priorityBadge + dataBadgeHtml + '</div>';
+  // ⭐ 標籤列：tag + 重點 + 折疊專用資料徽章
+  if (tagHtml || priorityBadge || inlineDataBadge) {
+    html += '<div class="event-tag-row">' + tagHtml + priorityBadge + inlineDataBadge + '</div>';
   }
   html += '<h3 class="event-title">' + escapeHtml(event.title) + '</h3>';
   if (event.location) {
     html += '<div class="event-location">📍 ' + escapeHtml(event.location) + '</div>';
   }
   html += '</div>';
-  // ⭐ 右上角：只保留縮圖
   html += buildEventThumb(event);
   html += '<div class="event-summary-actions">';
   html += actionsHtml;
@@ -899,12 +885,12 @@ function buildSingleEventHtml(dayData, event, index) {
   html += '<div class="event-content-wrapper p-3 pt-0 pb-4 border-t border-slate-50/80 bg-slate-50/30">';
   html += imageHtml;
   html += navBtnHtml;
-  html += '<div class="event-attachments" data-day="' + dayData.day + '" data-index="' + index + '" style="display:none"></div>';
   html += '<div class="event-collapsible" id="collapsible-' + dayData.day + '-' + index + '">' + event.content + '</div>';
   html += '<button type="button" class="expand-btn hidden" data-expand-btn="' + dayData.day + '-' + index + '" onclick="toggleContent(' + dayData.day + ', ' + index + ')">';
   html += '<span>展開完整攻略</span>';
   html += '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
   html += '</button>';
+  html += '<div class="event-attachments" data-event-key="' + escAttr(attDayKey) + '" style="display:none"></div>';
   html += '</div>';
   html += '</details>';
   html += '</div>';
@@ -1332,7 +1318,6 @@ function switchDay(day) {
   setTimeout(updateTimelineStatus, 50);
   if (window.updateDayProgressDots) window.updateDayProgressDots();
 
-  // ⭐ v15.2：切換 Day 後重新渲染附件/備註
   setTimeout(() => {
     if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
       window.Uploads.renderAllAttachments();
@@ -1442,7 +1427,7 @@ window.initDayTabs = initDayTabs;
 // ==================== 攻略 Modal 開關 ====================
 function toggleDriveModal() { const modal = document.getElementById('drive-modal'); if (modal.classList.contains('hidden')) { showModal('drive-modal'); modal.classList.remove('hidden'); setDriveTab('basic'); } else { hideModal('drive-modal'); setTimeout(() => modal.classList.add('hidden'), 300); } }
 function closeDriveModal() { hideModal('drive-modal'); setTimeout(() => document.getElementById('drive-modal').classList.add('hidden'), 300); }
-function toggleTicketModal() { const modal = document.getElementById('ticket-modal'); if (modal.classList.contains('hidden')) { showModal('ticket-modal'); modal.classList.remove('hidden'); renderTicketContent(); if (window._ticketTimer) clearInterval(window._ticketTimer); window._ticketTimer = setInterval(() => { if (!modal.classList.contains('hidden')) renderTicketContent(); else clearInterval(window._ticketTimer); }, 1000); } else { hideModal('ticket-modal'); setTimeout(() => document.getElementById('ticket-modal').classList.add('hidden'), 300); if (window._ticketTimer) clearInterval(window._ticketTimer); } }
+function toggleTicketModal() { const modal = document.getElementById('ticket-modal'); if (modal.classList.contains('hidden')) { showModal('ticket-modal'); modal.classList.remove('hidden'); renderTicketContent(); if (window._ticketTimer) clearInterval(window._ticketTimer); window._ticketTimer = setInterval(() => { if (!modal.classList.contains('hidden')) renderTicketContent(); else clearInterval(window._ticketTimer); }, 1000); } else { hideModal('ticket-modal'); setTimeout(() => modal.classList.add('hidden'), 300); if (window._ticketTimer) clearInterval(window._ticketTimer); } }
 function closeTicketModal() { hideModal('ticket-modal'); setTimeout(() => document.getElementById('ticket-modal').classList.add('hidden'), 300); if (window._ticketTimer) clearInterval(window._ticketTimer); }
 function openTripOverview() { const m = document.getElementById('trip-overview-modal'); if (m) { m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); renderTripOverview(); } }
 function closeTripOverview() { const m = document.getElementById('trip-overview-modal'); if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
