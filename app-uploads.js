@@ -1,11 +1,14 @@
 /* ============================================================
- * app-uploads.js — 通用上傳 + 行程資料 v3.0
+ * app-uploads.js — 通用上傳 + 行程資料 v3.1
  *
  * v2.x：附件功能
  * v3.0：
  *   - ⭐ 合併「附件 + 備註」為「📎 資料」Modal
  *   - ⭐ 新增 eventNotes 共享備註
  *   - ⭐ buildAttachmentsInnerHtml 支援 showAddBtn 參數
+ * v3.1：
+ *   - ⭐ renderAllAttachments 同步更新「右上角縮圖徽章」
+ *     有資料時顯示 📎 N，沒資料時隱藏
  * ============================================================ */
 
 (function () {
@@ -304,10 +307,10 @@
   }
 
   // ============================================================
-  // 重新渲染所有附件區 + 按鈕徽章
+  // ⭐ v3.1：重新渲染所有附件區 + 動作列徽章 + 右上角縮圖徽章
   // ============================================================
   function renderAllAttachments() {
-    // 1. 展開後的附件區
+    // ───── 1. 展開後的附件區 ─────
     document.querySelectorAll('.event-attachments').forEach(el => {
       const day = el.dataset.day;
       const index = el.dataset.index;
@@ -338,26 +341,58 @@
       el.style.display = inner ? '' : 'none';
     });
 
-    // 2. 動作列「📎 資料」徽章
+    // ───── 2. 動作列徽章 + 右上角縮圖徽章（動態更新） ─────
     document.querySelectorAll('details.event-card').forEach(card => {
       const day = card.dataset.day;
       const index = card.dataset.index;
       if (day == null || index == null) return;
       const dayKey = `d${day}-e${index}`;
       const total = getAttachments(dayKey).length + (getEventNote(dayKey)?.text ? 1 : 0);
+
+      // 2a. 動作列「📎 資料」徽章
       const btn = card.querySelector('.event-action-btn[data-action="event-data"]');
-      if (!btn) return;
-      let badge = btn.querySelector('.badge');
-      if (total > 0) {
-        if (badge) badge.textContent = total;
-        else {
-          badge = document.createElement('span');
-          badge.className = 'badge';
-          badge.textContent = total;
-          btn.appendChild(badge);
+      if (btn) {
+        let badge = btn.querySelector('.badge');
+        if (total > 0) {
+          if (badge) badge.textContent = total;
+          else {
+            badge = document.createElement('span');
+            badge.className = 'badge';
+            badge.textContent = total;
+            btn.appendChild(badge);
+          }
+        } else if (badge) {
+          badge.remove();
         }
-      } else if (badge) {
-        badge.remove();
+      }
+
+      // ⭐ 2b. 右上角縮圖徽章（新增／更新／移除）
+      const thumbWrap = card.querySelector('.event-thumb-wrap');
+      if (thumbWrap) {
+        let thumbBadge = thumbWrap.querySelector('.event-thumb-data-badge');
+        if (total > 0) {
+          // 有資料 → 顯示（或更新數量）
+          const titleEl = card.querySelector('.event-title');
+          const eventTitle = titleEl ? titleEl.textContent.trim() : '';
+          if (thumbBadge) {
+            thumbBadge.textContent = `📎 ${total}`;
+          } else {
+            thumbBadge = document.createElement('button');
+            thumbBadge.type = 'button';
+            thumbBadge.className = 'event-thumb-data-badge';
+            thumbBadge.setAttribute('aria-label', '查看資料');
+            thumbBadge.textContent = `📎 ${total}`;
+            thumbBadge.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.Uploads.openEventData(dayKey, eventTitle);
+            });
+            thumbWrap.appendChild(thumbBadge);
+          }
+        } else if (thumbBadge) {
+          // 沒資料 → 隱藏
+          thumbBadge.remove();
+        }
       }
     });
   }
@@ -511,5 +546,5 @@
     renderEventDataModal
   };
 
-  console.log('[Uploads] v3.0（附件 + 備註）載入完成');
+  console.log('[Uploads] v3.1（附件 + 備註 + 動態徽章）載入完成');
 })();
