@@ -2764,19 +2764,15 @@ a:focus:not(:focus-visible) {
   }
 }
 /* ============================================================
- * 25. 折疊縮圖 + 資料徽章（右上角）
- *
- * 折疊時：右上角顯示縮圖 + 「📎 資料 (N)」徽章
- * 展開後：縮圖隱藏，資料按鈕回到動作列
+ * 25. 折疊縮圖（純縮圖，不含資料徽章）
  * ============================================================ */
 
 .event-thumb-wrap { display: none; }
 
 details.event-card:not([open]) .event-thumb-wrap {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
   position: absolute;
   top: 14px;
   right: 16px;
@@ -2822,33 +2818,7 @@ details.event-card:not([open]) .event-thumb-wrap {
 .event-thumb.is-icon.tag-sky    { background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-color: #ddd6fe; }
 .event-thumb.is-icon.tag-rose   { background: linear-gradient(135deg, #fff1f2, #ffe4e6); border-color: #fecdd3; }
 
-/* ⭐ 資料徽章（可點擊） */
-.event-thumb-data-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: #ffffff;
-  font-size: 10.5px;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.35);
-  pointer-events: auto;
-  transition: transform 0.15s, box-shadow 0.15s;
-  line-height: 1.3;
-}
-.event-thumb-data-badge:active {
-  transform: scale(0.94);
-  box-shadow: 0 1px 3px rgba(14, 165, 233, 0.5);
-}
-
-/* 標題區預留空間 */
+/* 標題區預留空間（給右上角縮圖） */
 details.event-card:not([open]) .event-summary-info {
   padding-right: 78px;
 }
@@ -2885,10 +2855,82 @@ details.event-card:not([open]) .event-summary-info {
 
 
 /* ============================================================
- * 26. 折疊時隱藏動作按鈕（資料按鈕已移到右上角徽章）
- *
- * 折疊：右上角顯示縮圖 + 📎 資料徽章，動作列只留展開圖示
- * 展開：動作列完整顯示（🎬 拍攝 / 🛍️ 購物 / 📎 資料）
+ * 25.1 ⭐ 標籤列「📎 資料 (N)」徽章（與 tag 並排）
+ * ============================================================ */
+
+.event-inline-data-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 9px 2px 7px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 1px 4px rgba(14, 165, 233, 0.3);
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  line-height: 1.4;
+  text-transform: none;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.event-inline-data-badge:active {
+  transform: scale(0.94);
+  box-shadow: 0 1px 2px rgba(14, 165, 233, 0.5);
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+}
+.event-inline-data-badge-icon {
+  font-size: 12px;
+  line-height: 1;
+  display: inline-block;
+}
+.event-inline-data-badge-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 手機縮小一點 */
+@media (max-width: 480px) {
+  .event-inline-data-badge {
+    padding: 2px 8px 2px 6px;
+    font-size: 11px;
+  }
+  .event-inline-data-badge-count {
+    min-width: 14px;
+    height: 14px;
+    font-size: 9.5px;
+  }
+}
+
+/* 深色模式 */
+[data-theme="dark"] .event-inline-data-badge {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  box-shadow: 0 1px 4px rgba(14, 165, 233, 0.5);
+}
+[data-theme="dark"] .event-inline-data-badge:active {
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+}
+
+
+/* ============================================================
+ * 26. 折疊時隱藏動作按鈕（資料徽章已移到標籤列）
  * ============================================================ */
 
 details.event-card:not([open]) .event-action-buttons {

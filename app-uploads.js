@@ -1,5 +1,5 @@
 /* ============================================================
- * app-uploads.js — 通用上傳 + 行程資料 v3.1
+ * app-uploads.js — 通用上傳 + 行程資料 v3.2
  *
  * v2.x：附件功能
  * v3.0：
@@ -8,7 +8,9 @@
  *   - ⭐ buildAttachmentsInnerHtml 支援 showAddBtn 參數
  * v3.1：
  *   - ⭐ renderAllAttachments 同步更新「右上角縮圖徽章」
- *     有資料時顯示 📎 N，沒資料時隱藏
+ * v3.2：
+ *   - ⭐ 徽章位置從右上角改為「標籤列」（與 tag 並排）
+ *   - ⭐ 有資料時顯示「📎 資料 (N)」，無資料時隱藏
  * ============================================================ */
 
 (function () {
@@ -307,7 +309,7 @@
   }
 
   // ============================================================
-  // ⭐ v3.1：重新渲染所有附件區 + 動作列徽章 + 右上角縮圖徽章
+  // ⭐ v3.2：重新渲染所有附件區 + 動作列徽章 + 標籤列徽章
   // ============================================================
   function renderAllAttachments() {
     // ───── 1. 展開後的附件區 ─────
@@ -341,7 +343,7 @@
       el.style.display = inner ? '' : 'none';
     });
 
-    // ───── 2. 動作列徽章 + 右上角縮圖徽章（動態更新） ─────
+    // ───── 2. 動作列徽章 + 標籤列徽章 ─────
     document.querySelectorAll('details.event-card').forEach(card => {
       const day = card.dataset.day;
       const index = card.dataset.index;
@@ -366,32 +368,35 @@
         }
       }
 
-      // ⭐ 2b. 右上角縮圖徽章（新增／更新／移除）
-      const thumbWrap = card.querySelector('.event-thumb-wrap');
-      if (thumbWrap) {
-        let thumbBadge = thumbWrap.querySelector('.event-thumb-data-badge');
+      // ⭐ 2b. 標籤列徽章（與 tag 並排）
+      const tagRow = card.querySelector('.event-tag-row');
+      if (tagRow) {
+        let inlineBadge = tagRow.querySelector('.event-inline-data-badge');
         if (total > 0) {
           // 有資料 → 顯示（或更新數量）
           const titleEl = card.querySelector('.event-title');
           const eventTitle = titleEl ? titleEl.textContent.trim() : '';
-          if (thumbBadge) {
-            thumbBadge.textContent = `📎 ${total}`;
+          if (inlineBadge) {
+            const countEl = inlineBadge.querySelector('.event-inline-data-badge-count');
+            if (countEl) countEl.textContent = total;
           } else {
-            thumbBadge = document.createElement('button');
-            thumbBadge.type = 'button';
-            thumbBadge.className = 'event-thumb-data-badge';
-            thumbBadge.setAttribute('aria-label', '查看資料');
-            thumbBadge.textContent = `📎 ${total}`;
-            thumbBadge.addEventListener('click', (e) => {
+            inlineBadge = document.createElement('button');
+            inlineBadge.type = 'button';
+            inlineBadge.className = 'event-inline-data-badge';
+            inlineBadge.setAttribute('data-action', 'event-data');
+            inlineBadge.setAttribute('data-event-title', eventTitle);
+            inlineBadge.setAttribute('aria-label', '查看資料');
+            inlineBadge.innerHTML = '<span class="event-inline-data-badge-icon">📎</span><span>資料</span><span class="event-inline-data-badge-count">' + total + '</span>';
+            inlineBadge.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
               window.Uploads.openEventData(dayKey, eventTitle);
             });
-            thumbWrap.appendChild(thumbBadge);
+            tagRow.appendChild(inlineBadge);
           }
-        } else if (thumbBadge) {
+        } else if (inlineBadge) {
           // 沒資料 → 隱藏
-          thumbBadge.remove();
+          inlineBadge.remove();
         }
       }
     });
@@ -546,5 +551,5 @@
     renderEventDataModal
   };
 
-  console.log('[Uploads] v3.1（附件 + 備註 + 動態徽章）載入完成');
+  console.log('[Uploads] v3.2（附件 + 備註 + 標籤列徽章）載入完成');
 })();

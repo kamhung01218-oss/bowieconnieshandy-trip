@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v16.0（折疊縮圖 + 資料徽章 + 雙圖並排）
+ * app-itinerary.js — v16.1（標籤列資料徽章版）
  *
  * v14.x：多地點天氣 / Day tabs / 折疊縮圖
  * v15.0：Phase 2 附件
@@ -11,7 +11,9 @@
  * v16.0：
  *   - ⭐ 折疊時右上角顯示「縮圖 + 📎 資料徽章」
  *   - ⭐ 展開後多張圖片改為 2 格並排（第 2 張疊加 +N）
- *   - ⭐ 資料徽章可直接點擊開啟 Modal
+ * v16.1：
+ *   - ⭐ 資料徽章從右上角移到「標籤列」（與 🛬 抵達雪國 並排）
+ *   - ⭐ 右上角只保留縮圖
  * ============================================================ */
 
 // ==================== ⭐ 卡片折疊模式 ====================
@@ -428,37 +430,27 @@ function extractLeadingEmoji(str) {
   return '';
 }
 
-// ⭐ v16.0：折疊縮圖 + 右上角資料徽章
-function buildEventThumb(event, dayKey, dataCount) {
-  dataCount = dataCount || 0;
+// ⭐ v16.1：折疊縮圖（純縮圖，不含資料徽章）
+function buildEventThumb(event) {
   const imgUrl = (Array.isArray(event.images) && event.images[0]) || event.img;
 
-  let thumbContent = '';
   if (imgUrl) {
-    thumbContent = `<div class="event-thumb has-image" aria-hidden="true">
-      <img src="${escAttr(imgUrl)}" alt="" loading="lazy" decoding="async">
+    return `<div class="event-thumb-wrap">
+      <div class="event-thumb has-image" aria-hidden="true">
+        <img src="${escAttr(imgUrl)}" alt="" loading="lazy" decoding="async">
+      </div>
     </div>`;
-  } else {
-    const emoji = extractLeadingEmoji(event.tag?.text)
-               || TAG_EMOJI_FALLBACK[event.tag?.class]
-               || '📍';
-    const colorClass = event.tag?.class ? ` ${event.tag.class}` : '';
-    thumbContent = `<div class="event-thumb is-icon${colorClass}" aria-hidden="true">
+  }
+
+  const emoji = extractLeadingEmoji(event.tag?.text)
+             || TAG_EMOJI_FALLBACK[event.tag?.class]
+             || '📍';
+  const colorClass = event.tag?.class ? ` ${event.tag.class}` : '';
+  return `<div class="event-thumb-wrap">
+    <div class="event-thumb is-icon${colorClass}" aria-hidden="true">
       <span>${emoji}</span>
-    </div>`;
-  }
-
-  // ⭐ 資料徽章（可點擊，直接開資料 Modal）
-  let badgeHtml = '';
-  if (dataCount > 0 && dayKey) {
-    const safeKey = escAttr(dayKey);
-    const safeTitle = escAttr(event.title);
-    badgeHtml = `<button type="button" class="event-thumb-data-badge"
-      onclick="event.preventDefault();event.stopPropagation();Uploads.openEventData('${safeKey}', '${safeTitle}')"
-      aria-label="查看資料">📎 ${dataCount}</button>`;
-  }
-
-  return `<div class="event-thumb-wrap">${thumbContent}${badgeHtml}</div>`;
+    </div>
+  </div>`;
 }
 
 // ⭐ v16.0：多張圖 → 2 格並排（第 2 張疊加 +N）
@@ -818,7 +810,7 @@ function buildDayHeaderHtml(dayData, weatherHtml) {
 
 function buildEventsHtml(dayData) { var html = ''; for (var i = 0; i < dayData.events.length; i++) { html += buildSingleEventHtml(dayData, dayData.events[i], i); } return html; }
 
-// ⭐ v16.0：buildSingleEventHtml（右上角資料徽章 + 動作列）
+// ⭐ v16.1：buildSingleEventHtml（標籤列資料徽章 + 右上角縮圖）
 function buildSingleEventHtml(dayData, event, index) {
   var timeParts = event.time.split(' - ');
   var startTime = timeParts[0].trim();
@@ -840,6 +832,22 @@ function buildSingleEventHtml(dayData, event, index) {
       var note = window.Uploads.getEventNote(attDayKey);
       if (note && note.text) dataCount += 1;
     }
+  }
+
+  // ⭐ v16.1：標籤列資料徽章（與 tag 並排）
+  var dataBadgeHtml = '';
+  if (dataCount > 0) {
+    var safeKey = escAttr(attDayKey);
+    var safeTitle = escAttr(event.title);
+    dataBadgeHtml = '<button type="button" class="event-inline-data-badge"'
+      + ' data-action="event-data"'
+      + ' data-event-title="' + safeTitle + '"'
+      + ' onclick="event.preventDefault();event.stopPropagation();Uploads.openEventData(\'' + safeKey + '\', this.dataset.eventTitle)"'
+      + ' aria-label="查看資料">'
+      + '<span class="event-inline-data-badge-icon">📎</span>'
+      + '<span>資料</span>'
+      + '<span class="event-inline-data-badge-count">' + dataCount + '</span>'
+      + '</button>';
   }
 
   var actionsHtml = buildEventActionsHtml(dayData.day, index, event.title, shoppingItems.length, attDayKey);
@@ -870,16 +878,17 @@ function buildSingleEventHtml(dayData, event, index) {
   html += '<div class="itinerary-cat-strip"></div>';
   html += '<summary class="event-summary">';
   html += '<div class="event-summary-info">';
-  if (tagHtml || priorityBadge) {
-    html += '<div class="event-tag-row">' + tagHtml + priorityBadge + '</div>';
+  // ⭐ 標籤列：tag + 重點 + 📎 資料
+  if (tagHtml || priorityBadge || dataBadgeHtml) {
+    html += '<div class="event-tag-row">' + tagHtml + priorityBadge + dataBadgeHtml + '</div>';
   }
   html += '<h3 class="event-title">' + escapeHtml(event.title) + '</h3>';
   if (event.location) {
     html += '<div class="event-location">📍 ' + escapeHtml(event.location) + '</div>';
   }
   html += '</div>';
-  // ⭐ 右上角：縮圖 + 資料徽章
-  html += buildEventThumb(event, attDayKey, dataCount);
+  // ⭐ 右上角：只保留縮圖
+  html += buildEventThumb(event);
   html += '<div class="event-summary-actions">';
   html += actionsHtml;
   html += '<div class="event-expand-icon">';
@@ -890,7 +899,6 @@ function buildSingleEventHtml(dayData, event, index) {
   html += '<div class="event-content-wrapper p-3 pt-0 pb-4 border-t border-slate-50/80 bg-slate-50/30">';
   html += imageHtml;
   html += navBtnHtml;
-  // ⭐ v15.2：附件 + 備註區（空容器，由 renderAllAttachments 填）
   html += '<div class="event-attachments" data-day="' + dayData.day + '" data-index="' + index + '" style="display:none"></div>';
   html += '<div class="event-collapsible" id="collapsible-' + dayData.day + '-' + index + '">' + event.content + '</div>';
   html += '<button type="button" class="expand-btn hidden" data-expand-btn="' + dayData.day + '-' + index + '" onclick="toggleContent(' + dayData.day + ', ' + index + ')">';
