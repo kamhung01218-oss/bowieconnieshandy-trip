@@ -1,12 +1,11 @@
 /* ============================================================
- * ledger.js — 隨行記帳本主邏輯 v2.7
+ * ledger.js — 隨行記帳本主邏輯 v2.9
  *
- * v2.6：字級收斂
- * v2.7：
- *   - ⭐ 統計卡片第 2 格：今日支出 / 平均每日 動態切換
- *   - ⭐ 圖表區可折疊（預設折疊）
- *   - ⭐ 更多選單（CSV / 文字 / 清空）
- *   - ⭐ View as 移到頂欄
+ * v2.8（Phase 3）：
+ *   - ⭐ 記帳憑證：列表每筆支出可上傳收據
+ * v2.9（Phase 3 增強）：
+ *   - ⭐ 記帳 Modal 內也能加收據
+ *   - ⭐ 支援「當時加」與「後補加」兩種方式
  * ============================================================ */
 'use strict';
 
@@ -89,8 +88,10 @@ const firebaseConfig = (function() {
     measurementId: "G-9EN9JG5F3F"
   };
 })();
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+if (!firebase.apps || !firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.app().firestore();
 const auth = firebase.auth();
 window.db = db;
 window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
@@ -206,7 +207,9 @@ let state = {
 let editingExpenseId = null;
 let lastExpense = null;
 
-/* ⭐ v2.7：圖表折疊狀態（預設折疊，存 localStorage） */
+// ⭐ v2.9：記帳 Modal 內待加入的收據（暫存）
+let pendingReceipts = [];
+
 const CHARTS_KEY = 'tohoku_ledger_charts_expanded';
 let chartsExpanded = false;
 try { chartsExpanded = localStorage.getItem(CHARTS_KEY) === '1'; } catch (e) {}
@@ -385,7 +388,6 @@ function toggleCollapsible(sectionId) {
   haptic(5);
 }
 
-/* ⭐ v2.7：圖表折疊切換 */
 function toggleCharts() {
   chartsExpanded = !chartsExpanded;
   try { localStorage.setItem(CHARTS_KEY, chartsExpanded ? '1' : '0'); } catch (e) {}
@@ -410,7 +412,6 @@ function applyChartsState() {
   }
 }
 
-/* ⭐ v2.7：更多選單 */
 function toggleMoreMenu(e) {
   if (e) e.stopPropagation();
   const menu = document.getElementById('more-menu');
@@ -664,10 +665,288 @@ function renderDailyChart() {
 }
 
 /* ============================================================
+ * ⭐ Phase 3：記帳憑證（收據）
+ * ============================================================ */
+
+function _getReceipts(expense) {
+  if (!expense) return [];
+  return Array.isArray(expense.receipts) ? expense.receipts : [];
+}
+
+/* ---------- 列表：後補收據 ---------- */
+function pickReceiptForExpense(expenseId) {
+  console.log('[Receipt] pickReceiptForExpense 被呼叫, expenseId:', expenseId);
+
+  if (!canWrite()) { showToast("🔒 請先登入才能上傳收據", "⚠️"); return; }
+  if (!window.Uploads || typeof window.Uploads.uploadFiles !== 'function') {
+    showToast("⚠️ 上傳模組未載入，請重新整理", "⚠️");
+    console.error('[Receipt] window.Uploads 不存在');
+    return;
+  }
+
+  const expense = state.expenses.find(e => e.id === expenseId);
+  if (!expense) { showToast("⚠️ 找不到這筆支出", "⚠️"); return; }
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;';
+  input.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(input);
+
+  input.addEventListener('change', async () => {
+    const files = Array.from(input.files || []);
+    setTimeout(() => { try { document.body.removeChild(input); } catch(e) {} }, 100);
+    if (files.length === 0) return;
+    await uploadReceiptsForExpense(expenseId, files);
+  });
+
+  setTimeout(() => {
+    try { input.click(); }
+    catch (e) { console.error('[Receipt] input.click() 失敗:', e); showToast("無法開啟檔案選擇器", "⚠️"); }
+  }, 0);
+}
+
+async function uploadReceiptsForExpense(expenseId, files) {
+  const expense = state.expenses.find(e => e.id === expenseId);
+  if (!expense) return;
+
+  showToast(`⏳ 上傳 ${files.length} 張收據…`, '📤');
+  haptic(10);
+
+  let result;
+  try {
+    result = await window.Uploads.uploadFiles(files);
+  } catch (e) {
+    console.error('[Receipt] 上傳失敗:', e);
+    showToast('❌ 上傳失敗：' + e.message, '⚠️');
+    return;
+  }
+
+  if (!result || result.success.length === 0) {
+    showToast(`❌ 全部失敗（${result?.failed?.length || 0} 張）`, '⚠️');
+    return;
+  }
+
+  try {
+    await runTransaction(current => {
+      const expenses = [...(current.expenses || [])];
+      const idx = expenses.findIndex(e => e.id === expenseId);
+      if (idx === -1) return {};
+
+      const exp = expenses[idx];
+      const existing = Array.isArray(exp.receipts) ? exp.receipts : [];
+      const merged = [...result.success, ...existing];
+
+      expenses[idx] = {
+        ...exp,
+        receipts: merged,
+        updatedAt: Date.now()
+      };
+
+      let history = [...(current.history || [])];
+      history.unshift(createHistoryEntry("edit", exp, `為「${escapeHtml(exp.desc)}」加入 ${result.success.length} 張收據`));
+      history = history.slice(0, 200);
+
+      return { expenses, history };
+    });
+    showToast(`✅ 已加入 ${result.success.length} 張收據`, '🧾');
+    haptic(15);
+  } catch (e) {
+    console.error('[Receipt] 儲存失敗:', e);
+    showToast('❌ 儲存失敗：' + e.message, '⚠️');
+  }
+
+  if (result.failed && result.failed.length > 0) {
+    setTimeout(() => showToast(`⚠️ ${result.failed.length} 張上傳失敗`, '⚠️'), 1500);
+  }
+}
+
+async function deleteReceipt(expenseId, receiptId) {
+  if (!canWrite()) { showToast("🔒 請先登入", "⚠️"); return; }
+
+  const expense = state.expenses.find(e => e.id === expenseId);
+  if (!expense) return;
+
+  const receipts = _getReceipts(expense);
+  const rc = receipts.find(r => r.id === receiptId);
+  if (!rc) return;
+
+  const isOwner = rc.uploader === getCurrentUser();
+  const isAdmin = localStorage.getItem('tohoku_admin_unlocked') === 'true';
+  if (!isOwner && !isAdmin) {
+    showToast('🔒 只能刪除自己上傳的收據', '⚠️');
+    return;
+  }
+
+  if (!confirm('確定要移除這張收據嗎？')) return;
+
+  try {
+    await runTransaction(current => {
+      const expenses = [...(current.expenses || [])];
+      const idx = expenses.findIndex(e => e.id === expenseId);
+      if (idx === -1) return {};
+      const exp = expenses[idx];
+      const next = (exp.receipts || []).filter(r => r.id !== receiptId);
+      expenses[idx] = { ...exp, receipts: next, updatedAt: Date.now() };
+
+      let history = [...(current.history || [])];
+      history.unshift(createHistoryEntry("edit", exp, `移除「${escapeHtml(exp.desc)}」1 張收據`));
+      history = history.slice(0, 200);
+
+      return { expenses, history };
+    });
+    showToast('🗑 已移除收據', '🧾');
+    haptic(10);
+  } catch (e) {
+    showToast('❌ 刪除失敗', '⚠️');
+  }
+}
+
+function openReceiptLightbox(expenseId, index) {
+  const expense = state.expenses.find(e => e.id === expenseId);
+  if (!expense) return;
+  const receipts = _getReceipts(expense);
+  const urls = receipts.map(r => r.url);
+  if (typeof window.openLightbox === 'function') {
+    window.openLightbox(urls, index);
+  } else {
+    window.open(urls[index], '_blank');
+  }
+}
+
+function buildReceiptStripHtml(expense) {
+  const receipts = _getReceipts(expense);
+  if (receipts.length === 0) return '';
+  const me = getCurrentUser();
+  const isAdmin = localStorage.getItem('tohoku_admin_unlocked') === 'true';
+  return `
+    <div class="receipt-strip">
+      ${receipts.map((r, i) => {
+        const canDelete = !!me && (r.uploader === me || isAdmin);
+        return `
+          <div class="receipt-thumb">
+            <img src="${escapeHtml(r.thumb || r.url)}" alt="" loading="lazy"
+                 onclick="openReceiptLightbox('${escapeHtml(expense.id)}', ${i})">
+            ${canDelete ? `<button type="button" class="receipt-del"
+                 onclick="event.stopPropagation();deleteReceipt('${escapeHtml(expense.id)}','${escapeHtml(r.id)}')"
+                 aria-label="刪除">×</button>` : ''}
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function buildReceiptAddBtnHtml(expense) {
+  if (!canWrite()) return '';
+  return `<button type="button" class="receipt-add-btn"
+            onclick="event.stopPropagation();pickReceiptForExpense('${escapeHtml(expense.id)}')">
+    ＋ 收據
+  </button>`;
+}
+
+/* ---------- ⭐ v2.9：記帳 Modal 內收據 ---------- */
+function pickReceiptForModal() {
+  console.log('[Receipt] pickReceiptForModal 被呼叫');
+
+  if (!canWrite()) { showToast("🔒 請先登入才能上傳收據", "⚠️"); return; }
+  if (!window.Uploads || typeof window.Uploads.uploadFiles !== 'function') {
+    showToast("⚠️ 上傳模組未載入，請重新整理", "⚠️");
+    return;
+  }
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;';
+  input.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(input);
+
+  input.addEventListener('change', async () => {
+    const files = Array.from(input.files || []);
+    console.log('[Receipt-Modal] 選擇了', files.length, '張');
+    setTimeout(() => { try { document.body.removeChild(input); } catch(e) {} }, 100);
+    if (files.length === 0) return;
+    await uploadReceiptsForModal(files);
+  });
+
+  setTimeout(() => {
+    try { input.click(); }
+    catch (e) { console.error('[Receipt-Modal] input.click() 失敗:', e); showToast("無法開啟檔案選擇器", "⚠️"); }
+  }, 0);
+}
+
+async function uploadReceiptsForModal(files) {
+  showToast(`⏳ 上傳 ${files.length} 張收據…`, '📤');
+  haptic(10);
+
+  let result;
+  try {
+    result = await window.Uploads.uploadFiles(files);
+  } catch (e) {
+    console.error('[Receipt-Modal] 上傳失敗:', e);
+    showToast('❌ 上傳失敗：' + e.message, '⚠️');
+    return;
+  }
+
+  if (!result || result.success.length === 0) {
+    showToast(`❌ 全部失敗（${result?.failed?.length || 0} 張）`, '⚠️');
+    return;
+  }
+
+  // 加入待存清單
+  result.success.forEach(r => pendingReceipts.push(r));
+  renderModalReceipts();
+  showToast(`✅ 已加入 ${result.success.length} 張，儲存記帳時一併寫入`, '🧾');
+  haptic(15);
+
+  if (result.failed && result.failed.length > 0) {
+    setTimeout(() => showToast(`⚠️ ${result.failed.length} 張上傳失敗`, '⚠️'), 1500);
+  }
+}
+
+function removeModalReceipt(receiptId) {
+  pendingReceipts = pendingReceipts.filter(r => r.id !== receiptId);
+  renderModalReceipts();
+  haptic(8);
+}
+
+function renderModalReceipts() {
+  const wrap = document.getElementById('expense-receipts-preview');
+  const btn = document.getElementById('expense-receipt-add-btn');
+  if (!wrap) return;
+
+  if (pendingReceipts.length === 0) {
+    wrap.innerHTML = '';
+    if (btn) btn.classList.remove('hidden');
+    return;
+  }
+
+  wrap.innerHTML = pendingReceipts.map((r, i) => `
+    <div class="receipt-thumb">
+      <img src="${escapeHtml(r.thumb || r.url)}" alt="" loading="lazy"
+           onclick="window.open('${escapeHtml(r.url)}', '_blank')">
+      <button type="button" class="receipt-del"
+              onclick="event.stopPropagation();removeModalReceipt('${escapeHtml(r.id)}')"
+              aria-label="移除">×</button>
+    </div>
+  `).join('');
+
+  if (btn) btn.classList.remove('hidden');
+}
+
+/* ============================================================
  * 二十一、記帳彈窗
  * ============================================================ */
 function openExpenseModal() {
   editingExpenseId = null;
+  // ⭐ v2.9：清空待存收據
+  pendingReceipts = [];
+  renderModalReceipts();
+
   const backdrop = document.getElementById("expense-modal-backdrop");
   const modal = document.getElementById("expense-modal");
   backdrop.classList.remove("hidden"); modal.classList.remove("hidden"); modal.offsetWidth;
@@ -675,10 +954,10 @@ function openExpenseModal() {
   modal.classList.remove("translate-y-full","md:translate-y-8","md:scale-95","opacity-0");
   modal.classList.add("translate-y-0","md:translate-y-0","md:scale-100","opacity-100");
   document.body.classList.add("modal-open");
-  
+
   const daySelect = document.getElementById("ledger-day");
   if (activeFilters.day !== 0) daySelect.value = activeFilters.day;
-  
+
   if (!editingExpenseId) {
     setCategory('餐飲');
     document.getElementById('payment-method-select').value = '現金';
@@ -688,7 +967,7 @@ function openExpenseModal() {
     document.getElementById('custom-split-toggle')?.classList.remove('active');
     document.getElementById('custom-split-inputs')?.classList.add('hidden');
   }
-  
+
   renderLedgerSelectors();
   updateEstimatedHKD();
   haptic(8);
@@ -699,7 +978,14 @@ function closeExpenseModal() {
   backdrop.classList.remove("opacity-100"); backdrop.classList.add("opacity-0");
   modal.classList.remove("translate-y-0","md:translate-y-0","md:scale-100","opacity-100");
   modal.classList.add("translate-y-full","md:translate-y-8","md:scale-95","opacity-0");
-  setTimeout(() => { backdrop.classList.add("hidden"); modal.classList.add("hidden"); cancelEdit(); document.body.classList.remove("modal-open"); }, 300);
+  setTimeout(() => {
+    backdrop.classList.add("hidden"); modal.classList.add("hidden");
+    cancelEdit();
+    // ⭐ v2.9：清空待存收據
+    pendingReceipts = [];
+    renderModalReceipts();
+    document.body.classList.remove("modal-open");
+  }, 300);
   if (window.parent !== window) window.parent.postMessage({ type: 'closeExpenseModal' }, '*');
 }
 function cancelEdit() {
@@ -718,6 +1004,11 @@ function openEditExpenseModal(expenseId) {
     const expense = state.expenses.find(e => e.id === expenseId);
     if (!expense) return;
     editingExpenseId = expenseId;
+
+    // ⭐ v2.9：載入現有收據到 pendingReceipts
+    pendingReceipts = _getReceipts(expense).map(r => ({ ...r, _existing: true }));
+    renderModalReceipts();
+
     document.getElementById("ledger-day").value = expense.day;
     setCategory(expense.category);
     document.getElementById("payment-method-select").value = expense.paymentMethod || '現金';
@@ -728,10 +1019,10 @@ function openEditExpenseModal(expenseId) {
     state.activePayer = expense.payer;
     state.activeSplitWith = normalizeSplitWith(expense.splitWith, expense.amountInHKD);
     state.customSplitEnabled = Array.isArray(expense.splitWith) && expense.splitWith.length > 0 && typeof expense.splitWith[0] === 'object' && expense.splitWith.some(s => s.amount !== expense.amountInHKD / expense.splitWith.length);
-    
+
     renderLedgerSelectors();
     updateEstimatedHKD();
-    
+
     const backdrop = document.getElementById("expense-modal-backdrop");
     const modal = document.getElementById("expense-modal");
     backdrop.classList.remove("hidden"); modal.classList.remove("hidden"); modal.offsetWidth;
@@ -947,6 +1238,12 @@ async function saveExpense() {
   const isEditing = !!editingExpenseId;
   const editingId = editingExpenseId;
 
+  // ⭐ v2.9：把 pendingReceipts 一起存
+  const receiptsToSave = pendingReceipts.map(r => {
+    const { _existing, ...rest } = r;
+    return rest;
+  });
+
   try {
     await runTransaction(current => {
       let expenses = [...(current.expenses || [])];
@@ -956,10 +1253,11 @@ async function saveExpense() {
         if (idx > -1) {
           const old = expenses[idx];
           history.unshift(createHistoryEntry("edit", old, `修改了「${escapeHtml(old.desc)}」`));
-          expenses[idx] = { ...old, ...expenseData };
+          // ⭐ v2.9：合併收據
+          expenses[idx] = { ...old, ...expenseData, receipts: receiptsToSave };
         }
       } else {
-        const newEntry = { id: "exp-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5), ...expenseData };
+        const newEntry = { id: "exp-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5), ...expenseData, receipts: receiptsToSave };
         expenses.push(newEntry);
         lastExpense = newEntry;
         history.unshift(createHistoryEntry("add", newEntry, `新增了「${escapeHtml(newEntry.desc)}」(${newEntry.amount} ${newEntry.currency})`));
@@ -968,6 +1266,7 @@ async function saveExpense() {
       return { expenses, history };
     });
     editingExpenseId = null;
+    pendingReceipts = [];
     closeExpenseModal();
     showToast(isEditing ? "✅ 已更新支出" : "✅ 已新增支出");
     if (!isEditing) showConfetti();
@@ -1092,11 +1391,6 @@ function updateLedgerUI() {
   document.getElementById("stat-total").innerText = `${total.toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
   document.getElementById("stat-count").innerText = `${state.expenses.length} 筆`;
 
-  /* ⭐ v2.7：統計卡片第 2 格邏輯
-   *   1. 若有 Day 篩選 → 顯示該 Day 支出
-   *   2. 否則若今天在旅行中 → 顯示今日支出
-   *   3. 否則 → 顯示平均每日
-   */
   const statDayValue = document.getElementById("stat-day-value");
   const statDayLabel = document.getElementById("stat-day-label");
   if (statDayValue && statDayLabel) {
@@ -1108,13 +1402,11 @@ function updateLedgerUI() {
       const today = new Date().toISOString().slice(0, 10);
       const todayIdx = TRIP_DATES.indexOf(today);
       if (todayIdx >= 0) {
-        // 旅行中：顯示今日支出
         const dayNum = todayIdx + 1;
         const todayTotal = state.expenses.filter(e => e.day === dayNum).reduce((s, e) => s + e.amountInHKD, 0);
         statDayLabel.textContent = "今日支出";
         statDayValue.innerText = `${todayTotal.toLocaleString('en-US', {minimumFractionDigits: 2})} HKD`;
       } else {
-        // 非旅行：顯示平均每日
         const uniqueDays = new Set(state.expenses.map(e => e.day)).size || 1;
         const avgPerDay = total / uniqueDays;
         statDayLabel.textContent = "平均每日";
@@ -1220,6 +1512,11 @@ function renderExpensesList() {
       const payMethodHtml = expense.paymentMethod ? `<span class="bg-white/80 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-medium">${escapeHtml(expense.paymentMethod)}</span>` : '';
       const customSplitTag = splitArr.some((s, i) => i > 0 && Math.abs(s.amount - splitArr[0].amount) > 0.01) ? `<span class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-black">自訂分攤</span>` : '';
 
+      const receipts = _getReceipts(expense);
+      const receiptBadge = receipts.length > 0 ? `<span class="receipt-badge">🧾 ${receipts.length}</span>` : '';
+      const receiptStripHtml = buildReceiptStripHtml(expense);
+      const receiptAddBtnHtml = buildReceiptAddBtnHtml(expense);
+
       const card = document.createElement("div");
       card.className = `relative ${cardBg} p-2 pl-4 rounded-xl border ${cardBorder} flex justify-between items-center text-xs transition shadow-sm hover:shadow`;
       card.innerHTML = `
@@ -1230,6 +1527,7 @@ function renderExpensesList() {
             <div class="flex items-center gap-2">
               <strong class="text-slate-900 text-[13px] truncate">${escapeHtml(expense.desc)}</strong>
               <span class="text-[11px]">${escapeHtml(symbol)}</span>
+              ${receiptBadge}
             </div>
             <div class="flex items-center gap-1.5 text-[11px] text-slate-500 flex-wrap mt-0.5">
               <span class="bg-white/80 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-medium">${escapeHtml(expense.category)}</span>
@@ -1249,7 +1547,19 @@ function renderExpensesList() {
           </div>
         </div>
       `;
-      fragment.appendChild(card);
+
+      if (receiptStripHtml || receiptAddBtnHtml) {
+        const receiptWrap = document.createElement("div");
+        receiptWrap.className = "receipt-wrap";
+        receiptWrap.innerHTML = receiptStripHtml + receiptAddBtnHtml;
+        const wrapper = document.createElement("div");
+        wrapper.className = "mb-1";
+        wrapper.appendChild(card);
+        wrapper.appendChild(receiptWrap);
+        fragment.appendChild(wrapper);
+      } else {
+        fragment.appendChild(card);
+      }
     });
   });
   container.appendChild(fragment);
@@ -1321,11 +1631,11 @@ function renderSuggestedSettlements() {
   _lastSettlements = settlements;
   const totalDebt = debtors.reduce((sum, d) => sum + d.amount, 0).toFixed(2);
   const totalCredit = creditors.reduce((sum, c) => sum + c.amount, 0).toFixed(2);
-  
+
   document.getElementById("debt-total").innerText = `$${totalDebt}`;
   document.getElementById("credit-total").innerText = `$${totalCredit}`;
   document.getElementById("settled-total").innerText = `${settlements.length} 筆`;
-  
+
   if (badge) {
     if (settlements.length > 0) { badge.innerText = settlements.length; badge.classList.remove("hidden"); }
     else badge.classList.add("hidden");
@@ -1334,7 +1644,7 @@ function renderSuggestedSettlements() {
     container.innerHTML = '<div class="text-slate-400 text-xs italic text-center py-8">🎉 所有帳目都已平衡！</div>';
     return;
   }
-  
+
   settlements.forEach(s => {
     const fromStyle = memberStyle[s.from] || memberStyle["余生"];
     const toStyle = memberStyle[s.to] || memberStyle["余生"];
@@ -1373,13 +1683,14 @@ function exportLedgerText() {
   [...state.expenses].sort((a, b) => a.day - b.day || b.createdAt - a.createdAt).forEach(e => {
     const splitArr = normalizeSplitWith(e.splitWith, e.amountInHKD);
     const splitStr = splitArr.map(s => `${s.name}($${s.amount.toFixed(0)})`).join("/");
-    text += `D${e.day} | ${e.category} | ${e.desc} | ${e.amount} ${e.currency} (合$${e.amountInHKD.toFixed(2)} HKD) | 付:${e.payer} | 分:${splitStr} | 付款:${e.paymentMethod || '現金'} | 備註:${e.remark || ""}\n`;
+    const rcCount = _getReceipts(e).length;
+    text += `D${e.day} | ${e.category} | ${e.desc} | ${e.amount} ${e.currency} (合$${e.amountInHKD.toFixed(2)} HKD) | 付:${e.payer} | 分:${splitStr} | 付款:${e.paymentMethod || '現金'} | 收據:${rcCount}張 | 備註:${e.remark || ""}\n`;
   });
   copyText(text); showToast("✅ 已匯出文字格式");
 }
 function exportCSV() {
   if (state.expenses.length === 0) { showToast("尚無記帳資料", "⚠️"); return; }
-  const header = ["日期(Day)", "日期", "類別", "說明", "金額", "幣別", "合計HKD", "付款人", "分攤明細", "付款方式", "備註", "建立時間"];
+  const header = ["日期(Day)", "日期", "類別", "說明", "金額", "幣別", "合計HKD", "付款人", "分攤明細", "付款方式", "收據數", "備註", "建立時間"];
   const rows = [header];
   [...state.expenses].sort((a, b) => a.day - b.day || a.createdAt - b.createdAt).forEach(e => {
     const splitArr = normalizeSplitWith(e.splitWith, e.amountInHKD);
@@ -1395,6 +1706,7 @@ function exportCSV() {
       e.payer,
       splitStr,
       e.paymentMethod || "現金",
+      _getReceipts(e).length,
       e.remark || "",
       e.createdTime || ""
     ]);
@@ -1565,6 +1877,7 @@ try {
 function sanitizeExpenses(e) {
   return Array.isArray(e) ? e.filter(item => item !== null && typeof item === "object").map(item => {
     const amountInHKD = Number(item.amountInHKD) || 0;
+    const receipts = Array.isArray(item.receipts) ? item.receipts.filter(r => r && typeof r === 'object') : [];
     return {
       ...item,
       id: item.id || "exp-" + Math.random().toString(36).substr(2, 9),
@@ -1578,6 +1891,7 @@ function sanitizeExpenses(e) {
       payer: item.payer || members[0],
       splitWith: normalizeSplitWith(item.splitWith, amountInHKD),
       paymentMethod: item.paymentMethod || "現金",
+      receipts,
       createdAt: item.createdAt || Date.now(),
       createdTime: item.createdTime || "",
       createdBy: item.createdBy || "",
@@ -1671,7 +1985,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initSnowEffect();
   initRandomCharacters();
   initExchangeRates();
-  applyChartsState();  /* ⭐ v2.7：套用圖表折疊狀態 */
+  applyChartsState();
 
   const paySelect = document.getElementById('payment-method-select');
   if (paySelect) {
@@ -1737,7 +2051,14 @@ window.closeBudgetModal = closeBudgetModal;
 window.saveBudget = saveBudget;
 window.clearBudget = clearBudget;
 window.scrollToTop = scrollToTop;
-/* ⭐ v2.7 新增 */
 window.toggleCharts = toggleCharts;
 window.toggleMoreMenu = toggleMoreMenu;
 window.closeMoreMenu = closeMoreMenu;
+// ⭐ Phase 3
+window.pickReceiptForExpense = pickReceiptForExpense;
+window.uploadReceiptsForExpense = uploadReceiptsForExpense;
+window.deleteReceipt = deleteReceipt;
+window.openReceiptLightbox = openReceiptLightbox;
+// ⭐ v2.9
+window.pickReceiptForModal = pickReceiptForModal;
+window.removeModalReceipt = removeModalReceipt;

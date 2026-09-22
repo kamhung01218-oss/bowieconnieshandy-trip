@@ -18,15 +18,13 @@
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
 
-<!-- ⭐ 設計令牌必須最先載入 -->
 <link rel="stylesheet" href="./tokens.css">
 <link rel="stylesheet" href="./ledger.css">
 <link rel="stylesheet" href="./design-v14.css">
 <link rel="stylesheet" href="./design-v14b.css">
-<link rel="stylesheet" href="./design-v15.css">   <!-- ⭐ 新增這一行 -->
+<link rel="stylesheet" href="./design-v15.css">
 
 <script>
-/* 記帳本主題初始化（與主站同步，避免 FOUC） */
 (function() {
   try {
     var t = localStorage.getItem('tohoku_theme') || 'light';
@@ -37,6 +35,150 @@
   } catch(e) {}
 })();
 </script>
+
+<style>
+/* ============================================================
+ * 記帳憑證（Phase 3）
+ * ============================================================ */
+.receipt-wrap { margin: 0 0 8px 0; padding: 0 4px; }
+
+.receipt-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 6px 0 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.receipt-strip::-webkit-scrollbar { display: none; }
+
+.receipt-thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.receipt-thumb:active { transform: scale(0.96); }
+.receipt-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.receipt-del {
+  position: absolute;
+  top: 2px; right: 2px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(15, 23, 42, 0.8);
+  color: white;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.15s, transform 0.15s;
+}
+.receipt-del:active { background: #dc2626; transform: scale(0.9); }
+
+.receipt-add-btn {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1.5px dashed #cbd5e1;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: all 0.15s;
+  min-height: 32px;
+  align-self: center;
+}
+.receipt-add-btn:active {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #0284c7;
+  transform: scale(0.96);
+}
+
+.receipt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  margin-left: 4px;
+}
+
+/* ⭐ v2.9：記帳 Modal 內的收據預覽 */
+.expense-receipts-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+  min-height: 0;
+}
+.expense-receipts-preview:empty { margin-bottom: 0; }
+
+.expense-receipt-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1.5px dashed #cbd5e1;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.expense-receipt-add-btn:active {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #0284c7;
+  transform: scale(0.97);
+}
+
+/* 深色模式 */
+[data-theme="dark"] .receipt-thumb {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .receipt-add-btn,
+[data-theme="dark"] .expense-receipt-add-btn {
+  background: #1e293b;
+  border-color: #475569;
+  color: #94a3b8;
+}
+[data-theme="dark"] .receipt-add-btn:active,
+[data-theme="dark"] .expense-receipt-add-btn:active {
+  background: #0c4a6e;
+  border-color: #0369a1;
+  color: #7dd3fc;
+}
+[data-theme="dark"] .receipt-badge {
+  background: #422006;
+  color: #fde68a;
+  border-color: #92400e;
+}
+</style>
 </head>
 <body class="relative">
 
@@ -86,7 +228,6 @@
 
 <div id="ledger-root" class="max-w-4xl mx-auto px-4 pt-4 pb-16 space-y-4">
 
-  <!-- 頂部工具列（⭐ 加入 View as selector） -->
   <div class="bg-white border border-slate-200 p-2 rounded-2xl shadow-sm flex items-center justify-between gap-2">
     <div class="flex items-center gap-1.5 flex-wrap min-w-0">
       <span id="cloud-sync-badge" class="text-[11px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-slate-200 shrink-0">
@@ -107,7 +248,6 @@
     </div>
   </div>
 
-  <!-- 統計卡片 -->
   <div class="grid grid-cols-3 gap-2">
     <div class="bg-gradient-to-br from-sky-950 to-sky-900 text-white p-2 rounded-xl shadow-sm text-center">
       <div class="flex items-center justify-center gap-1 mb-0.5"><span class="text-xs">💰</span><span class="text-[11px] text-sky-200 uppercase font-bold tracking-wider">總支出</span></div>
@@ -123,7 +263,6 @@
     </div>
   </div>
 
-  <!-- 預算進度條 -->
   <div id="budget-bar" class="budget-bar hidden">
     <div class="budget-header">
       <span class="budget-label">💰 預算 <strong id="budget-total-text">$0</strong></span>
@@ -136,7 +275,6 @@
     </div>
   </div>
 
-  <!-- 主卡片 -->
   <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden min-h-[500px]">
     <div class="border-b border-slate-200 bg-slate-50 p-1.5 flex gap-1.5 overflow-x-auto scrollbar-none">
       <button id="tab-records-btn" onclick='switchLedgerSubTab("records")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black bg-white text-sky-900 shadow-sm transition flex flex-col items-center justify-center"><span class="text-base">📝</span><span>明細</span></button>
@@ -145,9 +283,7 @@
       <button id="tab-history-btn" onclick='switchLedgerSubTab("history")' class="whitespace-nowrap flex-1 py-1.5 px-2 rounded-lg text-xs font-black text-slate-600 hover:bg-white/50 transition flex flex-col items-center justify-center"><span class="text-base">🕘</span><span>紀錄</span></button>
     </div>
 
-    <!-- 明細 -->
     <div id="subview-records" class="p-3 space-y-3">
-      <!-- ⭐ 精簡工具列：搜尋 + 排序 + 更多 -->
       <div class="flex items-center gap-2 mb-1">
         <input id="search-input" oninput="renderExpensesList()" placeholder="🔍 搜尋" class="flex-1 min-w-0 text-xs border border-slate-300 rounded-lg px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500/50">
         <select id="sort-select" onchange="renderExpensesList()" class="text-xs border border-slate-300 rounded-lg px-2 py-2 bg-white focus:outline-none shrink-0">
@@ -192,7 +328,6 @@
         </div>
       </div>
 
-      <!-- ⭐ 圖表區（可折疊） -->
       <div id="charts-section" class="space-y-2 mb-3">
         <button type="button" onclick="toggleCharts()" class="chart-toggle-btn">
           <span class="chart-toggle-label">
@@ -225,7 +360,6 @@
       </div>
     </div>
 
-    <!-- 結算 -->
     <div id="subview-balances" class="p-4 hidden space-y-4">
       <h4 class="text-sm font-bold text-slate-800">個人結算表</h4>
       <div class="overflow-x-auto">
@@ -240,7 +374,6 @@
       </div>
     </div>
 
-    <!-- 建議還款 -->
     <div id="subview-suggested" class="p-4 hidden space-y-4">
       <div class="grid grid-cols-3 gap-2">
         <div class="bg-red-50 border border-red-200 p-2 rounded-xl text-center"><span class="text-[11px] text-red-600 block">待還總額</span><strong id="debt-total" class="text-sm text-red-600">$0.00</strong></div>
@@ -254,7 +387,6 @@
       <div class="space-y-2" id="suggested-settle-container"></div>
     </div>
 
-    <!-- 歷史 -->
     <div id="subview-history" class="p-4 hidden space-y-4">
       <div class="flex items-center justify-between gap-2 flex-wrap">
         <h4 class="text-sm font-bold text-slate-800">🕘 歷史變更記錄</h4>
@@ -284,7 +416,7 @@
       <button onclick="closeExpenseModal()" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
     </div>
   </div>
-  
+
   <div class="flex-1 overflow-y-auto p-4 md:p-6 pb-24 space-y-5 scrollbar-none bg-slate-50/50 w-full">
 
     <div class="flex gap-2 overflow-x-auto scrollbar-none pb-1 w-full">
@@ -338,6 +470,17 @@
           <option value="餐飲">餐飲</option><option value="交通">交通</option><option value="住宿">住宿</option><option value="購物">購物</option><option value="門票/活動">門票/活動</option><option value="其他">其他</option>
         </select>
       </div>
+
+      <!-- ⭐ v2.9：記帳時可一起加收據 -->
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">
+          🧾 收據 <span class="text-[10px] text-slate-400 font-normal">（選填，可先記帳後補）</span>
+        </label>
+        <div id="expense-receipts-preview" class="expense-receipts-preview"></div>
+        <button type="button" id="expense-receipt-add-btn" onclick="pickReceiptForModal()" class="expense-receipt-add-btn">
+          ＋ 加入收據
+        </button>
+      </div>
     </div>
 
     <details class="bg-white border border-slate-200 rounded-2xl shadow-sm group">
@@ -346,7 +489,7 @@
         <span class="text-slate-400 transition-transform group-open:rotate-180">▼</span>
       </summary>
       <div class="px-4 pb-4 space-y-4 border-t border-slate-100 pt-3 w-full">
-        
+
         <div class="grid grid-cols-2 gap-3 w-full">
           <div class="min-w-0">
             <label class="block text-xs font-bold text-slate-600 mb-1">📅 日期</label>
@@ -411,7 +554,7 @@
 <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none">
   <span id="toast-icon">✅</span><span id="toast-message">操作成功</span>
 </div>
-<!-- ⭐ 返回頂部（IG 風格） -->
+
 <button id="back-to-top-ledger" class="back-to-top-btn" onclick="scrollToTop()" aria-label="返回頂部">
   <svg class="btt-ring" viewBox="0 0 48 48" aria-hidden="true">
     <circle class="btt-ring-track" cx="24" cy="24" r="21"></circle>
@@ -423,6 +566,7 @@
   </svg>
 </button>
 
+<script src="./app-uploads.js"></script>
 <script src="./ledger.js"></script>
 </body>
 </html>
