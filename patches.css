@@ -1,12 +1,12 @@
 /* ============================================================
- * patches.css — 精簡版 v2.0
+ * patches.css — 精簡版 v3.0
  *
  * 載入順序：tokens.css → style.css → dark.css → patches.css → perf.css
  *
  * ⚠️ 維護原則：
  *   1. 新樣式加到對應章節末尾，不要無限制在檔案尾部追加
  *   2. 若需覆蓋舊樣式，直接修改該章節，不要新增「vN 修正版」
- *   3. 已清理：原 28/30/31/34/36/38 章（被後續完全覆蓋）
+ *   3. v3.0：新增第 29-30 章（出發前 Focus Card + 準備總覽）
  * ============================================================ */
 
 /* ============================================================
@@ -595,7 +595,6 @@ a:focus:not(:focus-visible) {
   outline: none;
 }
 
-/* 天氣雨量對比度 */
 .forecast-rain {
   color: #0369a1 !important;
   background: rgba(3, 105, 161, 0.08) !important;
@@ -1240,8 +1239,6 @@ a:focus:not(:focus-visible) {
 /* ============================================================
  * 18. 家庭廣播留言板（Modal 內）
  * ============================================================ */
-
-/* 18.1 留言列 */
 .message-row {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -1294,7 +1291,6 @@ a:focus:not(:focus-visible) {
   font-weight: 500;
 }
 
-/* 18.2 快速模板 + 輸入框 + 選項 + 發送 */
 .msg-quick-row {
   display: flex;
   gap: 6px;
@@ -1412,7 +1408,6 @@ a:focus:not(:focus-visible) {
 .msg-send-btn:active:not(:disabled) { transform: scale(0.98); }
 .msg-send-btn:disabled { cursor: not-allowed; }
 
-/* 18.3 訪客提示 */
 .msg-guest-notice {
   display: flex;
   align-items: center;
@@ -1429,7 +1424,6 @@ a:focus:not(:focus-visible) {
   flex-shrink: 0;
 }
 
-/* 18.4 深色模式 */
 [data-theme="dark"] .message-row {
   background: #1e293b;
   border-color: #334155;
@@ -1690,7 +1684,7 @@ a:focus:not(:focus-visible) {
 }
 
 /* ============================================================
- * 21. 天氣警告 Modal（給未來使用的獨立區塊）
+ * 21. 天氣警告 Modal
  * ============================================================ */
 .app-header .weather-alert-badge {
   display: inline-flex;
@@ -1975,12 +1969,7 @@ a:focus:not(:focus-visible) {
 
 /* ============================================================
  * 24. Focus Card 完整樣式
- *
- * ⚠️ 這裡是 Focus Card 的單一來源。舊版本已刪除。
- *    包含：廣播分級、天氣條、現在進行、下一站、CTA
  * ============================================================ */
-
-/* ---- 24.1 廣播區塊基礎 ---- */
 .app-header .broadcast-block {
   background: linear-gradient(135deg, #fff7ed, #ffedd5);
   border: 1.5px solid #fed7aa;
@@ -2043,7 +2032,6 @@ a:focus:not(:focus-visible) {
   line-height: 1;
 }
 
-/* ---- 24.2 廣播：置頂（完整顯示）---- */
 .app-header .broadcast-pinned-row {
   display: flex;
   flex-direction: column;
@@ -2119,7 +2107,6 @@ a:focus:not(:focus-visible) {
   background: #fef3c7;
 }
 
-/* ---- 24.3 廣播：置頂過多 ---- */
 .app-header .broadcast-more-btn {
   display: flex;
   align-items: center;
@@ -2148,7 +2135,6 @@ a:focus:not(:focus-visible) {
   font-weight: 900;
 }
 
-/* ---- 24.4 廣播：非置頂（折疊成一行）---- */
 .app-header .broadcast-unpinned-row {
   display: flex;
   align-items: center;
@@ -2207,7 +2193,6 @@ a:focus:not(:focus-visible) {
   font-variant-numeric: tabular-nums;
 }
 
-/* ---- 24.5 廣播：空狀態 ---- */
 .app-header .broadcast-empty {
   display: flex;
   align-items: center;
@@ -2230,7 +2215,6 @@ a:focus:not(:focus-visible) {
   flex-shrink: 0;
 }
 
-/* ---- 24.6 天氣條（純色淺藍 + 大圖示）---- */
 .app-header .focus-weather-row {
   display: flex !important;
   flex-direction: column !important;
@@ -2299,7 +2283,6 @@ a:focus:not(:focus-visible) {
   margin-left: 2px;
 }
 
-/* 地點 tab */
 .app-header .focus-weather-tabs {
   display: flex !important;
   gap: 4px !important;
@@ -2332,7 +2315,6 @@ a:focus:not(:focus-visible) {
   box-shadow: 0 2px 6px rgba(14, 165, 233, 0.3) !important;
 }
 
-/* 警告行（獨立黃底，不影響整條配色）*/
 .app-header .focus-weather-alert {
   font-size: 12px !important;
   font-weight: 900 !important;
@@ -2357,7 +2339,6 @@ a:focus:not(:focus-visible) {
   border-left: 3px solid #3b82f6 !important;
 }
 
-/* ---- 24.7 狀態區（現在 + 下一站）---- */
 .app-header .focus-status {
   display: flex !important;
   flex-direction: column !important;
@@ -2365,7 +2346,6 @@ a:focus:not(:focus-visible) {
   margin-bottom: 4px !important;
 }
 
-/* 可點擊（現在/下一站）*/
 .app-header .focus-jumpable {
   display: block !important;
   width: 100% !important;
@@ -2380,7 +2360,6 @@ a:focus:not(:focus-visible) {
   transform: scale(0.985);
 }
 
-/* 現在進行中 */
 .app-header .focus-now-block {
   background: linear-gradient(135deg, #eff6ff, #dbeafe);
   border: 1.5px solid #93c5fd;
@@ -2462,7 +2441,6 @@ a:focus:not(:focus-visible) {
   box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
 }
 
-/* 下一站 */
 .app-header .focus-next-block {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -2514,7 +2492,6 @@ a:focus:not(:focus-visible) {
   color: #0284c7;
 }
 
-/* ---- 24.8 CTA（購物 / 留言）---- */
 .app-header .focus-cta-row.focus-cta-row-during {
   display: flex !important;
   gap: 8px !important;
@@ -2542,7 +2519,6 @@ a:focus:not(:focus-visible) {
   }
 }
 
-/* ---- 24.9 Focus Card 深色模式 ---- */
 [data-theme="dark"] .app-header .broadcast-block {
   background: linear-gradient(135deg, #422006, #78350f);
   border-color: #92400e;
@@ -2707,12 +2683,10 @@ a:focus:not(:focus-visible) {
   to { transform: rotate(360deg); }
 }
 
-/* 重整按鈕：重整中讓圖示轉起來 */
 #app-header-reload.refreshing .tools-toggle-icon svg {
   animation: pull-sync-spin 0.8s linear infinite;
 }
 
-/* Focus Card 同步完成時閃一下 */
 .app-header .focus-inner.sync-flash {
   animation: sync-flash 0.9s ease;
 }
@@ -2723,14 +2697,12 @@ a:focus:not(:focus-visible) {
   100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
 }
 
-/* 深色模式 */
 [data-theme="dark"] .pull-sync-inner {
   background: rgba(30, 41, 59, 0.96);
   border-color: #0369a1;
   color: #7dd3fc;
 }
 
-/* 無障礙：減少動效 */
 @media (prefers-reduced-motion: reduce) {
   .pull-sync-icon.spinning,
   #app-header-reload.refreshing .tools-toggle-icon svg {
@@ -2742,7 +2714,7 @@ a:focus:not(:focus-visible) {
 }
 
 /* ============================================================
- * 25. 折疊縮圖（純縮圖，不含資料徽章）
+ * 25. 折疊縮圖
  * ============================================================ */
 .event-thumb-wrap { display: none; }
 
@@ -2767,7 +2739,6 @@ details.event-card:not([open]) .event-thumb-wrap {
   overflow: hidden;
 }
 
-/* 有圖 */
 .event-thumb.has-image {
   background: #f1f5f9;
   box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
@@ -2779,7 +2750,6 @@ details.event-card:not([open]) .event-thumb-wrap {
   display: block;
 }
 
-/* 沒圖：彩色 emoji 塊 */
 .event-thumb.is-icon {
   background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
   border: 1px solid #bae6fd;
@@ -2795,12 +2765,10 @@ details.event-card:not([open]) .event-thumb-wrap {
 .event-thumb.is-icon.tag-sky    { background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-color: #ddd6fe; }
 .event-thumb.is-icon.tag-rose   { background: linear-gradient(135deg, #fff1f2, #ffe4e6); border-color: #fecdd3; }
 
-/* 標題區預留空間（給右上角縮圖） */
 details.event-card:not([open]) .event-summary-info {
   padding-right: 78px;
 }
 
-/* 手機 */
 @media (max-width: 480px) {
   details.event-card:not([open]) .event-thumb-wrap {
     top: 12px;
@@ -2815,7 +2783,6 @@ details.event-card:not([open]) .event-summary-info {
   details.event-card:not([open]) .event-summary-info { padding-right: 68px; }
 }
 
-/* 深色模式 */
 [data-theme="dark"] .event-thumb.has-image {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(125, 211, 252, 0.15);
@@ -2831,7 +2798,7 @@ details.event-card:not([open]) .event-summary-info {
 [data-theme="dark"] .event-thumb.is-icon.tag-rose   { background: linear-gradient(135deg, #4c0519, #831843); border-color: #be185d; }
 
 /* ============================================================
- * 25.1 ⭐ 標籤列「📎 資料 (N)」徽章（與 tag 並排）
+ * 25.1 標籤列「📎 資料 (N)」徽章
  * ============================================================ */
 .event-inline-data-badge {
   display: inline-flex;
@@ -2881,7 +2848,6 @@ details.event-card:not([open]) .event-summary-info {
   font-variant-numeric: tabular-nums;
 }
 
-/* 手機縮小一點 */
 @media (max-width: 480px) {
   .event-inline-data-badge {
     padding: 2px 8px 2px 6px;
@@ -2894,7 +2860,6 @@ details.event-card:not([open]) .event-summary-info {
   }
 }
 
-/* 深色模式 */
 [data-theme="dark"] .event-inline-data-badge {
   background: linear-gradient(135deg, #0ea5e9, #0284c7);
   box-shadow: 0 1px 4px rgba(14, 165, 233, 0.5);
@@ -2904,7 +2869,7 @@ details.event-card:not([open]) .event-summary-info {
 }
 
 /* ============================================================
- * 26. 折疊時隱藏動作按鈕（資料徽章已移到標籤列）
+ * 26. 折疊時隱藏動作按鈕
  * ============================================================ */
 details.event-card:not([open]) .event-action-buttons {
   display: none !important;
@@ -2917,7 +2882,6 @@ details.event-card:not([open]) .event-summary-actions {
   min-height: 0 !important;
 }
 
-/* 折疊時展開圖示稍微縮小 */
 details.event-card:not([open]) .event-expand-icon {
   width: 26px !important;
   height: 26px !important;
@@ -2930,7 +2894,6 @@ details.event-card:not([open]) .event-expand-icon svg {
   color: #94a3b8 !important;
 }
 
-/* 深色模式 */
 [data-theme="dark"] details.event-card:not([open]) .event-expand-icon {
   background: #1e293b !important;
   border-color: #334155 !important;
@@ -2940,7 +2903,7 @@ details.event-card:not([open]) .event-expand-icon svg {
 }
 
 /* ============================================================
- * 27. 附件區：與攻略內容之間加分隔線（v16.3）
+ * 27. 附件區
  * ============================================================ */
 .event-content-wrapper .event-attachments:not(:empty) {
   margin-top: 14px;
@@ -2952,7 +2915,6 @@ details.event-card:not([open]) .event-expand-icon svg {
   border-top-color: #334155;
 }
 
-/* 手機：縮小一點間距 */
 @media (max-width: 480px) {
   .event-content-wrapper .event-attachments:not(:empty) {
     margin-top: 12px;
@@ -2960,7 +2922,6 @@ details.event-card:not([open]) .event-expand-icon svg {
   }
 }
 
-/* 折疊時：資料按鈕獨立膠囊 */
 details.event-card:not([open]) .event-action-btn-data {
   padding: 7px 14px !important;
   min-height: 34px !important;
@@ -2978,7 +2939,7 @@ details.event-card:not([open]) .event-action-btn-data .badge {
 }
 
 /* ============================================================
- * 28. 資料徽章雙入口顯示控制（v17.2）
+ * 28. 資料徽章雙入口顯示控制
  * ============================================================ */
 details.event-card:not([open]) .event-inline-data-badge {
   display: inline-flex !important;
@@ -2998,9 +2959,6 @@ details.event-card:not([open]) .event-action-buttons {
 
 /* ============================================================
  * ⭐ v17.4 修正：導航按鈕的 SVG 圖示大小限制
- *
- * 這是第二道防護，即使 Tailwind 類別沒生效，
- * 這裡也會強制限制 SVG 尺寸，避免撐破按鈕。
  * ============================================================ */
 .event-nav-link svg {
   width: 14px !important;
@@ -3009,9 +2967,635 @@ details.event-card:not([open]) .event-action-buttons {
   display: inline-block !important;
 }
 
-/* 同時限制所有 event-content-wrapper 內直接子層的 SVG（保險） */
 .event-content-wrapper > a > svg {
   width: 14px !important;
   height: 14px !important;
   flex-shrink: 0 !important;
 }
+
+/* ============================================================
+ * 29. ⭐ v16.0：出發前 Focus Card 完整樣式
+ * ============================================================ */
+
+/* ---- 29.1 標題：呼吸點 ---- */
+.app-header .focus-label-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--t-color-primary);
+  box-shadow: 0 0 8px var(--t-color-primary);
+  animation: focus-label-pulse 1.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes focus-label-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ---- 29.2 倒數計時：依階段縮放 ---- */
+.app-header[data-days-left="large"] .countdown-inline-num { font-size: 46px; }
+.app-header[data-days-left="large"] .countdown-inline-num-sm { font-size: 24px; }
+.app-header[data-days-left="medium"] .countdown-inline-num { font-size: 36px; }
+.app-header[data-days-left="medium"] .countdown-inline-num-sm { font-size: 20px; }
+.app-header[data-days-left="small"] .countdown-inline-num { font-size: 28px; }
+.app-header[data-days-left="small"] .countdown-inline-num-sm { font-size: 17px; }
+
+/* ---- 29.3 出發日天氣預告 ---- */
+.app-header .focus-departure-weather {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  margin: 8px 0;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #075985;
+}
+.app-header .focus-departure-weather .fdw-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.app-header .focus-departure-weather .fdw-loc { font-weight: 900; }
+.app-header .focus-departure-weather .fdw-temp {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.app-header .focus-departure-weather .fdw-rain {
+  font-size: 11px;
+  color: #0369a1;
+  background: rgba(3, 105, 161, 0.08);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ---- 29.4 準備進度 ---- */
+.app-header .focus-progress-row {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #f8fbff, #f0f9ff);
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+}
+.app-header .focus-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.app-header .focus-progress-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: #075985;
+  letter-spacing: 0.02em;
+}
+.app-header .focus-progress-count {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--t-color-primary);
+  font-variant-numeric: tabular-nums;
+}
+.app-header .focus-progress-track {
+  height: 8px;
+  background: #e0f2fe;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.app-header .focus-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8, #0284c7);
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+.app-header .focus-progress-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+/* ---- 29.5 搶票倒數 ---- */
+.app-header .focus-ticket-countdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+.app-header .ftc-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1.5px solid #fbbf24;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #78350f;
+  animation: ftc-pulse 2.5s ease-in-out infinite;
+}
+.app-header .ftc-item.urgent {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border-color: #f87171;
+  color: #991b1b;
+  animation: ftc-pulse-urgent 1.2s ease-in-out infinite;
+}
+@keyframes ftc-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+  50% { box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2); }
+}
+@keyframes ftc-pulse-urgent {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.15); }
+}
+.app-header .ftc-icon { font-size: 16px; line-height: 1; flex-shrink: 0; }
+.app-header .ftc-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-header .ftc-time {
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ---- 29.6 今日任務 ---- */
+.app-header .focus-task.focus-task-primary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-top: 12px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px solid #fbbf24;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+}
+.app-header .focus-task.focus-task-primary:active {
+  transform: scale(0.98);
+}
+.app-header .focus-task.focus-task-primary .focus-task-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.app-header .focus-task-body {
+  flex: 1;
+  min-width: 0;
+}
+.app-header .focus-task.focus-task-primary .focus-task-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: #78350f;
+  line-height: 1.35;
+  margin-bottom: 2px;
+}
+.app-header .focus-task.focus-task-primary .focus-task-hint {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #92400e;
+  opacity: 0.85;
+  line-height: 1.4;
+}
+.app-header .focus-task-arrow {
+  font-size: 20px;
+  font-weight: 900;
+  color: #92400e;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* ---- 29.7 行李準備度 ---- */
+.app-header .focus-luggage-progress {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1px solid #86efac;
+  border-radius: 12px;
+}
+.app-header .focus-luggage-progress.done {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border-color: #4ade80;
+}
+.app-header .flp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #166534;
+}
+.app-header .flp-count {
+  font-size: 14px;
+  color: #15803d;
+  font-variant-numeric: tabular-nums;
+}
+.app-header .flp-track {
+  height: 8px;
+  background: #bbf7d0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.app-header .flp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #10b981);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+/* ---- 29.8 未完成清單 ---- */
+.app-header .focus-pending-list {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: #fef2f2;
+  border: 1.5px solid #fecaca;
+  border-radius: 12px;
+}
+.app-header .focus-pending-list.all-done {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+.app-header .fpl-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: #991b1b;
+  margin-bottom: 6px;
+  letter-spacing: 0.03em;
+}
+.app-header .focus-pending-list.all-done .fpl-title {
+  color: #166534;
+  margin-bottom: 0;
+}
+.app-header .focus-pending-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.app-header .focus-pending-list li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #7f1d1d;
+  line-height: 1.5;
+}
+.app-header .focus-pending-list li::before {
+  content: '•';
+  position: absolute;
+  left: 6px;
+  color: #dc2626;
+  font-weight: 900;
+}
+
+/* ---- 29.9 深色模式 ---- */
+[data-theme="dark"] .app-header .focus-departure-weather {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border-color: #334155;
+  color: #7dd3fc;
+}
+[data-theme="dark"] .app-header .focus-departure-weather .fdw-rain {
+  background: rgba(125, 211, 252, 0.12);
+  color: #7dd3fc;
+}
+[data-theme="dark"] .app-header .focus-progress-row {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border-color: #334155;
+}
+[data-theme="dark"] .app-header .focus-progress-title { color: #7dd3fc; }
+[data-theme="dark"] .app-header .focus-progress-count { color: #38bdf8; }
+[data-theme="dark"] .app-header .focus-progress-track { background: #334155; }
+[data-theme="dark"] .app-header .focus-progress-footer { color: #94a3b8; }
+
+[data-theme="dark"] .app-header .ftc-item {
+  background: linear-gradient(135deg, #422006, #78350f);
+  border-color: #92400e;
+  color: #fde68a;
+}
+[data-theme="dark"] .app-header .ftc-item.urgent {
+  background: linear-gradient(135deg, #450a0a, #7f1d1d);
+  border-color: #991b1b;
+  color: #fecaca;
+}
+
+[data-theme="dark"] .app-header .focus-task.focus-task-primary {
+  background: linear-gradient(135deg, #422006, #78350f);
+  border-color: #92400e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .app-header .focus-task.focus-task-primary .focus-task-title {
+  color: #fde68a;
+}
+[data-theme="dark"] .app-header .focus-task.focus-task-primary .focus-task-hint {
+  color: #fbbf24;
+}
+[data-theme="dark"] .app-header .focus-task-arrow { color: #fbbf24; }
+
+[data-theme="dark"] .app-header .focus-luggage-progress {
+  background: linear-gradient(135deg, #064e3b, #065f46);
+  border-color: #10b981;
+}
+[data-theme="dark"] .app-header .focus-luggage-progress.done {
+  background: linear-gradient(135deg, #065f46, #047857);
+  border-color: #10b981;
+}
+[data-theme="dark"] .app-header .flp-header { color: #6ee7b7; }
+[data-theme="dark"] .app-header .flp-count { color: #34d399; }
+[data-theme="dark"] .app-header .flp-track { background: #064e3b; }
+
+[data-theme="dark"] .app-header .focus-pending-list {
+  background: #450a0a;
+  border-color: #7f1d1d;
+}
+[data-theme="dark"] .app-header .focus-pending-list.all-done {
+  background: #064e3b;
+  border-color: #10b981;
+}
+[data-theme="dark"] .app-header .fpl-title { color: #fca5a5; }
+[data-theme="dark"] .app-header .focus-pending-list.all-done .fpl-title { color: #6ee7b7; }
+[data-theme="dark"] .app-header .focus-pending-list li { color: #fecaca; }
+[data-theme="dark"] .app-header .focus-pending-list li::before { color: #f87171; }
+
+/* ---- 29.10 極窄螢幕 ---- */
+@media (max-width: 360px) {
+  .app-header[data-days-left="large"] .countdown-inline-num { font-size: 36px; }
+  .app-header[data-days-left="medium"] .countdown-inline-num { font-size: 30px; }
+  .app-header[data-days-left="small"] .countdown-inline-num { font-size: 24px; }
+  .app-header .focus-departure-weather { font-size: 11px; padding: 8px 10px; }
+  .app-header .focus-departure-weather .fdw-icon { font-size: 17px; }
+  .app-header .ftc-item { font-size: 11.5px; padding: 7px 10px; }
+  .app-header .ftc-icon { font-size: 14px; }
+  .app-header .focus-task.focus-task-primary { padding: 12px 14px; gap: 10px; }
+  .app-header .focus-task.focus-task-primary .focus-task-icon { font-size: 20px; }
+  .app-header .focus-task.focus-task-primary .focus-task-title { font-size: 13px; }
+  .app-header .focus-task.focus-task-primary .focus-task-hint { font-size: 11px; }
+  .app-header .focus-pending-list li { font-size: 12px; }
+}
+
+/* ---- 29.11 prefers-reduced-motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .app-header .focus-label-dot,
+  .app-header .ftc-item,
+  .app-header .ftc-item.urgent {
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+ * 30. ⭐ v16.1：準備進度可點擊 + 準備總覽 Modal
+ * ============================================================ */
+
+/* ---- 30.1 Focus Card 內：準備進度可點擊 ---- */
+.app-header .focus-progress-clickable {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  padding: 12px 40px 12px 14px;
+  margin-top: 12px;
+  background: linear-gradient(135deg, #f8fbff, #f0f9ff);
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-header .focus-progress-clickable:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
+}
+.app-header .focus-progress-clickable.all-done {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border-color: #86efac;
+}
+.app-header .focus-progress-clickable .focus-progress-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  font-weight: 900;
+  color: #94a3b8;
+  transition: transform 0.15s, color 0.15s;
+}
+.app-header .focus-progress-clickable:active .focus-progress-arrow {
+  transform: translateY(-50%) translateX(3px);
+  color: #0284c7;
+}
+
+/* ---- 30.2 準備總覽 Modal ---- */
+.prep-overview-hero {
+  padding: 20px 16px;
+  text-align: center;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+.prep-overview-percent {
+  font-size: 42px;
+  font-weight: 900;
+  color: #0c4a6e;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 12px;
+}
+.prep-overview-track {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.prep-overview-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8, #0284c7);
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+.prep-overview-meta {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0369a1;
+}
+
+.prep-section {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.prep-section-done {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border-color: #86efac;
+}
+.prep-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.prep-section-icon { font-size: 20px; flex-shrink: 0; }
+.prep-section-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: #0f172a;
+  flex: 1;
+  min-width: 0;
+}
+.prep-section-done .prep-section-title { color: #166534; }
+.prep-section-count {
+  font-size: 13px;
+  font-weight: 900;
+  color: #0284c7;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.prep-section-done .prep-section-count { color: #15803d; }
+
+.prep-pending-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.prep-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.4;
+}
+.prep-item-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.prep-item-label {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+.prep-item-more {
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  background: transparent;
+  padding: 4px 0;
+}
+.prep-section-all-done {
+  padding: 8px 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #166534;
+}
+.prep-section-pending {
+  padding: 8px 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.prep-section-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 3px 10px rgba(14, 165, 233, 0.3);
+}
+.prep-section-cta:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.4);
+}
+.prep-cta-arrow {
+  font-size: 16px;
+  font-weight: 900;
+  transition: transform 0.15s;
+}
+.prep-section-cta:active .prep-cta-arrow {
+  transform: translateX(3px);
+}
+
+/* ---- 30.3 深色模式 ---- */
+[data-theme="dark"] .app-header .focus-progress-clickable {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border-color: #334155;
+}
+[data-theme="dark"] .app-header .focus-progress-clickable.all-done {
+  background: linear-gradient(135deg, #064e3b, #065f46);
+  border-color: #10b981;
+}
+[data-theme="dark"] .app-header .focus-progress-clickable:active .focus-progress-arrow {
+  color: #38bdf8;
+}
+
+[data-theme="dark"] .prep-overview-hero {
+  background: linear-gradient(135deg, #0c4a6e, #075985);
+}
+[data-theme="dark"] .prep-overview-percent { color: #e0f2fe; }
+[data-theme="dark"] .prep-overview-meta { color: #7dd3fc; }
+[data-theme="dark"] .prep-overview-track { background: rgba(0, 0, 0, 0.3); }
+
+[data-theme="dark"] .prep-section {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .prep-section-done {
+  background: linear-gradient(135deg, #064e3b, #065f46);
+  border-color: #10b981;
+}
+[data-theme="dark"] .prep-section-title { color: #f1f5f9; }
+[data-theme="dark"] .prep-section-done .prep-section-title { color: #6ee7b7; }
+[data-theme="dark"] .prep-section-count { color: #38bdf8; }
+[data-theme="dark"] .prep-section-done .prep-section-count { color: #34d399; }
+[data-theme="dark"] .prep-item {
+  background: #0f172a;
+  color: #cbd5e1;
+}
+[data-theme="dark"] .prep-item-more { color: #64748b; }
+[data-theme="dark"] .prep-section-all-done { color: #6ee7b7; }
+[data-theme="dark"] .prep-section-pending { color: #fbbf24; }

@@ -1,16 +1,16 @@
 /* ============================================================
- * app-core.js — v14.0
+ * app-core.js — v14.1
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
  *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
- *
- * v13.0 變更：
- *   - ⭐ 新增 getInitialDay() 自動跳轉初始 Day
- *   - ⭐ initAppAfterLogin() 使用初始 Day 渲染
  *
  * v14.0 變更：
  *   - ⭐ 移除「行前預訂」密碼驗證
  *     登入的成員即可編輯，訪客仍唯讀
  *   - ⭐ initAppAfterLogin() 開頭清掉舊的 admin_unlocked 旗標
+ *
+ * v14.1 變更：
+ *   - ⭐ 註冊 prep-overview-modal 到 setupModalDrag
+ *   - ⭐ 新增 getPendingBookingItems / getPendingEquipItems callback
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -85,9 +85,8 @@ if (!window.weatherCache) window.weatherCache = {};
 
 window._renderedDays = new Set();
 
-// ==================== ⭐ 自動跳轉初始 Day ====================
+// ==================== 自動跳轉初始 Day ====================
 function getInitialDay() {
-  // 1. URL 有 ?day=N（測試 / 分享）
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const urlDay = urlParams.get('day');
@@ -97,7 +96,6 @@ function getInitialDay() {
     }
   } catch (e) {}
 
-  // 2. 旅行中 → 今天
   const now = Date.now();
   if (now >= TRIP_START && now <= TRIP_END) {
     for (let i = 0; i < tripDates.length; i++) {
@@ -107,11 +105,9 @@ function getInitialDay() {
     }
   }
 
-  // 3. 上次看過的 Day
   const last = parseInt(localStorage.getItem('tohoku_last_day') || '0');
   if (last >= 1 && last <= 7) return last;
 
-  // 4. 預設 D1
   return 1;
 }
 window.getInitialDay = getInitialDay;
@@ -316,10 +312,8 @@ async function submitChangePin() {
 
 // ==================== 應用初始化 ====================
 function initAppAfterLogin() {
-  // ⭐ v14.0：清掉舊的密碼解鎖旗標
   try { localStorage.removeItem("tohoku_admin_unlocked"); } catch(e) {}
 
-  // ⭐ v13.0：自動跳到初始 Day
   const initialDay = getInitialDay();
   window._lastActiveDay = initialDay;
 
@@ -332,18 +326,15 @@ function initAppAfterLogin() {
   fetchLiveRates();
   initSnowEffect();
 
-  setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal', 'receipt-modal']);
+  setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal', 'receipt-modal', 'prep-overview-modal']);
 
-  // ⭐ 只渲染初始 Day 的 section
   renderDayItinerary(`day-section-${initialDay}`, winterItineraries[initialDay - 1]);
   setupImageFadeIn(document);
 
-  // 隱藏所有 section，只顯示初始 Day
   document.querySelectorAll('.day-section').forEach(s => s.classList.add('hidden'));
   const initialSection = document.getElementById(`day-section-${initialDay}`);
   if (initialSection) initialSection.classList.remove('hidden');
 
-  // ⭐ v14.2：一次完成「設定 active + 標記今天 + 自動置中」
   setTimeout(() => {
     if (window.initDayTabs) {
       window.initDayTabs(initialDay);
@@ -432,6 +423,29 @@ function initAppAfterLogin() {
             category: nextItem.category,
             remaining
           };
+        },
+        // ⭐ v14.1：新增未完成清單 callback
+        getPendingBookingItems: () => {
+          const all = [...bookingList, ...customBookingItems];
+          return all.filter(item => {
+            const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`;
+            return state.checkedItems[key] !== true;
+          }).map(item => ({
+            icon: item.icon,
+            label: item.label
+          }));
+        },
+        getPendingEquipItems: () => {
+          if (!currentUser || currentUser === "訪客") return [];
+          const userData = getUserData();
+          const all = [...equipmentList, ...(userData.customEquip || [])];
+          return all.filter(item => {
+            const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`;
+            return userData.equipChecked[key] !== true;
+          }).map(item => ({
+            icon: item.icon,
+            label: item.label
+          }));
         }
       }
     });
@@ -506,7 +520,7 @@ async function saveUserData() {
 
 function haptic(ms = 10) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
 
-// ==================== ⭐ 主題切換 ====================
+// ==================== 主題切換 ====================
 const APP_THEME_KEY = 'tohoku_theme';
 
 function applyAppTheme(theme) {
@@ -635,7 +649,8 @@ function setupModalDrag(modals) {
             'shopping-modal': window.closeShoppingModal,
             'all-shopping-modal': window.closeAllShoppingModal,
             'currency-modal': window.closeCurrencyModal,
-            'receipt-modal': window.closeReceiptModal
+            'receipt-modal': window.closeReceiptModal,
+            'prep-overview-modal': window.closePrepOverviewModal
           };
           if (closers[id]) closers[id]();
           box.style.transform = ''; modal.style.opacity = '';
@@ -687,14 +702,12 @@ function switchMainTab(tab) {
 
 function setupImageFadeIn(container = document) { const imgs = container.querySelectorAll('img.lazy-fade:not(.loaded)'); imgs.forEach(img => { if (img.complete && img.naturalWidth > 0) img.classList.add('loaded'); else { img.addEventListener('load', () => img.classList.add('loaded'), { once: true }); img.addEventListener('error', () => { img.classList.add('loaded'); img.style.display = 'none'; }, { once: true }); } }); }
 
-// ==================== ⭐ v14.0：登入即可編輯 ====================
+// ==================== v14.0：登入即可編輯 ====================
 function isAdminUnlocked() {
-  // 登入的成員即可編輯，訪客仍唯讀
   const u = window.currentUser || localStorage.getItem("tohoku_current_user");
   return !!u && u !== "訪客";
 }
 
-// 保留舊版密碼相關函式（不再被呼叫，但保留相容）
 function showPasswordModal() { const m = document.getElementById("password-modal"); m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); document.getElementById("password-error").classList.add('hidden'); document.getElementById("password-input").value = ''; setTimeout(() => document.getElementById("password-input").focus(), 100); }
 function closePasswordModal() { const m = document.getElementById("password-modal"); m.classList.remove('active'); setTimeout(() => m.style.display = 'none', 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); }
 function verifyPassword() { const input = document.getElementById("password-input").value.trim(); if (input === ADMIN_PASSWORD) { closePasswordModal(); renderBookingChecklist(); renderEquipChecklist(); showToast("✅ 已解鎖管理權限"); haptic(15); } else { document.getElementById("password-error").classList.remove("hidden"); document.getElementById("password-input").value = ''; haptic(50); } }
@@ -861,7 +874,7 @@ function hideModal(id) { const overlay = document.getElementById(id); if (overla
 window.showModal = showModal;
 window.hideModal = hideModal;
 
-// ==================== 📸 共享收據/憑證（Google Drive 版） ====================
+// ==================== 📸 共享收據/憑證 ====================
 function openReceiptModal() {
   const m = document.getElementById('receipt-modal');
   if (!m) return;
@@ -1001,7 +1014,7 @@ function releaseAdminDevice() { if (!confirm("確定要解除這台裝置的管�
   if (!localStorage.getItem(HINT_KEY)) { setTimeout(() => { const hint = document.createElement('div'); hint.className = 'currency-fab-hint'; hint.textContent = '💡 可拖動我，點擊開啟匯率'; document.body.appendChild(hint); const rect = fab.getBoundingClientRect(); hint.style.left = Math.max(12, Math.min(rect.left - 60, window.innerWidth - 200)) + 'px'; hint.style.top = (rect.top - 44) + 'px'; requestAnimationFrame(() => hint.classList.add('show')); setTimeout(() => { hint.classList.remove('show'); setTimeout(() => hint.remove(), 400); }, 3500); localStorage.setItem(HINT_KEY, '1'); }, 2000); }
 })();
 
-// ==================== 返回頂部（IG 風格） ====================
+// ==================== 返回頂部 ====================
 function scrollToTop() {
   try {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1073,7 +1086,7 @@ window.scrollToTop = scrollToTop;
   update();
 })();
 
-// ==================== 📲 PWA 安裝引導（工具選單入口） ====================
+// ==================== 📲 PWA 安裝引導 ====================
 (function setupInstallPrompt() {
   let deferredPrompt = null;
 

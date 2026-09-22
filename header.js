@@ -1,18 +1,19 @@
 /* ============================================================
- * AppHeader v15.6
+ * AppHeader v16.1
  * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [🔄 重整] + [☰ 工具]
  * - Focus Card：出發前 / 中 / 後
  * - 旅行中順序：廣播 → 天氣 → 現在 → 下一站 → CTA(購物/留言)
  *
- * v15.5 變更：
- *   - ⭐ 下拉改為「同步資料」（天氣 + 匯率 + 雲端）
+ * v16.0 變更：
+ *   - ⭐ 出發前 Focus Card 分 4 階段演化
+ *   - ⭐ 準備進度改為「真實任務完成度」
+ *   - ⭐ 今日任務升級為主角
+ *   - ⭐ 新增：出發日天氣、搶票倒數、行李準備度、未完成清單
+ *   - ⭐ 倒數計時依階段自動縮放
  *
- * v15.6 變更：
- *   - ⭐ 修正下拉同步無效問題
- *       1. 改用 window.fetchWeatherData / window.fetchLiveRates
- *       2. 加 console log 方便除錯
- *       3. 同步完成後強制重繪當前 Day + Focus Card
- *       4. 加可見的視覺回饋（Focus Card 閃爍）
+ * v16.1 變更：
+ *   - ⭐ 準備進度可點擊 → 打開「準備總覽」Modal
+ *   - ⭐ 準備總覽 Modal 顯示未完成項與一鍵前往處理
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -21,6 +22,7 @@ window.AppHeader = (function () {
   let _tickTimer = null;
   let _syncConnected = true;
   let _lastRenderedPhase = null;
+  let _lastPrepStage = null;
   let _lastDuringRender = 0;
   let _docClickHandler = null;
   let _escKeyHandler = null;
@@ -70,6 +72,13 @@ window.AppHeader = (function () {
     if (now < _config.tripStart) return "before";
     if (now > _config.tripEnd) return "after";
     return "during";
+  }
+
+  function getPrepStage(days) {
+    if (days <= 7) return "final";
+    if (days <= 30) return "sprint";
+    if (days <= 90) return "prep";
+    return "seed";
   }
 
   function getCurrentDayIndex() {
@@ -150,14 +159,6 @@ window.AppHeader = (function () {
     return null;
   }
 
-  function getPrepProgress() {
-    const now = Date.now();
-    const PREP_START = _config.tripStart - 180 * 86400000;
-    if (now <= PREP_START) return 0;
-    if (now >= _config.tripStart) return 100;
-    return Math.min(100, Math.max(0, ((now - PREP_START) / (_config.tripStart - PREP_START)) * 100));
-  }
-
   // ============================================================
   // 天氣判斷
   // ============================================================
@@ -182,7 +183,7 @@ window.AppHeader = (function () {
       return { level: 'warn', text: `❄️ 寒冷 ${min}°C，羽絨+雪靴必備` };
     }
     if (typeof rain === 'number' && rain >= 60) {
-      return { level: 'info', text: `🌧️ 降雪 ${rain}%，帶防水外套` };
+      return { level: 'warn', text: `🌧️ 降雪 ${rain}%，帶防水外套` };
     }
     return null;
   }
@@ -208,24 +209,6 @@ window.AppHeader = (function () {
     return { done: 0, total: 0 };
   }
 
-  function renderProgressList(items) {
-    const valid = items.filter(it => getProgressData(it.type).total > 0);
-    if (valid.length === 0) return "";
-    const rows = valid.map(it => {
-      const p = getProgressData(it.type);
-      const percent = p.total > 0 ? Math.round((p.done / p.total) * 100) : 0;
-      const done = p.done === p.total && p.total > 0;
-      return `<button type="button" class="progress-item ${done ? 'done' : ''}" data-action="${it.action}">
-        <span class="progress-icon">${it.icon}</span>
-        <span class="progress-label">${escapeHtml(it.label)}</span>
-        <span class="progress-bar-mini"><span class="progress-bar-mini-fill" style="width:${percent}%"></span></span>
-        <span class="progress-count">${p.done}/${p.total}</span>
-        <span class="progress-arrow">›</span>
-      </button>`;
-    }).join("");
-    return `<div class="progress-list">${rows}</div>`;
-  }
-
   function isGuestUser() {
     try { return localStorage.getItem("tohoku_current_user") === "訪客"; } catch(e) { return false; }
   }
@@ -248,7 +231,274 @@ window.AppHeader = (function () {
   }
 
   // ============================================================
-  // ⭐ v15.4：重整頁面（按鈕觸發）
+  // 出發前 Focus Card 輔助函式
+  // ============================================================
+  function formatCountdownShort(ms) {
+    if (ms <= 0) return "已開賣";
+    const days = Math.floor(ms / 86400000);
+    const hours = Math.floor((ms % 86400000) / 3600000);
+    const minutes = Math.floor((ms % 3600000) / 60000);
+    if (days > 0) return `${days}天 ${hours}時`;
+    if (hours > 0) return `${hours}時 ${minutes}分`;
+    return `${minutes}分`;
+  }
+
+  function buildDepartureWeatherHtml(weather, location) {
+    if (!weather) return '';
+    const locName = location ? location.shortName || location.name : '仙台';
+    const icon = weather.icon || '🌨️';
+    const max = weather.max;
+    const min = weather.min;
+    const rain = weather.rain;
+    return `<div class="focus-departure-weather">
+      <span class="fdw-icon">${icon}</span>
+      <span class="fdw-loc">${escapeHtml(locName)}</span>
+      <span class="fdw-temp">${min}° ~ ${max}°</span>
+      <span class="fdw-rain">💧 ${rain}%</span>
+    </div>`;
+  }
+
+  function buildTicketCountdownHtml() {
+    const now = Date.now();
+    const items = [];
+
+    if (_config.ginzanTarget > now) {
+      const diff = _config.ginzanTarget - now;
+      items.push({
+        icon: '🎟️',
+        label: '銀山 Fast Pass',
+        time: formatCountdownShort(diff),
+        urgent: diff < 3 * 86400000
+      });
+    }
+    if (_config.zaoTarget > now) {
+      const diff = _config.zaoTarget - now;
+      items.push({
+        icon: '🚠',
+        label: '藏王纜車優先票',
+        time: formatCountdownShort(diff),
+        urgent: diff < 3 * 86400000
+      });
+    }
+
+    if (items.length === 0) return '';
+
+    return `<div class="focus-ticket-countdown">
+      ${items.map(item => `
+        <div class="ftc-item ${item.urgent ? 'urgent' : ''}">
+          <span class="ftc-icon">${item.icon}</span>
+          <span class="ftc-label">${escapeHtml(item.label)}</span>
+          <span class="ftc-time">${item.time}</span>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  // 準備進度 HTML（真實完成度 + 可點擊）
+  function buildPrepProgressHtml(bookingP, equipP, totalPrep, donePrep, prepPercent) {
+    if (totalPrep === 0) return '';
+    const pending = totalPrep - donePrep;
+    const allDone = pending === 0;
+    return `<button type="button" class="focus-progress-row focus-progress-clickable ${allDone ? 'all-done' : ''}" data-action="prep-overview" aria-label="查看準備總覽">
+      <div class="focus-progress-header">
+        <span class="focus-progress-title">📋 準備進度</span>
+        <span class="focus-progress-count">${donePrep} / ${totalPrep}</span>
+      </div>
+      <div class="focus-progress-track">
+        <div class="focus-progress-fill" style="width: ${prepPercent}%"></div>
+      </div>
+      <div class="focus-progress-footer">
+        <span>${allDone ? '🎉 全部完成' : `✅ ${donePrep} 項完成`}</span>
+        <span>${allDone ? '' : `⏳ ${pending} 項待處理`}</span>
+      </div>
+      <span class="focus-progress-arrow">›</span>
+    </button>`;
+  }
+
+  function buildLuggageProgressHtml(equipP) {
+    if (!equipP || equipP.total === 0) return '';
+    const percent = Math.round((equipP.done / equipP.total) * 100);
+    const allDone = equipP.done === equipP.total;
+    return `<div class="focus-luggage-progress ${allDone ? 'done' : ''}">
+      <div class="flp-header">
+        <span>🎒 行李準備度</span>
+        <span class="flp-count">${equipP.done} / ${equipP.total}</span>
+      </div>
+      <div class="flp-track">
+        <div class="flp-fill" style="width: ${percent}%"></div>
+      </div>
+    </div>`;
+  }
+
+  function buildPendingListHtml(bookingP, equipP) {
+    const items = [];
+
+    const pendingBooking = bookingP.total - bookingP.done;
+    if (pendingBooking > 0) {
+      const cb = _config.callbacks || {};
+      if (cb.getNextPendingBooking) {
+        try {
+          const next = cb.getNextPendingBooking();
+          if (next && next.label) {
+            items.push(`${next.icon || '📌'} ${next.label}（還有 ${next.remaining} 項）`);
+          } else {
+            items.push(`📌 行前預訂還有 ${pendingBooking} 項`);
+          }
+        } catch (e) {
+          items.push(`📌 行前預訂還有 ${pendingBooking} 項`);
+        }
+      } else {
+        items.push(`📌 行前預訂還有 ${pendingBooking} 項`);
+      }
+    }
+
+    const pendingEquip = equipP.total - equipP.done;
+    if (pendingEquip > 0) {
+      items.push(`🎒 裝備清單還有 ${pendingEquip} 項`);
+    }
+
+    if (items.length === 0) {
+      return `<div class="focus-pending-list all-done">
+        <div class="fpl-title">✅ 全部完成！準備出發</div>
+      </div>`;
+    }
+
+    return `<div class="focus-pending-list">
+      <div class="fpl-title">⚠️ 尚未完成</div>
+      <ul>
+        ${items.slice(0, 3).map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+
+  function buildTaskHtml(task) {
+    if (!task) return '';
+    const action = task.type === 'booking' ? 'booking'
+                 : task.type === 'ticket' ? 'ticket'
+                 : 'overview';
+    return `<div class="focus-task focus-task-primary" data-action="${action}">
+      <div class="focus-task-icon">${task.emoji}</div>
+      <div class="focus-task-body">
+        <div class="focus-task-title">${escapeHtml(task.label)}</div>
+        <div class="focus-task-hint">${escapeHtml(task.hint)}</div>
+      </div>
+      <div class="focus-task-arrow">›</div>
+    </div>`;
+  }
+
+  // ============================================================
+  // ⭐ v16.1：準備總覽 Modal
+  // ============================================================
+  function openPrepOverviewModal() {
+    const m = document.getElementById('prep-overview-modal');
+    if (!m) return;
+    const content = document.getElementById('prep-overview-content');
+    if (!content) return;
+
+    const cb = _config.callbacks || {};
+    const bookingP = getProgressData("booking");
+    const equipP = getProgressData("equip");
+    const totalPrep = bookingP.total + equipP.total;
+    const donePrep = bookingP.done + equipP.done;
+    const prepPercent = totalPrep > 0 ? Math.round((donePrep / totalPrep) * 100) : 0;
+
+    let pendingBooking = [];
+    let pendingEquip = [];
+    if (cb.getPendingBookingItems) {
+      try { pendingBooking = cb.getPendingBookingItems() || []; } catch (e) {}
+    }
+    if (cb.getPendingEquipItems) {
+      try { pendingEquip = cb.getPendingEquipItems() || []; } catch (e) {}
+    }
+
+    const bookingHtml = buildPrepSectionHtml('📌', '行前預訂', bookingP, pendingBooking, 'booking');
+    const equipHtml = buildPrepSectionHtml('🎒', '我的裝備', equipP, pendingEquip, 'equip');
+
+    content.innerHTML = `
+      <div class="prep-overview-hero">
+        <div class="prep-overview-percent">${prepPercent}%</div>
+        <div class="prep-overview-track">
+          <div class="prep-overview-fill" style="width: ${prepPercent}%"></div>
+        </div>
+        <div class="prep-overview-meta">${donePrep} / ${totalPrep} 項完成</div>
+      </div>
+      ${bookingHtml}
+      ${equipHtml}
+    `;
+
+    content.querySelectorAll('[data-action]').forEach(el => {
+      el.addEventListener('click', () => {
+        const action = el.dataset.action;
+        closePrepOverviewModal();
+        setTimeout(() => {
+          if (action === 'booking' && cb.onBooking) cb.onBooking();
+          else if (action === 'equip' && cb.onEquip) cb.onEquip();
+        }, 250);
+      });
+    });
+
+    m.style.display = 'flex';
+    m.classList.add('active');
+    document.body.classList.add('modal-open');
+    haptic(8);
+  }
+
+  function buildPrepSectionHtml(icon, title, progress, pendingItems, action) {
+    const pending = progress.total - progress.done;
+    const allDone = pending === 0;
+
+    if (allDone) {
+      return `<div class="prep-section prep-section-done">
+        <div class="prep-section-header">
+          <span class="prep-section-icon">${icon}</span>
+          <span class="prep-section-title">${title}</span>
+          <span class="prep-section-count">${progress.done} / ${progress.total}</span>
+        </div>
+        <div class="prep-section-all-done">✅ 全部完成</div>
+      </div>`;
+    }
+
+    let listHtml = '';
+    if (pendingItems.length > 0) {
+      const itemsHtml = pendingItems.slice(0, 5).map(item => `
+        <li class="prep-item">
+          <span class="prep-item-icon">${item.icon || '•'}</span>
+          <span class="prep-item-label">${escapeHtml(item.label || item)}</span>
+        </li>
+      `).join('');
+      const moreHtml = pendingItems.length > 5
+        ? `<li class="prep-item prep-item-more">...還有 ${pendingItems.length - 5} 項</li>`
+        : '';
+      listHtml = `<ul class="prep-pending-list">${itemsHtml}${moreHtml}</ul>`;
+    } else {
+      listHtml = `<div class="prep-section-pending">⏳ 還有 ${pending} 項未完成</div>`;
+    }
+
+    return `<div class="prep-section">
+      <div class="prep-section-header">
+        <span class="prep-section-icon">${icon}</span>
+        <span class="prep-section-title">${title}</span>
+        <span class="prep-section-count">${progress.done} / ${progress.total}</span>
+      </div>
+      ${listHtml}
+      <button type="button" class="prep-section-cta" data-action="${action}">
+        前往處理 <span class="prep-cta-arrow">›</span>
+      </button>
+    </div>`;
+  }
+
+  function closePrepOverviewModal() {
+    const m = document.getElementById('prep-overview-modal');
+    if (!m) return;
+    m.classList.remove('active');
+    setTimeout(() => { m.style.display = 'none'; }, 300);
+    const a = document.querySelector('.modal-overlay.active');
+    if (!a) document.body.classList.remove('modal-open');
+    haptic(6);
+  }
+
+  // ============================================================
+  // 重整頁面
   // ============================================================
   async function hardReload() {
     const btn = _container?.querySelector("#app-header-reload");
@@ -282,11 +532,7 @@ window.AppHeader = (function () {
   window._AppHeader_hardReload = hardReload;
 
   // ============================================================
-  // ⭐ v15.6：同步所有資料（下拉觸發）
-  //   1. 天氣（window.fetchWeatherData）
-  //   2. 匯率（window.fetchLiveRates）
-  //   3. 雲端（checkedItems / customBookingItems / userData / userPins）
-  //   4. 強制重繪當前 Day + Focus Card
+  // 同步所有資料
   // ============================================================
   async function syncAllData() {
     console.log('[sync] 🚀 開始同步');
@@ -295,7 +541,6 @@ window.AppHeader = (function () {
     let okCount = 0;
     let failCount = 0;
 
-    // ───── 1. 天氣 ─────
     if (typeof window.fetchWeatherData === 'function') {
       try {
         console.log('[sync] → 天氣…');
@@ -306,11 +551,8 @@ window.AppHeader = (function () {
         failCount++;
         console.warn('[sync] ✗ 天氣', e);
       }
-    } else {
-      console.warn('[sync] ⚠️ window.fetchWeatherData 不存在');
     }
 
-    // ───── 2. 匯率 ─────
     if (typeof window.fetchLiveRates === 'function') {
       try {
         console.log('[sync] → 匯率…');
@@ -321,11 +563,8 @@ window.AppHeader = (function () {
         failCount++;
         console.warn('[sync] ✗ 匯率', e);
       }
-    } else {
-      console.warn('[sync] ⚠️ window.fetchLiveRates 不存在');
     }
 
-    // ───── 3. 雲端 ─────
     if (window.dbRef) {
       try {
         console.log('[sync] → 雲端…');
@@ -333,7 +572,6 @@ window.AppHeader = (function () {
         if (docSnap.exists) {
           const cloudData = docSnap.data() || {};
 
-          // checkedItems（保留本地非 booking 項目）
           try {
             const localNonBooking = {};
             const curChecked = (typeof state !== 'undefined' && state.checkedItems) || {};
@@ -347,7 +585,6 @@ window.AppHeader = (function () {
             }
           } catch (e) { console.warn('[sync] checkedItems', e); }
 
-          // customBookingItems
           if (Array.isArray(cloudData.customBookingItems)) {
             try {
               window.customBookingItems = cloudData.customBookingItems.slice();
@@ -358,7 +595,6 @@ window.AppHeader = (function () {
             } catch (e) { console.warn('[sync] customBookingItems', e); }
           }
 
-          // userData / userPins
           if (cloudData.userData) {
             try {
               window.cloudUserData = cloudData.userData;
@@ -372,7 +608,6 @@ window.AppHeader = (function () {
             } catch (e) {}
           }
 
-          // 重新渲染清單
           if (typeof window.saveLocalCheckedItems === 'function') window.saveLocalCheckedItems();
           if (typeof window.renderBookingChecklist === 'function') window.renderBookingChecklist();
           if (typeof window.renderEquipChecklist === 'function') window.renderEquipChecklist();
@@ -390,13 +625,11 @@ window.AppHeader = (function () {
 
     console.log(`[sync] 🏁 完成 ok=${okCount} fail=${failCount}`);
 
-    // ───── 4. 強制重繪 ─────
     try {
-      // 4.1 重繪 Focus Card
       _lastRenderedPhase = null;
+      _lastPrepStage = null;
       renderFocusCard(true);
 
-      // 4.2 重繪當前 Day（讓行程卡片的天氣框更新）
       if (window._lastActiveDay && typeof window.renderDayItinerary === 'function') {
         const dayData = window.winterItineraries?.find(d => d.day === window._lastActiveDay);
         if (dayData) {
@@ -407,7 +640,6 @@ window.AppHeader = (function () {
       console.warn('[sync] 重繪失敗', e);
     }
 
-    // 5. 視覺回饋：Focus Card 閃一下
     try {
       const focusEl = _container?.querySelector("#app-header-focus");
       if (focusEl) {
@@ -436,11 +668,6 @@ window.AppHeader = (function () {
     const days = Math.floor(diff / 86400000);
     const hours = Math.floor((diff % 86400000) / 3600000);
     const minutes = Math.floor((diff % 3600000) / 60000);
-    const seconds = Math.floor((diff % 60000) / 1000);
-    updateCell(focusEl, "days", String(days));
-    updateCell(focusEl, "hours", String(hours).padStart(2, "0"));
-    updateCell(focusEl, "minutes", String(minutes).padStart(2, "0"));
-    updateCell(focusEl, "seconds", String(seconds).padStart(2, "0"));
     const inlineEl = focusEl.querySelector("#focus-countdown-inline");
     if (inlineEl) {
       const dayEl = inlineEl.querySelector('[data-inline="days"]');
@@ -450,22 +677,6 @@ window.AppHeader = (function () {
       if (hourEl && hourEl.textContent !== String(hours).padStart(2, "0")) hourEl.textContent = String(hours).padStart(2, "0");
       if (minEl && minEl.textContent !== String(minutes).padStart(2, "0")) minEl.textContent = String(minutes).padStart(2, "0");
     }
-    if (seconds % 30 === 0) {
-      const fill = focusEl.querySelector(".focus-progress-fill");
-      if (fill) fill.style.width = getPrepProgress() + "%";
-      const label = focusEl.querySelector(".focus-progress-label");
-      if (label) label.textContent = `準備進度 ${Math.round(getPrepProgress())}%`;
-    }
-  }
-
-  function updateCell(focusEl, name, newText) {
-    const el = focusEl.querySelector(`.countdown-value[data-cell="${name}"]`);
-    if (!el) return;
-    if (el.textContent === newText) return;
-    el.textContent = newText;
-    el.classList.remove("tick");
-    void el.offsetWidth;
-    el.classList.add("tick");
   }
 
   // ============================================================
@@ -659,9 +870,6 @@ window.AppHeader = (function () {
     return window.weatherCache[dateStr + '|' + locId] || null;
   }
 
-  // ============================================================
-  // ⭐ 天氣條
-  // ============================================================
   function renderWeatherRow(dayIdx, dateStr) {
     const locs = getWeatherLocationsForDay(dayIdx);
     if (locs.length === 0) return '';
@@ -917,8 +1125,17 @@ window.AppHeader = (function () {
     const phase = getTripPhase();
     const cb = _config.callbacks || {};
 
-    if (force || _lastRenderedPhase !== phase) {
+    let currentStage = null;
+    if (phase === "before") {
+      const days = Math.floor((_config.tripStart - Date.now()) / 86400000);
+      currentStage = getPrepStage(days);
+    }
+
+    const stageChanged = (phase === "before" && currentStage !== _lastPrepStage);
+
+    if (force || _lastRenderedPhase !== phase || stageChanged) {
       _lastRenderedPhase = phase;
+      if (phase === "before") _lastPrepStage = currentStage;
       let innerHTML = "";
 
       if (phase === "before") {
@@ -927,16 +1144,41 @@ window.AppHeader = (function () {
         const days = Math.floor(diff / 86400000);
         const hours = Math.floor((diff % 86400000) / 3600000);
         const minutes = Math.floor((diff % 3600000) / 60000);
-        const seconds = Math.floor((diff % 60000) / 1000);
-        const progress = getPrepProgress();
+
+        const stage = currentStage || "seed";
+
+        const bookingP = getProgressData("booking");
+        const equipP = getProgressData("equip");
+        const totalPrep = bookingP.total + equipP.total;
+        const donePrep = bookingP.done + equipP.done;
+        const prepPercent = totalPrep > 0 ? Math.round((donePrep / totalPrep) * 100) : 0;
+
+        const departureDate = _config.tripDates[0];
+        const departureWeather = window.weatherCache?.[departureDate];
+        const departureLoc = getWeatherLocationsForDay(0)[0] || null;
+        const weatherHtml = departureWeather ? buildDepartureWeatherHtml(departureWeather, departureLoc) : '';
+
+        const ticketCountdownHtml = (stage === "sprint" || stage === "final")
+          ? buildTicketCountdownHtml() : '';
+
+        const luggageHtml = (stage === "sprint" || stage === "final")
+          ? buildLuggageProgressHtml(equipP) : '';
+
+        const pendingHtml = (stage === "final")
+          ? buildPendingListHtml(bookingP, equipP) : '';
+
+        const progressHtml = (stage !== "final")
+          ? buildPrepProgressHtml(bookingP, equipP, totalPrep, donePrep, prepPercent) : '';
+
         const task = getNextBigTask();
-        const progressRows = renderProgressList([
-          { type: "booking", icon: "📌", label: "行前預訂", action: "booking" },
-          { type: "equip",   icon: "🎒", label: "我的裝備", action: "equip"   }
-        ]);
+        const taskHtml = (stage !== "seed" && task) ? buildTaskHtml(task) : '';
 
         innerHTML = `<div class="focus-inner">
-          <div class="focus-label">距離出發還有</div>
+          <div class="focus-label">
+            <span class="focus-label-dot"></span>
+            <span class="focus-label-text">距離出發還有</span>
+          </div>
+
           <div class="countdown-inline" id="focus-countdown-inline">
             <span class="countdown-inline-num" data-inline="days">${days}</span>
             <span class="countdown-inline-unit">天</span>
@@ -945,31 +1187,32 @@ window.AppHeader = (function () {
             <span class="countdown-inline-num-sm" data-inline="minutes">${String(minutes).padStart(2, "0")}</span>
             <span class="countdown-inline-unit-sm">分</span>
           </div>
-          <div class="countdown-grid">
-            <div class="countdown-cell"><div class="countdown-value" data-cell="days">${days}</div><div class="countdown-unit">天</div></div>
-            <div class="countdown-cell"><div class="countdown-value" data-cell="hours">${String(hours).padStart(2, "0")}</div><div class="countdown-unit">時</div></div>
-            <div class="countdown-cell"><div class="countdown-value" data-cell="minutes">${String(minutes).padStart(2, "0")}</div><div class="countdown-unit">分</div></div>
-            <div class="countdown-cell" data-cell-block="seconds"><div class="countdown-value" data-cell="seconds">${String(seconds).padStart(2, "0")}</div><div class="countdown-unit">秒</div></div>
-          </div>
-          <div class="focus-progress-row">
-            <div class="focus-progress-track"><div class="focus-progress-fill" style="width:${progress}%"></div></div>
-            <div class="focus-progress-label">準備進度 ${Math.round(progress)}%</div>
-          </div>
-          ${progressRows}
-          ${task ? `<div class="focus-task" data-action="${task.type === 'booking' ? 'booking' : task.type === 'ticket' ? 'ticket' : 'overview'}" style="cursor:pointer">
-            <span class="focus-task-icon">${task.emoji}</span>
-            <div style="flex:1;min-width:0">
-              <div class="focus-task-text">下一個任務：${escapeHtml(task.label)}</div>
-              <div style="font-size:11px;color:rgba(146,64,14,0.75);margin-top:2px">${escapeHtml(task.hint)}</div>
-            </div>
-            <span style="color:#92400e;font-size:16px;font-weight:900;flex-shrink:0">›</span>
-          </div>` : ""}
-          <div class="focus-cta-row" style="flex-wrap:wrap">
-            <button type="button" class="focus-cta focus-cta-primary" data-action="overview" style="flex:1 1 100%"><span>📋</span> 行程速覽</button>
-            <button type="button" class="focus-cta focus-cta-secondary" data-action="shopping" style="flex:1"><span>🛍️</span> 購物</button>
-            <button type="button" class="focus-cta focus-cta-secondary" data-action="ticket" style="flex:1"><span>⚔️</span> 搶票</button>
+
+          ${weatherHtml}
+          ${progressHtml}
+          ${ticketCountdownHtml}
+          ${luggageHtml}
+          ${pendingHtml}
+          ${taskHtml}
+
+          <div class="focus-cta-row">
+            <button type="button" class="focus-cta focus-cta-primary" data-action="overview">
+              <span>📋</span> 行程速覽
+            </button>
+            <button type="button" class="focus-cta focus-cta-secondary" data-action="booking">
+              <span>📌</span> 行前預訂
+            </button>
+            <button type="button" class="focus-cta focus-cta-secondary" data-action="equip">
+              <span>🎒</span> 裝備
+            </button>
           </div>
         </div>`;
+
+        if (_container) {
+          _container.setAttribute('data-phase-stage', stage);
+          _container.setAttribute('data-days-left',
+            days > 90 ? 'large' : days > 30 ? 'medium' : 'small');
+        }
       }
       else if (phase === "during") {
         const dayIdx = getCurrentDayIndex();
@@ -1085,16 +1328,17 @@ window.AppHeader = (function () {
       el.addEventListener("click", () => {
         const action = el.dataset.action;
         switch (action) {
-          case "booking":      cb.onBooking && cb.onBooking();     break;
-          case "equip":        cb.onEquip && cb.onEquip();         break;
-          case "shopping":     cb.onShopping && cb.onShopping();   break;
-          case "ticket":       cb.onTicket && cb.onTicket();       break;
-          case "weather":      cb.onWeather && cb.onWeather();     break;
-          case "overview":     cb.onOverview && cb.onOverview();   break;
-          case "switchLedger": cb.onSwitchTab && cb.onSwitchTab("ledger"); break;
-          case "navigate":     openNavigateMenu(); break;
-          case "messages":     openMessagesModal(); break;
-          case "shoot":        cb.onShoot && cb.onShoot();         break;
+          case "booking":        cb.onBooking && cb.onBooking();     break;
+          case "equip":          cb.onEquip && cb.onEquip();         break;
+          case "shopping":       cb.onShopping && cb.onShopping();   break;
+          case "ticket":         cb.onTicket && cb.onTicket();       break;
+          case "weather":        cb.onWeather && cb.onWeather();     break;
+          case "overview":       cb.onOverview && cb.onOverview();   break;
+          case "switchLedger":   cb.onSwitchTab && cb.onSwitchTab("ledger"); break;
+          case "navigate":       openNavigateMenu(); break;
+          case "messages":       openMessagesModal(); break;
+          case "shoot":          cb.onShoot && cb.onShoot();         break;
+          case "prep-overview":  openPrepOverviewModal();            break;
           case "scrollToDay": {
             const idx = getCurrentDayIndex();
             const day = idx >= 0 ? idx + 1 : 1;
@@ -1281,6 +1525,8 @@ window.AppHeader = (function () {
 
   window.openSearchModal = openSearchModal;
   window.closeSearchModal = closeSearchModal;
+  window.openPrepOverviewModal = openPrepOverviewModal;
+  window.closePrepOverviewModal = closePrepOverviewModal;
 
   // ============================================================
   // 對外 API
@@ -1291,6 +1537,7 @@ window.AppHeader = (function () {
       _container = document.getElementById(config.containerId);
       if (!_container) { console.warn("[AppHeader] container not found:", config.containerId); return; }
       _lastRenderedPhase = null;
+      _lastPrepStage = null;
       _lastDuringRender = 0;
       _selectedWeatherLocId = null;
       _selectedWeatherDayKey = null;
@@ -1390,7 +1637,17 @@ window.AppHeader = (function () {
         if (document.hidden) return;
         const phase = getTripPhase();
         if (phase !== _lastRenderedPhase) { renderFocusCard(); return; }
-        if (phase === "before") updateCountdownNumbers();
+
+        if (phase === "before") {
+          const days = Math.floor((_config.tripStart - Date.now()) / 86400000);
+          const stage = getPrepStage(days);
+          if (stage !== _lastPrepStage) {
+            renderFocusCard(true);
+          } else {
+            updateCountdownNumbers();
+          }
+        }
+
         if (phase === "during") {
           updateBroadcastCountdowns();
           const now = Date.now();
@@ -1402,7 +1659,7 @@ window.AppHeader = (function () {
       }, 1000);
     },
 
-    render() { _lastRenderedPhase = null; renderFocusCard(); },
+    render() { _lastRenderedPhase = null; _lastPrepStage = null; renderFocusCard(); },
     getPhase() { return getTripPhase(); },
     syncAll() { return syncAllData(); },
     reload()  { return hardReload(); },
@@ -1434,7 +1691,8 @@ window.AppHeader = (function () {
       if (_searchDebounceTimer) { clearTimeout(_searchDebounceTimer); _searchDebounceTimer = null; }
       if (_container) _container.innerHTML = "";
       _config = null; _container = null;
-      _lastRenderedPhase = null; _lastDuringRender = 0;
+      _lastRenderedPhase = null; _lastPrepStage = null;
+      _lastDuringRender = 0;
       _selectedWeatherLocId = null;
       _selectedWeatherDayKey = null;
     },
@@ -1850,9 +2108,9 @@ if (window.Messages) {
  * ☁️ 下拉同步資料（頁面頂部下拉觸發）
  * ============================================================ */
 (function setupPullToSync() {
-  const THRESHOLD = 75;    // 觸發距離（px）
-  const MAX_PULL  = 120;   // 最大下拉距離
-  const DAMPING   = 0.55;  // 阻尼係數
+  const THRESHOLD = 75;
+  const MAX_PULL  = 120;
+  const DAMPING   = 0.55;
 
   let startY = 0;
   let pullDistance = 0;
