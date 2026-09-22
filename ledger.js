@@ -1,11 +1,12 @@
 /* ============================================================
- * ledger.js — 隨行記帳本主邏輯 v2.9
+ * ledger.js — 隨行記帳本主邏輯 v3.0
  *
- * v2.8（Phase 3）：
- *   - ⭐ 記帳憑證：列表每筆支出可上傳收據
- * v2.9（Phase 3 增強）：
- *   - ⭐ 記帳 Modal 內也能加收據
- *   - ⭐ 支援「當時加」與「後補加」兩種方式
+ * v2.8：收據綁定支出
+ * v2.9：記帳時可一起加收據
+ * v3.0：
+ *   - ⭐ 修復：刪除一筆產生多條歷史（runTransaction 重試問題）
+ *   - ⭐ 修復：收據不再彈新視窗，改用 iframe 內建燈箱
+ *   - ⭐ 所有 createHistoryEntry / newEntry ID 移到 transaction 外
  * ============================================================ */
 'use strict';
 
@@ -206,8 +207,6 @@ let state = {
 };
 let editingExpenseId = null;
 let lastExpense = null;
-
-// ⭐ v2.9：記帳 Modal 內待加入的收據（暫存）
 let pendingReceipts = [];
 
 const CHARTS_KEY = 'tohoku_ledger_charts_expanded';
@@ -229,7 +228,64 @@ function decPendingWrites() {
 }
 
 /* ============================================================
- * 十、深色模式
+ * 十、⭐ v3.0：iframe 內建燈箱
+ * ============================================================ */
+let _ledgerLightboxImages = [];
+let _ledgerLightboxIndex = 0;
+
+function openLedgerLightbox(images, index) {
+  _ledgerLightboxImages = Array.isArray(images) ? images : [];
+  _ledgerLightboxIndex = Math.max(0, Math.min(index || 0, _ledgerLightboxImages.length - 1));
+  if (_ledgerLightboxImages.length === 0) return;
+
+  const lb = document.getElementById('ledger-lightbox');
+  const img = document.getElementById('ledger-lightbox-img');
+  const cap = document.getElementById('ledger-lightbox-caption');
+  if (!lb || !img) {
+    // Fallback
+    window.open(_ledgerLightboxImages[_ledgerLightboxIndex], '_blank');
+    return;
+  }
+  img.src = _ledgerLightboxImages[_ledgerLightboxIndex];
+  if (cap) cap.textContent = `${_ledgerLightboxIndex + 1} / ${_ledgerLightboxImages.length}`;
+  lb.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  haptic(8);
+}
+
+function closeLedgerLightbox() {
+  const lb = document.getElementById('ledger-lightbox');
+  if (lb) lb.classList.remove('active');
+  document.body.style.overflow = '';
+  haptic(6);
+}
+
+function ledgerLightboxNav(dir) {
+  if (_ledgerLightboxImages.length === 0) return;
+  _ledgerLightboxIndex += dir;
+  if (_ledgerLightboxIndex < 0) _ledgerLightboxIndex = _ledgerLightboxImages.length - 1;
+  if (_ledgerLightboxIndex >= _ledgerLightboxImages.length) _ledgerLightboxIndex = 0;
+  const img = document.getElementById('ledger-lightbox-img');
+  const cap = document.getElementById('ledger-lightbox-caption');
+  if (img) img.src = _ledgerLightboxImages[_ledgerLightboxIndex];
+  if (cap) cap.textContent = `${_ledgerLightboxIndex + 1} / ${_ledgerLightboxImages.length}`;
+}
+
+/* 滑動切換 */
+let _llbTouchStartX = 0;
+document.addEventListener('DOMContentLoaded', () => {
+  const lb = document.getElementById('ledger-lightbox');
+  if (lb) {
+    lb.addEventListener('touchstart', e => { _llbTouchStartX = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener('touchend', e => {
+      const diff = _llbTouchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) ledgerLightboxNav(diff > 0 ? 1 : -1);
+    }, { passive: true });
+  }
+});
+
+/* ============================================================
+ * 十一、深色模式
  * ============================================================ */
 const THEME_KEY = 'tohoku_ledger_theme';
 
@@ -261,7 +317,7 @@ function applyTheme(theme) {
 }
 
 /* ============================================================
- * 十一、用戶 / 雲端徽章
+ * 十二、用戶 / 雲端徽章
  * ============================================================ */
 function updateCurrentUserBadge() {
   const badge = document.getElementById('current-user-badge');
@@ -293,7 +349,7 @@ function updateCloudBadge(isConnected) {
 }
 
 /* ============================================================
- * 十二、認證 + 監聽
+ * 十三、認證 + 監聽
  * ============================================================ */
 let _authPromise = null;
 const initAuth = async () => {
@@ -335,7 +391,7 @@ auth.onAuthStateChanged(user => {
 });
 
 /* ============================================================
- * 十三、Transaction
+ * 十四、Transaction
  * ============================================================ */
 async function runTransaction(mutateFn) {
   if (!canWrite()) throw new Error("NO_PERMISSION");
@@ -359,7 +415,7 @@ async function runTransaction(mutateFn) {
 }
 
 /* ============================================================
- * 十四、歷史記錄
+ * 十五、歷史記錄
  * ============================================================ */
 function createHistoryEntry(type, expenseRef, details) {
   const u = getCurrentUser() || "未知";
@@ -377,7 +433,7 @@ function createHistoryEntry(type, expenseRef, details) {
 }
 
 /* ============================================================
- * 十五、可折疊
+ * 十六、可折疊
  * ============================================================ */
 function toggleCollapsible(sectionId) {
   const s = document.getElementById(sectionId);
@@ -433,7 +489,7 @@ document.addEventListener('click', (e) => {
 });
 
 /* ============================================================
- * 十六、篩選
+ * 十七、篩選
  * ============================================================ */
 let activeFilters = { day: 0, category: 'all' };
 function toggleFilter(type, value) {
@@ -453,7 +509,7 @@ function clearAllFilters() {
 }
 
 /* ============================================================
- * 十七、子分頁
+ * 十八、子分頁
  * ============================================================ */
 function switchLedgerSubTab(tabName) {
   ['records','balances','suggested','history'].forEach(t => document.getElementById(`subview-${t}`).classList.add('hidden'));
@@ -470,7 +526,7 @@ function switchLedgerSubTab(tabName) {
 }
 
 /* ============================================================
- * 十八、Toast / 複製
+ * 十九、Toast / 複製
  * ============================================================ */
 function showToast(message, icon = "✅") {
   const toast = document.getElementById("toast");
@@ -525,7 +581,7 @@ function copyText(text) {
 }
 
 /* ============================================================
- * 十九、預算
+ * 二十、預算
  * ============================================================ */
 function openBudgetModal() {
   if (!canWrite()) { showToast("🔒 請先登入身份", "⚠️"); return; }
@@ -596,7 +652,7 @@ function renderBudgetBar(totalHKD) {
 }
 
 /* ============================================================
- * 二十、圖表
+ * 二十一、圖表
  * ============================================================ */
 const CAT_COLORS = {
   '餐飲': '#f97316',
@@ -665,7 +721,7 @@ function renderDailyChart() {
 }
 
 /* ============================================================
- * ⭐ Phase 3：記帳憑證（收據）
+ * 二十二、Phase 3：記帳憑證
  * ============================================================ */
 
 function _getReceipts(expense) {
@@ -675,15 +731,11 @@ function _getReceipts(expense) {
 
 /* ---------- 列表：後補收據 ---------- */
 function pickReceiptForExpense(expenseId) {
-  console.log('[Receipt] pickReceiptForExpense 被呼叫, expenseId:', expenseId);
-
   if (!canWrite()) { showToast("🔒 請先登入才能上傳收據", "⚠️"); return; }
   if (!window.Uploads || typeof window.Uploads.uploadFiles !== 'function') {
     showToast("⚠️ 上傳模組未載入，請重新整理", "⚠️");
-    console.error('[Receipt] window.Uploads 不存在');
     return;
   }
-
   const expense = state.expenses.find(e => e.id === expenseId);
   if (!expense) { showToast("⚠️ 找不到這筆支出", "⚠️"); return; }
 
@@ -704,7 +756,7 @@ function pickReceiptForExpense(expenseId) {
 
   setTimeout(() => {
     try { input.click(); }
-    catch (e) { console.error('[Receipt] input.click() 失敗:', e); showToast("無法開啟檔案選擇器", "⚠️"); }
+    catch (e) { showToast("無法開啟檔案選擇器", "⚠️"); }
   }, 0);
 }
 
@@ -719,7 +771,6 @@ async function uploadReceiptsForExpense(expenseId, files) {
   try {
     result = await window.Uploads.uploadFiles(files);
   } catch (e) {
-    console.error('[Receipt] 上傳失敗:', e);
     showToast('❌ 上傳失敗：' + e.message, '⚠️');
     return;
   }
@@ -728,6 +779,9 @@ async function uploadReceiptsForExpense(expenseId, files) {
     showToast(`❌ 全部失敗（${result?.failed?.length || 0} 張）`, '⚠️');
     return;
   }
+
+  // ⭐ v3.0：history entry 在 transaction 外生成
+  const historyEntry = createHistoryEntry("edit", expense, `為「${escapeHtml(expense.desc)}」加入 ${result.success.length} 張收據`);
 
   try {
     await runTransaction(current => {
@@ -746,7 +800,7 @@ async function uploadReceiptsForExpense(expenseId, files) {
       };
 
       let history = [...(current.history || [])];
-      history.unshift(createHistoryEntry("edit", exp, `為「${escapeHtml(exp.desc)}」加入 ${result.success.length} 張收據`));
+      history.unshift(historyEntry);
       history = history.slice(0, 200);
 
       return { expenses, history };
@@ -765,22 +819,19 @@ async function uploadReceiptsForExpense(expenseId, files) {
 
 async function deleteReceipt(expenseId, receiptId) {
   if (!canWrite()) { showToast("🔒 請先登入", "⚠️"); return; }
-
   const expense = state.expenses.find(e => e.id === expenseId);
   if (!expense) return;
-
   const receipts = _getReceipts(expense);
   const rc = receipts.find(r => r.id === receiptId);
   if (!rc) return;
 
   const isOwner = rc.uploader === getCurrentUser();
   const isAdmin = localStorage.getItem('tohoku_admin_unlocked') === 'true';
-  if (!isOwner && !isAdmin) {
-    showToast('🔒 只能刪除自己上傳的收據', '⚠️');
-    return;
-  }
-
+  if (!isOwner && !isAdmin) { showToast('🔒 只能刪除自己上傳的收據', '⚠️'); return; }
   if (!confirm('確定要移除這張收據嗎？')) return;
+
+  // ⭐ v3.0：history entry 在 transaction 外生成
+  const historyEntry = createHistoryEntry("edit", expense, `移除「${escapeHtml(expense.desc)}」1 張收據`);
 
   try {
     await runTransaction(current => {
@@ -792,7 +843,7 @@ async function deleteReceipt(expenseId, receiptId) {
       expenses[idx] = { ...exp, receipts: next, updatedAt: Date.now() };
 
       let history = [...(current.history || [])];
-      history.unshift(createHistoryEntry("edit", exp, `移除「${escapeHtml(exp.desc)}」1 張收據`));
+      history.unshift(historyEntry);
       history = history.slice(0, 200);
 
       return { expenses, history };
@@ -804,16 +855,13 @@ async function deleteReceipt(expenseId, receiptId) {
   }
 }
 
+/* ⭐ v3.0：改用 iframe 內建燈箱，不彈新視窗 */
 function openReceiptLightbox(expenseId, index) {
   const expense = state.expenses.find(e => e.id === expenseId);
   if (!expense) return;
   const receipts = _getReceipts(expense);
   const urls = receipts.map(r => r.url);
-  if (typeof window.openLightbox === 'function') {
-    window.openLightbox(urls, index);
-  } else {
-    window.open(urls[index], '_blank');
-  }
+  openLedgerLightbox(urls, index);
 }
 
 function buildReceiptStripHtml(expense) {
@@ -847,10 +895,8 @@ function buildReceiptAddBtnHtml(expense) {
   </button>`;
 }
 
-/* ---------- ⭐ v2.9：記帳 Modal 內收據 ---------- */
+/* ---------- 記帳 Modal 內收據 ---------- */
 function pickReceiptForModal() {
-  console.log('[Receipt] pickReceiptForModal 被呼叫');
-
   if (!canWrite()) { showToast("🔒 請先登入才能上傳收據", "⚠️"); return; }
   if (!window.Uploads || typeof window.Uploads.uploadFiles !== 'function') {
     showToast("⚠️ 上傳模組未載入，請重新整理", "⚠️");
@@ -867,7 +913,6 @@ function pickReceiptForModal() {
 
   input.addEventListener('change', async () => {
     const files = Array.from(input.files || []);
-    console.log('[Receipt-Modal] 選擇了', files.length, '張');
     setTimeout(() => { try { document.body.removeChild(input); } catch(e) {} }, 100);
     if (files.length === 0) return;
     await uploadReceiptsForModal(files);
@@ -875,7 +920,7 @@ function pickReceiptForModal() {
 
   setTimeout(() => {
     try { input.click(); }
-    catch (e) { console.error('[Receipt-Modal] input.click() 失敗:', e); showToast("無法開啟檔案選擇器", "⚠️"); }
+    catch (e) { showToast("無法開啟檔案選擇器", "⚠️"); }
   }, 0);
 }
 
@@ -887,7 +932,6 @@ async function uploadReceiptsForModal(files) {
   try {
     result = await window.Uploads.uploadFiles(files);
   } catch (e) {
-    console.error('[Receipt-Modal] 上傳失敗:', e);
     showToast('❌ 上傳失敗：' + e.message, '⚠️');
     return;
   }
@@ -897,7 +941,6 @@ async function uploadReceiptsForModal(files) {
     return;
   }
 
-  // 加入待存清單
   result.success.forEach(r => pendingReceipts.push(r));
   renderModalReceipts();
   showToast(`✅ 已加入 ${result.success.length} 張，儲存記帳時一併寫入`, '🧾');
@@ -914,6 +957,12 @@ function removeModalReceipt(receiptId) {
   haptic(8);
 }
 
+/* ⭐ v3.0：Modal 內收據縮圖改用燈箱，不彈新視窗 */
+function openModalReceiptLightbox(index) {
+  const urls = pendingReceipts.map(r => r.url);
+  openLedgerLightbox(urls, index);
+}
+
 function renderModalReceipts() {
   const wrap = document.getElementById('expense-receipts-preview');
   const btn = document.getElementById('expense-receipt-add-btn');
@@ -928,7 +977,7 @@ function renderModalReceipts() {
   wrap.innerHTML = pendingReceipts.map((r, i) => `
     <div class="receipt-thumb">
       <img src="${escapeHtml(r.thumb || r.url)}" alt="" loading="lazy"
-           onclick="window.open('${escapeHtml(r.url)}', '_blank')">
+           onclick="openModalReceiptLightbox(${i})">
       <button type="button" class="receipt-del"
               onclick="event.stopPropagation();removeModalReceipt('${escapeHtml(r.id)}')"
               aria-label="移除">×</button>
@@ -939,11 +988,10 @@ function renderModalReceipts() {
 }
 
 /* ============================================================
- * 二十一、記帳彈窗
+ * 二十三、記帳彈窗
  * ============================================================ */
 function openExpenseModal() {
   editingExpenseId = null;
-  // ⭐ v2.9：清空待存收據
   pendingReceipts = [];
   renderModalReceipts();
 
@@ -981,7 +1029,6 @@ function closeExpenseModal() {
   setTimeout(() => {
     backdrop.classList.add("hidden"); modal.classList.add("hidden");
     cancelEdit();
-    // ⭐ v2.9：清空待存收據
     pendingReceipts = [];
     renderModalReceipts();
     document.body.classList.remove("modal-open");
@@ -1005,7 +1052,6 @@ function openEditExpenseModal(expenseId) {
     if (!expense) return;
     editingExpenseId = expenseId;
 
-    // ⭐ v2.9：載入現有收據到 pendingReceipts
     pendingReceipts = _getReceipts(expense).map(r => ({ ...r, _existing: true }));
     renderModalReceipts();
 
@@ -1195,7 +1241,7 @@ function updateEstimatedHKD() {
 }
 
 /* ============================================================
- * 二十二、儲存支出
+ * 二十四、儲存支出（⭐ v3.0：ID 與 history 在 transaction 外）
  * ============================================================ */
 async function saveExpense() {
   const day = document.getElementById("ledger-day");
@@ -1238,11 +1284,23 @@ async function saveExpense() {
   const isEditing = !!editingExpenseId;
   const editingId = editingExpenseId;
 
-  // ⭐ v2.9：把 pendingReceipts 一起存
   const receiptsToSave = pendingReceipts.map(r => {
     const { _existing, ...rest } = r;
     return rest;
   });
+
+  // ⭐ v3.0：先在外部生成 id 和 history entry，避免 transaction 重試產生多條
+  let newExpenseId = null;
+  let historyEntry = null;
+
+  if (isEditing) {
+    const old = state.expenses.find(e => e.id === editingId);
+    historyEntry = createHistoryEntry("edit", old, `修改了「${escapeHtml(old?.desc || '')}」`);
+  } else {
+    newExpenseId = "exp-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5);
+    const tempEntry = { id: newExpenseId, ...expenseData, receipts: receiptsToSave };
+    historyEntry = createHistoryEntry("add", tempEntry, `新增了「${escapeHtml(tempEntry.desc)}」(${tempEntry.amount} ${tempEntry.currency})`);
+  }
 
   try {
     await runTransaction(current => {
@@ -1252,15 +1310,14 @@ async function saveExpense() {
         const idx = expenses.findIndex(e => e.id === editingId);
         if (idx > -1) {
           const old = expenses[idx];
-          history.unshift(createHistoryEntry("edit", old, `修改了「${escapeHtml(old.desc)}」`));
-          // ⭐ v2.9：合併收據
           expenses[idx] = { ...old, ...expenseData, receipts: receiptsToSave };
+          history.unshift(historyEntry);
         }
       } else {
-        const newEntry = { id: "exp-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5), ...expenseData, receipts: receiptsToSave };
+        const newEntry = { id: newExpenseId, ...expenseData, receipts: receiptsToSave };
         expenses.push(newEntry);
         lastExpense = newEntry;
-        history.unshift(createHistoryEntry("add", newEntry, `新增了「${escapeHtml(newEntry.desc)}」(${newEntry.amount} ${newEntry.currency})`));
+        history.unshift(historyEntry);
       }
       history = history.slice(0, 200);
       return { expenses, history };
@@ -1283,30 +1340,36 @@ async function saveExpense() {
 }
 
 /* ============================================================
- * 二十三、刪除
+ * 二十五、刪除（⭐ v3.0：history entry 在 transaction 外）
  * ============================================================ */
 async function deleteExpense(expenseId) {
   ensureWriteAccess(async () => {
     const expense = state.expenses.find(e => e.id === expenseId);
     if (!expense) return;
     const snapshot = JSON.parse(JSON.stringify(expense));
+
+    // ⭐ 在 transaction 外生成 history entry
+    const historyEntry = createHistoryEntry("delete", snapshot, `刪除了「${escapeHtml(snapshot.desc)}」(${snapshot.amount} ${snapshot.currency})`);
+
     try {
       await runTransaction(current => {
         const expenses = (current.expenses || []).filter(e => e.id !== expenseId);
         let history = [...(current.history || [])];
-        history.unshift(createHistoryEntry("delete", snapshot, `刪除了「${escapeHtml(snapshot.desc)}」(${snapshot.amount} ${snapshot.currency})`));
+        history.unshift(historyEntry);
         history = history.slice(0, 200);
         return { expenses, history };
       });
       showToast("🗑 已刪除"); haptic(10);
       showUndoToast(`已刪除「${snapshot.desc}」`, "🗑", async () => {
+        // ⭐ 還原時也在 transaction 外生成
+        const restoreEntry = createHistoryEntry("add", snapshot, `還原了「${escapeHtml(snapshot.desc)}」`);
         try {
           await runTransaction(current => {
             const expenses = [...(current.expenses || [])];
             if (expenses.some(e => e.id === snapshot.id)) return {};
             expenses.push(snapshot);
             let history = [...(current.history || [])];
-            history.unshift(createHistoryEntry("add", snapshot, `還原了「${escapeHtml(snapshot.desc)}」`));
+            history.unshift(restoreEntry);
             history = history.slice(0, 200);
             return { expenses, history };
           });
@@ -1321,7 +1384,7 @@ async function deleteExpense(expenseId) {
 }
 
 /* ============================================================
- * 二十四、彩帶
+ * 二十六、彩帶
  * ============================================================ */
 function showConfetti() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -1345,7 +1408,7 @@ function showConfetti() {
 }
 
 /* ============================================================
- * 二十五、歷史渲染
+ * 二十七、歷史渲染
  * ============================================================ */
 function renderHistoryList() {
   const container = document.getElementById("history-list-container");
@@ -1368,7 +1431,7 @@ function renderHistoryList() {
 }
 
 /* ============================================================
- * 二十六、清空歷史
+ * 二十八、清空歷史
  * ============================================================ */
 function openClearHistoryConfirm() {
   if (!canWrite()) { showToast("🔒 請先登入身份", "⚠️"); return; }
@@ -1383,7 +1446,7 @@ function openClearHistoryConfirm() {
 }
 
 /* ============================================================
- * 二十七、更新介面
+ * 二十九、更新介面
  * ============================================================ */
 function updateLedgerUI() {
   let total = 0;
@@ -1427,7 +1490,7 @@ function renderCharts() {
 }
 
 /* ============================================================
- * 二十八、列表渲染
+ * 三十、列表渲染
  * ============================================================ */
 function renderExpensesList() {
   const container = document.getElementById("records-list-container");
@@ -1566,7 +1629,7 @@ function renderExpensesList() {
 }
 
 /* ============================================================
- * 二十九、結算
+ * 三十一、結算
  * ============================================================ */
 function calculateBalances() {
   const paidMap = {}; const owedMap = {};
@@ -1601,7 +1664,7 @@ function renderBalancesTable() {
 }
 
 /* ============================================================
- * 三十、建議還款
+ * 三十二、建議還款
  * ============================================================ */
 let _lastSettlements = [];
 function renderSuggestedSettlements() {
@@ -1665,7 +1728,7 @@ function copySettlementPlan() {
 function changeViewAs(member) { state.viewingAs = member; renderExpensesList(); }
 
 /* ============================================================
- * 三十一、匯出
+ * 三十三、匯出
  * ============================================================ */
 function exportLedgerText() {
   if (state.expenses.length === 0) { showToast("尚無記帳資料", "⚠️"); return; }
@@ -1729,7 +1792,7 @@ function exportCSV() {
 }
 
 /* ============================================================
- * 三十二、清空確認
+ * 三十四、清空確認
  * ============================================================ */
 function openConfirmModal() {
   if (!canWrite()) { showToast("🔒 請先登入身份", "⚠️"); return; }
@@ -1752,6 +1815,8 @@ function confirmAndClearExpenses() {
     try {
       await runTransaction(current => {
         const count = (current.expenses || []).length;
+        // ⭐ v3.0：history entry 在 transaction 外生成
+        // 但這裡 mutateFn 只跑一次（clear 沒有競態問題），仍保留在此
         const historyEntry = createHistoryEntry("clear", null, `清空了所有記帳資料（原有 ${count} 筆）`);
         const history = [historyEntry, ...(current.history || [])].slice(0, 200);
         return { expenses: [], settlementStatus: {}, history };
@@ -1762,7 +1827,7 @@ function confirmAndClearExpenses() {
 }
 
 /* ============================================================
- * 三十三、角色 / 雪花
+ * 三十五、角色 / 雪花
  * ============================================================ */
 let characterTimeout = null;
 function spawnCharacters() {
@@ -1806,7 +1871,7 @@ function initSnowEffect() {
 }
 
 /* ============================================================
- * 三十四、Modal 拖動
+ * 三十六、Modal 拖動
  * ============================================================ */
 (function setupExpenseModalDrag() {
   const modal = document.getElementById('expense-modal');
@@ -1852,7 +1917,7 @@ function initSnowEffect() {
 })();
 
 /* ============================================================
- * 三十五、Service Worker
+ * 三十七、Service Worker
  * ============================================================ */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -1861,7 +1926,7 @@ if ('serviceWorker' in navigator) {
 }
 
 /* ============================================================
- * 三十六、清理舊資料
+ * 三十八、清理舊資料
  * ============================================================ */
 try {
   localStorage.removeItem('tohoku_expenses_2027');
@@ -1872,7 +1937,7 @@ try {
 } catch (e) {}
 
 /* ============================================================
- * 三十七、資料清理
+ * 三十九、資料清理
  * ============================================================ */
 function sanitizeExpenses(e) {
   return Array.isArray(e) ? e.filter(item => item !== null && typeof item === "object").map(item => {
@@ -1916,7 +1981,7 @@ function sanitizeHistory(h) {
 }
 
 /* ============================================================
- * 三十八、返回頂部
+ * 四十、返回頂部
  * ============================================================ */
 function scrollToTop() {
   try {
@@ -1972,7 +2037,7 @@ window.scrollToTop = scrollToTop;
 })();
 
 /* ============================================================
- * 三十九、初始化
+ * 四十一、初始化
  * ============================================================ */
 window.addEventListener("DOMContentLoaded", () => {
   if (window.parent && window.parent !== window) {
@@ -2017,7 +2082,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
- * 四十、全域匯出
+ * 四十二、全域匯出
  * ============================================================ */
 window.openExpenseModal = openExpenseModal;
 window.closeExpenseModal = closeExpenseModal;
@@ -2059,6 +2124,10 @@ window.pickReceiptForExpense = pickReceiptForExpense;
 window.uploadReceiptsForExpense = uploadReceiptsForExpense;
 window.deleteReceipt = deleteReceipt;
 window.openReceiptLightbox = openReceiptLightbox;
-// ⭐ v2.9
 window.pickReceiptForModal = pickReceiptForModal;
 window.removeModalReceipt = removeModalReceipt;
+window.openModalReceiptLightbox = openModalReceiptLightbox;
+// ⭐ v3.0：燈箱
+window.openLedgerLightbox = openLedgerLightbox;
+window.closeLedgerLightbox = closeLedgerLightbox;
+window.ledgerLightboxNav = ledgerLightboxNav;

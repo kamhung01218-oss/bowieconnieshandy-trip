@@ -124,7 +124,7 @@
   margin-left: 4px;
 }
 
-/* ⭐ v2.9：記帳 Modal 內的收據預覽 */
+/* 記帳 Modal 內的收據預覽 */
 .expense-receipts-preview {
   display: flex;
   flex-wrap: wrap;
@@ -154,6 +154,84 @@
   border-color: #93c5fd;
   color: #0284c7;
   transform: scale(0.97);
+}
+
+/* ⭐ v3.0：iframe 內建燈箱 */
+.ledger-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(12, 25, 41, 0.92);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.ledger-lightbox.active { display: flex; }
+
+.ledger-lightbox img {
+  max-width: 95vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 4px solid white;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+}
+
+.llb-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+.llb-close:active { transform: scale(0.9); }
+
+.llb-prev, .llb-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: none;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+.llb-prev { left: 16px; }
+.llb-next { right: 16px; }
+.llb-prev:active, .llb-next:active {
+  background: rgba(255,255,255,0.4);
+  transform: translateY(-50%) scale(0.9);
+}
+
+.llb-caption {
+  position: absolute;
+  bottom: 24px;
+  color: rgba(255,255,255,0.9);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 /* 深色模式 */
@@ -471,7 +549,7 @@
         </select>
       </div>
 
-      <!-- ⭐ v2.9：記帳時可一起加收據 -->
+      <!-- ⭐ 記帳時可一起加收據 -->
       <div>
         <label class="block text-xs font-bold text-slate-600 mb-1.5">
           🧾 收據 <span class="text-[10px] text-slate-400 font-normal">（選填，可先記帳後補）</span>
@@ -565,6 +643,15 @@
     <path d="M12 19V5M5 12l7-7 7 7"/>
   </svg>
 </button>
+
+<!-- ⭐ v3.0：iframe 內建燈箱 -->
+<div id="ledger-lightbox" class="ledger-lightbox" onclick="closeLedgerLightbox()">
+  <button class="llb-close" onclick="event.stopPropagation();closeLedgerLightbox()" aria-label="關閉">✕</button>
+  <button class="llb-prev" onclick="event.stopPropagation();ledgerLightboxNav(-1)" aria-label="上一張">‹</button>
+  <img id="ledger-lightbox-img" src="" alt="" onclick="event.stopPropagation()">
+  <button class="llb-next" onclick="event.stopPropagation();ledgerLightboxNav(1)" aria-label="下一張">›</button>
+  <div id="ledger-lightbox-caption" class="llb-caption"></div>
+</div>
 
 <script src="./app-uploads.js"></script>
 <script src="./ledger.js"></script>
