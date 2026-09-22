@@ -3599,3 +3599,141 @@ details.event-card:not([open]) .event-action-buttons {
 [data-theme="dark"] .prep-item-more { color: #64748b; }
 [data-theme="dark"] .prep-section-all-done { color: #6ee7b7; }
 [data-theme="dark"] .prep-section-pending { color: #fbbf24; }
+/* ============================================================
+ * 31. ⭐ v16.2 緊急修復：深色模式強制覆蓋
+ * 解決 tokens.css / dark.css 載入順序問題
+ * ============================================================ */
+
+/* ---- 31.1 行程卡片背景 ---- */
+[data-theme="dark"] .glass-card,
+[data-theme="dark"] .glass-card.event-card {
+  background: #1e293b !important;
+  background-image: none !important;
+  border-color: #334155 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+[data-theme="dark"] .glass-card.event-card[open] {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+[data-theme="dark"] .glass-card.event-card::before {
+  display: none !important;
+}
+
+/* ---- 31.2 卡片內文 ---- */
+[data-theme="dark"] .glass-card.event-card .event-title {
+  color: #e0f2fe !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-location {
+  color: #94a3b8 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-content-wrapper {
+  background: transparent !important;
+  border-top-color: #334155 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible p,
+[data-theme="dark"] .glass-card.event-card .event-collapsible li {
+  color: #cbd5e1 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible {
+  color: #cbd5e1 !important;
+}
+
+/* ---- 31.3 Day Tabs ---- */
+[data-theme="dark"] .day-tabs-wrapper {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-bottom-color: #334155 !important;
+}
+[data-theme="dark"] .day-tab {
+  background: #1e293b !important;
+  color: #cbd5e1 !important;
+  border-color: #334155 !important;
+}
+[data-theme="dark"] .day-tab.active {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+/* ---- 31.4 時間軸 ---- */
+[data-theme="dark"] .timeline-stamp-time {
+  color: #7dd3fc !important;
+  background: #0c4a6e !important;
+  border-color: #0369a1 !important;
+}
+[data-theme="dark"] .timeline-stamp-end {
+  color: #64748b !important;
+}
+
+/* ---- 31.5 標籤 ---- */
+[data-theme="dark"] .tag {
+  color: #94a3b8 !important;
+}
+[data-theme="dark"] .tag.tag-teal   { color: #2dd4bf !important; }
+[data-theme="dark"] .tag.tag-amber  { color: #fbbf24 !important; }
+[data-theme="dark"] .tag.tag-indigo { color: #a5b4fc !important; }
+[data-theme="dark"] .tag.tag-sky    { color: #c4b5fd !important; }
+[data-theme="dark"] .tag.tag-rose   { color: #fda4af !important; }
+[data-theme="dark"] .event-priority-badge.highlight { color: #fbbf24 !important; }
+[data-theme="dark"] .event-priority-badge.optional  { color: #64748b !important; }
+
+/* ---- 31.6 Tip blocks ---- */
+[data-theme="dark"] .glass-card.event-card .event-collapsible .tip-block {
+  background: #0f172a !important;
+  color: #cbd5e1 !important;
+  border-left-color: #475569 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible .tip-block.warn {
+  background: #422006 !important;
+  color: #fde68a !important;
+  border-left-color: #f59e0b !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible .tip-block.danger {
+  background: #450a0a !important;
+  color: #fecaca !important;
+  border-left-color: #ef4444 !important;
+}
+
+/* ---- 31.7 內層 details ---- */
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card) {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  border-left-color: #0ea5e9 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card) > summary {
+  background: linear-gradient(180deg, #334155 0%, #1e293b 100%) !important;
+  color: #7dd3fc !important;
+  border-bottom-color: #475569 !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card)[open] > summary {
+  background: linear-gradient(180deg, #0c4a6e 0%, #075985 100%) !important;
+  color: #bae6fd !important;
+}
+[data-theme="dark"] .glass-card.event-card .event-collapsible details:not(.event-card) > div {
+  background: #0f172a !important;
+  color: #cbd5e1 !important;
+}
+
+/* ---- 31.8 導航連結膠囊 ---- */
+[data-theme="dark"] .glass-card.event-card .event-collapsible p > a[href*="maps"],
+[data-theme="dark"] .glass-card.event-card .event-collapsible p > a[href*="goo.gl"] {
+  background: #0c4a6e !important;
+  border-color: #0369a1 !important;
+  color: #7dd3fc !important;
+}
+
+/* ---- 31.9 頁面背景 ---- */
+[data-theme="dark"] body {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 30%, #0f172a 100%) !important;
+  color: #f1f5f9 !important;
+}
+
+/* ---- 31.10 天數進度點 ---- */
+[data-theme="dark"] .day-dot {
+  background: #475569 !important;
+}
+[data-theme="dark"] .day-dot.active {
+  background: linear-gradient(90deg, #0ea5e9, #0284c7) !important;
+}
+[data-theme="dark"] .day-dot.today {
+  background: #34d399 !important;
+}
