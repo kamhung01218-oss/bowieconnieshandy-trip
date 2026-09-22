@@ -1,185 +1,80 @@
 /* ============================================================
- * design-v14.css — 視覺優化 v1
- * 載入順序：... → perf.css → design-v14.css（最後）
+ * design-v14.css — 視覺優化（v2.0 精簡版）
  *
- * 對應建議 1-6：
- *   1. 藍色系統加入暖色對比
- *   2. 深色模式藍色降飽和
- *   3. 統一類別色盤
- *   4. 字級拉到 12px 以上
- *   5. 統一用 CSS 變數的行高
- *   6. 中文字距處理
+ * v2.0 變更：
+ *   - ⭐ 移除已移至 tokens.css 的變數定義
+ *   - ⭐ 移除已移至 patches.css 的行程卡樣式
+ *   - ⭐ 只保留：暖色強調、行高、字距、類別色盤
  * ============================================================ */
 
 /* ============================================================
- * 4 + 5：字級 / 行高 / 色盤變數
- * ============================================================ */
-:root {
-  /* ── 字級（最小拉到 12px） ── */
-  --fs-2xs: 12px;
-  --fs-xs:  13px;
-  --fs-sm:  14px;
-  --fs-base: 16px;
-  --fs-lg:  20px;
-  --fs-2xl: 28px;
-  --fs-3xl: 40px;
-
-  /* ── 行高 ── */
-  --lh-tight: 1.35;
-  --lh-base:  1.65;
-  --lh-loose: 1.8;
-
-  /* ── 字距 ── */
-  --ls-cn:    0.015em;
-  --ls-num:  -0.01em;
-  --ls-caps:  0.08em;
-
-  /* ============================================================
-   * 3：統一色盤
-   * ============================================================ */
-  --trip-food:     #d97706;
-  --trip-transit:  #0284c7;
-  --trip-drive:    #059669;
-  --trip-hotel:    #4f46e5;
-  --trip-scenery:  #7c3aed;
-  --trip-shopping: #e11d48;
-
-  /* ============================================================
-   * 1：暖色強調
-   * ============================================================ */
-  --accent-warm-1:    #f59e0b;
-  --accent-warm-2:    #ea580c;
-  --accent-warm-glow: rgba(245, 158, 11, 0.45);
-}
-
-/* ============================================================
- * 2：深色模式 — 降飽和、加層次
- * ============================================================ */
-[data-theme="dark"] {
-  --dark-accent:       #0ea5e9;
-  --dark-accent-dark:  #0284c7;
-  --dark-accent-light: #7dd3fc;
-
-  --dark-surface-1: #111113;
-  --dark-surface-2: #1c1c1f;
-  --dark-surface-3: #2a2a2e;
-  --dark-surface-4: #3a3a3f;
-
-  --dark-fg-1: #ececec;
-  --dark-fg-2: #c4c4c4;
-  --dark-fg-3: #8e8e8e;
-  --dark-fg-4: #5c5c5c;
-
-  --snow-bg-1: #111113;
-  --snow-bg-2: #1c1c1f;
-  --snow-bg-3: #111113;
-  --card-bg: #1c1c1f;
-  --text-main: #ececec;
-  --text-soft: #c4c4c4;
-  --text-mute: #8e8e8e;
-  --text-faint: #5c5c5c;
-  --line-soft: #2a2a2e;
-  --sky-primary: #0ea5e9;
-  --sky-primary-dark: #0284c7;
-  --sky-deep: #7dd3fc;
-}
-
-[data-theme="dark"] img.lazy-fade.loaded {
-  filter: brightness(0.92) contrast(1.03);
-}
-
-html, body {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* ============================================================
- * 1：進行中時間軸 — 從藍改暖橙
+ * 進行中時間軸 — 暖橙色（與 --t-status-active 呼應）
  * ============================================================ */
 .timeline-item.status-active .timeline-stamp-time {
-  background: linear-gradient(135deg, var(--accent-warm-1), var(--accent-warm-2)) !important;
-  border-color: var(--accent-warm-2) !important;
-  box-shadow: 0 3px 10px var(--accent-warm-glow) !important;
+  background: linear-gradient(135deg, var(--t-color-accent-warm), var(--t-color-accent-warm-2));
+  border-color: var(--t-color-accent-warm-2);
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.45);
+  color: #ffffff;
 }
 
 .timeline-item.status-active .timeline-node {
-  background: linear-gradient(135deg, var(--accent-warm-1), var(--accent-warm-2)) !important;
+  background: linear-gradient(135deg, var(--t-color-accent-warm), var(--t-color-accent-warm-2));
   box-shadow:
-    0 0 0 2.5px var(--snow-bg-1),
-    0 0 12px 2px var(--accent-warm-glow) !important;
+    0 0 0 2.5px var(--t-color-bg-1),
+    0 0 12px 2px rgba(245, 158, 11, 0.5);
 }
 
 .timeline-item.status-active .timeline-node::after {
-  background: var(--accent-warm-1) !important;
+  background: var(--t-color-accent-warm);
 }
 
 .timeline-item.status-active .timeline-stamp-end {
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 [data-theme="dark"] .timeline-item.status-active .timeline-stamp-time {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
-  color: #1c1c1f !important;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1c1c1f;
 }
 
 /* ============================================================
- * 3：Tag 統一對應新色盤
+ * 行高統一
  * ============================================================ */
-.tag.tag-teal   { color: var(--trip-drive) !important; }
-.tag.tag-amber  { color: var(--trip-food) !important; }
-.tag.tag-indigo { color: var(--trip-hotel) !important; }
-.tag.tag-sky    { color: var(--trip-scenery) !important; }
-.tag.tag-rose   { color: var(--trip-shopping) !important; }
-
-[data-theme="dark"] .tag.tag-teal   { color: #34d399 !important; }
-[data-theme="dark"] .tag.tag-amber  { color: #fbbf24 !important; }
-[data-theme="dark"] .tag.tag-indigo { color: #a5b4fc !important; }
-[data-theme="dark"] .tag.tag-sky    { color: #c4b5fd !important; }
-[data-theme="dark"] .tag.tag-rose   { color: #fda4af !important; }
-
-.event-priority-badge.highlight { color: var(--trip-food) !important; }
-.event-priority-badge.optional  { color: var(--text-faint) !important; }
-
-/* ============================================================
- * 4：字級覆蓋
- * ============================================================ */
-.tag {
-  font-size: 12px !important;
-  letter-spacing: var(--ls-caps) !important;
+.event-title,
+.modal-box h2,
+.focus-title,
+.overview-day-title {
+  line-height: var(--t-lh-tight);
 }
 
-.event-priority-badge {
-  font-size: 12px !important;
-  letter-spacing: 0.03em !important;
+.event-collapsible p,
+.event-collapsible li,
+.tip-block,
+details:not(.event-card) > div,
+.mini-card-body,
+.shoot-block-text,
+.shoot-list li,
+.common-tip-advice {
+  line-height: var(--t-lh-base);
 }
 
-.event-location {
-  font-size: 13px !important;
-  letter-spacing: 0.01em !important;
-}
-
-.timeline-stamp-time {
-  font-size: 14px !important;
-  letter-spacing: var(--ls-num) !important;
-}
-
-.timeline-stamp-end {
-  font-size: 12px !important;
+.event-collapsible,
+.emergency-steps,
+.ticket-step {
+  line-height: var(--t-lh-loose);
 }
 
 /* ============================================================
- * 6：中文字距 + 數字字距
+ * 字距
  * ============================================================ */
-.event-title {
-  letter-spacing: var(--ls-cn) !important;
-}
-
+.event-title,
 .modal-box h2,
 .modal-box h3,
 .focus-title,
 .overview-day-title,
 .mini-card-title,
 .common-tip-title {
-  letter-spacing: var(--ls-cn);
+  letter-spacing: var(--t-ls-cn);
 }
 
 .timeline-stamp-time,
@@ -195,52 +90,11 @@ html, body {
 .forecast-temp,
 .weather-card .weather-temp,
 .emergency-hotel-day {
-  letter-spacing: var(--ls-num);
+  letter-spacing: var(--t-ls-num);
 }
 
 .focus-label,
 .tools-section-label,
 .search-day-label {
-  letter-spacing: var(--ls-caps);
-}
-
-/* ============================================================
- * 5：行高統一
- * ============================================================ */
-.event-title,
-.modal-box h2,
-.focus-title,
-.overview-day-title {
-  line-height: var(--lh-tight);
-}
-
-.event-collapsible p,
-.event-collapsible li,
-.tip-block,
-details:not(.event-card) > div,
-.mini-card-body,
-.shoot-block-text,
-.shoot-list li,
-.common-tip-advice {
-  line-height: var(--lh-base);
-}
-
-.event-collapsible,
-.emergency-steps,
-.ticket-step {
-  line-height: var(--lh-loose);
-}
-
-/* ============================================================
- * 過渡
- * ============================================================ */
-.event-title,
-.event-location,
-.tag,
-.timeline-stamp-time {
-  transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html, body { transition: none !important; }
+  letter-spacing: var(--t-ls-caps);
 }

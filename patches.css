@@ -9,7 +9,6 @@
  *   3. 已清理：原 28/30/31/34/36/38 章（被後續完全覆蓋）
  * ============================================================ */
 
-
 /* ============================================================
  * 1. iPhone 安全區修正
  * ============================================================ */
@@ -32,7 +31,6 @@
 [data-theme="dark"] .day-tabs-wrapper::before {
   background: rgba(15, 23, 42, 0.95);
 }
-
 
 /* ============================================================
  * 2. 共享檔案櫃按鈕
@@ -124,7 +122,6 @@
 [data-theme="dark"] .drive-folder-arrow { color: #475569; }
 [data-theme="dark"] .drive-folder-btn:active .drive-folder-arrow { color: #38bdf8; }
 
-
 /* ============================================================
  * 3. 解除內層折疊高度限制
  * ============================================================ */
@@ -135,7 +132,6 @@
 .event-collapsible::after {
   display: none !important;
 }
-
 
 /* ============================================================
  * 4. 卡片視覺（雜誌化 · 極簡）
@@ -314,7 +310,6 @@
   padding: 14px 0 16px !important;
 }
 
-
 /* ============================================================
  * 5. Tip blocks（低飽和）
  * ============================================================ */
@@ -347,7 +342,6 @@
   color: inherit !important;
   font-weight: 800 !important;
 }
-
 
 /* ============================================================
  * 6. 內層 details（三層次配色）
@@ -430,7 +424,6 @@
   color: #0284c7 !important;
 }
 
-
 /* ============================================================
  * 7. 導航連結膠囊
  * ============================================================ */
@@ -462,7 +455,6 @@
   transform: scale(0.96) !important;
 }
 
-
 /* ============================================================
  * 8. 節奏間距 + 行高
  * ============================================================ */
@@ -484,7 +476,6 @@
   padding: 4px 0 4px !important;
 }
 
-
 /* ============================================================
  * 9. 展開交錯動畫
  * ============================================================ */
@@ -503,7 +494,6 @@ details.event-card[open] .event-content-wrapper > *:nth-child(5) { animation-del
 details.event-card[open] .event-content-wrapper > *:nth-child(6) { animation-delay: 0.40s; }
 details.event-card[open] .event-content-wrapper > *:nth-child(7) { animation-delay: 0.47s; }
 details.event-card[open] .event-content-wrapper > *:nth-child(8) { animation-delay: 0.54s; }
-
 
 /* ============================================================
  * 10. 深色模式集中適配（event-card 相關）
@@ -579,7 +569,6 @@ details.event-card[open] .event-content-wrapper > *:nth-child(8) { animation-del
   border-color: #1e293b !important;
 }
 
-
 /* ============================================================
  * 11. 無障礙：focus-visible + 對比度
  * ============================================================ */
@@ -615,7 +604,6 @@ a:focus:not(:focus-visible) {
   color: #7dd3fc !important;
   background: rgba(125, 211, 252, 0.12) !important;
 }
-
 
 /* ============================================================
  * 12. 搜尋熱門關鍵字
@@ -668,7 +656,6 @@ a:focus:not(:focus-visible) {
   color: #7dd3fc;
 }
 
-
 /* ============================================================
  * 13. prefers-reduced-motion
  * ============================================================ */
@@ -683,7 +670,6 @@ a:focus:not(:focus-visible) {
     transition: none !important;
   }
 }
-
 
 /* ============================================================
  * 14. tip-block-details（統一轉換後的 details 樣式）
@@ -781,7 +767,6 @@ a:focus:not(:focus-visible) {
     0 0 0 1px rgba(56, 189, 248, 0.15) !important;
 }
 
-
 /* ============================================================
  * 15. 摺疊小卡統一集中最底
  * ============================================================ */
@@ -833,7 +818,6 @@ a:focus:not(:focus-visible) {
 .glass-card.event-card .event-collapsible .collapsible-divider:last-child {
   display: none !important;
 }
-
 
 /* ============================================================
  * 16. 拍攝靈感 / 通用拍攝技巧
@@ -1185,7 +1169,6 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .common-tip-grid { border-top-color: #334155; }
 [data-theme="dark"] .common-tip-photo { border-color: #334155; }
 
-
 /* ============================================================
  * 17. 導航選單 Modal
  * ============================================================ */
@@ -1253,7 +1236,6 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .navigate-option-title { color: #f1f5f9; }
 [data-theme="dark"] .navigate-option-label { color: #7dd3fc; }
 [data-theme="dark"] .navigate-option-time { color: #94a3b8; }
-
 
 /* ============================================================
  * 18. 家庭廣播留言板（Modal 內）
@@ -1492,7 +1474,6 @@ a:focus:not(:focus-visible) {
   color: #94a3b8;
 }
 
-
 /* ============================================================
  * 19. 位置分享（地圖按鈕 + 位置訊息）
  * ============================================================ */
@@ -1560,7 +1541,6 @@ a:focus:not(:focus-visible) {
   background: linear-gradient(135deg, #0c2a5e, #1e3a8a);
   border-color: #3b82f6;
 }
-
 
 /* ============================================================
  * 20. 旅行模擬控制器
@@ -1708,7 +1688,6 @@ a:focus:not(:focus-visible) {
 @media (max-width: 380px) {
   .simulator-panel { width: 200px; }
 }
-
 
 /* ============================================================
  * 21. 天氣警告 Modal（給未來使用的獨立區塊）
@@ -1862,7 +1841,6 @@ a:focus:not(:focus-visible) {
   border-top-color: rgba(255,255,255,0.1);
 }
 
-
 /* ============================================================
  * 22. 今日摘要 + Day 標籤
  * ============================================================ */
@@ -1968,7 +1946,6 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .today-summary-meta { color: #fbbf24; }
 [data-theme="dark"] .today-summary-item { border-bottom-color: rgba(251, 146, 60, 0.2); }
 
-
 /* ============================================================
  * 23. Day Tab「今天」標記
  * ============================================================ */
@@ -1995,7 +1972,6 @@ a:focus:not(:focus-visible) {
   color: #ffffff !important;
   border-color: transparent !important;
 }
-
 
 /* ============================================================
  * 24. Focus Card 完整樣式
@@ -2689,6 +2665,7 @@ a:focus:not(:focus-visible) {
 [data-theme="dark"] .app-header .focus-next-done { color: #64748b !important; }
 [data-theme="dark"] .app-header .focus-next-remain { color: #38bdf8; }
 [data-theme="dark"] .app-header .focus-next-arrow { color: #64748b; }
+
 /* ============================================================
  * 26. 下拉同步資料指示器 + 重整按鈕動畫 + Focus Card 閃爍
  * ============================================================ */
@@ -2763,10 +2740,10 @@ a:focus:not(:focus-visible) {
     animation: none !important;
   }
 }
+
 /* ============================================================
  * 25. 折疊縮圖（純縮圖，不含資料徽章）
  * ============================================================ */
-
 .event-thumb-wrap { display: none; }
 
 details.event-card:not([open]) .event-thumb-wrap {
@@ -2853,11 +2830,9 @@ details.event-card:not([open]) .event-summary-info {
 [data-theme="dark"] .event-thumb.is-icon.tag-sky    { background: linear-gradient(135deg, #2e1065, #4c1d95); border-color: #6d28d9; }
 [data-theme="dark"] .event-thumb.is-icon.tag-rose   { background: linear-gradient(135deg, #4c0519, #831843); border-color: #be185d; }
 
-
 /* ============================================================
  * 25.1 ⭐ 標籤列「📎 資料 (N)」徽章（與 tag 並排）
  * ============================================================ */
-
 .event-inline-data-badge {
   display: inline-flex;
   align-items: center;
@@ -2928,11 +2903,9 @@ details.event-card:not([open]) .event-summary-info {
   background: linear-gradient(135deg, #38bdf8, #0ea5e9);
 }
 
-
 /* ============================================================
  * 26. 折疊時隱藏動作按鈕（資料徽章已移到標籤列）
  * ============================================================ */
-
 details.event-card:not([open]) .event-action-buttons {
   display: none !important;
 }
@@ -2965,6 +2938,7 @@ details.event-card:not([open]) .event-expand-icon svg {
 [data-theme="dark"] details.event-card:not([open]) .event-expand-icon svg {
   color: #64748b !important;
 }
+
 /* ============================================================
  * 27. 附件區：與攻略內容之間加分隔線（v16.3）
  * ============================================================ */
@@ -2985,21 +2959,7 @@ details.event-card:not([open]) .event-expand-icon svg {
     padding-top: 12px;
   }
 }
-/* 附件區：與攻略內容之間加分隔線 */
-.event-content-wrapper .event-attachments:not(:empty) {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px dashed #e2e8f0;
-}
-[data-theme="dark"] .event-content-wrapper .event-attachments:not(:empty) {
-  border-top-color: #334155;
-}
-@media (max-width: 480px) {
-  .event-content-wrapper .event-attachments:not(:empty) {
-    margin-top: 12px;
-    padding-top: 12px;
-  }
-}
+
 /* 折疊時：資料按鈕獨立膠囊 */
 details.event-card:not([open]) .event-action-btn-data {
   padding: 7px 14px !important;
@@ -3016,101 +2976,42 @@ details.event-card:not([open]) .event-action-btn-data .badge {
   background: rgba(255, 255, 255, 0.32) !important;
   color: #ffffff !important;
 }
+
 /* ============================================================
  * 28. 資料徽章雙入口顯示控制（v17.2）
- *
- * 折疊時：標籤列的 .event-inline-data-badge 顯示
- * 展開時：動作列的 .event-action-btn-data 顯示
  * ============================================================ */
-
-/* ───── 標籤列徽章：只在折疊時顯示 ───── */
 details.event-card:not([open]) .event-inline-data-badge {
   display: inline-flex !important;
 }
 details.event-card[open] .event-inline-data-badge {
   display: none !important;
 }
-
-/* ───── 動作列資料按鈕：只在展開時顯示 ───── */
 details.event-card:not([open]) .event-action-btn-data {
   display: none !important;
 }
 details.event-card[open] .event-action-btn-data {
   display: inline-flex !important;
 }
-
-/* ───── 折疊時：拍攝/購物整組隱藏 ───── */
 details.event-card:not([open]) .event-action-buttons {
   display: none !important;
 }
 
-/* ───── 標籤列徽章樣式 ───── */
-.event-inline-data-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 9px 2px 7px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: #ffffff;
-  font-size: 11.5px;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  box-shadow: 0 1px 4px rgba(14, 165, 233, 0.3);
-  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-  line-height: 1.4;
-  text-transform: none;
-  vertical-align: middle;
-  flex-shrink: 0;
-}
-.event-inline-data-badge:active {
-  transform: scale(0.94);
-  box-shadow: 0 1px 2px rgba(14, 165, 233, 0.5);
-  background: linear-gradient(135deg, #0284c7, #0369a1);
-}
-.event-inline-data-badge-icon {
-  font-size: 12px;
-  line-height: 1;
-  display: inline-block;
-}
-.event-inline-data-badge-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.28);
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 900;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
+/* ============================================================
+ * ⭐ v17.4 修正：導航按鈕的 SVG 圖示大小限制
+ *
+ * 這是第二道防護，即使 Tailwind 類別沒生效，
+ * 這裡也會強制限制 SVG 尺寸，避免撐破按鈕。
+ * ============================================================ */
+.event-nav-link svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+  display: inline-block !important;
 }
 
-/* 手機縮小 */
-@media (max-width: 480px) {
-  .event-inline-data-badge {
-    padding: 2px 8px 2px 6px;
-    font-size: 11px;
-  }
-  .event-inline-data-badge-count {
-    min-width: 14px;
-    height: 14px;
-    font-size: 9.5px;
-  }
-}
-
-/* 深色模式 */
-[data-theme="dark"] .event-inline-data-badge {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  box-shadow: 0 1px 4px rgba(14, 165, 233, 0.5);
-}
-[data-theme="dark"] .event-inline-data-badge:active {
-  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+/* 同時限制所有 event-content-wrapper 內直接子層的 SVG（保險） */
+.event-content-wrapper > a > svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
 }

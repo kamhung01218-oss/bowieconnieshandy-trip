@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v17.2
+ * app-itinerary.js — v17.4
  *
  * v17.1：資料按鈕獨立於 event-action-buttons
  * v17.2：
@@ -7,9 +7,22 @@
  *   - ⭐ 展開時動作列顯示「📎 資料」按鈕
  *   - ⭐ 折疊時：標籤列徽章顯示、拍攝/購物隱藏
  *   - ⭐ 沒資料時：折疊徽章不生成（不佔空間）
+ * v17.3：
+ *   - ⭐ 動作列改用 SVG 圖示（取代 emoji）
+ * v17.4：
+ *   - ⭐ 修正：圖片改回「左右滑動輪播」（Carousel）
+ *   - ⭐ 修正：導航按鈕 SVG 圖示加上尺寸限制，避免撐破版面
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
+
+// ==================== ⭐ v17.3：SVG 圖示（加上尺寸限制） ====================
+const EVENT_ICONS = {
+  shoot: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
+  shopping: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+  attach: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`,
+  nav: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`
+};
 
 // ==================== 天氣 ====================
 const WEATHER_LOCATIONS = {
@@ -375,7 +388,7 @@ function buildTimePill(startTime, endTime) {
 }
 function buildTagHtml(tag) { if (!tag || !tag.text) return ''; return '<span class="tag ' + (tag.class ? escapeHtml(tag.class) : '') + '">' + escapeHtml(tag.text) + '</span>'; }
 
-// ⭐ v17.2：動作列只放「展開專用」的資料按鈕 + 拍攝/購物
+// ⭐ v17.3：動作列使用 SVG 圖示
 function buildEventActionsHtml(day, index, eventTitle, shoppingCount, dayKey) {
   var safeTitle = escAttr(eventTitle);
   var shoppingBadge = '';
@@ -392,18 +405,21 @@ function buildEventActionsHtml(day, index, eventTitle, shoppingCount, dayKey) {
   var dataBadge = total > 0 ? '<span class="badge">' + total + '</span>' : '';
 
   var html = '';
-  // ⭐ 展開專用的資料按鈕（折疊時被 CSS 隱藏）
+  // 展開專用的資料按鈕（折疊時被 CSS 隱藏）
   if (dayKey) {
-    html += '<button type="button" class="event-action-btn event-action-btn-data" data-action="event-data" data-event-key="' + escAttr(dayKey) + '" onclick="event.preventDefault();event.stopPropagation();Uploads.openEventData(this.dataset.eventKey, this.dataset.eventTitle)" data-event-title="' + safeTitle + '">📎 資料' + dataBadge + '</button>';
+    html += '<button type="button" class="event-action-btn event-action-btn-data" data-action="event-data" data-event-key="' + escAttr(dayKey) + '" onclick="event.preventDefault();event.stopPropagation();Uploads.openEventData(this.dataset.eventKey, this.dataset.eventTitle)" data-event-title="' + safeTitle + '">'
+      + EVENT_ICONS.attach + ' 資料' + dataBadge + '</button>';
   }
   html += '<div class="event-action-buttons">';
-  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShootTipsModal(' + day + ',' + index + ')">🎬 拍攝</button>';
-  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShoppingModal(this.dataset.eventTitle)" data-event-title="' + safeTitle + '">🛍️ 購物' + shoppingBadge + '</button>';
+  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShootTipsModal(' + day + ',' + index + ')">'
+    + EVENT_ICONS.shoot + ' 拍攝</button>';
+  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShoppingModal(this.dataset.eventTitle)" data-event-title="' + safeTitle + '">'
+    + EVENT_ICONS.shopping + ' 購物' + shoppingBadge + '</button>';
   html += '</div>';
   return html;
 }
 
-// ⭐ v17.2：折疊專用的資料徽章（放在標籤列）
+// 折疊專用的資料徽章（放在標籤列）
 function buildInlineDataBadge(dayKey, eventTitle, dataCount) {
   if (!dayKey || dataCount <= 0) return '';
   var safeKey = escAttr(dayKey);
@@ -459,23 +475,14 @@ function buildEventThumb(event) {
   </div>`;
 }
 
+// ⭐ v17.4：多圖改用輪播（左右滑動）
 function buildEventImage(imgUrl, eventTitle, images) {
+  // 優先使用輪播圖（左右滑動）
   if (images && Array.isArray(images) && images.length > 1) {
-    var safeAlt = escAttr(eventTitle);
-    var urlsJson = escAttr(JSON.stringify(images));
-    var limit = Math.min(images.length, 2);
-    var html = '<div class="event-image-grid mt-2" data-count="' + images.length + '">';
-    for (var i = 0; i < limit; i++) {
-      html += '<div class="event-image-grid-item" data-urls=\'' + urlsJson + '\' data-index="' + i + '">';
-      html += '<img src="' + escAttr(images[i]) + '" alt="' + safeAlt + '" class="lazy-fade" loading="lazy" decoding="async">';
-      if (i === limit - 1 && images.length > 2) {
-        html += '<div class="event-image-grid-more">+' + (images.length - 2) + '</div>';
-      }
-      html += '</div>';
-    }
-    html += '</div>';
-    return html;
+    return buildImageCarousel(images, eventTitle);
   }
+  
+  // 單張圖片
   if (!imgUrl) return '';
   var safeImg = escAttr(imgUrl);
   var safeAlt2 = escAttr(eventTitle);
@@ -541,13 +548,14 @@ function bindImageGridClicks(section) {
   });
 }
 
+// ⭐ v17.4：導航按鈕使用 SVG 圖示（加上 event-nav-link 類別以確保尺寸）
 function buildEventNavBtn(navUrl, eventTitle, navName) {
   var url = navUrl;
   if (!url && eventTitle) { url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(eventTitle); }
   if (!url) return '<div class="h-2"></div>';
   var label = navName || '景點';
-  var html = '<a href="' + escAttr(url) + '" target="_blank" class="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-xs font-bold py-2 rounded-xl transition active:scale-95 shadow-sm mt-2 mb-2">';
-  html += '<span>📍</span> 導航前往 ' + escapeHtml(label);
+  var html = '<a href="' + escAttr(url) + '" target="_blank" class="event-nav-link w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-xs font-bold py-2 rounded-xl transition active:scale-95 shadow-sm mt-2 mb-2">';
+  html += EVENT_ICONS.nav + ' 導航前往 ' + escapeHtml(label);
   html += '</a>';
   return html;
 }
@@ -811,7 +819,7 @@ function buildDayHeaderHtml(dayData, weatherHtml) {
 
 function buildEventsHtml(dayData) { var html = ''; for (var i = 0; i < dayData.events.length; i++) { html += buildSingleEventHtml(dayData, dayData.events[i], i); } return html; }
 
-// ⭐ v17.2：buildSingleEventHtml（標籤列 + 動作列 雙資料入口）
+// ⭐ v17.4：buildSingleEventHtml（標籤列 + 動作列 雙資料入口）
 function buildSingleEventHtml(dayData, event, index) {
   var timeParts = event.time.split(' - ');
   var startTime = timeParts[0].trim();
@@ -834,7 +842,7 @@ function buildSingleEventHtml(dayData, event, index) {
     }
   }
 
-  // ⭐ 折疊專用：標籤列的資料徽章（只有有資料時才生成）
+  // 折疊專用：標籤列的資料徽章（只有有資料時才生成）
   var inlineDataBadge = buildInlineDataBadge(attDayKey, event.title, dataCount);
 
   var actionsHtml = buildEventActionsHtml(dayData.day, index, event.title, shoppingItems.length, attDayKey);
@@ -865,7 +873,7 @@ function buildSingleEventHtml(dayData, event, index) {
   html += '<div class="itinerary-cat-strip"></div>';
   html += '<summary class="event-summary">';
   html += '<div class="event-summary-info">';
-  // ⭐ 標籤列：tag + 重點 + 折疊專用資料徽章
+  // 標籤列：tag + 重點 + 折疊專用資料徽章
   if (tagHtml || priorityBadge || inlineDataBadge) {
     html += '<div class="event-tag-row">' + tagHtml + priorityBadge + inlineDataBadge + '</div>';
   }
