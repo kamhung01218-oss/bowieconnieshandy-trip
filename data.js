@@ -430,30 +430,30 @@ const winterItineraries = [
         </div>
       `
     },
-    {
-      time: "14:30 - 15:30",
-      title: "寒河江草莓園 ➔ 冬季溫室草莓吃到飽",
-      img: "http://www2.ic-net.or.jp/~icrose/img/aboutus/top_aboutus_right.jpg",
-      tag: { text: "🍓 溫室採果", class: "tag-sky" },
-      navUrl: "https://maps.app.goo.gl/ZNG1U3GgY6Hfdptz8",
-      navName: "寒河江草莓園",
-      priority: "optional",
-      open: true,
-      content: `
-        <p>溫室裡，紅透的草莓垂手可得</p>
-        <p class="text-xs text-slate-500">從壽司店出發約 30 分鐘</p>
-        <div class="tip-block">
-          <strong>🍓 30 分鐘吃到飽</strong>｜大人約 ¥1,800–2,300<br>
-          現場依產期提供多品種（章姬、紅臉頰等）
-        </div>
-        <div class="tip-block warn">
-          <strong>⏰ 建議預約 14:30 或 15:00</strong>｜讓午餐從容不趕
-        </div>
-        <div class="tip-block">
-          <strong>彈性備案</strong>｜藏王玩太久可直接取消，改到 D6 仙台市區採草莓
-        </div>
-      `
-    },
+ {
+  time: "14:30 - 15:30",
+  title: "寒河江草莓園 ➔ 冬季溫室草莓吃到飽",
+  img: "https://i.meee.com.tw/wLuaEeJ.jpg",
+  tag: { text: "🍓 溫室採果", class: "tag-sky" },
+  navUrl: "https://maps.app.goo.gl/ZNG1U3GgY6Hfdptz8",
+  navName: "寒河江草莓園",
+  location: "山形縣寒河江市",
+  priority: "optional",
+  content: `
+    <p>溫室裡，紅透的草莓垂手可得</p>
+    <p class="text-xs text-slate-500">從壽司店出發約 30 分鐘</p>
+    <div class="tip-block">
+      <strong>🍓 30 分鐘吃到飽</strong>｜大人約 ¥1,800–2,300<br>
+      現場依產期提供多品種（章姬、紅臉頰等）
+    </div>
+    <div class="tip-block warn">
+      <strong>⏰ 建議預約 14:30 或 15:00</strong>｜讓午餐從容不趕
+    </div>
+    <div class="tip-block">
+      <strong>彈性備案</strong>｜藏王玩太久可直接取消，改到 D6 仙台市區採草莓
+    </div>
+  `
+},
     {
       time: "15:30 - 16:30",
       title: "返回天童溫泉，市區輕鬆漫步",
