@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v14.4（折疊縮圖 + 預設折疊開關）
+ * app-itinerary.js — v15.0（Phase 2：行程附件）
  *
  * v14.0：多地點天氣
  * v14.1：updateDayTabTodayMark + switchDay 呼叫
@@ -10,6 +10,9 @@
  *   - ⭐ 折疊狀態顯示縮圖（有圖用圖，沒圖用分類色 emoji 塊）
  * v14.4：
  *   - ⭐ 新增 CARD_DEFAULT_OPEN 開關（預設全部折疊）
+ * v15.0（Phase 2）：
+ *   - ⭐ 行程附件：卡片展開後顯示「📎 附件」區
+ *   - ⭐ 折疊時顯示「📎 N」徽章
  * ============================================================ */
 
 // ==================== ⭐ v14.5：卡片折疊模式 ====================
@@ -738,6 +741,9 @@ function buildDayHeaderHtml(dayData, weatherHtml) {
 
 function buildEventsHtml(dayData) { var html = ''; for (var i = 0; i < dayData.events.length; i++) { html += buildSingleEventHtml(dayData, dayData.events[i], i); } return html; }
 
+// ============================================================
+// ⭐ v15.0：buildSingleEventHtml（含 Phase 2 附件）
+// ============================================================
 function buildSingleEventHtml(dayData, event, index) {
   var timeParts = event.time.split(' - ');
   var startTime = timeParts[0].trim();
@@ -756,13 +762,22 @@ function buildSingleEventHtml(dayData, event, index) {
     priorityBadge = '<span class="event-priority-badge optional">🔄 彈性</span>';
   }
 
+  // ⭐ v15.0：附件徽章
+  var attDayKey = 'd' + dayData.day + '-e' + index;
+  var attCount = (window.Uploads && typeof window.Uploads.getAttachments === 'function')
+    ? window.Uploads.getAttachments(attDayKey).length
+    : 0;
+  var attBadge = attCount > 0
+    ? '<span class="event-att-badge">📎 ' + attCount + '</span>'
+    : '';
+
   var tagClass = '';
   if (event.tag && event.tag.class) {
     tagClass = ' ' + event.tag.class.replace('tag-', 'card-');
   }
 
   // ⭐ v14.5：卡片折疊模式
-var shouldOpen = CARD_FORCE_COLLAPSED ? false : (event.open === true);
+  var shouldOpen = CARD_FORCE_COLLAPSED ? false : (event.open === true);
 
   var html = '<div class="timeline-item" data-time="' + escapeHtml(startTime) + '" data-end-time="' + escapeHtml(endTime) + '" data-day="' + dayData.day + '">';
   html += '<div class="timeline-marker">';
@@ -774,8 +789,8 @@ var shouldOpen = CARD_FORCE_COLLAPSED ? false : (event.open === true);
   html += '<div class="itinerary-cat-strip"></div>';
   html += '<summary class="event-summary">';
   html += '<div class="event-summary-info">';
-  if (tagHtml || priorityBadge) {
-    html += '<div class="event-tag-row">' + tagHtml + priorityBadge + '</div>';
+  if (tagHtml || priorityBadge || attBadge) {
+    html += '<div class="event-tag-row">' + tagHtml + priorityBadge + attBadge + '</div>';
   }
   html += '<h3 class="event-title">' + escapeHtml(event.title) + '</h3>';
   if (event.location) {
@@ -799,6 +814,12 @@ var shouldOpen = CARD_FORCE_COLLAPSED ? false : (event.open === true);
   html += '<span>展開完整攻略</span>';
   html += '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
   html += '</button>';
+  // ⭐ v15.0：附件區
+  html += '<div class="event-attachments" data-day="' + dayData.day + '" data-index="' + index + '">';
+  html += (window.Uploads && typeof window.Uploads.buildAttachmentsInnerHtml === 'function')
+    ? window.Uploads.buildAttachmentsInnerHtml(attDayKey)
+    : '';
+  html += '</div>';
   html += '</div>';
   html += '</details>';
   html += '</div>';

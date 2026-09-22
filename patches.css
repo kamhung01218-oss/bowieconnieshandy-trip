@@ -2841,3 +2841,44 @@ details.event-card:not([open]) .event-summary-info {
 [data-theme="dark"] .event-thumb.is-icon.tag-indigo { background: linear-gradient(135deg, #1e1b4b, #312e81); border-color: #4338ca; }
 [data-theme="dark"] .event-thumb.is-icon.tag-sky    { background: linear-gradient(135deg, #2e1065, #4c1d95); border-color: #6d28d9; }
 [data-theme="dark"] .event-thumb.is-icon.tag-rose   { background: linear-gradient(135deg, #4c0519, #831843); border-color: #be185d; }
+/* ============================================================
+ * 26. 折疊時隱藏動作按鈕（拍攝 / 購物）
+ *
+ * 折疊狀態只剩：標題 + 標籤 + 地點 + 縮圖 + 展開圖示
+ * 展開後才顯示：🎬 拍攝 / 🛍️ 購物
+ * ============================================================ */
+
+/* 折疊時隱藏整組動作按鈕 */
+details.event-card:not([open]) .event-action-buttons {
+  display: none !important;
+}
+
+/* 折疊時動作列改為「只靠右顯示展開圖示」 */
+details.event-card:not([open]) .event-summary-actions {
+  justify-content: flex-end !important;
+  padding: 4px 0 10px !important;
+  border-top: none !important;
+  min-height: 0 !important;
+}
+
+/* 折疊時展開圖示稍微縮小、降低存在感 */
+details.event-card:not([open]) .event-expand-icon {
+  width: 26px !important;
+  height: 26px !important;
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+details.event-card:not([open]) .event-expand-icon svg {
+  width: 13px !important;
+  height: 13px !important;
+  color: #94a3b8 !important;
+}
+
+/* 深色模式對應 */
+[data-theme="dark"] details.event-card:not([open]) .event-expand-icon {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+[data-theme="dark"] details.event-card:not([open]) .event-expand-icon svg {
+  color: #64748b !important;
+}
