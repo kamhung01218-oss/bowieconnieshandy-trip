@@ -1,11 +1,16 @@
 /* ============================================================
- * app-core.js — v13.0
+ * app-core.js — v14.0
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
  *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
  *
  * v13.0 變更：
  *   - ⭐ 新增 getInitialDay() 自動跳轉初始 Day
  *   - ⭐ initAppAfterLogin() 使用初始 Day 渲染
+ *
+ * v14.0 變更：
+ *   - ⭐ 移除「行前預訂」密碼驗證
+ *     登入的成員即可編輯，訪客仍唯讀
+ *   - ⭐ initAppAfterLogin() 開頭清掉舊的 admin_unlocked 旗標
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -311,6 +316,9 @@ async function submitChangePin() {
 
 // ==================== 應用初始化 ====================
 function initAppAfterLogin() {
+  // ⭐ v14.0：清掉舊的密碼解鎖旗標
+  try { localStorage.removeItem("tohoku_admin_unlocked"); } catch(e) {}
+
   // ⭐ v13.0：自動跳到初始 Day
   const initialDay = getInitialDay();
   window._lastActiveDay = initialDay;
@@ -331,26 +339,24 @@ function initAppAfterLogin() {
   setupImageFadeIn(document);
 
   // 隱藏所有 section，只顯示初始 Day
-document.querySelectorAll('.day-section').forEach(s => s.classList.add('hidden'));
-const initialSection = document.getElementById(`day-section-${initialDay}`);
-if (initialSection) initialSection.classList.remove('hidden');
+  document.querySelectorAll('.day-section').forEach(s => s.classList.add('hidden'));
+  const initialSection = document.getElementById(`day-section-${initialDay}`);
+  if (initialSection) initialSection.classList.remove('hidden');
 
-// ⭐ v14.2：一次完成「設定 active + 標記今天 + 自動置中」
-// 用 setTimeout 等 DOM 穩定後再執行
-setTimeout(() => {
-  if (window.initDayTabs) {
-    window.initDayTabs(initialDay);
-  } else {
-    // Fallback（若 initDayTabs 未載入）
-    document.querySelectorAll('#day-tabs-container button').forEach(btn => {
-      btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
-    });
-    const initialTab = document.getElementById(`tab-d${initialDay}`);
-    if (initialTab) initialTab.className = "day-tab active flex-shrink-0 transition";
-    if (window.updateDayTabTodayMark) window.updateDayTabTodayMark();
-  }
-  if (window.updateDayProgressDots) window.updateDayProgressDots();
-}, 80);
+  // ⭐ v14.2：一次完成「設定 active + 標記今天 + 自動置中」
+  setTimeout(() => {
+    if (window.initDayTabs) {
+      window.initDayTabs(initialDay);
+    } else {
+      document.querySelectorAll('#day-tabs-container button').forEach(btn => {
+        btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition";
+      });
+      const initialTab = document.getElementById(`tab-d${initialDay}`);
+      if (initialTab) initialTab.className = "day-tab active flex-shrink-0 transition";
+      if (window.updateDayTabTodayMark) window.updateDayTabTodayMark();
+    }
+    if (window.updateDayProgressDots) window.updateDayProgressDots();
+  }, 80);
 
   if (window.AppHeader) {
     AppHeader.init({
@@ -681,11 +687,18 @@ function switchMainTab(tab) {
 
 function setupImageFadeIn(container = document) { const imgs = container.querySelectorAll('img.lazy-fade:not(.loaded)'); imgs.forEach(img => { if (img.complete && img.naturalWidth > 0) img.classList.add('loaded'); else { img.addEventListener('load', () => img.classList.add('loaded'), { once: true }); img.addEventListener('error', () => { img.classList.add('loaded'); img.style.display = 'none'; }, { once: true }); } }); }
 
-function isAdminUnlocked() { return localStorage.getItem("tohoku_admin_unlocked") === "true"; }
+// ==================== ⭐ v14.0：登入即可編輯 ====================
+function isAdminUnlocked() {
+  // 登入的成員即可編輯，訪客仍唯讀
+  const u = window.currentUser || localStorage.getItem("tohoku_current_user");
+  return !!u && u !== "訪客";
+}
+
+// 保留舊版密碼相關函式（不再被呼叫，但保留相容）
 function showPasswordModal() { const m = document.getElementById("password-modal"); m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); document.getElementById("password-error").classList.add('hidden'); document.getElementById("password-input").value = ''; setTimeout(() => document.getElementById("password-input").focus(), 100); }
 function closePasswordModal() { const m = document.getElementById("password-modal"); m.classList.remove('active'); setTimeout(() => m.style.display = 'none', 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); }
-function verifyPassword() { const input = document.getElementById("password-input").value.trim(); if (input === ADMIN_PASSWORD) { localStorage.setItem("tohoku_admin_unlocked", "true"); closePasswordModal(); renderBookingChecklist(); renderEquipChecklist(); showToast("✅ 已解鎖管理權限"); haptic(15); } else { document.getElementById("password-error").classList.remove("hidden"); document.getElementById("password-input").value = ''; haptic(50); } }
-function lockAdmin() { localStorage.removeItem("tohoku_admin_unlocked"); renderBookingChecklist(); renderEquipChecklist(); showToast("🔒 已鎖定管理權限"); }
+function verifyPassword() { const input = document.getElementById("password-input").value.trim(); if (input === ADMIN_PASSWORD) { closePasswordModal(); renderBookingChecklist(); renderEquipChecklist(); showToast("✅ 已解鎖管理權限"); haptic(15); } else { document.getElementById("password-error").classList.remove("hidden"); document.getElementById("password-input").value = ''; haptic(50); } }
+function lockAdmin() { renderBookingChecklist(); renderEquipChecklist(); showToast("🔒 已鎖定管理權限"); }
 
 // ==================== 匯率 ====================
 async function fetchLiveRates() {
@@ -960,7 +973,7 @@ function forceSyncFromCloud() {
     showToast("✅ 已同步最新資料", "☁️"); haptic(10);
   }).catch(e => { showToast("❌ 同步失敗", "⚠️"); });
 }
-function releaseAdminDevice() { if (!confirm("確定要解除這台裝置的管理員身分嗎？")) return; localStorage.removeItem("tohoku_admin_unlocked"); renderBookingChecklist(); renderEquipChecklist(); showToast("👁️ 已轉為唯讀模式", "🔒"); haptic(15); }
+function releaseAdminDevice() { if (!confirm("確定要解除這台裝置的管理員身分嗎？")) return; renderBookingChecklist(); renderEquipChecklist(); showToast("👁️ 已轉為唯讀模式", "🔒"); haptic(15); }
 
 // ==================== 可拖動匯率 FAB ====================
 (function setupDraggableCurrencyFab() {
