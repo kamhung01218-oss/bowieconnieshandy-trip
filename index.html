@@ -308,7 +308,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // ⭐ v3.10：附件用「展開合併」而非「直接覆蓋」
-      // 避免本地剛上傳、尚未同步完成的附件被雲端舊資料蓋掉
       if (cloudData.attachments && typeof cloudData.attachments === 'object') {
         window.cloudAttachments = { ...(window.cloudAttachments || {}), ...cloudData.attachments };
         if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
@@ -335,8 +334,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ⭐ v3.10：修正 hasPendingWrites 檢查
-  // 原本只要 hasPendingWrites 就整個 return，導致「剛寫入的附件」被跳過；
-  // 改成「同時 hasPendingWrites 且 fromCache」才跳過（純離線本地狀態）
   window.dbRef.onSnapshot({ includeMetadataChanges: true }, docSnap => {
     if (!docSnap.exists) return;
     if (docSnap.metadata?.hasPendingWrites && docSnap.metadata?.fromCache) return;
@@ -352,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 200);
   }, err => console.warn("Firestore Sync Warning:", err));
 
-  // ⭐ v3.10：主動抓一次雲端（保險，避免快照延遲或首載入時機問題）
+  // ⭐ v3.10：主動抓一次雲端（保險）
   setTimeout(() => {
     if (!window.dbRef) return;
     window.dbRef.get().then(snap => {
@@ -873,6 +870,43 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 
 [data-theme="dark"] .album-hero-icon { color: #34d399; }
+
+/* ============================================================
+ * 🚑 修復 Android WebView 幽靈白框問題（v3.10 新增）
+ * ============================================================ */
+
+/* 1. 修復 content-visibility 導致的幽靈白框 */
+.day-section {
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
+}
+
+/* 2. 防止未激活的 Modal 遺漏出空白的白框 */
+.modal-overlay:not(.active) .modal-box {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* 3. 強制 #snow-fall 完全透明，防止渲染成白色塊 */
+#snow-fall, 
+#snow-fall canvas {
+  background: transparent !important;
+  opacity: 0.35 !important; /* 降低雪花干擾，若你喜歡原本的雪，可改回 1 */
+}
+
+/* 4. 修復 backdrop-filter 在部分 Android 機型的白色偽影 */
+.glass-card, 
+.modal-box,
+.app-header .tools-menu-backdrop {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* 5. 確保空的 Modal 內容不會顯示白框 */
+.modal-box .modal-scrollable:empty {
+  display: none !important;
+}
 </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
