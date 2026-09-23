@@ -1,23 +1,14 @@
 /* ============================================================
- * AppHeader v16.2
+ * AppHeader v16.3
  * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [🔄 重整] + [☰ 工具]
  * - Focus Card：出發前 / 中 / 後
  * - 旅行中順序：廣播 → 天氣 → 現在 → 下一站 → CTA(購物/留言)
  *
- * v16.0 變更：
- *   - ⭐ 出發前 Focus Card 分 4 階段演化
- *   - ⭐ 準備進度改為「真實任務完成度」
- *   - ⭐ 今日任務升級為主角
- *   - ⭐ 新增：出發日天氣、搶票倒數、行李準備度、未完成清單
- *   - ⭐ 倒數計時依階段自動縮放
- *
- * v16.1 變更：
- *   - ⭐ 準備進度可點擊 → 打開「準備總覽」Modal
- *   - ⭐ 準備總覽 Modal 顯示未完成項與一鍵前往處理
- *
- * v16.2 變更：
- *   - ⭐ 工具選單：「共享收據/憑證」→「附件總覽」
- *   - ⭐ 綁定 openAttachmentsOverview
+ * v16.0：出發前 Focus Card 4 階段演化
+ * v16.1：準備進度可點擊 → 打開準備總覽 Modal
+ * v16.2：工具選單「共享收據/憑證」→「附件總覽」
+ * v16.3：
+ *   - ⭐ L：留言訂閱移除 phase 檢查，出發前也刷新廣播
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -547,7 +538,7 @@ window.AppHeader = (function () {
     if (typeof window.fetchWeatherData === 'function') {
       try {
         console.log('[sync] → 天氣…');
-        await window.fetchWeatherData();
+        await window.fetchWeatherData(true);
         okCount++;
         console.log('[sync] ✓ 天氣');
       } catch (e) {
@@ -2088,20 +2079,26 @@ window.closeMessagesModal = closeMessagesModal;
 
 /* ============================================================
  * 留言訂閱（局部刷新廣播區塊）
+ *
+ * ⭐ v16.3：移除 phase === 'during' 檢查
+ *   出發前也要能收到留言通知
  * ============================================================ */
 if (window.Messages) {
   window.Messages.subscribe(() => {
-    if (window.AppHeader && window.AppHeader.getPhase && window.AppHeader.getPhase() === 'during') {
-      if (window.AppHeader.refreshBroadcast) {
-        window.AppHeader.refreshBroadcast();
-      }
-      const msgBtn = document.querySelector('[data-action="messages"]');
-      if (msgBtn) {
-        const count = window.Messages.getCount();
-        const base = `<span>💬</span> 留言`;
-        msgBtn.innerHTML = count > 0 ? `${base}<span class="broadcast-badge">${count}</span>` : base;
-      }
+    // 任何階段都刷新廣播
+    if (window.AppHeader && window.AppHeader.refreshBroadcast) {
+      window.AppHeader.refreshBroadcast();
     }
+
+    // 更新 header 上的留言按鈕
+    const msgBtn = document.querySelector('[data-action="messages"]');
+    if (msgBtn) {
+      const count = window.Messages.getCount();
+      const base = `<span>💬</span> 留言`;
+      msgBtn.innerHTML = count > 0 ? `${base}<span class="broadcast-badge">${count}</span>` : base;
+    }
+
+    // 如果留言 modal 開著，即時更新
     const modal = document.getElementById("messages-modal");
     if (modal && modal.classList.contains('active')) renderMessagesModal();
   });
@@ -2179,7 +2176,7 @@ if (window.Messages) {
       } else {
         console.warn('[pull-sync] _AppHeader_syncAll 不存在，改用 fallback');
         if (typeof window.fetchWeatherData === 'function') {
-          await window.fetchWeatherData().catch(e => console.warn(e));
+          await window.fetchWeatherData(true).catch(e => console.warn(e));
         }
         if (typeof window.fetchLiveRates === 'function') {
           await window.fetchLiveRates().catch(e => console.warn(e));

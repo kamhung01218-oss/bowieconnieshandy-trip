@@ -1,9 +1,11 @@
 /* ============================================================
- * app-lists.js — v7.4
+ * app-lists.js — v7.5
  * 清單：行前預訂清單、裝備清單、購物清單、購物總覽
  *
  * v7.4 變更：
  *   - 購物總覽加「＋ 新增物品」按鈕（可指定景點或「臨時購買」）
+ * v7.5 變更：
+ *   - ⭐ 新增 updateShoppingBadges()：只更新徽章，不重繪整個 section
  * ============================================================ */
 
 // ==================== Modal 狀態 ====================
@@ -13,7 +15,7 @@ const modalUIState = {
 };
 
 let shoppingViewMode = 'byEvent';
-let addShoppingFormOpen = false;  // ⭐ 新增物品表單是否展開
+let addShoppingFormOpen = false;
 
 const SHOPPING_CATEGORIES = [
   { value: "餐飲",   label: "🍜 餐飲" },
@@ -26,7 +28,6 @@ const SHOPPING_CATEGORIES = [
   { value: "其他",   label: "📦 其他" }
 ];
 
-// ⭐ 臨時購買的 eventTitle（不屬於任何景點）
 const TEMP_PURCHASE_TITLE = "臨時購買";
 
 // ==================== 行前預訂 ====================
@@ -151,14 +152,19 @@ function saveShoppingItems(eventTitle, items) { if (!currentUser || currentUser 
 function openShoppingModal(eventTitle) { const m = document.getElementById('shopping-modal'); if (!m) return; m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); const c = document.getElementById('shopping-content'); if (c) c.innerHTML = renderShoppingList(eventTitle); setTimeout(() => setupImageFadeIn(m), 50); }
 function closeShoppingModal() { const m = document.getElementById('shopping-modal'); if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; refreshCurrentDay(); }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
 function refreshCurrentDay() {
-  if (window._lastActiveDay) {
-    const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
-    if (dayData) {
-      renderDayItinerary(`day-section-${dayData.day}`, dayData, true);
-      document.querySelectorAll('.day-section').forEach(sec => { if (sec.id !== `day-section-${dayData.day}`) sec.classList.add('hidden'); });
-      document.querySelectorAll("#day-tabs-container button").forEach(btn => { btn.className = "day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition"; });
-      const a = document.getElementById(`tab-d${dayData.day}`); if (a) a.className = "day-tab active flex-shrink-0 transition";
-    }
+  if (!window._lastActiveDay) return;
+  const day = window._lastActiveDay;
+  const section = document.getElementById('day-section-' + day);
+  if (!section) return;
+
+  // ⭐ v17.5：只更新附件徽章（不重繪整個 section）
+  if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
+    window.Uploads.renderAllAttachments(section);
+  }
+
+  // 更新購物徽章（如果購物清單有變化）
+  if (typeof window.updateShoppingBadges === 'function') {
+    window.updateShoppingBadges(day);
   }
 }
 
@@ -229,7 +235,6 @@ function getAllShoppingItems() {
   const userData = getUserData();
   const groups = [];
 
-  // ⭐ 先處理「臨時購買」
   const tempItems = userData.shopping[TEMP_PURCHASE_TITLE] || [];
   if (tempItems.length > 0) {
     groups.push({
@@ -243,7 +248,6 @@ function getAllShoppingItems() {
     });
   }
 
-  // 再處理正常的景點
   winterItineraries.forEach(day => {
     day.events.forEach(event => {
       const items = userData.shopping[event.title] || [];
@@ -303,7 +307,6 @@ function submitNewShoppingItem() {
   items.push({ name, category, note, planned: false });
   saveShoppingItems(eventTitle, items);
 
-  // 清空表單（保留 category 方便連續新增）
   nameEl.value = '';
   noteEl.value = '';
   nameEl.focus();
@@ -316,7 +319,6 @@ function submitNewShoppingItem() {
 }
 window.submitNewShoppingItem = submitNewShoppingItem;
 
-// ⭐ 生成景點選項（按 Day 分組）
 function buildEventOptionsHtml() {
   let html = `<optgroup label="🛒 不指定">
     <option value="${escAttr(TEMP_PURCHASE_TITLE)}">🛒 臨時購買（旅途中看到就買）</option>
@@ -339,7 +341,6 @@ function renderAllShoppingContent() {
   const groups = getAllShoppingItems();
   const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-3"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="text-xs font-black text-sky-800">${escapeHtml(currentUser)} 的購物清單總覽</div></div>`;
 
-  // ⭐ 新增物品按鈕 + 表單
   const addFormHtml = `
     <button onclick="toggleAddShoppingForm()" class="w-full mb-3 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-black text-sm py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
       <span style="font-size:16px;font-weight:900">${addShoppingFormOpen ? '✕' : '＋'}</span>
@@ -364,7 +365,6 @@ function renderAllShoppingContent() {
     </div>
   `;
 
-  // 空清單 → 顯示新增按鈕 + 說明
   if (groups.length === 0) {
     container.innerHTML = userBanner + addFormHtml + `
       <div class="text-center py-10 px-4">
@@ -397,7 +397,6 @@ function renderAllShoppingContent() {
 
   container.innerHTML = html;
 
-  // ⭐ 重新綁定表單事件（若有展開）
   if (addShoppingFormOpen) {
     const nameEl = document.getElementById('add-shopping-name');
     if (nameEl) {
@@ -453,7 +452,6 @@ function renderShoppingByEvent(groups) {
       });
     }
 
-    // 只有非臨時項目才顯示「前往行程」
     if (!group.isTemp) {
       html += `<button onclick="jumpToEvent(${group.day}, ${group.eventIndex})" class="mt-2 w-full text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 py-2 rounded-lg transition active:scale-95">📍 前往行程查看</button>`;
     }
@@ -583,7 +581,6 @@ function closeBookingModal() { hideModal('booking-modal'); setTimeout(() => docu
 function toggleEquipModal() { const modal = document.getElementById('equip-modal'); if (modal.classList.contains('hidden')) { showModal('equip-modal'); modal.classList.remove('hidden'); renderEquipChecklist(); } else { hideModal('equip-modal'); setTimeout(() => modal.classList.add('hidden'), 300); } }
 function closeEquipModal() { hideModal('equip-modal'); setTimeout(() => document.getElementById('equip-modal').classList.add('hidden'), 300); }
 
-// 讓 app-core 的 setupModalDrag 可以從 window 找到
 window.toggleBookingModal = toggleBookingModal;
 window.closeBookingModal = closeBookingModal;
 window.toggleEquipModal = toggleEquipModal;
@@ -592,3 +589,33 @@ window.openShoppingModal = openShoppingModal;
 window.closeShoppingModal = closeShoppingModal;
 window.openAllShoppingModal = openAllShoppingModal;
 window.closeAllShoppingModal = closeAllShoppingModal;
+
+// ============================================================
+// ⭐ v7.5：只更新購物徽章，不重繪整個 section
+// ============================================================
+function updateShoppingBadges(day) {
+  const section = document.getElementById('day-section-' + day);
+  if (!section) return;
+  const cards = section.querySelectorAll('details.event-card');
+  cards.forEach(card => {
+    const titleEl = card.querySelector('.event-title');
+    if (!titleEl) return;
+    const eventTitle = titleEl.textContent.trim();
+    const count = loadShoppingItems(eventTitle).length;
+    const btn = card.querySelector('.event-action-btn[data-event-title]');
+    if (!btn) return;
+    let badge = btn.querySelector('.badge');
+    if (count > 0) {
+      if (badge) badge.textContent = count;
+      else {
+        badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.textContent = count;
+        btn.appendChild(badge);
+      }
+    } else if (badge) {
+      badge.remove();
+    }
+  });
+}
+window.updateShoppingBadges = updateShoppingBadges;

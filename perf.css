@@ -1,13 +1,10 @@
 /* ============================================================
- * perf.css — 效能優化補丁（v13.0）
+ * perf.css — 效能優化補丁（v14.0）
  * 放在 patches.css 之後載入
  *
- * v13.0 變更（P0–P3）：
- *   - 雪花數量再降（手機 6 個、平板 10 個）
- *   - 捲動時暫停所有裝飾性動畫
- *   - will-change 只在動畫期間使用
- *   - 移除卡片不必要的多層陰影
- *   - backdrop-filter 在手機全面停用
+ * v14.0 變更：
+ *   - ⭐ day-section 加 content-visibility: auto
+ *   - ⭐ 加速隱藏 day-section 的渲染跳過
  * ============================================================ */
 
 /* ============================================================
@@ -44,13 +41,17 @@ img.lazy-fade:not(.loaded) {
 }
 
 /* ============================================================
- * 4. day-section 加 contain，讓瀏覽器知道範圍
+ * 4. ⭐ v14.0：day-section 加 content-visibility
+ *    - 可見的 section 也套用，讓瀏覽器跳過螢幕外渲染
+ *    - 用 contain-intrinsic-size 給佔位高度，避免滾動跳動
  * ============================================================ */
 .day-section {
-  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1200px;
 }
 .day-section.hidden {
   display: none !important;
+  content-visibility: hidden;
   contain: strict;
 }
 
@@ -123,7 +124,6 @@ body.is-scrolling .modal-progress-fill::after {
 .timeline-item.status-active .timeline-node {
   will-change: auto;
 }
-/* 只在「展開的卡片」內保留 will-change */
 details.event-card[open] .event-content-wrapper {
   will-change: auto;
 }
@@ -136,7 +136,7 @@ details.event-card[open] .event-content-wrapper {
 }
 
 /* ============================================================
- * 11. 深色模式 FAB 白邊修正（P0 · 雙重保險）
+ * 11. 深色模式 FAB 白邊修正（雙重保險）
  * ============================================================ */
 [data-theme="dark"] .bottom-nav .nav-fab {
   border-color: #1e293b !important;

@@ -1,5 +1,5 @@
 /* ============================================================
- * ledger.js — 隨行記帳本主邏輯 v3.0
+ * ledger.js — 隨行記帳本主邏輯 v3.1
  *
  * v2.8：收據綁定支出
  * v2.9：記帳時可一起加收據
@@ -7,6 +7,8 @@
  *   - ⭐ 修復：刪除一筆產生多條歷史（runTransaction 重試問題）
  *   - ⭐ 修復：收據不再彈新視窗，改用 iframe 內建燈箱
  *   - ⭐ 所有 createHistoryEntry / newEntry ID 移到 transaction 外
+ * v3.1：
+ *   - ⭐ M：deleteExpense Undo 只在刪除成功後顯示
  * ============================================================ */
 'use strict';
 
@@ -228,7 +230,7 @@ function decPendingWrites() {
 }
 
 /* ============================================================
- * 十、⭐ v3.0：iframe 內建燈箱
+ * 十、iframe 內建燈箱
  * ============================================================ */
 let _ledgerLightboxImages = [];
 let _ledgerLightboxIndex = 0;
@@ -242,7 +244,6 @@ function openLedgerLightbox(images, index) {
   const img = document.getElementById('ledger-lightbox-img');
   const cap = document.getElementById('ledger-lightbox-caption');
   if (!lb || !img) {
-    // Fallback
     window.open(_ledgerLightboxImages[_ledgerLightboxIndex], '_blank');
     return;
   }
@@ -395,6 +396,11 @@ auth.onAuthStateChanged(user => {
  * ============================================================ */
 async function runTransaction(mutateFn) {
   if (!canWrite()) throw new Error("NO_PERMISSION");
+  // ⭐ v3.2：離線守衛（ledger 在 iframe 內）
+  if (navigator.onLine === false) {
+    showToast('📡 離線中，無法儲存記帳', '⚠️');
+    throw new Error("OFFLINE");
+  }
   if (!auth.currentUser) await initAuth();
   incPendingWrites();
   try {
@@ -729,7 +735,6 @@ function _getReceipts(expense) {
   return Array.isArray(expense.receipts) ? expense.receipts : [];
 }
 
-/* ---------- 列表：後補收據 ---------- */
 function pickReceiptForExpense(expenseId) {
   if (!canWrite()) { showToast("🔒 請先登入才能上傳收據", "⚠️"); return; }
   if (!window.Uploads || typeof window.Uploads.uploadFiles !== 'function') {
@@ -780,7 +785,6 @@ async function uploadReceiptsForExpense(expenseId, files) {
     return;
   }
 
-  // ⭐ v3.0：history entry 在 transaction 外生成
   const historyEntry = createHistoryEntry("edit", expense, `為「${escapeHtml(expense.desc)}」加入 ${result.success.length} 張收據`);
 
   try {
@@ -830,7 +834,6 @@ async function deleteReceipt(expenseId, receiptId) {
   if (!isOwner && !isAdmin) { showToast('🔒 只能刪除自己上傳的收據', '⚠️'); return; }
   if (!confirm('確定要移除這張收據嗎？')) return;
 
-  // ⭐ v3.0：history entry 在 transaction 外生成
   const historyEntry = createHistoryEntry("edit", expense, `移除「${escapeHtml(expense.desc)}」1 張收據`);
 
   try {
@@ -855,7 +858,6 @@ async function deleteReceipt(expenseId, receiptId) {
   }
 }
 
-/* ⭐ v3.0：改用 iframe 內建燈箱，不彈新視窗 */
 function openReceiptLightbox(expenseId, index) {
   const expense = state.expenses.find(e => e.id === expenseId);
   if (!expense) return;
@@ -895,7 +897,6 @@ function buildReceiptAddBtnHtml(expense) {
   </button>`;
 }
 
-/* ---------- 記帳 Modal 內收據 ---------- */
 function pickReceiptForModal() {
   if (!canWrite()) { showToast("🔒 請先登入才能上傳收據", "⚠️"); return; }
   if (!window.Uploads || typeof window.Uploads.uploadFiles !== 'function') {
@@ -957,7 +958,6 @@ function removeModalReceipt(receiptId) {
   haptic(8);
 }
 
-/* ⭐ v3.0：Modal 內收據縮圖改用燈箱，不彈新視窗 */
 function openModalReceiptLightbox(index) {
   const urls = pendingReceipts.map(r => r.url);
   openLedgerLightbox(urls, index);
@@ -1241,7 +1241,7 @@ function updateEstimatedHKD() {
 }
 
 /* ============================================================
- * 二十四、儲存支出（⭐ v3.0：ID 與 history 在 transaction 外）
+ * 二十四、儲存支出
  * ============================================================ */
 async function saveExpense() {
   const day = document.getElementById("ledger-day");
@@ -1289,7 +1289,6 @@ async function saveExpense() {
     return rest;
   });
 
-  // ⭐ v3.0：先在外部生成 id 和 history entry，避免 transaction 重試產生多條
   let newExpenseId = null;
   let historyEntry = null;
 
@@ -1340,7 +1339,7 @@ async function saveExpense() {
 }
 
 /* ============================================================
- * 二十五、刪除（⭐ v3.0：history entry 在 transaction 外）
+ * 二十五、刪除（⭐ v3.1：Undo 只在刪除成功後顯示）
  * ============================================================ */
 async function deleteExpense(expenseId) {
   ensureWriteAccess(async () => {
@@ -1348,9 +1347,14 @@ async function deleteExpense(expenseId) {
     if (!expense) return;
     const snapshot = JSON.parse(JSON.stringify(expense));
 
-    // ⭐ 在 transaction 外生成 history entry
-    const historyEntry = createHistoryEntry("delete", snapshot, `刪除了「${escapeHtml(snapshot.desc)}」(${snapshot.amount} ${snapshot.currency})`);
+    // 在 transaction 外生成 history entry
+    const historyEntry = createHistoryEntry(
+      "delete",
+      snapshot,
+      `刪除了「${escapeHtml(snapshot.desc)}」(${snapshot.amount} ${snapshot.currency})`
+    );
 
+    // ⭐ v3.1：先執行刪除，成功後才顯示 Undo
     try {
       await runTransaction(current => {
         const expenses = (current.expenses || []).filter(e => e.id !== expenseId);
@@ -1359,13 +1363,19 @@ async function deleteExpense(expenseId) {
         history = history.slice(0, 200);
         return { expenses, history };
       });
-      showToast("🗑 已刪除"); haptic(10);
+
+      // ✅ 刪除成功 → 顯示 Undo
+      haptic(10);
       showUndoToast(`已刪除「${snapshot.desc}」`, "🗑", async () => {
-        // ⭐ 還原時也在 transaction 外生成
-        const restoreEntry = createHistoryEntry("add", snapshot, `還原了「${escapeHtml(snapshot.desc)}」`);
+        const restoreEntry = createHistoryEntry(
+          "add",
+          snapshot,
+          `還原了「${escapeHtml(snapshot.desc)}」`
+        );
         try {
           await runTransaction(current => {
             const expenses = [...(current.expenses || [])];
+            // 防止重複 push（另一台裝置可能已經還原）
             if (expenses.some(e => e.id === snapshot.id)) return {};
             expenses.push(snapshot);
             let history = [...(current.history || [])];
@@ -1374,9 +1384,13 @@ async function deleteExpense(expenseId) {
             return { expenses, history };
           });
           showToast("✅ 已還原", "↩️");
-        } catch (e) { showToast("❌ 還原失敗", "⚠️"); }
+        } catch (e) {
+          console.error("[restoreExpense]", e);
+          showToast("❌ 還原失敗", "⚠️");
+        }
       });
     } catch (e) {
+      // ❌ 刪除失敗 → 不顯示 Undo
       console.error("[deleteExpense]", e);
       showToast("❌ 刪除失敗", "⚠️");
     }
@@ -1815,8 +1829,6 @@ function confirmAndClearExpenses() {
     try {
       await runTransaction(current => {
         const count = (current.expenses || []).length;
-        // ⭐ v3.0：history entry 在 transaction 外生成
-        // 但這裡 mutateFn 只跑一次（clear 沒有競態問題），仍保留在此
         const historyEntry = createHistoryEntry("clear", null, `清空了所有記帳資料（原有 ${count} 筆）`);
         const history = [historyEntry, ...(current.history || [])].slice(0, 200);
         return { expenses: [], settlementStatus: {}, history };
@@ -2119,7 +2131,6 @@ window.scrollToTop = scrollToTop;
 window.toggleCharts = toggleCharts;
 window.toggleMoreMenu = toggleMoreMenu;
 window.closeMoreMenu = closeMoreMenu;
-// ⭐ Phase 3
 window.pickReceiptForExpense = pickReceiptForExpense;
 window.uploadReceiptsForExpense = uploadReceiptsForExpense;
 window.deleteReceipt = deleteReceipt;
@@ -2127,7 +2138,6 @@ window.openReceiptLightbox = openReceiptLightbox;
 window.pickReceiptForModal = pickReceiptForModal;
 window.removeModalReceipt = removeModalReceipt;
 window.openModalReceiptLightbox = openModalReceiptLightbox;
-// ⭐ v3.0：燈箱
 window.openLedgerLightbox = openLedgerLightbox;
 window.closeLedgerLightbox = closeLedgerLightbox;
 window.ledgerLightboxNav = ledgerLightboxNav;

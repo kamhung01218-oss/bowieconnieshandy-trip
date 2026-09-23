@@ -21,7 +21,6 @@
 <script src="https://cdn.jsdelivr.net/npm/firebase@11.6.1/firebase-firestore-compat.js"></script>
 
 <script>
-/* 主題初始化（避免 FOUC，同步 html + body） */
 (function() {
   try {
     var t = localStorage.getItem('tohoku_theme') || 'light';
@@ -39,7 +38,6 @@
 <script src="emergency.js"></script>
 <script src="messages.js"></script>
 
-<!-- ⭐ 設計令牌必須最先載入 -->
 <link rel="stylesheet" href="./tokens.css">
 <link rel="stylesheet" href="./header.css">
 <link rel="stylesheet" href="./style.css">
@@ -52,9 +50,6 @@
 <link rel="stylesheet" href="./attachments-overview.css">
 
 <style>
-/* ============================================================
- * ⭐ 繁體中文字體（移除 palt / font-language-override）
- * ============================================================ */
 html, body {
   font-family:
     'Noto Sans TC',
@@ -73,7 +68,6 @@ html, body {
   text-rendering: optimizeLegibility;
 }
 
-/* 數字用 Playfair Display */
 .countdown-value,
 .countdown-inline-num,
 .countdown-inline-num-sm,
@@ -98,7 +92,6 @@ html, body {
 </style>
 
 <script>
-/* ⭐ Tailwind 整合設計令牌：使用 var(--t-*) 讓深色模式自動跟隨 */
 tailwind.config = {
   theme: {
     extend: {
@@ -161,9 +154,13 @@ try {
   if (typeof firebase !== 'undefined' && typeof firebase.firestore === 'function') {
     db = firebase.firestore();
     window.db = db;
+
+    // ⭐ v14.7：已移除離線持久化
+    // 所有寫入需要網路，避免多裝置離線衝突
+
     dbRef = db.collection("tohoku_trip").doc("shared_expenses");
     window.dbRef = dbRef;
-    console.log("✅ Firestore 初始化成功");
+    console.log("✅ Firestore 初始化成功（無離線持久化）");
   } else {
     window.dbRefError = "SDK未載入";
   }
@@ -171,8 +168,63 @@ try {
   window.dbRefError = err.message;
 }
 
+// ⭐ v14.7：離線狀態檢測 + 寫入守衛
+window.isOnline = function() {
+  return navigator.onLine !== false;
+};
+
+window.requireOnline = function(actionLabel) {
+  if (!window.isOnline()) {
+    if (typeof showToast === 'function') {
+      showToast(
+        '📡 離線中' + (actionLabel ? `，無法${actionLabel}` : '，無法儲存'),
+        '⚠️'
+      );
+    }
+    if (typeof haptic === 'function') haptic(50);
+    return false;
+  }
+  return true;
+};
+
+// ⭐ 離線橫幅（固定在頂部）
+(function setupOfflineBanner() {
+  const banner = document.createElement('div');
+  banner.id = 'offline-banner';
+  banner.style.cssText = [
+    'position:fixed',
+    'top:0', 'left:0', 'right:0',
+    'z-index:9999',
+    'background:linear-gradient(135deg,#dc2626,#991b1b)',
+    'color:white',
+    'font-size:12px',
+    'font-weight:900',
+    'text-align:center',
+    'padding:8px 12px',
+    'transform:translateY(-100%)',
+    'transition:transform 0.3s ease',
+    'box-shadow:0 4px 12px rgba(0,0,0,0.3)',
+    'pointer-events:none'
+  ].join(';');
+  banner.textContent = '📡 已離線 · 請恢復網路後再操作';
+  document.body.appendChild(banner);
+
+  function updateBanner() {
+    if (navigator.onLine === false) {
+      banner.style.transform = 'translateY(0)';
+    } else {
+      banner.style.transform = 'translateY(-100%)';
+    }
+  }
+  window.addEventListener('offline', updateBanner);
+  window.addEventListener('online', updateBanner);
+  updateBanner();
+})();
+
 async function syncDataToCloud() {
   if (!isAdminUnlocked()) { showToast("🔒 唯讀模式，無法寫入雲端！", "⚠️"); return; }
+  // ⭐ v14.7：離線守衛
+  if (typeof window.requireOnline === 'function' && !window.requireOnline('儲存')) return;
   if (typeof firebase === 'undefined' || !window.dbRef) { showToast("⏳ 雲端未連線", "⚠️"); return; }
   try {
     if (!firebase.auth().currentUser) { showToast("👤 尚未完成匿名登入", "⚠️"); return; }
@@ -194,15 +246,25 @@ async function syncDataToCloud() {
   }
 }
 
+// ⭐ v14.5：debounce + 購物清單快取
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.dbRef) return;
-  window.dbRef.onSnapshot(docSnap => {
-    try {
-      if (!docSnap.exists) return;
-      if (docSnap.metadata?.hasPendingWrites) return;
-      const cloudData = docSnap.data();
 
-      // ⭐ v14.3：把 expenses 同步到主站（讓附件總覽能讀到記帳收據）
+  let _snapshotTimer = null;
+  let _pendingCloudData = null;
+
+  let _lastShoppingHash = '';
+  function _hashShopping(data) {
+    try {
+      if (!currentUser || currentUser === "訪客") return '';
+      const u = data && data[currentUser];
+      if (!u || !u.shopping) return '';
+      return JSON.stringify(u.shopping);
+    } catch (e) { return ''; }
+  }
+
+  function _applyCloudData(cloudData) {
+    try {
       if (Array.isArray(cloudData.expenses)) {
         if (typeof state !== 'undefined') {
           state.expenses = cloudData.expenses;
@@ -217,25 +279,35 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
         const localNonBooking = {};
         Object.keys(state.checkedItems).forEach(k => {
-          if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) localNonBooking[k] = state.checkedItems[k];
+          if (!k.startsWith('booking-') && !k.startsWith('custom-booking-')) {
+            localNonBooking[k] = state.checkedItems[k];
+          }
         });
         state.checkedItems = { ...cloudData.checkedItems, ...localNonBooking };
       }
+
       if (Array.isArray(cloudData.customBookingItems)) {
         customBookingItems = cloudData.customBookingItems.slice();
         localStorage.setItem("custom_booking_items", JSON.stringify(customBookingItems));
       }
+
       if (cloudData.userData && typeof cloudData.userData === 'object') {
         window.cloudUserData = cloudData.userData;
         cloudUserData = cloudData.userData;
         if (currentUser && currentUser !== "訪客") {
           renderEquipChecklist();
-          renderAllShoppingContent();
+          const newHash = _hashShopping(cloudData.userData);
+          if (newHash !== _lastShoppingHash) {
+            _lastShoppingHash = newHash;
+            renderAllShoppingContent();
+          }
         }
       }
+
       if (cloudData.userPins && typeof cloudData.userPins === 'object') {
         cloudUserPins = cloudData.userPins;
       }
+
       if (cloudData.attachments && typeof cloudData.attachments === 'object') {
         window.cloudAttachments = cloudData.attachments;
         if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
@@ -245,16 +317,50 @@ document.addEventListener('DOMContentLoaded', () => {
           window.renderAttachmentsOverview();
         }
       }
+
       if (cloudData.eventNotes && typeof cloudData.eventNotes === 'object') {
         window.cloudEventNotes = cloudData.eventNotes;
         if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
           window.Uploads.renderAllAttachments();
         }
       }
+
       saveLocalCheckedItems();
       restoreChecklistUI();
-    } catch (err) { console.warn("[Snapshot merge error]", err); }
+    } catch (err) {
+      console.warn("[Snapshot merge error]", err);
+    }
+  }
+
+  window.dbRef.onSnapshot(docSnap => {
+    if (!docSnap.exists) return;
+    if (docSnap.metadata?.hasPendingWrites) return;
+
+    _pendingCloudData = docSnap.data();
+    clearTimeout(_snapshotTimer);
+    _snapshotTimer = setTimeout(() => {
+      if (_pendingCloudData) {
+        const data = _pendingCloudData;
+        _pendingCloudData = null;
+        _applyCloudData(data);
+      }
+    }, 200);
   }, err => console.warn("Firestore Sync Warning:", err));
+});
+
+// ⭐ v14.5：初始化 history state（支援瀏覽器返回鍵）
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const initDay = typeof window.getInitialDay === 'function' ? window.getInitialDay() : 1;
+    const params = new URLSearchParams(location.search);
+    if (params.get('day') !== String(initDay)) {
+      params.set('day', String(initDay));
+      const newUrl = location.pathname + '?' + params.toString() + location.hash;
+      history.replaceState({ day: initDay }, '', newUrl);
+    } else {
+      history.replaceState({ day: initDay }, '', location.href);
+    }
+  } catch (e) {}
 });
 </script>
 
@@ -288,9 +394,6 @@ document.addEventListener('DOMContentLoaded', () => {
   transform: scale(0.94);
 }
 
-/* ============================================================
- * ⭐ Modal 標題統一
- * ============================================================ */
 .modal-title {
   display: flex;
   align-items: center;
@@ -321,9 +424,6 @@ document.addEventListener('DOMContentLoaded', () => {
 [data-theme="dark"] .modal-title { color: #f1f5f9; }
 [data-theme="dark"] .modal-subtitle { color: #94a3b8; }
 
-/* ============================================================
- * 行程附件（Phase 2）
- * ============================================================ */
 .event-att-badge {
   display: inline-flex;
   align-items: center;
@@ -936,12 +1036,10 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <!-- ✅ 可拖動匯率 FAB -->
   <div id="currency-fab" class="currency-fab" title="匯率換算（可拖動）">
     <span class="currency-fab-icon">🪙</span>
   </div>
 
-  <!-- ⭐ 返回頂部（IG 風格：磨砂圓鈕 + 進度環） -->
   <button id="back-to-top" class="back-to-top-btn" onclick="scrollToTop()" aria-label="返回頂部">
     <svg class="btt-ring" viewBox="0 0 48 48" aria-hidden="true">
       <circle class="btt-ring-track" cx="24" cy="24" r="21"></circle>

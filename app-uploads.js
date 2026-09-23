@@ -1,10 +1,11 @@
 /* ============================================================
- * app-uploads.js — 通用上傳 + 行程資料 v3.5
+ * app-uploads.js — 通用上傳 + 行程資料 v3.8
  *
- * v3.4：使用 data-event-key
- * v3.5：
- *   - ⭐ 同時更新「標籤列徽章」和「動作列按鈕徽章」
- *   - ⭐ 標籤列徽章只在有資料時存在（沒資料自動移除）
+ * v3.5：雙徽章同步
+ * v3.6：renderAllAttachments 支援 scope 參數
+ * v3.7：uploadFiles 並行上傳
+ * v3.8：
+ *   - ⭐ 離線守衛：_saveAttachments / _saveNote 檢查 navigator.onLine
  * ============================================================ */
 
 (function () {
@@ -15,6 +16,7 @@
   const MAX_EDGE = 1600;
   const QUALITY = 0.82;
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const UPLOAD_CONCURRENCY = 3;
 
   if (!window.cloudAttachments) window.cloudAttachments = {};
   if (!window.cloudEventNotes) window.cloudEventNotes = {};
@@ -119,27 +121,50 @@
     };
   }
 
+  // ⭐ v3.7：Worker pool（3 並行）上傳
   async function uploadFiles(files, opts = {}) {
     if (!_canWrite()) { _toast('🔒 訪客無法上傳', '⚠️'); return { success: [], failed: [] }; }
+
+    // ⭐ v3.8：離線守衛
+    if (typeof window.requireOnline === 'function' && !window.requireOnline('上傳')) {
+      return { success: [], failed: [] };
+    }
+
     const list = Array.from(files || []);
     if (list.length === 0) return { success: [], failed: [] };
+
     const onProgress = typeof opts.onProgress === 'function' ? opts.onProgress : null;
     const total = list.length;
     const success = [];
     const failed = [];
-    for (let i = 0; i < list.length; i++) {
-      const file = list[i];
-      try {
-        if (onProgress) onProgress({ phase: 'compress', current: i + 1, total });
-        const blob = await compress(file);
-        if (onProgress) onProgress({ phase: 'upload', current: i + 1, total });
-        const meta = await uploadBlob(blob, opts);
-        success.push(meta);
-      } catch (e) {
-        failed.push({ file: file && file.name, error: e.message || String(e) });
+    let done = 0;
+    let cursor = 0;
+
+    async function worker() {
+      while (cursor < list.length) {
+        const i = cursor++;
+        const file = list[i];
+        try {
+          if (onProgress) onProgress({ phase: 'compress', current: done + 1, total });
+          const blob = await compress(file);
+          if (onProgress) onProgress({ phase: 'upload', current: done + 1, total });
+          const meta = await uploadBlob(blob, opts);
+          success.push(meta);
+        } catch (e) {
+          failed.push({ file: file && file.name, error: e.message || String(e) });
+        }
+        done++;
+        if (onProgress) onProgress({ phase: 'done', current: done, total });
       }
-      if (onProgress) onProgress({ phase: 'done', current: i + 1, total });
     }
+
+    const workers = [];
+    const workerCount = Math.min(UPLOAD_CONCURRENCY, list.length);
+    for (let w = 0; w < workerCount; w++) {
+      workers.push(worker());
+    }
+    await Promise.all(workers);
+
     _haptic(success.length > 0 ? 15 : 50);
     return { success, failed };
   }
@@ -166,7 +191,11 @@
     return (notes && notes[dayKey]) ? notes[dayKey] : null;
   }
 
+  // ⭐ v3.8：加離線守衛
   async function _saveAttachments(dayKey, list) {
+    if (typeof window.requireOnline === 'function' && !window.requireOnline('儲存附件')) {
+      throw new Error('離線中');
+    }
     if (!window.dbRef) throw new Error('雲端未連線');
     window.cloudAttachments[dayKey] = list;
     renderAllAttachments();
@@ -179,7 +208,11 @@
     await window.dbRef.set({ attachments, updatedAt: Date.now() }, { merge: true });
   }
 
+  // ⭐ v3.8：加離線守衛
   async function _saveNote(dayKey, noteObj) {
+    if (typeof window.requireOnline === 'function' && !window.requireOnline('儲存備註')) {
+      throw new Error('離線中');
+    }
     if (!window.dbRef) throw new Error('雲端未連線');
     window.cloudEventNotes[dayKey] = noteObj;
     renderAllAttachments();
@@ -194,6 +227,8 @@
 
   function pickAndUpload(dayKey) {
     if (!_canWrite()) { _toast('🔒 訪客無法上傳', '⚠️'); return; }
+    // ⭐ v3.8：離線守衛（選檔前先檢查）
+    if (typeof window.requireOnline === 'function' && !window.requireOnline('上傳')) return;
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -214,13 +249,20 @@
     _toast(`⏳ 處理 ${total} 張…`, '📤');
     const result = await uploadFiles(files, {
       onProgress: ({ phase, current, total: t }) => {
-        if (current === t || current % 3 === 0) {
-          const label = phase === 'compress' ? '壓縮' : phase === 'upload' ? '上傳' : '完成';
-          _toast(`⏳ ${label} ${current}/${t}`, '📤');
+        const p25 = Math.floor(t * 0.25);
+        const p50 = Math.floor(t * 0.5);
+        const p75 = Math.floor(t * 0.75);
+        if (current === p25 || current === p50 || current === p75) {
+          _toast(`⏳ 已處理 ${current}/${t}`, '📤');
         }
       }
     });
-    if (result.success.length === 0) { _toast(`❌ 全部失敗（${result.failed.length} 張）`, '⚠️'); return; }
+    if (result.success.length === 0) {
+      if (result.failed.length > 0) {
+        _toast(`❌ 全部失敗（${result.failed.length} 張）`, '⚠️');
+      }
+      return;
+    }
     try {
       const existing = getAttachments(dayKey);
       const merged = [...result.success, ...existing];
@@ -232,6 +274,8 @@
 
   async function deleteAttachment(dayKey, attId) {
     if (!_canWrite()) { _toast('🔒 訪客無法刪除', '⚠️'); return; }
+    // ⭐ v3.8：離線守衛
+    if (typeof window.requireOnline === 'function' && !window.requireOnline('刪除')) return;
     const list = getAttachments(dayKey);
     const att = list.find(a => a.id === attId);
     if (!att) return;
@@ -266,7 +310,7 @@
         const safeKey = _esc(dayKey);
         html += `
           <div class="event-att-item">
-            <img src="${safeUrl}" alt="" loading="lazy" decoding="async"
+            <img src="${safeUrl}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"
                  onclick="Uploads.openAttLightbox('${safeKey}', ${i})">
             ${canDelete ? `<button type="button" class="event-att-del"
                  onclick="event.stopPropagation();Uploads.deleteAttachment('${safeKey}','${safeId}')"
@@ -290,11 +334,12 @@
   }
 
   // ============================================================
-  // ⭐ v3.5：同步更新標籤列徽章 + 動作列按鈕徽章
+  // renderAllAttachments（v3.6：scope 參數）
   // ============================================================
-  function renderAllAttachments() {
-    // ───── 1. 附件內容區 ─────
-    document.querySelectorAll('.event-attachments').forEach(el => {
+  function renderAllAttachments(scope) {
+    const root = scope || document;
+
+    root.querySelectorAll('.event-attachments').forEach(el => {
       const dayKey = _getEventKeyFromEl(el);
       if (!dayKey) return;
 
@@ -310,7 +355,7 @@
           const safeUrl = _esc(att.thumb || att.url);
           const safeId = _esc(att.id);
           const safeKey = _esc(dayKey);
-          inner += `<div class="event-att-item"><img src="${safeUrl}" alt="" loading="lazy" onclick="Uploads.openAttLightbox('${safeKey}', ${i})">`;
+          inner += `<div class="event-att-item"><img src="${safeUrl}" alt="" loading="lazy" referrerpolicy="no-referrer" onclick="Uploads.openAttLightbox('${safeKey}', ${i})">`;
           if (canDelete) inner += `<button type="button" class="event-att-del" onclick="event.stopPropagation();Uploads.deleteAttachment('${safeKey}','${safeId}')" aria-label="刪除">×</button>`;
           inner += `</div>`;
         });
@@ -323,8 +368,7 @@
       el.style.display = inner ? '' : 'none';
     });
 
-    // ───── 2. 標籤列徽章 + 動作列按鈕徽章 ─────
-    document.querySelectorAll('details.event-card').forEach(card => {
+    root.querySelectorAll('details.event-card').forEach(card => {
       const dayKey = _getEventKeyFromEl(card);
       if (!dayKey) return;
 
@@ -332,7 +376,7 @@
       const titleEl = card.querySelector('.event-title');
       const eventTitle = titleEl ? titleEl.textContent.trim() : '';
 
-      // 2a. 標籤列徽章（折疊時顯示）
+      // 2a. 標籤列徽章
       const tagRow = card.querySelector('.event-tag-row');
       if (tagRow) {
         let inlineBadge = tagRow.querySelector('.event-inline-data-badge');
@@ -349,11 +393,11 @@
             inlineBadge.setAttribute('data-event-title', eventTitle);
             inlineBadge.setAttribute('aria-label', '查看資料');
             inlineBadge.innerHTML = 
-  '<svg class="event-inline-data-badge-icon" viewBox="0 0 24 24" fill="none" ' +
-  'stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
-  '<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>' +
-  '</svg>' +
-  '<span class="event-inline-data-badge-count">（' + total + '）</span>';
+              '<svg class="event-inline-data-badge-icon" viewBox="0 0 24 24" fill="none" ' +
+              'stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+              '<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>' +
+              '</svg>' +
+              '<span class="event-inline-data-badge-count">（' + total + '）</span>';
             inlineBadge.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -366,7 +410,7 @@
         }
       }
 
-      // 2b. 動作列按鈕徽章（展開時顯示）
+      // 2b. 動作列按鈕徽章
       const btn = card.querySelector('.event-action-btn[data-action="event-data"]');
       if (btn) {
         btn.dataset.eventKey = dayKey;
@@ -520,5 +564,5 @@
     renderEventDataModal
   };
 
-  console.log('[Uploads] v3.5（雙徽章同步）載入完成');
+  console.log('[Uploads] v3.8（並行上傳 + scope 參數 + 離線守衛）載入完成');
 })();

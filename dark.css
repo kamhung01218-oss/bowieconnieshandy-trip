@@ -1,14 +1,12 @@
 /* ============================================================
- * dark.css — 深色模式集中區（v3.0）
+ * dark.css — 深色模式集中區（v3.1）
  *
- * v3.0 變更：
- *   - ⭐ 90% 的覆蓋移除，改由 tokens.css 變數自動處理
- *   - ⭐ 只保留無法透過變數處理的項目（如特定漸層、光暈）
+ * v3.1 變更：
+ *   - ⭐ 修正天氣圖示光暈選擇器（[data-theme="dark"] [data-wcat] 而非 [data-theme="dark"][data-wcat]）
  * ============================================================ */
 
 /* ============================================================
  * 全域：背景與文字
- * （其餘靠 --t-color-* 變數自動跟隨）
  * ============================================================ */
 [data-theme="dark"] body {
   background: linear-gradient(180deg, var(--t-color-bg-1) 0%, var(--t-color-bg-2) 30%, var(--t-color-bg-1) 100%);
@@ -23,14 +21,14 @@
 }
 
 /* ============================================================
- * 天氣 Hero（特定漸層無法用變數）
+ * 天氣 Hero
  * ============================================================ */
 [data-theme="dark"] .weather-hero {
   background: linear-gradient(135deg, #075985, #0c4a6e);
 }
 
 /* ============================================================
- * 搶票卡片（特定漸層）
+ * 搶票卡片
  * ============================================================ */
 [data-theme="dark"] .ticket-card {
   background: linear-gradient(135deg, #1e1b4b, #2e1065);
@@ -141,22 +139,22 @@
 }
 
 /* ============================================================
- * AppHeader Focus Card（特定深色漸層）
+ * AppHeader Focus Card
  * ============================================================ */
 [data-theme="dark"] .app-header {
   background: linear-gradient(180deg, #0c4a6e 0%, #075985 50%, #0c4a6e 100%);
 }
 
 /* ============================================================
- * 天氣圖示光暈（深色模式加強）
+ * ⭐ v3.1 修正：天氣圖示光暈（[data-theme] [data-wcat] 後代選擇器）
  * ============================================================ */
-[data-theme="dark"][data-wcat="snow"] {
+[data-theme="dark"] [data-wcat="snow"] {
   filter: drop-shadow(0 0 8px rgba(125, 211, 252, 0.7));
 }
-[data-theme="dark"][data-wcat="rain"] {
+[data-theme="dark"] [data-wcat="rain"] {
   filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.55));
 }
-[data-theme="dark"][data-wcat="clear"] {
+[data-theme="dark"] [data-wcat="clear"] {
   filter: drop-shadow(0 0 7px rgba(250, 204, 21, 0.6));
 }
 

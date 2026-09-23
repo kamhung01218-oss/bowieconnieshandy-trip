@@ -1,22 +1,16 @@
 /* ============================================================
- * app-itinerary.js — v17.4
+ * app-itinerary.js — v17.7
  *
- * v17.1：資料按鈕獨立於 event-action-buttons
- * v17.2：
- *   - ⭐ 標籤列加入折疊專用的「📎 資料 N」徽章
- *   - ⭐ 展開時動作列顯示「📎 資料」按鈕
- *   - ⭐ 折疊時：標籤列徽章顯示、拍攝/購物隱藏
- *   - ⭐ 沒資料時：折疊徽章不生成（不佔空間）
- * v17.3：
- *   - ⭐ 動作列改用 SVG 圖示（取代 emoji）
- * v17.4：
- *   - ⭐ 修正：圖片改回「左右滑動輪播」（Carousel）
- *   - ⭐ 修正：導航按鈕 SVG 圖示加上尺寸限制，避免撐破版面
+ * v17.5：switchDay 用 rAF + scope 參數；refreshCurrentDay 只更新徽章
+ * v17.6：圖片 referrerpolicy；switchDay history.pushState；popstate
+ * v17.7：
+ *   - ⭐ J：fetchWeatherData 加 TTL 快取（10 分鐘）
+ *   - ⭐ O：openWeatherModal 先渲染快取，避免閃爍
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
 
-// ==================== ⭐ v17.3：SVG 圖示（加上尺寸限制） ====================
+// ==================== SVG 圖示 ====================
 const EVENT_ICONS = {
   shoot: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
   shopping: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
@@ -126,7 +120,20 @@ function weatherCodeToIcon(code) {
   return weatherCodeToIconTag(code).icon;
 }
 
-async function fetchWeatherData() {
+// ⭐ v17.7：天氣 TTL 快取
+let _lastWeatherFetch = 0;
+const WEATHER_CACHE_TTL = 10 * 60 * 1000;
+
+async function fetchWeatherData(force = false) {
+  const nowTs = Date.now();
+  const hasCache = Object.keys(window.weatherCache || {}).length > 0;
+  if (!force && hasCache && (nowTs - _lastWeatherFetch) < WEATHER_CACHE_TTL) {
+    console.log('[Weather] 使用快取（' + Math.round((nowTs - _lastWeatherFetch) / 1000) + ' 秒前）');
+    renderWeatherDetail();
+    return;
+  }
+  _lastWeatherFetch = nowTs;
+
   const today = new Date();
   const tripStartDate = new Date(TRIP_START);
   const daysUntil = Math.floor((tripStartDate - today) / 86400000);
@@ -388,7 +395,6 @@ function buildTimePill(startTime, endTime) {
 }
 function buildTagHtml(tag) { if (!tag || !tag.text) return ''; return '<span class="tag ' + (tag.class ? escapeHtml(tag.class) : '') + '">' + escapeHtml(tag.text) + '</span>'; }
 
-// ⭐ v17.3：動作列使用 SVG 圖示
 function buildEventActionsHtml(day, index, eventTitle, shoppingCount, dayKey) {
   var safeTitle = escAttr(eventTitle);
   var shoppingBadge = '';
@@ -405,7 +411,6 @@ function buildEventActionsHtml(day, index, eventTitle, shoppingCount, dayKey) {
   var dataBadge = total > 0 ? '<span class="badge">' + total + '</span>' : '';
 
   var html = '';
-  // 展開專用的資料按鈕（折疊時被 CSS 隱藏）
   if (dayKey) {
     html += '<button type="button" class="event-action-btn event-action-btn-data" data-action="event-data" data-event-key="' + escAttr(dayKey) + '" onclick="event.preventDefault();event.stopPropagation();Uploads.openEventData(this.dataset.eventKey, this.dataset.eventTitle)" data-event-title="' + safeTitle + '">'
       + EVENT_ICONS.attach + ' 資料' + dataBadge + '</button>';
@@ -419,7 +424,6 @@ function buildEventActionsHtml(day, index, eventTitle, shoppingCount, dayKey) {
   return html;
 }
 
-// ⭐ v16.7：折疊時的附件標記（只有圖示 + (數字)，無底色）
 function buildInlineDataBadge(dayKey, eventTitle, dataCount) {
   if (!dayKey || dataCount <= 0) return '';
   var attachIcon = '<svg class="event-inline-data-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
@@ -452,7 +456,7 @@ function buildEventThumb(event) {
   if (imgUrl) {
     return `<div class="event-thumb-wrap">
       <div class="event-thumb has-image" aria-hidden="true">
-        <img src="${escAttr(imgUrl)}" alt="" loading="lazy" decoding="async">
+        <img src="${escAttr(imgUrl)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
       </div>
     </div>`;
   }
@@ -468,19 +472,16 @@ function buildEventThumb(event) {
   </div>`;
 }
 
-// ⭐ v17.4：多圖改用輪播（左右滑動）
 function buildEventImage(imgUrl, eventTitle, images) {
-  // 優先使用輪播圖（左右滑動）
   if (images && Array.isArray(images) && images.length > 1) {
     return buildImageCarousel(images, eventTitle);
   }
   
-  // 單張圖片
   if (!imgUrl) return '';
   var safeImg = escAttr(imgUrl);
   var safeAlt2 = escAttr(eventTitle);
   var html2 = '<div class="mt-2 rounded-xl overflow-hidden shadow-sm cursor-pointer" onclick="openLightbox([\'' + safeImg + '\'], 0)">';
-  html2 += '<img src="' + safeImg + '" alt="' + safeAlt2 + '" width="400" height="128" class="lazy-fade w-full h-32 object-cover" loading="lazy" decoding="async" fetchpriority="low">';
+  html2 += '<img src="' + safeImg + '" alt="' + safeAlt2 + '" width="400" height="128" class="lazy-fade w-full h-32 object-cover" loading="lazy" decoding="async" fetchpriority="low" referrerpolicy="no-referrer">';
   html2 += '</div>';
   return html2;
 }
@@ -491,7 +492,7 @@ function buildImageCarousel(images, eventTitle) {
   var html = '<div class="event-image-carousel mt-2 rounded-xl overflow-hidden shadow-sm" data-carousel-id="' + carouselId + '">';
   html += '<div class="carousel-track" id="' + carouselId + '" data-count="' + images.length + '">';
   images.forEach(function(url, i) {
-    html += '<img src="' + escAttr(url) + '" alt="' + safeAlt + '" class="lazy-fade carousel-img" loading="lazy" decoding="async" data-index="' + i + '" onclick="openLightboxCarousel(this)">';
+    html += '<img src="' + escAttr(url) + '" alt="' + safeAlt + '" class="lazy-fade carousel-img" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-index="' + i + '" onclick="openLightboxCarousel(this)">';
   });
   html += '</div>';
   html += '<div class="carousel-indicator">';
@@ -541,7 +542,6 @@ function bindImageGridClicks(section) {
   });
 }
 
-// ⭐ v17.4：導航按鈕使用 SVG 圖示（加上 event-nav-link 類別以確保尺寸）
 function buildEventNavBtn(navUrl, eventTitle, navName) {
   var url = navUrl;
   if (!url && eventTitle) { url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(eventTitle); }
@@ -736,7 +736,7 @@ function renderDayItinerary(sectionId, dayData, force) {
     bindImageGridClicks(section);
 
     if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
-      window.Uploads.renderAllAttachments();
+      window.Uploads.renderAllAttachments(section);
     }
   }, 150);
   window._renderedDays.add(dayData.day);
@@ -812,7 +812,6 @@ function buildDayHeaderHtml(dayData, weatherHtml) {
 
 function buildEventsHtml(dayData) { var html = ''; for (var i = 0; i < dayData.events.length; i++) { html += buildSingleEventHtml(dayData, dayData.events[i], i); } return html; }
 
-// ⭐ v17.4：buildSingleEventHtml（標籤列 + 動作列 雙資料入口）
 function buildSingleEventHtml(dayData, event, index) {
   var timeParts = event.time.split(' - ');
   var startTime = timeParts[0].trim();
@@ -823,7 +822,6 @@ function buildSingleEventHtml(dayData, event, index) {
 
   var attDayKey = event.id || ('d' + dayData.day + '-e' + index);
 
-  // 計算資料數量
   var dataCount = 0;
   if (window.Uploads && attDayKey) {
     if (typeof window.Uploads.getAttachments === 'function') {
@@ -835,9 +833,7 @@ function buildSingleEventHtml(dayData, event, index) {
     }
   }
 
-  // 折疊專用：標籤列的資料徽章（只有有資料時才生成）
   var inlineDataBadge = buildInlineDataBadge(attDayKey, event.title, dataCount);
-
   var actionsHtml = buildEventActionsHtml(dayData.day, index, event.title, shoppingItems.length, attDayKey);
   var imageHtml = buildEventImage(event.img, event.title, event.images);
   var navBtnHtml = buildEventNavBtn(event.navUrl, event.title, event.navName);
@@ -866,7 +862,6 @@ function buildSingleEventHtml(dayData, event, index) {
   html += '<div class="itinerary-cat-strip"></div>';
   html += '<summary class="event-summary">';
   html += '<div class="event-summary-info">';
-  // 標籤列：tag + 重點 + 折疊專用資料徽章
   if (tagHtml || priorityBadge || inlineDataBadge) {
     html += '<div class="event-tag-row">' + tagHtml + priorityBadge + inlineDataBadge + '</div>';
   }
@@ -1038,7 +1033,7 @@ function openShootTipsModal(day, eventIndex) {
     photos.forEach((url, i) => {
       html += `<img src="${escAttr(url)}" 
         class="lazy-fade shoot-photo-img" 
-        loading="lazy" decoding="async"
+        loading="lazy" decoding="async" referrerpolicy="no-referrer"
         data-index="${i}"
         onclick="openShootLightbox('${photosJson}', ${i})">`;
     });
@@ -1209,7 +1204,7 @@ function openCommonTipsModal() {
       photos.forEach((url, i) => {
         html += `<img src="${escAttr(url)}" 
           class="lazy-fade common-tip-photo" 
-          loading="lazy" decoding="async"
+          loading="lazy" decoding="async" referrerpolicy="no-referrer"
           data-index="${i}"
           onclick="openShootLightbox('${photosJson}', ${i})">`;
       });
@@ -1277,8 +1272,19 @@ function openLedgerAdd() { const lc = document.getElementById('ledger-frame-cont
 
 // ==================== 行程切換 ====================
 function switchDay(day) {
+  const prevDay = window._lastActiveDay;
   window._lastActiveDay = day;
   try { localStorage.setItem('tohoku_last_day', String(day)); } catch(e) {}
+
+  if (!window._suppressHistoryPush && prevDay !== day) {
+    try {
+      const params = new URLSearchParams(location.search);
+      params.set('day', String(day));
+      const newUrl = location.pathname + '?' + params.toString() + location.hash;
+      history.pushState({ day: day }, '', newUrl);
+    } catch (e) {}
+  }
+
   haptic(6);
 
   const dayData = winterItineraries.find(d => d.day === day);
@@ -1316,15 +1322,27 @@ function switchDay(day) {
     }
   }
 
-  setTimeout(updateTimelineStatus, 50);
-  if (window.updateDayProgressDots) window.updateDayProgressDots();
+  requestAnimationFrame(() => {
+    updateTimelineStatus();
+    if (window.updateDayProgressDots) window.updateDayProgressDots();
+  });
 
-  setTimeout(() => {
-    if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
-      window.Uploads.renderAllAttachments();
+  requestAnimationFrame(() => {
+    const section = document.getElementById('day-section-' + day);
+    if (section && window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
+      window.Uploads.renderAllAttachments(section);
     }
-  }, 100);
+  });
 }
+
+window.addEventListener('popstate', (e) => {
+  const day = e.state && e.state.day;
+  if (typeof day === 'number' && day >= 1 && day <= 7) {
+    window._suppressHistoryPush = true;
+    switchDay(day);
+    window._suppressHistoryPush = false;
+  }
+});
 
 // ==================== 快速跳轉圓點 ====================
 function updateDayProgressDots() {
@@ -1432,7 +1450,22 @@ function toggleTicketModal() { const modal = document.getElementById('ticket-mod
 function closeTicketModal() { hideModal('ticket-modal'); setTimeout(() => document.getElementById('ticket-modal').classList.add('hidden'), 300); if (window._ticketTimer) clearInterval(window._ticketTimer); }
 function openTripOverview() { const m = document.getElementById('trip-overview-modal'); if (m) { m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); renderTripOverview(); } }
 function closeTripOverview() { const m = document.getElementById('trip-overview-modal'); if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
-function openWeatherModal() { const modal = document.getElementById('weather-modal'); showModal('weather-modal'); modal.classList.remove('hidden'); document.getElementById('weather-detail-content').innerHTML = ''; fetchWeatherData(); }
+
+// ⭐ v17.7：openWeatherModal 先渲染快取
+function openWeatherModal() {
+  const modal = document.getElementById('weather-modal');
+  if (!modal) return;
+  showModal('weather-modal');
+  modal.classList.remove('hidden');
+  // 先渲染現有快取（避免閃爍）
+  if (Object.keys(window.weatherCache || {}).length > 0) {
+    renderWeatherDetail();
+  } else {
+    document.getElementById('weather-detail-content').innerHTML = '';
+  }
+  // 再背景更新（若 10 分鐘內抓過會自動略過）
+  fetchWeatherData(false);
+}
 function closeWeatherModal() { hideModal('weather-modal'); setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300); }
 
 window.toggleDriveModal = toggleDriveModal;

@@ -1,20 +1,15 @@
 /* ============================================================
- * app-core.js — v14.2
+ * app-core.js — v14.8
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
  *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
  *
- * v14.0 變更：
- *   - ⭐ 移除「行前預訂」密碼驗證
- *   - ⭐ initAppAfterLogin() 開頭清掉舊的 admin_unlocked 旗標
- *
- * v14.1 變更：
- *   - ⭐ 註冊 prep-overview-modal 到 setupModalDrag
- *   - ⭐ 新增 getPendingBookingItems / getPendingEquipItems callback
- *
- * v14.2 變更：
- *   - ⭐ 移除「共享收據/憑證」舊 modal
- *   - ⭐ 註冊 attachments-overview-modal 到 setupModalDrag
- *   - ⭐ 保留 openPhotoAlbum / openDriveFolder（還在用）
+ * v14.0：移除行前預訂密碼驗證
+ * v14.1：註冊 prep-overview-modal
+ * v14.2：移除共享收據舊 modal，註冊 attachments-overview-modal
+ * v14.3：切換用戶清空 _renderedDays、補註冊 5 個 modal、PIN 自動提交
+ * v14.4：setupModalDrag handleArea 加 fallback、PIN 自動提交加防抖
+ * v14.8：
+ *   - ⭐ 移除離線持久化後：saveUserData 加離線守衛
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -118,6 +113,7 @@ window.getInitialDay = getInitialDay;
 
 // ==================== 用戶登入 ====================
 let selectedUser = null;
+let _pinSubmitTimer = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('#user-grid .user-btn').forEach(btn => {
@@ -140,6 +136,19 @@ document.addEventListener('DOMContentLoaded', () => {
       haptic(8);
     });
   });
+
+  const pinInput = document.getElementById('pin-input');
+  if (pinInput) {
+    pinInput.addEventListener('input', () => {
+      clearTimeout(_pinSubmitTimer);
+      if (pinInput.value.length >= 4) {
+        _pinSubmitTimer = setTimeout(() => {
+          if (pinInput.value.length >= 4) verifyUserPin();
+        }, 250);
+      }
+    });
+  }
+
   const savedUser = localStorage.getItem("tohoku_current_user");
   if (savedUser && (savedUser === "訪客" || USER_PINS[savedUser])) {
     currentUser = savedUser;
@@ -154,6 +163,7 @@ async function verifyUserPin() {
   const inputField = document.getElementById('pin-input');
   const errorEl = document.getElementById('pin-error');
   const okBtn = document.querySelector('#pin-area button');
+  if (okBtn && okBtn.disabled) return;
   if (!input) { haptic(50); return; }
   if (okBtn) { okBtn.disabled = true; okBtn.textContent = "驗證中..."; }
   try {
@@ -200,6 +210,7 @@ function doLogoutAndSwitch() {
     currentUser = null;
     window.currentUser = null;
     selectedUser = null;
+    window._renderedDays = new Set();
     document.getElementById('user-modal').style.display = 'flex';
     cancelUserSelect();
     haptic(10);
@@ -269,6 +280,9 @@ async function submitChangePin() {
   if (newPin !== confirmPin) return showErr("兩次輸入的新 PIN 碼不一致");
   if (newPin === oldPin) return showErr("新 PIN 碼不能與舊的相同");
 
+  // ⭐ v14.8：離線守衛
+  if (typeof window.requireOnline === 'function' && !window.requireOnline('修改 PIN 碼')) return;
+
   errEl.classList.add('hidden');
   submitBtn.disabled = true;
   submitBtn.textContent = "驗證中...";
@@ -317,6 +331,7 @@ async function submitChangePin() {
 // ==================== 應用初始化 ====================
 function initAppAfterLogin() {
   try { localStorage.removeItem("tohoku_admin_unlocked"); } catch(e) {}
+  window._renderedDays = new Set();
 
   const initialDay = getInitialDay();
   window._lastActiveDay = initialDay;
@@ -330,8 +345,15 @@ function initAppAfterLogin() {
   fetchLiveRates();
   initSnowEffect();
 
-  // ⭐ v14.2：註冊附件總覽 Modal 到拖動系統
-  setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal', 'attachments-overview-modal', 'prep-overview-modal']);
+  setupModalDrag([
+    'booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal',
+    'weather-modal', 'trip-overview-modal', 'shoot-tips-modal',
+    'vlog-plan-modal', 'common-tips-modal', 'shopping-modal',
+    'all-shopping-modal', 'currency-modal', 'attachments-overview-modal',
+    'prep-overview-modal',
+    'event-data-modal', 'weather-alert-modal', 'navigate-menu-modal',
+    'messages-modal', 'emergency-modal'
+  ]);
 
   renderDayItinerary(`day-section-${initialDay}`, winterItineraries[initialDay - 1]);
   setupImageFadeIn(document);
@@ -510,8 +532,11 @@ function getUserData() {
   return u;
 }
 
+// ⭐ v14.8：saveUserData 加離線守衛
 async function saveUserData() {
   if (!currentUser || currentUser === "訪客") return;
+  // ⭐ 離線守衛
+  if (typeof window.requireOnline === 'function' && !window.requireOnline('儲存')) return;
   if (typeof firebase === 'undefined' || !window.dbRef) { showToast("⏳ 雲端未連線", "⚠️"); return; }
   try {
     const docSnap = await window.dbRef.get();
@@ -622,7 +647,9 @@ function setupModalDrag(modals) {
   modals.forEach(id => {
     const modal = document.getElementById(id); if (!modal) return;
     const box = modal.querySelector('.modal-box');
-    const handleArea = modal.querySelector('[data-drag-handle]');
+    const handleArea =
+      modal.querySelector('[data-drag-handle]') ||
+      modal.querySelector('.modal-handle-area');
     if (!box || !handleArea) return;
     let startY = 0, currentY = 0, isDragging = false;
     const onMove = (e) => {
@@ -640,24 +667,35 @@ function setupModalDrag(modals) {
         box.style.transform = `translateY(100%)`; modal.style.opacity = '0';
         haptic(15);
         setTimeout(() => {
-          // ⭐ v14.2：加入 attachments-overview-modal
           const closers = {
-            'booking-modal': window.closeBookingModal,
-            'equip-modal': window.closeEquipModal,
-            'drive-modal': window.closeDriveModal,
-            'ticket-modal': window.closeTicketModal,
-            'weather-modal': window.closeWeatherModal,
-            'trip-overview-modal': window.closeTripOverview,
-            'shoot-tips-modal': window.closeShootTipsModal,
-            'vlog-plan-modal': window.closeVlogPlanModal,
-            'common-tips-modal': window.closeCommonTipsModal,
-            'shopping-modal': window.closeShoppingModal,
-            'all-shopping-modal': window.closeAllShoppingModal,
-            'currency-modal': window.closeCurrencyModal,
-            'attachments-overview-modal': window.closeAttachmentsOverview,
-            'prep-overview-modal': window.closePrepOverviewModal
+            'booking-modal': () => window.closeBookingModal && window.closeBookingModal(),
+            'equip-modal': () => window.closeEquipModal && window.closeEquipModal(),
+            'drive-modal': () => window.closeDriveModal && window.closeDriveModal(),
+            'ticket-modal': () => window.closeTicketModal && window.closeTicketModal(),
+            'weather-modal': () => window.closeWeatherModal && window.closeWeatherModal(),
+            'trip-overview-modal': () => window.closeTripOverview && window.closeTripOverview(),
+            'shoot-tips-modal': () => window.closeShootTipsModal && window.closeShootTipsModal(),
+            'vlog-plan-modal': () => window.closeVlogPlanModal && window.closeVlogPlanModal(),
+            'common-tips-modal': () => window.closeCommonTipsModal && window.closeCommonTipsModal(),
+            'shopping-modal': () => window.closeShoppingModal && window.closeShoppingModal(),
+            'all-shopping-modal': () => window.closeAllShoppingModal && window.closeAllShoppingModal(),
+            'currency-modal': () => window.closeCurrencyModal && window.closeCurrencyModal(),
+            'attachments-overview-modal': () => window.closeAttachmentsOverview && window.closeAttachmentsOverview(),
+            'prep-overview-modal': () => window.closePrepOverviewModal && window.closePrepOverviewModal(),
+            'event-data-modal': () => window.Uploads && window.Uploads.closeEventData && window.Uploads.closeEventData(),
+            'weather-alert-modal': () => window.closeWeatherAlertModal && window.closeWeatherAlertModal(),
+            'navigate-menu-modal': () => window.closeNavigateMenu && window.closeNavigateMenu(),
+            'messages-modal': () => window.closeMessagesModal && window.closeMessagesModal(),
+            'emergency-modal': () => window.closeEmergencyModal && window.closeEmergencyModal()
           };
-          if (closers[id]) closers[id]();
+          if (closers[id]) {
+            closers[id]();
+          } else {
+            modal.classList.remove('active');
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
+            const anyOpen = document.querySelector('.modal-overlay.active');
+            if (!anyOpen) document.body.classList.remove('modal-open');
+          }
           box.style.transform = ''; modal.style.opacity = '';
         }, 280);
       } else {
@@ -682,6 +720,28 @@ function setupModalDrag(modals) {
     handleArea.addEventListener('touchcancel', onEnd);
     handleArea.addEventListener('mousedown', onStart);
   });
+}
+
+if (typeof window.openWeatherAlertModal !== 'function') {
+  window.openWeatherAlertModal = function() {
+    const m = document.getElementById('weather-alert-modal');
+    if (!m) return;
+    m.style.display = 'flex';
+    m.classList.add('active');
+    document.body.classList.add('modal-open');
+    haptic(8);
+  };
+}
+if (typeof window.closeWeatherAlertModal !== 'function') {
+  window.closeWeatherAlertModal = function() {
+    const m = document.getElementById('weather-alert-modal');
+    if (!m) return;
+    m.classList.remove('active');
+    setTimeout(() => { m.style.display = 'none'; }, 300);
+    const a = document.querySelector('.modal-overlay.active');
+    if (!a) document.body.classList.remove('modal-open');
+    haptic(6);
+  };
 }
 
 function switchMainTab(tab) {
@@ -880,8 +940,6 @@ window.showModal = showModal;
 window.hideModal = hideModal;
 
 // ==================== 📸 相簿 / Drive 資料夾 ====================
-// ⭐ v14.2：移除舊的 openReceiptModal / closeReceiptModal
-// 保留 openPhotoAlbum 與 openDriveFolder（相簿與 Drive 連結還在用）
 function openDriveFolder(url) {
   haptic(10);
   window.location.href = url;
@@ -897,7 +955,7 @@ window.openPhotoAlbum = openPhotoAlbum;
 // ==================== 📡 離線 / 上線提示 ====================
 window.addEventListener('offline', () => {
   if (typeof showToast === 'function') {
-    showToast('📡 已離線，資料將於恢復後同步', '⚠️');
+    showToast('📡 已離線，無法儲存資料', '⚠️');
   }
   haptic(50);
 });

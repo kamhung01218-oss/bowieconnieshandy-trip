@@ -1,12 +1,8 @@
 /* ============================================================
- * design-v14b.css — 動效與圖示優化
+ * design-v14b.css — 動效與圖示優化（v1.1）
  *
- * 對應建議：
- *   I1. 展開動畫縮短
- *   I2. 減少過度 transition
- *   I3. 載入中狀態
- *   J1. emoji 換 SVG 的容器樣式
- *   J2. 天氣 icon 分類光暈
+ * v1.1 變更：
+ *   - ⭐ 修正天氣圖示光暈選擇器
  * ============================================================ */
 
 /* ============================================================
@@ -163,12 +159,13 @@ details.event-card[open] .event-content-wrapper {
   filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.45));
 }
 
-[data-theme="dark"][data-wcat="snow"] {
+/* ⭐ v1.1 修正：深色模式改用後代選擇器 */
+[data-theme="dark"] [data-wcat="snow"] {
   filter: drop-shadow(0 0 8px rgba(125, 211, 252, 0.7));
 }
-[data-theme="dark"][data-wcat="rain"] {
+[data-theme="dark"] [data-wcat="rain"] {
   filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.55));
 }
-[data-theme="dark"][data-wcat="clear"] {
+[data-theme="dark"] [data-wcat="clear"] {
   filter: drop-shadow(0 0 7px rgba(250, 204, 21, 0.6));
 }
