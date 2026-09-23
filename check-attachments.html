@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🔍 附件資料檢查</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Noto Sans TC', sans-serif;
+    background: #0f172a; color: #e2e8f0;
+    padding: 20px; min-height: 100vh;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 900; margin-bottom: 8px; color: #38bdf8; }
+  .sub { font-size: 12px; color: #64748b; margin-bottom: 20px; line-height: 1.7; }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px; text-align: center; }
+  .stat .num { font-size: 26px; font-weight: 900; color: #38bdf8; }
+  .stat.ok .num { color: #34d399; }
+  .stat.err .num { color: #f87171; }
+  .stat .lbl { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+  .btn {
+    padding: 12px 18px; border-radius: 10px; border: none;
+    font-size: 13px; font-weight: 800; cursor: pointer;
+    font-family: inherit; color: white; margin-bottom: 16px;
+  }
+  .btn-primary { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+  .btn:active { transform: scale(0.97); }
+  .status { padding: 12px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; margin-bottom: 16px; line-height: 1.6; }
+  .status.loading { background: rgba(56,189,248,0.15); color: #7dd3fc; }
+  .status.ok { background: rgba(52,211,153,0.15); color: #6ee7b7; }
+  .status.err { background: rgba(248,113,113,0.15); color: #fca5a5; }
+  .log {
+    background: rgba(0,0,0,0.4); border-radius: 10px;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 11px; line-height: 1.7;
+    color: #94a3b8; padding: 12px; max-height: 500px;
+    overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+  }
+  .row {
+    display: flex; gap: 10px; padding: 10px;
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid #38bdf8;
+    border-radius: 8px; margin-bottom: 6px; font-size: 12px;
+    align-items: center;
+  }
+  .row img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: #1e293b; }
+  .row .info { flex: 1; min-width: 0; }
+  .row .title { font-weight: 700; margin-bottom: 3px; word-break: break-all; }
+  .row .meta { font-size: 10px; color: #64748b; word-break: break-all; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔍 附件資料檢查</h1>
+  <p class="sub">從 Firestore 讀取 <code>attachments</code> 欄位，看看雲端是否還有你的附件。此工具<b>只讀不寫</b>。</p>
+
+  <div class="summary">
+    <div class="stat"><div class="num" id="cnt-keys">0</div><div class="lbl">有附件的 event 數</div></div>
+    <div class="stat ok"><div class="num" id="cnt-total">0</div><div class="lbl">附件總張數</div></div>
+    <div class="stat"><div class="num" id="cnt-notes">0</div><div class="lbl">備註數</div></div>
+  </div>
+
+  <button class="btn btn-primary" onclick="location.reload()">🔄 重新讀取</button>
+
+  <div id="status" class="status loading">正在連線 Firebase…</div>
+  <div id="list"></div>
+  <div class="log" id="log">等待…</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+<script src="./data.js"></script>
+
+<script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
+  authDomain: "tohoku-winter-trip.firebaseapp.com",
+  projectId: "tohoku-winter-trip",
+  storageBucket: "tohoku-winter-trip.firebasestorage.app",
+  messagingSenderId: "991555590088",
+  appId: "1:991555590088:web:afb089890d7d546821d2fd"
+};
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+const dbRef = db.collection("tohoku_trip").doc("shared_expenses");
+
+const statusEl = document.getElementById('status');
+const logEl = document.getElementById('log');
+const listEl = document.getElementById('list');
+
+function log(msg) {
+  const t = new Date().toLocaleTimeString('zh-HK');
+  logEl.textContent = `[${t}] ${msg}\n` + logEl.textContent;
+}
+
+// 建立 eventKey → 行程位置 對照表
+function buildKeyMap() {
+  const map = {};
+  if (typeof winterItineraries === 'undefined') return map;
+  winterItineraries.forEach(day => {
+    day.events.forEach((evt, idx) => {
+      const oldKey = `d${day.day}-e${idx}`;
+      const title = evt.title || '';
+      // 支援舊 key 和新 id
+      map[oldKey] = `D${day.day} · ${title}`;
+      if (evt.id) map[evt.id] = `D${day.day} · ${title}`;
+    });
+  });
+  return map;
+}
+
+async function checkData() {
+  try {
+    await firebase.auth().signInAnonymously();
+    log('✅ 匿名登入完成');
+
+    const snap = await dbRef.get();
+    if (!snap.exists) {
+      statusEl.className = 'status err';
+      statusEl.textContent = '❌ Firestore 文件不存在';
+      log('❌ 文件不存在');
+      return;
+    }
+
+    const data = snap.data();
+    const attachments = data.attachments || {};
+    const eventNotes = data.eventNotes || {};
+    const keyMap = buildKeyMap();
+
+    const keys = Object.keys(attachments).filter(k => {
+      const list = attachments[k];
+      return Array.isArray(list) && list.length > 0;
+    });
+
+    let total = 0;
+    keys.forEach(k => { total += (attachments[k] || []).length; });
+
+    const noteKeys = Object.keys(eventNotes).filter(k => eventNotes[k] && eventNotes[k].text);
+
+    document.getElementById('cnt-keys').textContent = keys.length;
+    document.getElementById('cnt-total').textContent = total;
+    document.getElementById('cnt-notes').textContent = noteKeys.length;
+
+    statusEl.className = 'status ok';
+    statusEl.textContent = `✅ 找到 ${keys.length} 個事件有附件，共 ${total} 張`;
+
+    log('');
+    log(`=== 附件資料 ===`);
+    log(`原始 attachments key 數量：${Object.keys(attachments).length}`);
+    log(`有附件的 event 數：${keys.length}`);
+    log(`附件總張數：${total}`);
+    log('');
+    log(`=== 備註 ===`);
+    log(`備註數：${noteKeys.length}`);
+
+    if (keys.length === 0) {
+      statusEl.className = 'status err';
+      statusEl.textContent = '⚠️ 雲端沒有任何附件！可能真的被覆蓋了';
+      log('');
+      log('⚠️ 雲端 attachments 是空的');
+      log('📋 目前所有 key（可能全部為空）：');
+      Object.keys(attachments).forEach(k => {
+        const l = attachments[k];
+        log(`   ${k} → ${Array.isArray(l) ? l.length : '?'} 張`);
+      });
+      return;
+    }
+
+    // 顯示有附件的清單
+    listEl.innerHTML = '';
+    keys.forEach(k => {
+      const list = attachments[k] || [];
+      const label = keyMap[k] || `❓ 未知 event（key: ${k}）`;
+      list.forEach((att, i) => {
+        const row = document.createElement('div');
+        row.className = 'row';
+        const url = att.thumb || att.url || '';
+        row.innerHTML = `
+          <img src="${url}" onerror="this.style.display='none'">
+          <div class="info">
+            <div class="title">${label}</div>
+            <div class="meta">
+              key: ${k} · 第 ${i + 1}/${list.length} 張<br>
+              ${att.uploader ? `上傳者：${att.uploader} · ` : ''}
+              ${att.uploadedAt ? new Date(att.uploadedAt).toLocaleString('zh-HK') : ''}<br>
+              URL: ${url.substring(0, 80)}...
+            </div>
+          </div>
+        `;
+        listEl.appendChild(row);
+      });
+    });
+
+    // 檢查是否有「孤立」的 key（無法對應行程）
+    log('');
+    log('=== 無法對應的 key（孤立）===');
+    let orphans = 0;
+    keys.forEach(k => {
+      if (!keyMap[k]) {
+        orphans++;
+        log(`   ⚠️ ${k}`);
+      }
+    });
+    if (orphans === 0) {
+      log('   ✅ 全部 key 都能對應到行程');
+    }
+
+  } catch (e) {
+    statusEl.className = 'status err';
+    statusEl.textContent = '❌ ' + e.message;
+    log('❌ ' + e.message);
+    console.error(e);
+  }
+}
+
+checkData();
+</script>
+</body>
+</html>

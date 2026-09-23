@@ -242,11 +242,15 @@ async function syncDataToCloud() {
   }
 }
 
+// ============================================================
+// ⭐ v3.10：Firestore 同步（修復「重整後附件消失」）
+// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.dbRef) return;
 
   let _snapshotTimer = null;
   let _pendingCloudData = null;
+  let _hydratedOnce = false;
 
   let _lastShoppingHash = '';
   function _hashShopping(data) {
@@ -303,8 +307,10 @@ document.addEventListener('DOMContentLoaded', () => {
         cloudUserPins = cloudData.userPins;
       }
 
+      // ⭐ v3.10：附件用「展開合併」而非「直接覆蓋」
+      // 避免本地剛上傳、尚未同步完成的附件被雲端舊資料蓋掉
       if (cloudData.attachments && typeof cloudData.attachments === 'object') {
-        window.cloudAttachments = cloudData.attachments;
+        window.cloudAttachments = { ...(window.cloudAttachments || {}), ...cloudData.attachments };
         if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
           window.Uploads.renderAllAttachments();
         }
@@ -313,8 +319,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
+      // ⭐ v3.10：備註同理
       if (cloudData.eventNotes && typeof cloudData.eventNotes === 'object') {
-        window.cloudEventNotes = cloudData.eventNotes;
+        window.cloudEventNotes = { ...(window.cloudEventNotes || {}), ...cloudData.eventNotes };
         if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
           window.Uploads.renderAllAttachments();
         }
@@ -327,9 +334,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.dbRef.onSnapshot(docSnap => {
+  // ⭐ v3.10：修正 hasPendingWrites 檢查
+  // 原本只要 hasPendingWrites 就整個 return，導致「剛寫入的附件」被跳過；
+  // 改成「同時 hasPendingWrites 且 fromCache」才跳過（純離線本地狀態）
+  window.dbRef.onSnapshot({ includeMetadataChanges: true }, docSnap => {
     if (!docSnap.exists) return;
-    if (docSnap.metadata?.hasPendingWrites) return;
+    if (docSnap.metadata?.hasPendingWrites && docSnap.metadata?.fromCache) return;
 
     _pendingCloudData = docSnap.data();
     clearTimeout(_snapshotTimer);
@@ -341,6 +351,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, 200);
   }, err => console.warn("Firestore Sync Warning:", err));
+
+  // ⭐ v3.10：主動抓一次雲端（保險，避免快照延遲或首載入時機問題）
+  setTimeout(() => {
+    if (!window.dbRef) return;
+    window.dbRef.get().then(snap => {
+      if (!snap.exists) return;
+      const data = snap.data() || {};
+      if (data.attachments || data.eventNotes || data.expenses || data.userData) {
+        _applyCloudData(data);
+        _hydratedOnce = true;
+        console.log('[Cloud] v3.10 主動補齊完成');
+      }
+    }).catch(e => console.warn('[Cloud] hydrate 失敗:', e));
+  }, 1500);
 });
 
 document.addEventListener('DOMContentLoaded', () => {

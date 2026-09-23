@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🔧 附件 key 統一工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Noto Sans TC', sans-serif;
+    background: #0f172a; color: #e2e8f0;
+    padding: 20px; min-height: 100vh;
+  }
+  .container { max-width: 700px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 900; margin-bottom: 8px; color: #38bdf8; }
+  .sub { font-size: 12px; color: #64748b; margin-bottom: 20px; line-height: 1.7; }
+  .sub code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; color: #7dd3fc; font-size: 11px; }
+  .warn-box {
+    background: rgba(251,191,36,0.1);
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 12px; padding: 12px 14px;
+    font-size: 12px; color: #fcd34d;
+    margin-bottom: 20px; line-height: 1.7;
+  }
+  .btn {
+    padding: 14px 20px; border-radius: 12px; border: none;
+    font-size: 14px; font-weight: 900; cursor: pointer;
+    font-family: inherit; color: white; margin-bottom: 10px;
+    width: 100%;
+  }
+  .btn-primary { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+  .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .status { padding: 12px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; margin-bottom: 16px; line-height: 1.6; }
+  .status.loading { background: rgba(56,189,248,0.15); color: #7dd3fc; }
+  .status.ok { background: rgba(52,211,153,0.15); color: #6ee7b7; }
+  .status.err { background: rgba(248,113,113,0.15); color: #fca5a5; }
+  .log {
+    background: rgba(0,0,0,0.4); border-radius: 10px;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 11px; line-height: 1.7;
+    color: #94a3b8; padding: 12px; max-height: 400px;
+    overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔧 附件 key 統一工具</h1>
+  <p class="sub">
+    把雲端的舊 key（<code>d{day}-e{index}</code>）改成新 key（<code>event.id</code>），<br>
+    讓附件正常顯示。
+  </p>
+
+  <div class="warn-box">
+    ⚠️ <strong>執行前請確認</strong><br>
+    1. <code>data.js</code> 已加入 id（每筆 event 都有 <code>id</code> 欄位）<br>
+    2. 執行期間請勿開著主 App（避免同時寫入）<br>
+    3. 工具只做「改名」，不會刪除任何附件
+  </div>
+
+  <div id="status" class="status loading">正在連線 Firebase…</div>
+
+  <button class="btn btn-primary" id="btn-scan" onclick="scan()">🔍 掃描需要遷移的 key</button>
+  <button class="btn btn-success" id="btn-fix" onclick="doFix()" disabled>🚀 執行遷移</button>
+
+  <div class="log" id="log">等待…</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+<script src="./data.js"></script>
+
+<script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
+  authDomain: "tohoku-winter-trip.firebaseapp.com",
+  projectId: "tohoku-winter-trip",
+  storageBucket: "tohoku-winter-trip.firebasestorage.app",
+  messagingSenderId: "991555590088",
+  appId: "1:991555590088:web:afb089890d7d546821d2fd"
+};
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+const dbRef = db.collection("tohoku_trip").doc("shared_expenses");
+
+const statusEl = document.getElementById('status');
+const logEl = document.getElementById('log');
+const btnFix = document.getElementById('btn-fix');
+
+let _pendingMigrations = {};
+
+function log(msg) {
+  const t = new Date().toLocaleTimeString('zh-HK');
+  logEl.textContent = `[${t}] ${msg}\n` + logEl.textContent;
+}
+function setStatus(type, text) {
+  statusEl.className = 'status ' + type;
+  statusEl.textContent = text;
+}
+
+// 建立舊 key → 新 id 的映射
+function buildKeyMap() {
+  const map = {};
+  if (typeof winterItineraries === 'undefined') return map;
+  winterItineraries.forEach(day => {
+    day.events.forEach((evt, idx) => {
+      const oldKey = `d${day.day}-e${idx}`;
+      if (evt.id) {
+        map[oldKey] = evt.id;
+      }
+    });
+  });
+  return map;
+}
+
+async function scan() {
+  logEl.textContent = '';
+  setStatus('loading', '正在讀取雲端…');
+  btnFix.disabled = true;
+
+  try {
+    await firebase.auth().signInAnonymously();
+    log('✅ 匿名登入完成');
+
+    const snap = await dbRef.get();
+    if (!snap.exists) {
+      setStatus('err', '❌ Firestore 文件不存在');
+      return;
+    }
+
+    const data = snap.data();
+    const attachments = data.attachments || {};
+    const eventNotes = data.eventNotes || {};
+    const keyMap = buildKeyMap();
+
+    log(`📋 keyMap 大小：${Object.keys(keyMap).length}`);
+    log('');
+
+    const migrateAtt = {};
+    const migrateNote = {};
+
+    Object.keys(attachments).forEach(k => {
+      const list = attachments[k];
+      if (!Array.isArray(list) || list.length === 0) return;
+      if (keyMap[k]) {
+        migrateAtt[k] = keyMap[k];
+        log(`📎 ${k}  →  ${keyMap[k]}（${list.length} 張）`);
+      }
+    });
+
+    Object.keys(eventNotes).forEach(k => {
+      const note = eventNotes[k];
+      if (!note || !note.text) return;
+      if (keyMap[k]) {
+        migrateNote[k] = keyMap[k];
+        log(`📝 ${k}  →  ${keyMap[k]}`);
+      }
+    });
+
+    _pendingMigrations = { attachments: migrateAtt, eventNotes: migrateNote };
+
+    const totalCount = Object.keys(migrateAtt).length + Object.keys(migrateNote).length;
+
+    if (totalCount === 0) {
+      setStatus('ok', '✅ 沒有需要遷移的 key（都已是新 id）');
+      btnFix.disabled = true;
+      return;
+    }
+
+    setStatus('ok', `✅ 找到 ${totalCount} 個需要遷移的 key，請按「執行遷移」`);
+    btnFix.disabled = false;
+
+  } catch (e) {
+    setStatus('err', '❌ ' + e.message);
+    log('❌ ' + e.message);
+    console.error(e);
+  }
+}
+
+async function doFix() {
+  if (!confirm('確定要執行遷移嗎？此操作會把舊 key 改成新 key。')) return;
+  btnFix.disabled = true;
+  setStatus('loading', '遷移中…');
+
+  try {
+    const snap = await dbRef.get();
+    const data = snap.data();
+    let attachments = { ...(data.attachments || {}) };
+    let eventNotes = { ...(data.eventNotes || {}) };
+
+    const { attachments: migrateAtt, eventNotes: migrateNote } = _pendingMigrations;
+
+    let attCount = 0;
+    Object.entries(migrateAtt).forEach(([oldKey, newKey]) => {
+      const oldList = attachments[oldKey] || [];
+      const newList = attachments[newKey] || [];
+      // 合併：若 newKey 已有資料，合併（避免重複 id）
+      const merged = [...newList];
+      oldList.forEach(item => {
+        if (!merged.some(x => x.id === item.id)) {
+          merged.push(item);
+        }
+      });
+      attachments[newKey] = merged;
+      delete attachments[oldKey];
+      attCount++;
+    });
+
+    let noteCount = 0;
+    Object.entries(migrateNote).forEach(([oldKey, newKey]) => {
+      if (!eventNotes[newKey]) {
+        eventNotes[newKey] = eventNotes[oldKey];
+      }
+      delete eventNotes[oldKey];
+      noteCount++;
+    });
+
+    await dbRef.set({ attachments, eventNotes, updatedAt: Date.now() }, { merge: true });
+
+    log('');
+    log(`✅ 遷移完成：${attCount} 個附件 key、${noteCount} 個備註 key`);
+    log('');
+    log('📋 遷移後 attachments key 一覽：');
+    Object.entries(attachments).forEach(([k, v]) => {
+      const cnt = Array.isArray(v) ? v.length : 0;
+      log(`   ${k} → ${cnt} 張`);
+    });
+
+    setStatus('ok', `🎉 遷移成功！請重整 App 網頁`);
+
+  } catch (e) {
+    setStatus('err', '❌ 遷移失敗：' + e.message);
+    log('❌ ' + e.message);
+    btnFix.disabled = false;
+  }
+}
+
+scan();
+</script>
+</body>
+</html>

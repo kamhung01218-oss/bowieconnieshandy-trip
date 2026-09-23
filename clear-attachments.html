@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🗑️ 清空附件工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Noto Sans TC', sans-serif;
+    background: #0f172a; color: #e2e8f0;
+    padding: 20px; min-height: 100vh;
+  }
+  .container { max-width: 700px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 900; margin-bottom: 8px; color: #f87171; }
+  .sub { font-size: 12px; color: #64748b; margin-bottom: 20px; line-height: 1.7; }
+  .sub code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; color: #7dd3fc; font-size: 11px; }
+
+  .warn-box {
+    background: rgba(248,113,113,0.1);
+    border: 1px solid rgba(248,113,113,0.4);
+    border-radius: 12px; padding: 14px 16px;
+    font-size: 13px; color: #fca5a5;
+    margin-bottom: 20px; line-height: 1.8;
+    font-weight: 700;
+  }
+
+  .btn {
+    padding: 14px 20px; border-radius: 12px; border: none;
+    font-size: 14px; font-weight: 900; cursor: pointer;
+    font-family: inherit; color: white; margin-bottom: 10px;
+    width: 100%;
+    transition: transform 0.1s;
+  }
+  .btn-primary { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+  .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  .btn-ghost { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .status { padding: 12px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; margin-bottom: 16px; line-height: 1.6; }
+  .status.loading { background: rgba(56,189,248,0.15); color: #7dd3fc; }
+  .status.ok { background: rgba(52,211,153,0.15); color: #6ee7b7; }
+  .status.err { background: rgba(248,113,113,0.15); color: #fca5a5; }
+
+  .key-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px; background: rgba(255,255,255,0.04);
+    border-left: 3px solid #38bdf8;
+    border-radius: 8px; margin-bottom: 8px;
+    font-size: 12px;
+  }
+  .key-item .info { flex: 1; min-width: 0; }
+  .key-item .key { font-family: Menlo, monospace; color: #7dd3fc; font-weight: 900; word-break: break-all; margin-bottom: 3px; }
+  .key-item .meta { color: #94a3b8; font-size: 10px; }
+  .key-item .del-btn {
+    padding: 6px 12px; border-radius: 8px; border: 1px solid #f87171;
+    background: rgba(248,113,113,0.15); color: #fca5a5;
+    font-size: 11px; font-weight: 900; cursor: pointer;
+    font-family: inherit; flex-shrink: 0;
+  }
+  .key-item .del-btn:active { transform: scale(0.95); background: rgba(248,113,113,0.3); }
+
+  .log {
+    background: rgba(0,0,0,0.4); border-radius: 10px;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 11px; line-height: 1.7;
+    color: #94a3b8; padding: 12px; max-height: 300px;
+    overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🗑️ 清空附件工具</h1>
+  <p class="sub">列出所有附件，可單獨刪除或全清。<b>此操作無法復原。</b></p>
+
+  <div class="warn-box">
+    ⚠️ 這會從 Firestore 刪除附件資料<br>
+    已上傳到 imgbb 的圖片本身不會被刪<br>
+    但 App 將無法再顯示
+  </div>
+
+  <div id="status" class="status loading">正在連線…</div>
+
+  <button class="btn btn-primary" onclick="load()">🔄 重新讀取</button>
+  <button class="btn btn-danger" id="btn-clear-all" onclick="clearAll()" disabled>💥 全部清空（附件 + 備註）</button>
+
+  <div id="list"></div>
+
+  <div class="log" id="log">等待…</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+
+<script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyC0VQQWW0HQCd8CG8EuAN-kqnGirZHJ__E",
+  authDomain: "tohoku-winter-trip.firebaseapp.com",
+  projectId: "tohoku-winter-trip",
+  storageBucket: "tohoku-winter-trip.firebasestorage.app",
+  messagingSenderId: "991555590088",
+  appId: "1:991555590088:web:afb089890d7d546821d2fd"
+};
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+const dbRef = db.collection("tohoku_trip").doc("shared_expenses");
+
+const statusEl = document.getElementById('status');
+const logEl = document.getElementById('log');
+const listEl = document.getElementById('list');
+const btnClearAll = document.getElementById('btn-clear-all');
+
+let _cache = { attachments: {}, eventNotes: {} };
+
+function log(msg) {
+  const t = new Date().toLocaleTimeString('zh-HK');
+  logEl.textContent = `[${t}] ${msg}\n` + logEl.textContent;
+}
+function setStatus(type, text) {
+  statusEl.className = 'status ' + type;
+  statusEl.textContent = text;
+}
+
+async function load() {
+  logEl.textContent = '';
+  setStatus('loading', '讀取中…');
+  listEl.innerHTML = '';
+  btnClearAll.disabled = true;
+
+  try {
+    await firebase.auth().signInAnonymously();
+    const snap = await dbRef.get();
+    if (!snap.exists) {
+      setStatus('err', '文件不存在');
+      return;
+    }
+
+    const data = snap.data();
+    _cache.attachments = data.attachments || {};
+    _cache.eventNotes = data.eventNotes || {};
+
+    renderList();
+  } catch (e) {
+    setStatus('err', '❌ ' + e.message);
+    log('❌ ' + e.message);
+  }
+}
+
+function renderList() {
+  listEl.innerHTML = '';
+
+  const keys = new Set([
+    ...Object.keys(_cache.attachments),
+    ...Object.keys(_cache.eventNotes)
+  ]);
+
+  const activeKeys = Array.from(keys).filter(k => {
+    const a = _cache.attachments[k];
+    const n = _cache.eventNotes[k];
+    return (Array.isArray(a) && a.length > 0) || (n && n.text);
+  });
+
+  if (activeKeys.length === 0) {
+    setStatus('ok', '✅ 沒有附件或備註');
+    return;
+  }
+
+  let totalAtt = 0;
+  activeKeys.forEach(k => {
+    totalAtt += (_cache.attachments[k] || []).length;
+  });
+
+  setStatus('ok', `找到 ${activeKeys.length} 個 key，共 ${totalAtt} 張附件`);
+
+  activeKeys.forEach(k => {
+    const atts = _cache.attachments[k] || [];
+    const note = _cache.eventNotes[k];
+    const row = document.createElement('div');
+    row.className = 'key-item';
+
+    const metaParts = [];
+    if (atts.length > 0) metaParts.push(`${atts.length} 張附件`);
+    if (note && note.text) metaParts.push(`有備註`);
+
+    row.innerHTML = `
+      <div class="info">
+        <div class="key">${escapeHtml(k)}</div>
+        <div class="meta">${metaParts.join(' · ')}</div>
+      </div>
+      <button class="del-btn" onclick="deleteKey('${escapeAttr(k)}')">刪除</button>
+    `;
+    listEl.appendChild(row);
+  });
+
+  btnClearAll.disabled = false;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+async function deleteKey(key) {
+  if (!confirm(`確定刪除「${key}」？`)) return;
+  try {
+    const snap = await dbRef.get();
+    const data = snap.data();
+    const att = { ...(data.attachments || {}) };
+    const notes = { ...(data.eventNotes || {}) };
+    delete att[key];
+    delete notes[key];
+    await dbRef.set({ attachments: att, eventNotes: notes, updatedAt: Date.now() }, { merge: true });
+    log(`🗑 已刪除 ${key}`);
+    await load();
+  } catch (e) {
+    log('❌ 刪除失敗：' + e.message);
+  }
+}
+
+async function clearAll() {
+  if (!confirm('⚠️ 確定清空所有附件和備註嗎？此操作無法復原。')) return;
+  if (!confirm('再次確認：全部清空？')) return;
+
+  try {
+    setStatus('loading', '清空中…');
+    await dbRef.set({ attachments: {}, eventNotes: {}, updatedAt: Date.now() }, { merge: true });
+    log('✅ 已清空所有附件和備註');
+    setStatus('ok', '🎉 已清空！請重整 App');
+    await load();
+  } catch (e) {
+    setStatus('err', '❌ ' + e.message);
+    log('❌ ' + e.message);
+  }
+}
+
+load();
+</script>
+</body>
+</html>

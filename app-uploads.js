@@ -1,5 +1,5 @@
 /* ============================================================
- * app-uploads.js — 通用上傳 + 行程資料 v3.9
+ * app-uploads.js — 通用上傳 + 行程資料 v3.10
  *
  * v3.5：雙徽章同步
  * v3.6：renderAllAttachments 支援 scope 參數
@@ -8,6 +8,12 @@
  * v3.9：
  *   - ⭐ Fallback：讀取時新 id 找不到 → 試舊 key d{day}-e{index}
  *   - ⭐ 寫入時統一存到新 id，順便清理舊 key
+ * v3.10（修復「重整後附件消失」）：
+ *   - ⭐ _saveAttachments 改為「與雲端合併」而非直接覆蓋
+ *   - ⭐ _saveAttachments 支援 opts.replace（刪除用）
+ *   - ⭐ _doUpload 只傳「這次新圖」，合併交給 _saveAttachments
+ *   - ⭐ 新增 _hydrateFromCloud()，啟動後主動補一次雲端
+ *   - ⭐ _saveNote 也同步從雲端讀取後再寫
  * ============================================================ */
 
 (function () {
@@ -28,7 +34,7 @@
   let _currentTab = 'attach';
 
   // ============================================================
-  // ⭐ v3.9：Key 映射（新 id ↔ 舊 key）
+  // Key 映射（新 id ↔ 舊 key）
   // ============================================================
   let _keyMapCache = null;
   let _keyMapCacheSignature = '';
@@ -51,8 +57,8 @@
     const sig = _computeItinerarySignature();
     if (_keyMapCache && _keyMapCacheSignature === sig) return _keyMapCache;
 
-    const newToOld = {};  // 新 id → 舊 key
-    const oldToNew = {};  // 舊 key → 新 id
+    const newToOld = {};
+    const oldToNew = {};
     const itineraries = window.winterItineraries || [];
 
     itineraries.forEach(day => {
@@ -82,13 +88,10 @@
     return map.oldToNew[oldKey] || null;
   }
 
-  // 把任何 key 標準化成「新 id」（若無法轉換則原樣返回）
   function _normalizeKey(dayKey) {
     if (!dayKey) return dayKey;
-    // 若是舊 key → 轉成新 id
     const newId = _getNewIdForOldKey(dayKey);
     if (newId) return newId;
-    // 否則原樣返回（可能是新 id，或非事件 key）
     return dayKey;
   }
 
@@ -246,26 +249,20 @@
 
   // ============================================================
   // ⭐ v3.9：getAttachments 加 Fallback
-  //   1. 先試傳入的 key
-  //   2. 找不到 → 試對應的另一種 key（新 id ↔ 舊 key）
-  //   3. 都找不到 → 空陣列
   // ============================================================
   function getAttachments(dayKey) {
     if (!dayKey) return [];
     const store = window.cloudAttachments || {};
 
-    // 1. 直接查
     const direct = store[dayKey];
     if (Array.isArray(direct) && direct.length > 0) return direct;
 
-    // 2. Fallback：試另一種 key
     const altKey = _getOldKeyForNewId(dayKey) || _getNewIdForOldKey(dayKey);
     if (altKey && altKey !== dayKey) {
       const alt = store[altKey];
       if (Array.isArray(alt) && alt.length > 0) return alt;
     }
 
-    // 3. 都沒有
     return Array.isArray(direct) ? direct : [];
   }
 
@@ -283,41 +280,81 @@
   }
 
   // ============================================================
-  // ⭐ v3.9：_saveAttachments 統一存到新 id，並清理舊 key
+  // ⭐ v3.10：_saveAttachments 改為「雲端合併」
+  //
+  // 參數：
+  //   dayKey   — 事件 key
+  //   items    — 要寫入的項目
+  //   opts.replace = true  → 直接覆蓋（刪除用）
+  //   opts.replace = false → 與雲端合併（上傳用，預設）
   // ============================================================
-  async function _saveAttachments(dayKey, list) {
+  async function _saveAttachments(dayKey, items, opts = {}) {
+    const replaceMode = opts.replace === true;
+
     if (typeof window.requireOnline === 'function' && !window.requireOnline('儲存附件')) {
       throw new Error('離線中');
     }
     if (!window.dbRef) throw new Error('雲端未連線');
 
-    // 標準化：統一存到「新 id」
     const targetKey = _normalizeKey(dayKey);
     const staleKey = _getOldKeyForNewId(targetKey);
 
-    // 本地快取：寫到 targetKey，刪掉 staleKey
-    window.cloudAttachments[targetKey] = list;
-    if (staleKey && staleKey !== targetKey) {
-      delete window.cloudAttachments[staleKey];
-    }
-
-    renderAllAttachments();
-    renderEventDataModal();
-
-    // 雲端：讀取 → 合併 → 寫入
+    // 1. 讀雲端「現況」
     const docSnap = await window.dbRef.get();
     const cloudData = docSnap.exists ? docSnap.data() : {};
     const attachments = { ...(cloudData.attachments || {}) };
 
-    attachments[targetKey] = list;
+    // 2. 收集雲端現有的（新 + 舊 key 都收，用 id 去重）
+    const seen = new Set();
+    const cloudList = [];
+    const _pushUnique = (arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(a => {
+        if (a && a.id && !seen.has(a.id)) {
+          seen.add(a.id);
+          cloudList.push(a);
+        }
+      });
+    };
+    _pushUnique(attachments[targetKey]);
+    if (staleKey && staleKey !== targetKey) {
+      _pushUnique(attachments[staleKey]);
+    }
+
+    // 3. 決定最終清單
+    let merged;
+    if (replaceMode) {
+      // 刪除：直接用傳入的完整清單
+      merged = Array.isArray(items) ? items.slice() : [];
+    } else {
+      // 上傳：與雲端合併（新的放前面）
+      const newItems = Array.isArray(items) ? items : [];
+      const toAdd = newItems.filter(a => a && a.id && !seen.has(a.id));
+      merged = [...toAdd, ...cloudList];
+    }
+
+    // 4. 寫回雲端
+    attachments[targetKey] = merged;
     if (staleKey && staleKey !== targetKey) {
       delete attachments[staleKey];
     }
 
+    // 5. 同步本地快取（用「合併後」結果）
+    if (!window.cloudAttachments) window.cloudAttachments = {};
+    window.cloudAttachments[targetKey] = merged;
+    if (staleKey && staleKey !== targetKey) {
+      delete window.cloudAttachments[staleKey];
+    }
+
+    // 6. 重繪
+    renderAllAttachments();
+    renderEventDataModal();
+
+    // 7. 寫入 Firestore
     await window.dbRef.set({ attachments, updatedAt: Date.now() }, { merge: true });
   }
 
-  // ⭐ v3.9：_saveNote 同樣邏輯
+  // ⭐ v3.10：_saveNote 也先讀雲端再寫（避免蓋掉其他 key）
   async function _saveNote(dayKey, noteObj) {
     if (typeof window.requireOnline === 'function' && !window.requireOnline('儲存備註')) {
       throw new Error('離線中');
@@ -327,14 +364,6 @@
     const targetKey = _normalizeKey(dayKey);
     const staleKey = _getOldKeyForNewId(targetKey);
 
-    window.cloudEventNotes[targetKey] = noteObj;
-    if (staleKey && staleKey !== targetKey) {
-      delete window.cloudEventNotes[staleKey];
-    }
-
-    renderAllAttachments();
-    renderEventDataModal();
-
     const docSnap = await window.dbRef.get();
     const cloudData = docSnap.exists ? docSnap.data() : {};
     const eventNotes = { ...(cloudData.eventNotes || {}) };
@@ -343,6 +372,15 @@
     if (staleKey && staleKey !== targetKey) {
       delete eventNotes[staleKey];
     }
+
+    if (!window.cloudEventNotes) window.cloudEventNotes = {};
+    window.cloudEventNotes[targetKey] = noteObj;
+    if (staleKey && staleKey !== targetKey) {
+      delete window.cloudEventNotes[staleKey];
+    }
+
+    renderAllAttachments();
+    renderEventDataModal();
 
     await window.dbRef.set({ eventNotes, updatedAt: Date.now() }, { merge: true });
   }
@@ -365,6 +403,7 @@
     setTimeout(() => { try { input.click(); } catch (e) { _toast('無法開啟檔案選擇器', '⚠️'); } }, 0);
   }
 
+  // ⭐ v3.10：只傳「這次新圖」，合併交給 _saveAttachments
   async function _doUpload(dayKey, files) {
     const total = files.length;
     _toast(`⏳ 處理 ${total} 張…`, '📤');
@@ -385,9 +424,8 @@
       return;
     }
     try {
-      const existing = getAttachments(dayKey);
-      const merged = [...result.success, ...existing];
-      await _saveAttachments(dayKey, merged);
+      // ⭐ 只傳新圖，_saveAttachments 會與雲端合併
+      await _saveAttachments(dayKey, result.success);
       _toast(`✅ 已加入 ${result.success.length} 張附件`, '📎');
     } catch (e) { _toast('❌ 儲存失敗：' + e.message, '⚠️'); }
     if (result.failed.length > 0) setTimeout(() => _toast(`⚠️ ${result.failed.length} 張上傳失敗`, '⚠️'), 1500);
@@ -403,8 +441,12 @@
     if (!isOwner && !_isAdmin()) { _toast('🔒 只能刪除自己上傳的附件', '⚠️'); return; }
     if (!confirm('確定要移除這張附件嗎？')) return;
     const next = list.filter(a => a.id !== attId);
-    try { await _saveAttachments(dayKey, next); _toast('🗑 已移除', '📎'); _haptic(10); }
-    catch (e) { _toast('❌ 刪除失敗', '⚠️'); }
+    try {
+      // ⭐ v3.10：刪除用 replace 模式（完整覆蓋）
+      await _saveAttachments(dayKey, next, { replace: true });
+      _toast('🗑 已移除', '📎');
+      _haptic(10);
+    } catch (e) { _toast('❌ 刪除失敗', '⚠️'); }
   }
 
   function buildAttachmentsInnerHtml(dayKey, options) {
@@ -454,7 +496,7 @@
   }
 
   // ============================================================
-  // renderAllAttachments（v3.6：scope 參數）
+  // renderAllAttachments
   // ============================================================
   function renderAllAttachments(scope) {
     const root = scope || document;
@@ -511,7 +553,7 @@
             inlineBadge.setAttribute('data-event-key', dayKey);
             inlineBadge.setAttribute('data-event-title', eventTitle);
             inlineBadge.setAttribute('aria-label', '查看資料');
-            inlineBadge.innerHTML = 
+            inlineBadge.innerHTML =
               '<svg class="event-inline-data-badge-icon" viewBox="0 0 24 24" fill="none" ' +
               'stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
               '<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>' +
@@ -665,6 +707,61 @@
     _toast('測試 UI 保留舊版，無需使用', '🧪');
   }
 
+  // ============================================================
+  // ⭐ v3.10：主動從雲端補一次（保險）
+  //
+  // 用途：即使 Firestore 快照延遲或被跳過，也保證重整後看得到附件
+  // ============================================================
+  async function _hydrateFromCloud() {
+    if (!window.dbRef) return;
+    try {
+      const snap = await window.dbRef.get();
+      if (!snap.exists) return;
+      const data = snap.data() || {};
+      let changed = false;
+
+      if (data.attachments && typeof data.attachments === 'object') {
+        // 只在「雲端有東西」時覆蓋（避免清空本地未同步資料）
+        if (Object.keys(data.attachments).length > 0) {
+          window.cloudAttachments = data.attachments;
+          changed = true;
+        }
+      }
+      if (data.eventNotes && typeof data.eventNotes === 'object') {
+        if (Object.keys(data.eventNotes).length > 0) {
+          window.cloudEventNotes = data.eventNotes;
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        renderAllAttachments();
+        console.log('[Uploads] v3.10 已從雲端補齊附件');
+      }
+    } catch (e) {
+      console.warn('[Uploads] hydrate 失敗:', e);
+    }
+  }
+
+  // 啟動時自動補一次（延遲執行，等 Firebase 登入完成）
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(_hydrateFromCloud, 2000);
+    });
+  } else {
+    setTimeout(_hydrateFromCloud, 2000);
+  }
+
+  // 監聽「登入完成」事件（app-core.js 沒有現成的，用時間差補）
+  // 使用者切換身份後，也主動補一次
+  window.addEventListener('focus', () => {
+    // 只在「已有登入者」時補
+    const u = _currentUser();
+    if (u && u !== '訪客') {
+      setTimeout(_hydrateFromCloud, 500);
+    }
+  });
+
   window.Uploads = {
     compress, uploadBlob, uploadFiles, openLightbox, test,
     canWrite: _canWrite, currentUser: _currentUser,
@@ -680,11 +777,12 @@
     switchEventDataTab,
     saveEventNote,
     renderEventDataModal,
-    // ⭐ v3.9：對外暴露工具
+    // ⭐ 對外暴露工具
     normalizeKey: _normalizeKey,
     getOldKeyForNewId: _getOldKeyForNewId,
-    getNewIdForOldKey: _getNewIdForOldKey
+    getNewIdForOldKey: _getNewIdForOldKey,
+    hydrateFromCloud: _hydrateFromCloud
   };
 
-  console.log('[Uploads] v3.9（Fallback 新舊 key 相容）載入完成');
+  console.log('[Uploads] v3.10（雲端合併 + 主動補資料）載入完成');
 })();
