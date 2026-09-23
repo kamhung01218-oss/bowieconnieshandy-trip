@@ -1,14 +1,13 @@
 /* ============================================================
- * AppHeader v16.3
- * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [🔄 重整] + [☰ 工具]
+ * AppHeader v16.5
+ * - 品牌列：❄️ 標題 + [搜尋] + [天氣] + [重整] + [工具]
  * - Focus Card：出發前 / 中 / 後
  * - 旅行中順序：廣播 → 天氣 → 現在 → 下一站 → CTA(購物/留言)
  *
- * v16.0：出發前 Focus Card 4 階段演化
- * v16.1：準備進度可點擊 → 打開準備總覽 Modal
- * v16.2：工具選單「共享收據/憑證」→「附件總覽」
- * v16.3：
- *   - ⭐ L：留言訂閱移除 phase 檢查，出發前也刷新廣播
+ * v16.3：留言訂閱移除 phase 檢查
+ * v16.4：去 Emoji 化（UI 層）
+ * v16.5：
+ *   - ⭐ 修正下拉同步誤觸（工具選單、按鈕、Header、底部導航）
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -24,6 +23,30 @@ window.AppHeader = (function () {
   let _searchDebounceTimer = null;
   let _selectedWeatherLocId = null;
   let _selectedWeatherDayKey = null;
+
+  // ============================================================
+  // 本地補充 SVG（icons.js 沒有的）
+  // ============================================================
+  const _LOCAL_ICONS = {
+    zap: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+    message: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+    book: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+    eye: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    wallet: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>`
+  };
+
+  function _icon(name, size) {
+    size = size || 16;
+    let svg = '';
+    if (typeof window.ICON === 'function') {
+      svg = window.ICON(name, size);
+    }
+    if (!svg && _LOCAL_ICONS[name]) {
+      svg = _LOCAL_ICONS[name].replace('<svg ', `<svg width="${size}" height="${size}" `);
+    }
+    if (!svg) return '';
+    return svg.replace('<svg ', '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" ');
+  }
 
   const ICONS = {
     search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>`,
@@ -226,7 +249,7 @@ window.AppHeader = (function () {
   }
 
   // ============================================================
-  // 出發前 Focus Card 輔助函式
+  // 出發前 Focus Card 輔助
   // ============================================================
   function formatCountdownShort(ms) {
     if (ms <= 0) return "已開賣";
@@ -293,17 +316,20 @@ window.AppHeader = (function () {
     if (totalPrep === 0) return '';
     const pending = totalPrep - donePrep;
     const allDone = pending === 0;
+    const titleIcon = _icon('list', 13);
+    const checkIcon = _icon('check', 12);
+    const clockIcon = _icon('clock', 12);
     return `<button type="button" class="focus-progress-row focus-progress-clickable ${allDone ? 'all-done' : ''}" data-action="prep-overview" aria-label="查看準備總覽">
       <div class="focus-progress-header">
-        <span class="focus-progress-title">📋 準備進度</span>
+        <span class="focus-progress-title">${titleIcon} 準備進度</span>
         <span class="focus-progress-count">${donePrep} / ${totalPrep}</span>
       </div>
       <div class="focus-progress-track">
         <div class="focus-progress-fill" style="width: ${prepPercent}%"></div>
       </div>
       <div class="focus-progress-footer">
-        <span>${allDone ? '🎉 全部完成' : `✅ ${donePrep} 項完成`}</span>
-        <span>${allDone ? '' : `⏳ ${pending} 項待處理`}</span>
+        <span>${allDone ? `${checkIcon} 全部完成` : `${checkIcon} ${donePrep} 項完成`}</span>
+        <span>${allDone ? '' : `${clockIcon} ${pending} 項待處理`}</span>
       </div>
       <span class="focus-progress-arrow">›</span>
     </button>`;
@@ -313,9 +339,10 @@ window.AppHeader = (function () {
     if (!equipP || equipP.total === 0) return '';
     const percent = Math.round((equipP.done / equipP.total) * 100);
     const allDone = equipP.done === equipP.total;
+    const bpIcon = _icon('backpack', 13);
     return `<div class="focus-luggage-progress ${allDone ? 'done' : ''}">
       <div class="flp-header">
-        <span>🎒 行李準備度</span>
+        <span>${bpIcon} 行李準備度</span>
         <span class="flp-count">${equipP.done} / ${equipP.total}</span>
       </div>
       <div class="flp-track">
@@ -351,14 +378,17 @@ window.AppHeader = (function () {
       items.push(`🎒 裝備清單還有 ${pendingEquip} 項`);
     }
 
+    const alertIcon = _icon('alert', 13);
+    const checkIcon = _icon('check', 14);
+
     if (items.length === 0) {
       return `<div class="focus-pending-list all-done">
-        <div class="fpl-title">✅ 全部完成！準備出發</div>
+        <div class="fpl-title">${checkIcon} 全部完成！準備出發</div>
       </div>`;
     }
 
     return `<div class="focus-pending-list">
-      <div class="fpl-title">⚠️ 尚未完成</div>
+      <div class="fpl-title">${alertIcon} 尚未完成</div>
       <ul>
         ${items.slice(0, 3).map(item => `<li>${escapeHtml(item)}</li>`).join('')}
       </ul>
@@ -405,8 +435,8 @@ window.AppHeader = (function () {
       try { pendingEquip = cb.getPendingEquipItems() || []; } catch (e) {}
     }
 
-    const bookingHtml = buildPrepSectionHtml('📌', '行前預訂', bookingP, pendingBooking, 'booking');
-    const equipHtml = buildPrepSectionHtml('🎒', '我的裝備', equipP, pendingEquip, 'equip');
+    const bookingHtml = buildPrepSectionHtml('pin', '行前預訂', bookingP, pendingBooking, 'booking');
+    const equipHtml = buildPrepSectionHtml('backpack', '我的裝備', equipP, pendingEquip, 'equip');
 
     content.innerHTML = `
       <div class="prep-overview-hero">
@@ -437,18 +467,21 @@ window.AppHeader = (function () {
     haptic(8);
   }
 
-  function buildPrepSectionHtml(icon, title, progress, pendingItems, action) {
+  function buildPrepSectionHtml(iconName, title, progress, pendingItems, action) {
     const pending = progress.total - progress.done;
     const allDone = pending === 0;
+    const sectionIcon = _icon(iconName, 18);
+    const checkIcon = _icon('check', 14);
+    const clockIcon = _icon('clock', 13);
 
     if (allDone) {
       return `<div class="prep-section prep-section-done">
         <div class="prep-section-header">
-          <span class="prep-section-icon">${icon}</span>
+          <span class="prep-section-icon">${sectionIcon}</span>
           <span class="prep-section-title">${title}</span>
           <span class="prep-section-count">${progress.done} / ${progress.total}</span>
         </div>
-        <div class="prep-section-all-done">✅ 全部完成</div>
+        <div class="prep-section-all-done">${checkIcon} 全部完成</div>
       </div>`;
     }
 
@@ -465,12 +498,12 @@ window.AppHeader = (function () {
         : '';
       listHtml = `<ul class="prep-pending-list">${itemsHtml}${moreHtml}</ul>`;
     } else {
-      listHtml = `<div class="prep-section-pending">⏳ 還有 ${pending} 項未完成</div>`;
+      listHtml = `<div class="prep-section-pending">${clockIcon} 還有 ${pending} 項未完成</div>`;
     }
 
     return `<div class="prep-section">
       <div class="prep-section-header">
-        <span class="prep-section-icon">${icon}</span>
+        <span class="prep-section-icon">${sectionIcon}</span>
         <span class="prep-section-title">${title}</span>
         <span class="prep-section-count">${progress.done} / ${progress.total}</span>
       </div>
@@ -689,7 +722,7 @@ window.AppHeader = (function () {
       const dayTitle = (day.title || "").toLowerCase();
       const daySubtitle = (day.subtitle || "").toLowerCase();
       if (dayTitle.includes(kw) || daySubtitle.includes(kw)) {
-        results.push({ day: day.day, eventIndex: -1, title: day.title, location: "", time: day.dateLabel, emoji: day.emoji || "📅" });
+        results.push({ day: day.day, eventIndex: -1, title: day.title, location: "", time: day.dateLabel, emoji: "📅" });
       }
       (day.events || []).forEach((evt, idx) => {
         const fields = [evt.title || "", evt.location || "", evt.tag?.text || "", stripHtml(evt.content || "")];
@@ -727,7 +760,7 @@ window.AppHeader = (function () {
   function renderSearchEmpty() {
     const tagsHtml = HOT_KEYWORDS.map(t => `<button type="button" class="search-hot-tag" data-hot-kw="${escapeHtml(t.kw)}">${t.label}</button>`).join('');
     return `<div class="search-empty">
-      <div style="font-size:36px;margin-bottom:8px">🔍</div>
+      <div style="font-size:36px;margin-bottom:8px;color:#94a3b8">${_icon('search', 36)}</div>
       <div style="font-size:13px;font-weight:700;color:#64748b">輸入關鍵字開始搜尋</div>
       <div style="font-size:11px;color:#94a3b8;margin-top:6px">或點選熱門關鍵字</div>
       <div class="search-hot-tags">${tagsHtml}</div>
@@ -1000,20 +1033,21 @@ window.AppHeader = (function () {
   }
 
   // ============================================================
-  // 廣播分級
+  // 廣播
   // ============================================================
   function buildBroadcastHTML() {
     if (!window.Messages) return '';
     const list = window.Messages.getAll ? window.Messages.getAll() : [];
     const canWrite = window.Messages.canWrite();
     const count = list.length;
+    const bcastIcon = _icon('broadcast', 13);
 
     if (count === 0) {
       const emptyText = canWrite ? '尚無留言，點此發送第一則' : '訪客僅能閱讀';
       return `
         <div class="broadcast-block" id="broadcast-block" onclick="openMessagesModal()" style="cursor:pointer">
           <div class="broadcast-header">
-            <span class="broadcast-title">📢 家庭廣播</span>
+            <span class="broadcast-title">${bcastIcon} 家庭廣播</span>
             <span class="broadcast-open-hint">點擊查看 →</span>
           </div>
           <div class="broadcast-empty">${emptyText}</div>
@@ -1031,7 +1065,7 @@ window.AppHeader = (function () {
 
     if (pinned.length > 2) {
       rowsHtml += `<button class="broadcast-more-btn" onclick="event.stopPropagation();openMessagesModal()">
-        <span>📌</span>
+        <span>${_icon('pin', 12)}</span>
         <span>還有 ${pinned.length - 2} 則置頂訊息</span>
         <span class="broadcast-more-arrow">›</span>
       </button>`;
@@ -1056,7 +1090,7 @@ window.AppHeader = (function () {
     return `
       <div class="broadcast-block" id="broadcast-block" onclick="openMessagesModal()" style="cursor:pointer">
         <div class="broadcast-header">
-          <span class="broadcast-title">📢 家庭廣播</span>
+          <span class="broadcast-title">${bcastIcon} 家庭廣播</span>
           ${count > 0 ? `<span class="broadcast-count">${count}</span>` : ''}
           <span class="broadcast-open-hint">點擊查看 →</span>
         </div>
@@ -1074,17 +1108,19 @@ window.AppHeader = (function () {
     const dayTag = (m.day >= 1 && m.day <= 7)
       ? `<button type="button" class="message-day-tag" onclick="event.stopPropagation();window._Messages_jumpToDay(${m.day})">D${m.day}</button>`
       : '';
+    const pinIcon = _icon('pin', 14);
+    const locIcon = _icon('location', 12);
 
     return `
       <div class="broadcast-pinned-row">
         <div class="broadcast-pinned-main">
-          <span class="broadcast-pin">📌</span>
+          <span class="broadcast-pin" style="color:#b45309">${pinIcon}</span>
           <span class="broadcast-pinned-text">${escapeHtml(m.text)}</span>
         </div>
         <div class="broadcast-pinned-meta">
           ${dayTag}
           ${countdownHtml}
-          ${isLoc ? `<a href="${mapUrl}" target="_blank" rel="noopener" class="broadcast-mini-nav" onclick="event.stopPropagation()">📍 導航</a>` : ''}
+          ${isLoc ? `<a href="${mapUrl}" target="_blank" rel="noopener" class="broadcast-mini-nav" onclick="event.stopPropagation()">${locIcon} 導航</a>` : ''}
         </div>
       </div>`;
   }
@@ -1191,13 +1227,13 @@ window.AppHeader = (function () {
 
           <div class="focus-cta-row">
             <button type="button" class="focus-cta focus-cta-primary" data-action="overview">
-              <span>📋</span> 行程速覽
+              <span>${_icon('list', 14)}</span> 行程速覽
             </button>
             <button type="button" class="focus-cta focus-cta-secondary" data-action="booking">
-              <span>📌</span> 行前預訂
+              <span>${_icon('pin', 14)}</span> 行前預訂
             </button>
             <button type="button" class="focus-cta focus-cta-secondary" data-action="equip">
-              <span>🎒</span> 裝備
+              <span>${_icon('backpack', 14)}</span> 裝備
             </button>
           </div>
         </div>`;
@@ -1222,6 +1258,7 @@ window.AppHeader = (function () {
         const nextInfo = getNextEventInfo(dayData);
 
         let currentBlockHtml = '';
+        const targetIcon = _icon('target', 12);
         if (currentInfo) {
           const timeRange = currentInfo.endTime
             ? `${currentInfo.startTime} – ${currentInfo.endTime}`
@@ -1234,7 +1271,7 @@ window.AppHeader = (function () {
                     data-jump-day="${dayNum}"
                     data-jump-event="${currentInfo.eventIndex}"
                     aria-label="跳到行程">
-              <div class="focus-now-label">🎯 現在進行</div>
+              <div class="focus-now-label">${targetIcon} 現在進行</div>
               <div class="focus-now-title">${escapeHtml(currentInfo.event.title)}${endingTag}</div>
               <div class="focus-now-time">${escapeHtml(timeRange)} · 還有 ${formatRemainMin(currentInfo.remainMin)}</div>
               <div class="focus-now-progress">
@@ -1245,20 +1282,21 @@ window.AppHeader = (function () {
         } else {
           currentBlockHtml = `
             <div class="focus-now-block focus-now-idle">
-              <div class="focus-now-label">🎯 現在</div>
+              <div class="focus-now-label">${targetIcon} 現在</div>
               <div class="focus-now-title focus-now-idle-text">空檔 · 自由時間</div>
             </div>
           `;
         }
 
         let nextBlockHtml = '';
+        const nextIcon = _icon('chevronRight', 12);
         if (nextInfo) {
           nextBlockHtml = `
             <button type="button" class="focus-next-block focus-jumpable"
                     data-jump-day="${dayNum}"
                     data-jump-event="${nextInfo.eventIndex}"
                     aria-label="跳到行程">
-              <div class="focus-next-label">⏭️ 下一站</div>
+              <div class="focus-next-label">${nextIcon} 下一站</div>
               <div class="focus-next-title">${escapeHtml(nextInfo.startTime)} · ${escapeHtml(nextInfo.event.title)}</div>
               <div class="focus-next-row">
                 <span class="focus-next-remain">還有 ${formatRemainMin(nextInfo.remainMin)}</span>
@@ -1269,7 +1307,7 @@ window.AppHeader = (function () {
         } else {
           nextBlockHtml = `
             <div class="focus-next-block">
-              <div class="focus-next-label">⏭️ 下一站</div>
+              <div class="focus-next-label">${nextIcon} 下一站</div>
               <div class="focus-next-title focus-next-done">今日行程已結束</div>
             </div>
           `;
@@ -1283,8 +1321,8 @@ window.AppHeader = (function () {
             ${nextBlockHtml}
           </div>
           <div class="focus-cta-row focus-cta-row-during">
-            <button type="button" class="focus-cta focus-cta-secondary" data-action="shopping"><span>🛍️</span> 購物</button>
-            <button type="button" class="focus-cta focus-cta-secondary" data-action="messages"><span>💬</span> 留言${msgCount > 0 ? `<span class="broadcast-badge">${msgCount}</span>` : ''}</button>
+            <button type="button" class="focus-cta focus-cta-secondary" data-action="shopping"><span>${_icon('bag', 15)}</span> 購物</button>
+            <button type="button" class="focus-cta focus-cta-secondary" data-action="messages"><span>${_icon('message', 15)}</span> 留言${msgCount > 0 ? `<span class="broadcast-badge">${msgCount}</span>` : ''}</button>
           </div>
         </div>`;
       }
@@ -1302,8 +1340,8 @@ window.AppHeader = (function () {
             <div class="focus-stat"><div class="num">${shoppingP.done}</div><div class="lbl">購物項目</div></div>
           </div>
           <div class="focus-cta-row">
-            <button type="button" class="focus-cta focus-cta-primary" data-action="overview"><span>📖</span> 回顧旅程</button>
-            <button type="button" class="focus-cta focus-cta-secondary" data-action="switchLedger"><span>💰</span> 查看記帳</button>
+            <button type="button" class="focus-cta focus-cta-primary" data-action="overview"><span>${_icon('book', 14)}</span> 回顧旅程</button>
+            <button type="button" class="focus-cta focus-cta-secondary" data-action="switchLedger"><span>${_icon('wallet', 14)}</span> 查看記帳</button>
           </div>
         </div>`;
       }
@@ -1423,12 +1461,12 @@ window.AppHeader = (function () {
 
     const progressItems = [];
     const bookingP = getProgressData("booking");
-    if (bookingP.total > 0) progressItems.push({ icon: "📌", label: "行前預訂", done: bookingP.done, total: bookingP.total, action: "booking" });
+    if (bookingP.total > 0) progressItems.push({ icon: "pin", label: "行前預訂", done: bookingP.done, total: bookingP.total, action: "booking" });
     if (!guest) {
       const equipP = getProgressData("equip");
-      progressItems.push({ icon: "🎒", label: "我的裝備", done: equipP.done, total: equipP.total, action: "equip" });
+      progressItems.push({ icon: "backpack", label: "我的裝備", done: equipP.done, total: equipP.total, action: "equip" });
       const shoppingP = getProgressData("shopping");
-      progressItems.push({ icon: "🛍️", label: "我的購物", done: shoppingP.done, total: shoppingP.total, action: "shopping" });
+      progressItems.push({ icon: "bag", label: "我的購物", done: shoppingP.done, total: shoppingP.total, action: "shopping" });
     }
 
     const progressHTML = progressItems.map(it => {
@@ -1437,7 +1475,7 @@ window.AppHeader = (function () {
         ? `<span class="tools-item-tag new">＋ 加入</span>`
         : `<span class="tools-item-progress ${done ? 'done' : ''}">${done ? '✓ ' : ''}${it.done}/${it.total}</span>`;
       return `<button type="button" class="tools-item ${done ? 'complete' : ''}" data-tool-action="${it.action}">
-        <span class="tools-item-icon">${it.icon}</span>
+        <span class="tools-item-icon">${_icon(it.icon, 18)}</span>
         <span class="tools-item-label">${escapeHtml(it.label)}</span>
         ${badgeHTML}
         <span class="tools-item-arrow">›</span>
@@ -1450,24 +1488,24 @@ window.AppHeader = (function () {
     const isDark = currentTheme === 'dark';
 
     panel.innerHTML = `
-      ${progressItems.length > 0 ? `<div class="tools-section"><div class="tools-section-label"><span>📊</span> 我的清單</div>${progressHTML}</div>` : ""}
+      ${progressItems.length > 0 ? `<div class="tools-section"><div class="tools-section-label"><span>${_icon('chart', 12)}</span> 我的清單</div>${progressHTML}</div>` : ""}
       <div class="tools-section">
-        <div class="tools-section-label"><span>⚡</span> 快速操作</div>
+        <div class="tools-section-label"><span>${_icon('zap', 12)}</span> 快速操作</div>
         <button type="button" class="tools-item" data-tool-action="search"><span class="tools-item-icon">${ICONS.search}</span><span class="tools-item-label">搜尋行程</span><span class="tools-item-arrow">›</span></button>
         <button type="button" class="tools-item" data-tool-action="overview"><span class="tools-item-icon">${ICONS.overview}</span><span class="tools-item-label">行程速覽</span><span class="tools-item-arrow">›</span></button>
         <button type="button" class="tools-item" data-tool-action="ledger"><span class="tools-item-icon">${ICONS.ledger}</span><span class="tools-item-label">快速記帳</span><span class="tools-item-arrow">›</span></button>
-        <button type="button" class="tools-item" data-tool-action="attachments"><span class="tools-item-icon">📎</span><span class="tools-item-label">附件總覽</span><span class="tools-item-arrow">›</span></button>
+        <button type="button" class="tools-item" data-tool-action="attachments"><span class="tools-item-icon">${_icon('attach', 18)}</span><span class="tools-item-label">附件總覽</span><span class="tools-item-arrow">›</span></button>
       </div>
-      ${showInstall ? `<div class="tools-section"><div class="tools-section-label"><span>📲</span> 應用程式</div>
+      ${showInstall ? `<div class="tools-section"><div class="tools-section-label"><span>${_icon('install', 12)}</span> 應用程式</div>
         <button type="button" class="tools-item" data-tool-action="install"><span class="tools-item-icon">${ICONS.install}</span><span class="tools-item-label">安裝 App 到桌面</span><span class="tools-item-tag new">推薦</span><span class="tools-item-arrow">›</span></button>
       </div>` : ""}
       <div class="tools-section">
-        <div class="tools-section-label"><span>🎨</span> 顯示與安全</div>
+        <div class="tools-section-label"><span>${_icon('theme', 12)}</span> 顯示與安全</div>
         <button type="button" class="tools-item" data-tool-action="theme"><span class="tools-item-icon">${ICONS.theme}</span><span class="tools-item-label">${isDark ? '淺色模式' : '深色模式'}</span><span class="tools-item-arrow">›</span></button>
         <button type="button" class="tools-item" data-tool-action="emergency"><span class="tools-item-icon">${ICONS.emergency}</span><span class="tools-item-label">緊急資訊</span><span class="tools-item-arrow">›</span></button>
       </div>
       <div class="tools-section">
-        <div class="tools-section-label"><span>📚</span> 攻略參考</div>
+        <div class="tools-section-label"><span>${_icon('bookmark', 12)}</span> 攻略參考</div>
         ${phase !== "after" ? `<button type="button" class="tools-item" data-tool-action="ticket">
           <span class="tools-item-icon">${ICONS.ticket}</span>
           <span class="tools-item-label">搶票攻略</span>
@@ -1478,7 +1516,7 @@ window.AppHeader = (function () {
         <button type="button" class="tools-item" data-tool-action="shoot"><span class="tools-item-icon">${ICONS.shoot}</span><span class="tools-item-label">拍攝技巧</span><span class="tools-item-arrow">›</span></button>
       </div>
       <div class="tools-section">
-        <div class="tools-section-label"><span>⚙️</span> 帳戶</div>
+        <div class="tools-section-label"><span>${_icon('gear', 12)}</span> 帳戶</div>
         <button type="button" class="tools-item" data-tool-action="ledger"><span class="tools-item-icon">${ICONS.ledger}</span><span class="tools-item-label">隨行記帳本</span><span class="tools-item-arrow">›</span></button>
         ${currentUser ? `<button type="button" class="tools-item" data-tool-action="account">
           <span class="tools-item-icon">${ICONS.account}</span>
@@ -2079,33 +2117,33 @@ window.closeMessagesModal = closeMessagesModal;
 
 /* ============================================================
  * 留言訂閱（局部刷新廣播區塊）
- *
- * ⭐ v16.3：移除 phase === 'during' 檢查
- *   出發前也要能收到留言通知
  * ============================================================ */
 if (window.Messages) {
   window.Messages.subscribe(() => {
-    // 任何階段都刷新廣播
     if (window.AppHeader && window.AppHeader.refreshBroadcast) {
       window.AppHeader.refreshBroadcast();
     }
-
-    // 更新 header 上的留言按鈕
     const msgBtn = document.querySelector('[data-action="messages"]');
     if (msgBtn) {
       const count = window.Messages.getCount();
-      const base = `<span>💬</span> 留言`;
+      const base = `<span>${_svgMsgIcon()}</span> 留言`;
       msgBtn.innerHTML = count > 0 ? `${base}<span class="broadcast-badge">${count}</span>` : base;
     }
-
-    // 如果留言 modal 開著，即時更新
     const modal = document.getElementById("messages-modal");
     if (modal && modal.classList.contains('active')) renderMessagesModal();
   });
 }
 
+function _svgMsgIcon() {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;width:15px;height:15px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+}
+
 /* ============================================================
- * ☁️ 下拉同步資料（頁面頂部下拉觸發）
+ * ☁️ 下拉同步資料
+ *
+ * ⭐ v16.5：修正誤觸
+ *   - 工具選單 / 搜尋 Modal 開啟時禁止
+ *   - 觸控目標是互動元素時禁止（按鈕、連結、輸入、header、底部導航）
  * ============================================================ */
 (function setupPullToSync() {
   const THRESHOLD = 75;
@@ -2130,8 +2168,25 @@ if (window.Messages) {
   const iconEl = indicator.querySelector('.pull-sync-icon');
   const textEl = indicator.querySelector('.pull-sync-text');
 
-  const isModalOpen = () => !!document.querySelector('.modal-overlay.active');
-  const getScrollY = () => window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  // ⭐ v16.5：三種阻擋判斷
+  function isModalOpen() {
+    return !!document.querySelector('.modal-overlay.active');
+  }
+  function isPanelOpen() {
+    return !!document.querySelector(
+      '.tools-menu-panel.active, .tools-menu-backdrop.active, .search-modal-wrap.active'
+    );
+  }
+  function isInteractiveTarget(el) {
+    if (!el || !el.closest) return false;
+    return !!el.closest(
+      'button, a, input, select, textarea, label, [role="button"], [role="link"], [role="menuitem"], ' +
+      '.tools-menu-panel, .tools-menu-backdrop, .search-modal-box, .app-header, .bottom-nav'
+    );
+  }
+
+  const getScrollY = () => window.scrollY || window.pageYOffset
+    || document.documentElement.scrollTop || document.body.scrollTop || 0;
 
   function updateIndicator() {
     indicator.classList.add('active');
@@ -2200,6 +2255,8 @@ if (window.Messages) {
 
   window.addEventListener('touchstart', (e) => {
     if (isModalOpen()) return;
+    if (isPanelOpen()) return;
+    if (isInteractiveTarget(e.target)) return;
     if (getScrollY() > 5) return;
     if (e.touches.length !== 1) return;
     startY = e.touches[0].clientY;
@@ -2210,7 +2267,11 @@ if (window.Messages) {
 
   window.addEventListener('touchmove', (e) => {
     if (!pulling) return;
-    if (isModalOpen()) { pulling = false; resetIndicator(); return; }
+    if (isModalOpen() || isPanelOpen()) {
+      pulling = false;
+      resetIndicator();
+      return;
+    }
     if (getScrollY() > 5) { pulling = false; resetIndicator(); return; }
 
     const diff = e.touches[0].clientY - startY;
@@ -2243,5 +2304,5 @@ if (window.Messages) {
     resetIndicator();
   }, { passive: true });
 
-  console.log('[pull-sync] 已註冊下拉同步手勢');
+  console.log('[pull-sync] v16.5 已註冊下拉同步手勢（含誤觸修正）');
 })();

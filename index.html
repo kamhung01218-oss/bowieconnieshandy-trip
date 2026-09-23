@@ -156,8 +156,6 @@ try {
     window.db = db;
 
     // ⭐ v14.7：已移除離線持久化
-    // 所有寫入需要網路，避免多裝置離線衝突
-
     dbRef = db.collection("tohoku_trip").doc("shared_expenses");
     window.dbRef = dbRef;
     console.log("✅ Firestore 初始化成功（無離線持久化）");
@@ -187,7 +185,6 @@ window.requireOnline = function(actionLabel) {
   return true;
 };
 
-// ⭐ 離線橫幅（固定在頂部）
 (function setupOfflineBanner() {
   const banner = document.createElement('div');
   banner.id = 'offline-banner';
@@ -223,7 +220,6 @@ window.requireOnline = function(actionLabel) {
 
 async function syncDataToCloud() {
   if (!isAdminUnlocked()) { showToast("🔒 唯讀模式，無法寫入雲端！", "⚠️"); return; }
-  // ⭐ v14.7：離線守衛
   if (typeof window.requireOnline === 'function' && !window.requireOnline('儲存')) return;
   if (typeof firebase === 'undefined' || !window.dbRef) { showToast("⏳ 雲端未連線", "⚠️"); return; }
   try {
@@ -246,7 +242,6 @@ async function syncDataToCloud() {
   }
 }
 
-// ⭐ v14.5：debounce + 購物清單快取
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.dbRef) return;
 
@@ -348,7 +343,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }, err => console.warn("Firestore Sync Warning:", err));
 });
 
-// ⭐ v14.5：初始化 history state（支援瀏覽器返回鍵）
 document.addEventListener('DOMContentLoaded', () => {
   try {
     const initDay = typeof window.getInitialDay === 'function' ? window.getInitialDay() : 1;
@@ -394,6 +388,52 @@ document.addEventListener('DOMContentLoaded', () => {
   transform: scale(0.94);
 }
 
+/* ============================================================
+ * ⭐ v15.0：底部導航 SVG 圖示
+ * ============================================================ */
+.bottom-nav button .nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: currentColor;
+}
+.bottom-nav button .nav-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ============================================================
+ * ⭐ v15.0：Modal 標題圖示（SVG 對齊）
+ * ============================================================ */
+.modal-title-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  color: var(--t-color-primary, #0284c7);
+}
+.modal-title-icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+[data-theme="dark"] .modal-title-icon {
+  color: var(--t-color-accent, #38bdf8);
+}
+
+.album-hero-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  color: #16a34a;
+}
+.album-hero-icon svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
 .modal-title {
   display: flex;
   align-items: center;
@@ -404,14 +444,6 @@ document.addEventListener('DOMContentLoaded', () => {
   margin-bottom: 16px;
   letter-spacing: 0.01em;
   line-height: 1.3;
-}
-.modal-title-icon {
-  font-size: 24px;
-  line-height: 1;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 .modal-subtitle {
   font-size: 12px;
@@ -665,6 +697,11 @@ document.addEventListener('DOMContentLoaded', () => {
   background: rgba(255,255,255,0.3);
   color: white;
 }
+.event-data-tab span[data-icon] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .event-note-textarea {
   width: 100%;
@@ -810,6 +847,8 @@ document.addEventListener('DOMContentLoaded', () => {
   border-color: #334155;
   color: #cbd5e1;
 }
+
+[data-theme="dark"] .album-hero-icon { color: #34d399; }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
@@ -820,7 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="search-modal" class="modal-overlay search-modal-wrap" style="display:none">
     <div class="search-modal-box" onclick="event.stopPropagation()">
       <div class="search-header">
-        <span class="search-header-icon">🔍</span>
+        <span class="search-header-icon" data-icon="search" data-icon-size="18"></span>
         <input id="search-input" type="text" placeholder="搜尋行程、景點、餐廳…" autocomplete="off">
         <button id="search-close" class="search-close-btn" aria-label="關閉">✕</button>
       </div>
@@ -1051,12 +1090,12 @@ document.addEventListener('DOMContentLoaded', () => {
     </svg>
   </button>
 
-  <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none"><span id="toast-icon">✅</span><span id="toast-message">複製成功！</span></div>
+  <div id="toast" role="status" aria-live="polite" aria-atomic="true" class="fixed top-12 left-1/2 -translate-x-1/2 z-[10000] transform -translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white text-xs md:text-sm font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 whitespace-nowrap pointer-events-none"><span id="toast-icon" aria-hidden="true">✅</span><span id="toast-message">複製成功！</span></div>
 
   <nav class="bottom-nav">
-    <button id="nav-itinerary-btn" onclick="switchMainTab('itinerary')" class="active"><span class="text-lg">🗺️</span><span>行程指南</span></button>
+    <button id="nav-itinerary-btn" onclick="switchMainTab('itinerary')" class="active"><span class="nav-icon" data-icon="map" data-icon-size="22"></span><span>行程指南</span></button>
     <button onclick="openLedgerAdd()" class="nav-fab" title="快速記帳"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg></button>
-    <button id="nav-ledger-btn" onclick="switchMainTab('ledger')"><span class="text-lg">💰</span><span>隨行記帳本</span></button>
+    <button id="nav-ledger-btn" onclick="switchMainTab('ledger')"><span class="nav-icon" data-icon="wallet" data-icon-size="22"></span><span>隨行記帳本</span></button>
   </nav>
 
   <!-- 🪙 匯率 Modal -->
@@ -1067,7 +1106,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-scrollable px-5 pb-6">
 
         <div class="flex items-center gap-2 mb-4">
-          <span class="modal-title-icon">🪙</span>
+          <span class="modal-title-icon" data-icon="coin" data-icon-size="22"></span>
           <div>
             <h2 class="modal-title" style="margin-bottom:0">即時匯率試算</h2>
             <p id="rate-hint-text" class="text-[10px] text-slate-500 font-semibold mt-0.5">1 JPY ≈ 0.052 HKD</p>
@@ -1131,7 +1170,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="booking-modal"><div class="modal-handle"></div></div>
       <button onclick="closeBookingModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6">
-        <h2 class="modal-title"><span class="modal-title-icon">📌</span>行前預訂</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="pin" data-icon-size="22"></span>行前預訂</h2>
         <div id="booking-modal-inner"></div>
       </div>
     </div>
@@ -1143,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="equip-modal"><div class="modal-handle"></div></div>
       <button onclick="closeEquipModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6">
-        <h2 class="modal-title"><span class="modal-title-icon">🎒</span>裝備清單</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="backpack" data-icon-size="22"></span>裝備清單</h2>
         <div id="equip-modal-inner"></div>
       </div>
     </div>
@@ -1155,7 +1194,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="drive-modal"><div class="modal-handle"></div></div>
       <button onclick="closeDriveModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6">
-        <h2 class="modal-title"><span class="modal-title-icon">⚠️</span>雪地攻略</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="alert" data-icon-size="22"></span>雪地攻略</h2>
         <div class="modal-tabs">
           <button class="skill-tab active" data-drive-tab="basic" onclick="setDriveTab('basic')">🚗 基本原則</button>
           <button class="skill-tab" data-drive-tab="road" onclick="setDriveTab('road')">🛣️ 特殊路況</button>
@@ -1172,7 +1211,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="ticket-modal"><div class="modal-handle"></div></div>
       <button onclick="closeTicketModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6">
-        <h2 class="modal-title"><span class="modal-title-icon">⚔️</span>搶票攻略</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="ticket" data-icon-size="22"></span>搶票攻略</h2>
         <div id="ticket-content"></div>
       </div>
     </div>
@@ -1184,7 +1223,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="weather-modal"><div class="modal-handle"></div></div>
       <button onclick="closeWeatherModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-6 pb-6">
-        <h2 class="modal-title"><span class="modal-title-icon">📊</span>詳細天氣預報</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="chart" data-icon-size="22"></span>詳細天氣預報</h2>
         <div id="weather-detail-content" class="text-sm text-slate-600"></div>
       </div>
     </div>
@@ -1196,7 +1235,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="trip-overview-modal"><div class="modal-handle"></div></div>
       <button onclick="closeTripOverview()" class="modal-close">✕</button>
       <div class="modal-scrollable px-6 pb-6">
-        <h2 class="modal-title"><span class="modal-title-icon">📋</span>行程速覽</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="list" data-icon-size="22"></span>行程速覽</h2>
         <div id="overview-timeline-content"></div>
       </div>
     </div>
@@ -1211,7 +1250,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <button onclick="closeShootTipsModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-6 pb-6">
         <h2 class="modal-title" style="margin-bottom:6px">
-          <span class="modal-title-icon">🎬</span>拍攝靈感
+          <span class="modal-title-icon" data-icon="video" data-icon-size="22"></span>拍攝靈感
         </h2>
         <p id="shoot-tips-title" class="modal-subtitle"></p>
         <div id="shoot-tips-content"></div>
@@ -1225,7 +1264,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="vlog-plan-modal"><div class="modal-handle"></div></div>
       <button onclick="closeVlogPlanModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-6 pb-6">
-        <h2 class="modal-title"><span class="modal-title-icon">🎬</span>Vlog 構思</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="video" data-icon-size="22"></span>Vlog 構思</h2>
         <div id="vlog-plan-content"></div>
       </div>
     </div>
@@ -1237,7 +1276,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="common-tips-modal"><div class="modal-handle"></div></div>
       <button onclick="closeCommonTipsModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-6 pb-6">
-        <h2 class="modal-title"><span class="modal-title-icon">📷</span>通用拍攝技巧</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="camera" data-icon-size="22"></span>通用拍攝技巧</h2>
         <div id="common-tips-content"></div>
       </div>
     </div>
@@ -1249,7 +1288,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="shopping-modal"><div class="modal-handle"></div></div>
       <button onclick="closeShoppingModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-6 pb-6">
-        <h2 class="modal-title"><span class="modal-title-icon">🛍️</span>購物清單</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="bag" data-icon-size="22"></span>購物清單</h2>
         <div id="shopping-content"></div>
       </div>
     </div>
@@ -1261,7 +1300,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="all-shopping-modal"><div class="modal-handle"></div></div>
       <button onclick="closeAllShoppingModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-6 pb-6">
-        <h2 class="modal-title"><span class="modal-title-icon">🛍️</span>我的購物清單</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="bag" data-icon-size="22"></span>我的購物清單</h2>
         <div id="all-shopping-content"></div>
       </div>
     </div>
@@ -1271,7 +1310,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="password-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closePasswordModal()">
     <div class="modal-box bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 relative" onclick="event.stopPropagation()">
       <button onclick="closePasswordModal()" class="modal-close">✕</button>
-      <h2 class="modal-title"><span class="modal-title-icon">🔒</span>輸入管理密碼</h2>
+      <h2 class="modal-title"><span class="modal-title-icon" data-icon="lock" data-icon-size="22"></span>輸入管理密碼</h2>
       <p class="modal-subtitle">輸入密碼以解鎖「行前預訂」編輯權限</p>
       <input id="password-input" type="password" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm mb-3" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')verifyPassword()">
       <div class="flex gap-2">
@@ -1288,7 +1327,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="emergency-modal"><div class="modal-handle"></div></div>
       <button onclick="closeEmergencyModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-6 pb-6">
-        <h2 class="modal-title"><span class="modal-title-icon">🆘</span>緊急資訊</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="emergency" data-icon-size="22"></span>緊急資訊</h2>
         <div id="emergency-content"></div>
       </div>
     </div>
@@ -1308,10 +1347,10 @@ document.addEventListener('DOMContentLoaded', () => {
       <button onclick="closeAttachmentsOverview()" class="modal-close">✕</button>
 
       <div class="modal-scrollable px-5 pb-6 pt-2">
-        <h2 class="modal-title"><span class="modal-title-icon">📎</span>附件總覽</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="attach" data-icon-size="22"></span>附件總覽</h2>
 
         <button type="button" onclick="openPhotoAlbum()" class="album-hero-btn">
-          <span class="album-hero-icon">📸</span>
+          <span class="album-hero-icon" data-icon="camera" data-icon-size="24"></span>
           <span class="album-hero-info">
             <span class="album-hero-title">旅行共享相簿</span>
             <span class="album-hero-desc">全家精選照片都在這</span>
@@ -1332,7 +1371,7 @@ document.addEventListener('DOMContentLoaded', () => {
             全部 <span class="att-filter-count" id="att-count-all">0</span>
           </button>
           <button type="button" class="att-filter-btn" data-filter="mine" onclick="setAttFilter('mine')">
-            👤 我上傳的 <span class="att-filter-count" id="att-count-mine">0</span>
+            <span data-icon="user" data-icon-size="12" style="display:inline-block;vertical-align:-2px;margin-right:2px"></span> 我上傳的 <span class="att-filter-count" id="att-count-mine">0</span>
           </button>
         </div>
 
@@ -1348,14 +1387,14 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="event-data-modal"><div class="modal-handle"></div></div>
       <button onclick="Uploads.closeEventData()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6 pt-2">
-        <h2 id="event-data-title" class="modal-title"><span class="modal-title-icon">📎</span>資料</h2>
+        <h2 id="event-data-title" class="modal-title"><span class="modal-title-icon" data-icon="attach" data-icon-size="22"></span>資料</h2>
 
         <div class="event-data-tabs">
           <button type="button" data-event-data-tab="attach" class="event-data-tab active" onclick="Uploads.switchEventDataTab('attach')">
-            📎 附件 <span class="tab-count">0</span>
+            <span data-icon="attach" data-icon-size="14"></span> 附件 <span class="tab-count">0</span>
           </button>
           <button type="button" data-event-data-tab="note" class="event-data-tab" onclick="Uploads.switchEventDataTab('note')">
-            📝 備註
+            <span data-icon="note" data-icon-size="14"></span> 備註
           </button>
         </div>
 
@@ -1371,7 +1410,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area" data-drag-handle="prep-overview-modal"><div class="modal-handle"></div></div>
       <button onclick="closePrepOverviewModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6 pt-2">
-        <h2 class="modal-title"><span class="modal-title-icon">📋</span>準備總覽</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="list" data-icon-size="22"></span>準備總覽</h2>
         <div id="prep-overview-content"></div>
       </div>
     </div>
@@ -1383,7 +1422,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area"><div class="modal-handle"></div></div>
       <button onclick="closeWeatherAlertModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6 pt-2">
-        <h2 class="modal-title" style="margin-bottom:6px"><span class="modal-title-icon">⚠️</span>天氣提醒</h2>
+        <h2 class="modal-title" style="margin-bottom:6px"><span class="modal-title-icon" data-icon="alert" data-icon-size="22"></span>天氣提醒</h2>
         <p id="weather-alert-title" class="modal-subtitle"></p>
         <div id="weather-alert-content"></div>
       </div>
@@ -1396,7 +1435,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-handle-area"><div class="modal-handle"></div></div>
       <button onclick="closeNavigateMenu()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6 pt-2">
-        <h2 class="modal-title"><span class="modal-title-icon">🧭</span>導航到：</h2>
+        <h2 class="modal-title"><span class="modal-title-icon" data-icon="location" data-icon-size="22"></span>導航到：</h2>
         <div id="navigate-menu-content"></div>
       </div>
     </div>
@@ -1409,7 +1448,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <button onclick="closeMessagesModal()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6 pt-2" style="display:flex;flex-direction:column;max-height:calc(88vh - 50px)">
 
-        <h2 class="modal-title shrink-0"><span class="modal-title-icon">📢</span>家庭廣播</h2>
+        <h2 class="modal-title shrink-0"><span class="modal-title-icon" data-icon="broadcast" data-icon-size="22"></span>家庭廣播</h2>
 
         <div id="messages-list" style="flex:1;overflow-y:auto;margin-bottom:10px;min-height:80px"></div>
 
@@ -1460,11 +1499,12 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="simulator-days" id="simulator-days"></div>
       <button class="simulator-close" onclick="Simulator.close()">✕ 關閉模擬</button>
     </div>
-    <button class="simulator-toggle" onclick="Simulator.togglePanel()">
+    <button class="simulator-toggle" onclick="Simulator.TogglePanel && Simulator.TogglePanel() || Simulator.togglePanel()">
       🧪 模擬
     </button>
   </div>
 
+  <script src="./icons.js"></script>
   <script src="./app-core.js"></script>
   <script src="./app-uploads.js"></script>
   <script src="./app-lists.js"></script>

@@ -1,12 +1,20 @@
 /* ============================================================
- * app-lists.js — v7.5
+ * app-lists.js — v7.6
  * 清單：行前預訂清單、裝備清單、購物清單、購物總覽
  *
- * v7.4 變更：
- *   - 購物總覽加「＋ 新增物品」按鈕（可指定景點或「臨時購買」）
- * v7.5 變更：
- *   - ⭐ 新增 updateShoppingBadges()：只更新徽章，不重繪整個 section
+ * v7.4：購物總覽加「＋ 新增物品」按鈕
+ * v7.5：新增 updateShoppingBadges
+ * v7.6：
+ *   - ⭐ 去 Emoji 化（UI 層）：
+ *       標題圖示、按鈕圖示、分類徽章改用 SVG
+ *       清單項目 emoji、類別選擇 emoji 保留（內容型）
  * ============================================================ */
+
+// ⭐ v7.6：SVG helper
+function _svgIcon(name, size) {
+  if (typeof window.ICON === 'function') return window.ICON(name, size || 16);
+  return '';
+}
 
 // ==================== Modal 狀態 ====================
 const modalUIState = {
@@ -70,7 +78,7 @@ function renderBookingChecklist() {
   const totalCount = allItems.length;
   const doneCount = allItems.filter(item => { const key = item.isCustom ? `custom-booking-${item.id}` : `booking-${item.id}`; return state.checkedItems[key] === true; }).length;
   const percent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0; const activeTab = modalUIState['booking-modal'].activeTab;
-  const modeBanner = isAdmin ? `<div class="bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl p-3 mb-3 flex items-center gap-2.5"><span class="text-xl shrink-0">✏️</span><div class="flex-1 min-w-0"><div class="text-xs font-black text-emerald-800">編輯模式（管理員）</div><div class="text-[10px] text-emerald-600 leading-relaxed">你的修改會自動同步給所有裝置</div></div></div>` : `<div class="bg-gradient-to-r from-sky-50 to-blue-50 border-2 border-sky-200 rounded-xl p-3 mb-3 flex items-center gap-2.5"><span class="text-xl shrink-0">👁️</span><div class="flex-1 min-w-0"><div class="text-xs font-black text-sky-800">唯讀模式</div><div class="text-[10px] text-sky-600 leading-relaxed">資料由管理員同步，你只能查看</div></div><button onclick="forceSyncFromCloud()" class="text-[10px] bg-white hover:bg-sky-50 text-sky-700 border border-sky-300 px-2.5 py-1.5 rounded-lg font-bold shrink-0 transition active:scale-95 shadow-sm">🔄 重新同步</button></div>`;
+  const modeBanner = isAdmin ? `<div class="bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl p-3 mb-3 flex items-center gap-2.5"><span class="text-xl shrink-0">✏️</span><div class="flex-1 min-w-0"><div class="text-xs font-black text-emerald-800">編輯模式（管理員）</div><div class="text-[10px] text-emerald-600 leading-relaxed">你的修改會自動同步給所有裝置</div></div></div>` : `<div class="bg-gradient-to-r from-sky-50 to-blue-50 border-2 border-sky-200 rounded-xl p-3 mb-3 flex items-center gap-2.5"><span class="text-xl shrink-0">👁️</span><div class="flex-1 min-w-0"><div class="text-xs font-black text-sky-800">唯讀模式</div><div class="text-[10px] text-sky-600 leading-relaxed">資料由管理員同步，你只能查看</div></div><button onclick="forceSyncFromCloud()" class="text-[10px] bg-white hover:bg-sky-50 text-sky-700 border border-sky-300 px-2.5 py-1.5 rounded-lg font-bold shrink-0 transition active:scale-95 shadow-sm flex items-center gap-1"><span style="display:inline-flex">${_svgIcon('refresh', 12)}</span> 重新同步</button></div>`;
   let html = modeBanner;
   html += `<div class="modal-progress-wrap"><div class="modal-progress-header"><span class="modal-progress-label">${percent === 100 ? '🎉 全部完成！' : '整體進度'}</span><span class="modal-progress-count">${doneCount} / ${totalCount}</span></div><div class="modal-progress-track"><div class="modal-progress-fill ${percent === 100 ? 'complete' : ''}" style="width:${percent}%"></div></div></div>`;
   html += `<div class="modal-tabs">`; const allDone = doneCount === totalCount && totalCount > 0;
@@ -87,9 +95,9 @@ function renderBookingChecklist() {
     html += `</div></div></div>`;
   });
   if (isAdmin) {
-    html += `<div class="mt-5 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2">➕ 新增項目</h4><div class="flex gap-2"><input id="new-booking-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><select id="new-booking-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="航班">航班</option><option value="住宿">住宿</option><option value="租車">租車</option><option value="保險">保險</option><option value="門票">門票</option><option value="通訊">通訊</option><option value="其他">其他</option></select><button onclick="addCustomBooking()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div><div class="flex gap-2 mt-4"><button onclick="checkAllBooking()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button><button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button><button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button></div><div class="mt-3 flex items-center justify-center gap-3 text-center flex-wrap"><button onclick="lockAdmin()" class="text-[10px] text-amber-600 hover:text-amber-800 underline">🔒 暫時鎖定</button><span class="text-[10px] text-slate-300">|</span><button onclick="releaseAdminDevice()" class="text-[10px] text-red-500 hover:text-red-700 underline">❌ 解除此裝置的管理員身分</button></div>`;
+    html += `<div class="mt-5 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center gap-1.5">${_svgIcon('plus', 15)} 新增項目</h4><div class="flex gap-2"><input id="new-booking-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><select id="new-booking-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="航班">航班</option><option value="住宿">住宿</option><option value="租車">租車</option><option value="保險">保險</option><option value="門票">門票</option><option value="通訊">通訊</option><option value="其他">其他</option></select><button onclick="addCustomBooking()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div><div class="flex gap-2 mt-4"><button onclick="checkAllBooking()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1">${_svgIcon('check', 13)} 全選</button><button onclick="uncheckAllBooking()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1">${_svgIcon('x', 13)} 清除</button><button onclick="copyBookingList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1">${_svgIcon('note', 13)} 複製</button></div><div class="mt-3 flex items-center justify-center gap-3 text-center flex-wrap"><button onclick="lockAdmin()" class="text-[10px] text-amber-600 hover:text-amber-800 underline flex items-center gap-1">${_svgIcon('lock', 11)} 暫時鎖定</button><span class="text-[10px] text-slate-300">|</span><button onclick="releaseAdminDevice()" class="text-[10px] text-red-500 hover:text-red-700 underline flex items-center gap-1">${_svgIcon('x', 11)} 解除此裝置的管理員身分</button></div>`;
   } else {
-    html += `<div class="mt-5 text-center"><button onclick="showPasswordModal()" class="text-[11px] bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 px-3 py-1.5 rounded-full font-bold transition">🔓 輸入密碼解鎖編輯</button><p class="text-[10px] text-slate-400 mt-2">🔒 目前為唯讀模式</p></div>`;
+    html += `<div class="mt-5 text-center"><button onclick="showPasswordModal()" class="text-[11px] bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 px-3 py-1.5 rounded-full font-bold transition inline-flex items-center gap-1">${_svgIcon('lock', 12)} 輸入密碼解鎖編輯</button><p class="text-[10px] text-slate-400 mt-2 flex items-center justify-center gap-1">${_svgIcon('lock', 10)} 目前為唯讀模式</p></div>`;
   }
   container.innerHTML = html;
 }
@@ -135,7 +143,7 @@ function renderEquipChecklist() {
     catAll.forEach(item => { const key = item.isCustom ? `custom-equip-${item.id}` : `equip-${item.id}`; const isChecked = userData.equipChecked[key] === true; html += `<label class="checklist-item ${isChecked ? 'checked' : ''}"><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleEquipCheck('${key}')"><span class="checklist-icon">${item.icon}</span><span class="checklist-label">${escapeHtml(item.label)}</span>${item.isCustom ? `<button onclick="event.preventDefault();event.stopPropagation();deleteCustomEquip('${item.id}')" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}</label>`; });
     html += `</div></div></div>`;
   });
-  html += `<div class="mt-5 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2">➕ 新增項目</h4><div class="flex gap-2"><input id="new-equip-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><select id="new-equip-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="重要證件">重要證件</option><option value="保暖衣物">保暖衣物</option><option value="電子與隨身">電子與隨身</option><option value="小孩">小孩</option><option value="其他">其他</option></select><button onclick="addCustomEquip()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div><div class="flex gap-2 mt-4"><button onclick="checkAllEquipment()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition">✓ 全選</button><button onclick="uncheckAllEquipment()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition">✗ 清除</button><button onclick="copyEquipmentList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition">📋 複製</button></div>`;
+  html += `<div class="mt-5 pt-4 border-t border-slate-200"><h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center gap-1.5">${_svgIcon('plus', 15)} 新增項目</h4><div class="flex gap-2"><input id="new-equip-label" type="text" placeholder="項目名稱" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs"><select id="new-equip-category" class="border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white"><option value="重要證件">重要證件</option><option value="保暖衣物">保暖衣物</option><option value="電子與隨身">電子與隨身</option><option value="小孩">小孩</option><option value="其他">其他</option></select><button onclick="addCustomEquip()" class="bg-sky-500 hover:bg-sky-600 text-white px-3 rounded-lg text-xs font-bold">新增</button></div></div><div class="flex gap-2 mt-4"><button onclick="checkAllEquipment()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1">${_svgIcon('check', 13)} 全選</button><button onclick="uncheckAllEquipment()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1">${_svgIcon('x', 13)} 清除</button><button onclick="copyEquipmentList()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1">${_svgIcon('note', 13)} 複製</button></div>`;
   container.innerHTML = html;
 }
 
@@ -157,12 +165,10 @@ function refreshCurrentDay() {
   const section = document.getElementById('day-section-' + day);
   if (!section) return;
 
-  // ⭐ v17.5：只更新附件徽章（不重繪整個 section）
   if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
     window.Uploads.renderAllAttachments(section);
   }
 
-  // 更新購物徽章（如果購物清單有變化）
   if (typeof window.updateShoppingBadges === 'function') {
     window.updateShoppingBadges(day);
   }
@@ -185,14 +191,14 @@ function renderShoppingList(eventTitle) {
     optionsHtml += `<option value="${escAttr(cat.value)}">${cat.label}</option>`;
   });
 
-  html += `<div class="mt-4 border-t border-slate-200 pt-4"><h4 class="text-sm font-bold text-slate-800 mb-2">➕ 新增購物項目</h4>`;
+  html += `<div class="mt-4 border-t border-slate-200 pt-4"><h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center gap-1.5">${_svgIcon('plus', 15)} 新增購物項目</h4>`;
   html += `<div class="flex flex-col gap-2">`;
   html += `<input id="new-shopping-name" type="text" placeholder="物品名稱 *" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs">`;
   html += `<div class="flex gap-2">`;
   html += `<select id="new-shopping-category" class="w-2/5 border border-slate-300 rounded-lg px-2 py-2 text-xs bg-white">${optionsHtml}</select>`;
   html += `<input id="new-shopping-note" type="text" placeholder="備註（選填）" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs">`;
   html += `</div>`;
-  html += `<button onclick="addShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0 w-full">＋ 新增</button>`;
+  html += `<button onclick="addShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0 w-full flex items-center justify-center gap-1">${_svgIcon('plus', 13)} 新增</button>`;
   html += `</div></div>`;
 
   return html;
@@ -343,7 +349,7 @@ function renderAllShoppingContent() {
 
   const addFormHtml = `
     <button onclick="toggleAddShoppingForm()" class="w-full mb-3 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-black text-sm py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
-      <span style="font-size:16px;font-weight:900">${addShoppingFormOpen ? '✕' : '＋'}</span>
+      <span style="display:inline-flex;align-items:center">${_svgIcon(addShoppingFormOpen ? 'x' : 'plus', 16)}</span>
       <span>${addShoppingFormOpen ? '收起表單' : '新增物品'}</span>
     </button>
     <div id="add-shopping-form" class="${addShoppingFormOpen ? '' : 'hidden'} mb-4 bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 space-y-3">
@@ -360,8 +366,8 @@ function renderAllShoppingContent() {
         </select>
       </div>
       <input id="add-shopping-note" type="text" placeholder="備註（選填）" class="w-full border-2 border-emerald-200 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:border-emerald-400">
-      <button onclick="submitNewShoppingItem()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-black py-2.5 rounded-lg transition">✓ 新增</button>
-      <p class="text-[10px] text-emerald-600 leading-relaxed">💡 選「🛒 臨時購買」可將物品加入不分景點的清單</p>
+      <button onclick="submitNewShoppingItem()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-black py-2.5 rounded-lg transition flex items-center justify-center gap-1">${_svgIcon('check', 14)} 新增</button>
+      <p class="text-[10px] text-emerald-600 leading-relaxed flex items-center gap-1">${_svgIcon('info', 11)} 選「🛒 臨時購買」可將物品加入不分景點的清單</p>
     </div>
   `;
 
@@ -385,8 +391,8 @@ function renderAllShoppingContent() {
   html += addFormHtml;
 
   html += `<div class="flex items-center gap-2 mb-3 bg-slate-100 border border-slate-200 rounded-xl p-1">`;
-  html += `<button onclick="setShoppingViewMode('byEvent')" class="${shoppingViewMode === 'byEvent' ? 'bg-white shadow-sm text-sky-800' : 'text-slate-500'} flex-1 py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5">📅 按景點</button>`;
-  html += `<button onclick="setShoppingViewMode('byCategory')" class="${shoppingViewMode === 'byCategory' ? 'bg-white shadow-sm text-sky-800' : 'text-slate-500'} flex-1 py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5">📂 按類別</button>`;
+  html += `<button onclick="setShoppingViewMode('byEvent')" class="${shoppingViewMode === 'byEvent' ? 'bg-white shadow-sm text-sky-800' : 'text-slate-500'} flex-1 py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5"><span style="display:inline-flex">${_svgIcon('calendar', 13)}</span> 按景點</button>`;
+  html += `<button onclick="setShoppingViewMode('byCategory')" class="${shoppingViewMode === 'byCategory' ? 'bg-white shadow-sm text-sky-800' : 'text-slate-500'} flex-1 py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5"><span style="display:inline-flex">${_svgIcon('list', 13)}</span> 按類別</button>`;
   html += `</div>`;
 
   if (shoppingViewMode === 'byEvent') {
@@ -453,7 +459,7 @@ function renderShoppingByEvent(groups) {
     }
 
     if (!group.isTemp) {
-      html += `<button onclick="jumpToEvent(${group.day}, ${group.eventIndex})" class="mt-2 w-full text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 py-2 rounded-lg transition active:scale-95">📍 前往行程查看</button>`;
+      html += `<button onclick="jumpToEvent(${group.day}, ${group.eventIndex})" class="mt-2 w-full text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 py-2 rounded-lg transition active:scale-95 flex items-center justify-center gap-1">${_svgIcon('location', 11)} 前往行程查看</button>`;
     }
     html += `</div></details>`;
   });
@@ -485,7 +491,7 @@ function renderShoppingByCategory(groups) {
 
     html += `<details class="mb-3 bg-white border ${catAllDone ? 'border-emerald-200' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden group" ${cIdx === 0 ? 'open' : ''}>`;
     html += `<summary class="cursor-pointer px-4 py-3 hover:bg-slate-50 transition-colors list-none flex items-center gap-3">`;
-    html += `<div class="shrink-0 w-10 h-10 rounded-full ${catAllDone ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'} flex items-center justify-center text-base font-black border-2 border-white shadow-sm">📂</div>`;
+    html += `<div class="shrink-0 w-10 h-10 rounded-full ${catAllDone ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'} flex items-center justify-center border-2 border-white shadow-sm">${_svgIcon('list', 16)}</div>`;
     html += `<div class="flex-1 min-w-0"><div class="text-sm font-bold text-slate-800 truncate">${escapeHtml(cat)}</div></div>`;
     html += `<div class="shrink-0 flex items-center gap-1.5"><span class="text-[10px] font-black ${catAllDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">${catChecked}/${catTotal}</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div>`;
     html += `</summary>`;
@@ -591,7 +597,7 @@ window.openAllShoppingModal = openAllShoppingModal;
 window.closeAllShoppingModal = closeAllShoppingModal;
 
 // ============================================================
-// ⭐ v7.5：只更新購物徽章，不重繪整個 section
+// ⭐ v7.5：只更新購物徽章
 // ============================================================
 function updateShoppingBadges(day) {
   const section = document.getElementById('day-section-' + day);
@@ -619,3 +625,5 @@ function updateShoppingBadges(day) {
   });
 }
 window.updateShoppingBadges = updateShoppingBadges;
+
+console.log('[Lists] v7.6（去 Emoji UI）載入完成');

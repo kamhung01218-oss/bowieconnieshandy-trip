@@ -1,5 +1,5 @@
 /* ============================================================
- * app-core.js — v14.8
+ * app-core.js — v14.9
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
  *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
  *
@@ -8,8 +8,10 @@
  * v14.2：移除共享收據舊 modal，註冊 attachments-overview-modal
  * v14.3：切換用戶清空 _renderedDays、補註冊 5 個 modal、PIN 自動提交
  * v14.4：setupModalDrag handleArea 加 fallback、PIN 自動提交加防抖
- * v14.8：
- *   - ⭐ 移除離線持久化後：saveUserData 加離線守衛
+ * v14.7：移除離線持久化、加離線守衛
+ * v14.8：saveUserData 加離線守衛
+ * v14.9：
+ *   - ⭐ C1：initSnowEffect 改 Canvas（CPU -90%）
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -280,7 +282,6 @@ async function submitChangePin() {
   if (newPin !== confirmPin) return showErr("兩次輸入的新 PIN 碼不一致");
   if (newPin === oldPin) return showErr("新 PIN 碼不能與舊的相同");
 
-  // ⭐ v14.8：離線守衛
   if (typeof window.requireOnline === 'function' && !window.requireOnline('修改 PIN 碼')) return;
 
   errEl.classList.add('hidden');
@@ -532,10 +533,8 @@ function getUserData() {
   return u;
 }
 
-// ⭐ v14.8：saveUserData 加離線守衛
 async function saveUserData() {
   if (!currentUser || currentUser === "訪客") return;
-  // ⭐ 離線守衛
   if (typeof window.requireOnline === 'function' && !window.requireOnline('儲存')) return;
   if (typeof firebase === 'undefined' || !window.dbRef) { showToast("⏳ 雲端未連線", "⚠️"); return; }
   try {
@@ -905,30 +904,122 @@ function initRandomCharacters() { setTimeout(spawnCharacters, 2000); }
 function snowParticles() { const p = document.createElement("div"); p.className = "particle"; const colors = ["#ffffff", "#e0f2fe", "#bae6fd", "#38bdf8", "#a78bfa"]; for (let i = 0; i < 30; i++) { const el = document.createElement("div"); el.style.width = `${Math.random() * 10 + 5}px`; el.style.height = el.style.width; el.style.background = colors[Math.floor(Math.random() * colors.length)]; el.style.left = `${Math.random() * 100}vw`; el.style.top = `${Math.random() * 20 - 10}vh`; el.style.opacity = Math.random(); el.style.animation = `snowfall ${Math.random() * 3 + 2}s linear forwards`; p.appendChild(el); } document.body.appendChild(p); setTimeout(() => p.remove(), 5000); }
 window.jump = jump;
 
+// ==================== ⭐ v14.9：Canvas 雪花（C1） ====================
 function initSnowEffect() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
   const c = document.getElementById("snow-fall");
   if (!c) return;
-  c.innerHTML = "";
-  const isMobile = window.innerWidth < 768;
-  const isLowEnd = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
-  const count = isLowEnd ? 8 : (isMobile ? 14 : 22);
-  const anims = ["snowfall", "snowfall-small"];
-  const colors = ["#ffffff", "#f0f9ff"];
-  for (let i = 0; i < count; i++) {
-    const f = document.createElement("div");
-    f.className = "snowflake";
-    const size = Math.random() * 6 + 3;
-    f.style.cssText = `left:${Math.random()*100}%;width:${size}px;height:${size}px;background:${colors[i%2]};animation:${anims[i%2]} ${Math.random()*10+10}s linear infinite;animation-delay:${Math.random()*-12}s;`;
-    c.appendChild(f);
+
+  // 若已初始化過，先清理
+  if (window._snowCanvasRAF) {
+    cancelAnimationFrame(window._snowCanvasRAF);
+    window._snowCanvasRAF = null;
   }
+
+  c.innerHTML = "";
+
+  const canvas = document.createElement("canvas");
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let W = window.innerWidth;
+  let H = window.innerHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+  canvas.style.display = "block";
+  c.appendChild(canvas);
+
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+
+  const isMobile = W < 768;
+  const isLowEnd = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
+  const count = isLowEnd ? 12 : (isMobile ? 20 : 32);
+
+  const flakes = [];
+  for (let i = 0; i < count; i++) {
+    flakes.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 2.5 + 1,
+      speedY: Math.random() * 0.6 + 0.3,
+      speedX: (Math.random() - 0.5) * 0.4,
+      alpha: Math.random() * 0.5 + 0.4,
+      sway: Math.random() * Math.PI * 2,
+      swaySpeed: Math.random() * 0.02 + 0.01,
+      swayRange: Math.random() * 0.6 + 0.2
+    });
+  }
+
+  let lastTime = performance.now();
+  let isRunning = !document.hidden;
+
+  function draw(now) {
+    if (!isRunning) {
+      window._snowCanvasRAF = requestAnimationFrame(draw);
+      return;
+    }
+
+    const dt = Math.min((now - lastTime) / 16.67, 3);
+    lastTime = now;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#ffffff";
+
+    for (let i = 0; i < flakes.length; i++) {
+      const f = flakes[i];
+      f.sway += f.swaySpeed * dt;
+      f.x += (f.speedX + Math.sin(f.sway) * f.swayRange) * dt;
+      f.y += f.speedY * dt;
+
+      if (f.y > H + 5) {
+        f.y = -5;
+        f.x = Math.random() * W;
+      }
+      if (f.x < -5) f.x = W + 5;
+      if (f.x > W + 5) f.x = -5;
+
+      ctx.globalAlpha = f.alpha;
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    window._snowCanvasRAF = requestAnimationFrame(draw);
+  }
+
+  window._snowCanvasRAF = requestAnimationFrame(draw);
+
   if (!window._snowVisibilityBound) {
     window._snowVisibilityBound = true;
-    document.addEventListener('visibilitychange', () => {
-      const sf = document.getElementById('snow-fall');
-      if (!sf) return;
-      const state = document.hidden ? 'paused' : 'running';
-      sf.querySelectorAll('.snowflake').forEach(el => { el.style.animationPlayState = state; });
+    document.addEventListener("visibilitychange", () => {
+      isRunning = !document.hidden;
+    });
+  }
+
+  if (!window._snowResizeBound) {
+    window._snowResizeBound = true;
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const newW = window.innerWidth;
+        const newH = window.innerHeight;
+        if (newW === W && newH === H) return;
+        W = newW;
+        H = newH;
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        canvas.style.width = W + "px";
+        canvas.style.height = H + "px";
+        ctx.scale(dpr, dpr);
+        flakes.forEach(f => {
+          if (f.x > W) f.x = Math.random() * W;
+          if (f.y > H) f.y = Math.random() * H;
+        });
+      }, 200);
     });
   }
 }

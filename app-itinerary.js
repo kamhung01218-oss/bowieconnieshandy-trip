@@ -1,14 +1,23 @@
 /* ============================================================
- * app-itinerary.js — v17.7
+ * app-itinerary.js — v17.8
  *
  * v17.5：switchDay 用 rAF + scope 參數；refreshCurrentDay 只更新徽章
  * v17.6：圖片 referrerpolicy；switchDay history.pushState；popstate
- * v17.7：
- *   - ⭐ J：fetchWeatherData 加 TTL 快取（10 分鐘）
- *   - ⭐ O：openWeatherModal 先渲染快取，避免閃爍
+ * v17.7：fetchWeatherData 加 TTL 快取；openWeatherModal 先渲染快取
+ * v17.8：
+ *   - ⭐ 去 Emoji 化（UI 層）：
+ *       拍攝靈感 Modal 的 4 個標題圖示改用 SVG
+ *       Vlog 構思 Modal 的 3 個標題圖示改用 SVG
+ *       其餘內容型 emoji（🍜 🌭 🎟️ 等）保留
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
+
+// ⭐ v17.8：SVG helper（若 icons.js 未載入則回退空字串）
+function _svgIcon(name, size) {
+  if (typeof window.ICON === 'function') return window.ICON(name, size || 16);
+  return '';
+}
 
 // ==================== SVG 圖示 ====================
 const EVENT_ICONS = {
@@ -120,7 +129,6 @@ function weatherCodeToIcon(code) {
   return weatherCodeToIconTag(code).icon;
 }
 
-// ⭐ v17.7：天氣 TTL 快取
 let _lastWeatherFetch = 0;
 const WEATHER_CACHE_TTL = 10 * 60 * 1000;
 
@@ -995,7 +1003,7 @@ function renderDriveContent() { const container = document.getElementById('drive
 // ==================== 搶票攻略 ====================
 function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">首選方案</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/8 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>1/8 22:55 設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 15:30-19:15 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/15 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
 
-// ==================== 拍攝靈感 ====================
+// ==================== 拍攝靈感（⭐ v17.8：標題圖示改用 SVG） ====================
 function openShootTipsModal(day, eventIndex) {
   const dayData = winterItineraries.find(d => d.day === day);
   if (!dayData) return;
@@ -1048,7 +1056,7 @@ function openShootTipsModal(day, eventIndex) {
   if (advice) {
     html += `<div class="shoot-block shoot-block-main">
       <div class="shoot-block-header">
-        <span class="shoot-block-icon">📷</span>
+        <span class="shoot-block-icon">${_svgIcon('camera', 16)}</span>
         <span class="shoot-block-title">拍照建議</span>
       </div>
       <p class="shoot-block-text">${escapeHtml(advice)}</p>
@@ -1062,7 +1070,7 @@ function openShootTipsModal(day, eventIndex) {
     if (angles.length > 0) {
       html += `<div class="shoot-block shoot-block-angle">
         <div class="shoot-block-header">
-          <span class="shoot-block-icon">🎯</span>
+          <span class="shoot-block-icon">${_svgIcon('target', 16)}</span>
           <span class="shoot-block-title">拍攝角度</span>
         </div>
         <ul class="shoot-list">${angles.map(a => `<li>${escapeHtml(a)}</li>`).join('')}</ul>
@@ -1071,7 +1079,7 @@ function openShootTipsModal(day, eventIndex) {
     if (actions.length > 0) {
       html += `<div class="shoot-block shoot-block-action">
         <div class="shoot-block-header">
-          <span class="shoot-block-icon">🧍</span>
+          <span class="shoot-block-icon">${_svgIcon('user', 16)}</span>
           <span class="shoot-block-title">人物動作</span>
         </div>
         <ul class="shoot-list">${actions.map(a => `<li>${escapeHtml(a)}</li>`).join('')}</ul>
@@ -1089,7 +1097,7 @@ function openShootTipsModal(day, eventIndex) {
   if (hasAdvanced) {
     html += `<details class="shoot-advanced">
       <summary>
-        <span class="shoot-advanced-icon">⚙️</span>
+        <span class="shoot-advanced-icon">${_svgIcon('settings', 15)}</span>
         <span class="shoot-advanced-title">進階資訊</span>
         <span class="shoot-advanced-hint">相機設定 · Vlog 鏡頭 · 時間建議</span>
         <span class="shoot-advanced-chevron">▾</span>
@@ -1098,19 +1106,19 @@ function openShootTipsModal(day, eventIndex) {
 
     if (pocket) {
       html += `<div class="shoot-advanced-item">
-        <div class="shoot-advanced-item-title">📸 Pocket 3 參數</div>
+        <div class="shoot-advanced-item-title">${_svgIcon('camera', 13)} Pocket 3 參數</div>
         <p class="shoot-advanced-item-text">${escapeHtml(pocket)}</p>
       </div>`;
     }
     if (vlogShots.length > 0) {
       html += `<div class="shoot-advanced-item">
-        <div class="shoot-advanced-item-title">🎬 Vlog 必拍鏡頭</div>
+        <div class="shoot-advanced-item-title">${_svgIcon('video', 13)} Vlog 必拍鏡頭</div>
         <ul class="shoot-list">${vlogShots.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ul>
       </div>`;
     }
     if (bestTime || duration) {
       html += `<div class="shoot-advanced-item">
-        <div class="shoot-advanced-item-title">⏰ 時間建議</div>
+        <div class="shoot-advanced-item-title">${_svgIcon('clock', 13)} 時間建議</div>
         <ul class="shoot-list">`;
       if (bestTime) html += `<li>${escapeHtml(bestTime)}</li>`;
       if (duration)  html += `<li>${escapeHtml(duration)}</li>`;
@@ -1219,13 +1227,13 @@ function openCommonTipsModal() {
       html += `<div class="common-tip-grid">`;
       if (angles.length > 0) {
         html += `<div class="common-tip-col">
-          <div class="common-tip-col-title">🎯 角度</div>
+          <div class="common-tip-col-title">${_svgIcon('target', 12)} 角度</div>
           <ul class="shoot-list">${angles.map(a => `<li>${escapeHtml(a)}</li>`).join('')}</ul>
         </div>`;
       }
       if (actions.length > 0) {
         html += `<div class="common-tip-col">
-          <div class="common-tip-col-title">🧍 動作</div>
+          <div class="common-tip-col-title">${_svgIcon('user', 12)} 動作</div>
           <ul class="shoot-list">${actions.map(a => `<li>${escapeHtml(a)}</li>`).join('')}</ul>
         </div>`;
       }
@@ -1249,15 +1257,30 @@ function closeCommonTipsModal() {
   }
 }
 
-// ==================== Vlog 構思 ====================
+// ==================== Vlog 構思（⭐ v17.8：標題圖示改用 SVG） ====================
 function openVlogPlanModal(day) {
   const plan = vlogPlan["D" + day];
   const content = document.getElementById("vlog-plan-content");
   let html = "";
   if (plan) {
-    if (plan["整支Vlog構思"]) html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-indigo-800 mb-2">🎬 整支 Vlog 構思</h3><p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(plan["整支Vlog構思"])}</p></div>`;
-    if (plan["人物構圖"]) html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-sky-800 mb-2">🧍 人物構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["人物構圖"].map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
-    if (plan["風景構圖"]) html += `<div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-3"><h3 class="text-sm font-black text-teal-800 mb-2">🏞️ 風景構圖</h3><ul class="list-disc pl-4 space-y-1">${plan["風景構圖"].map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
+    if (plan["整支Vlog構思"]) {
+      html += `<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-3">
+        <h3 class="text-sm font-black text-indigo-800 mb-2 flex items-center gap-1.5">${_svgIcon('video', 16)} 整支 Vlog 構思</h3>
+        <p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(plan["整支Vlog構思"])}</p>
+      </div>`;
+    }
+    if (plan["人物構圖"]) {
+      html += `<div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-3">
+        <h3 class="text-sm font-black text-sky-800 mb-2 flex items-center gap-1.5">${_svgIcon('user', 16)} 人物構圖</h3>
+        <ul class="list-disc pl-4 space-y-1">${plan["人物構圖"].map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul>
+      </div>`;
+    }
+    if (plan["風景構圖"]) {
+      html += `<div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-3">
+        <h3 class="text-sm font-black text-teal-800 mb-2 flex items-center gap-1.5">${_svgIcon('map', 16)} 風景構圖</h3>
+        <ul class="list-disc pl-4 space-y-1">${plan["風景構圖"].map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul>
+      </div>`;
+    }
   } else {
     html = `<div class="text-center py-8 text-slate-500 text-sm">暫時未填寫今天的 Vlog 構思。</div>`;
   }
@@ -1451,19 +1474,16 @@ function closeTicketModal() { hideModal('ticket-modal'); setTimeout(() => docume
 function openTripOverview() { const m = document.getElementById('trip-overview-modal'); if (m) { m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open'); renderTripOverview(); } }
 function closeTripOverview() { const m = document.getElementById('trip-overview-modal'); if (m) { m.classList.remove('active'); setTimeout(() => { m.style.display = 'none'; }, 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
 
-// ⭐ v17.7：openWeatherModal 先渲染快取
 function openWeatherModal() {
   const modal = document.getElementById('weather-modal');
   if (!modal) return;
   showModal('weather-modal');
   modal.classList.remove('hidden');
-  // 先渲染現有快取（避免閃爍）
   if (Object.keys(window.weatherCache || {}).length > 0) {
     renderWeatherDetail();
   } else {
     document.getElementById('weather-detail-content').innerHTML = '';
   }
-  // 再背景更新（若 10 分鐘內抓過會自動略過）
   fetchWeatherData(false);
 }
 function closeWeatherModal() { hideModal('weather-modal'); setTimeout(() => document.getElementById('weather-modal').classList.add('hidden'), 300); }

@@ -2564,3 +2564,65 @@ details.event-card:not([open]) .event-content-wrapper {
  * ============================================================ */
 /* 深色模式見 dark.css，補丁見 patches.css */
 /* 設計令牌見 tokens.css */
+
+/* ============================================================
+ * ⭐ v13.1：Toast z-index 修正（B5）
+ * 原本 100 太低，被 lightbox（9999）蓋住
+ * ============================================================ */
+#toast {
+  z-index: 10000 !important;
+}
+#toast-undo-btn,
+#update-btn {
+  z-index: 10001 !important;
+}
+
+/* ============================================================
+ * ⭐ v13.1：字重層級修正（A3）
+ * 原本全部 900 沒有視覺層級，改成漸層
+ * ============================================================ */
+
+/* 卡片標題：800（保留份量感但不搶眼） */
+.event-title {
+  font-weight: 800 !important;
+}
+@media (min-width: 768px) {
+  .event-title {
+    font-weight: 800 !important;
+  }
+}
+
+/* 動作按鈕：700（不搶標題） */
+.event-action-btn {
+  font-weight: 700 !important;
+}
+
+/* 徽章：800 */
+.badge,
+.tab-count,
+.event-priority-badge {
+  font-weight: 800 !important;
+}
+
+/* 數字：700（Playfair 本身夠重） */
+.countdown-value,
+.countdown-inline-num,
+.countdown-inline-num-sm,
+.weather-hero-temp,
+.day-subtotal,
+.stat-num,
+.budget-pct,
+.daily-bar-amt {
+  font-weight: 700 !important;
+}
+
+/* 標籤 tag：800 保留（小字需要辨識度） */
+.tag {
+  font-weight: 800 !important;
+}
+
+/* 卡片段落：500（比預設 400 稍重，閱讀舒適） */
+.event-collapsible p,
+.event-collapsible li {
+  font-weight: 500;
+}
