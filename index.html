@@ -47,7 +47,8 @@
 <link rel="stylesheet" href="./design-v14.css">
 <link rel="stylesheet" href="./design-v14b.css">
 <link rel="stylesheet" href="./design-v15.css">
-<link rel="stylesheet" href="./design-v16.css">  <!-- ⭐ 新增這一行 -->
+<link rel="stylesheet" href="./design-v16.css">
+<link rel="stylesheet" href="./prep-swipe.css">
 <link rel="stylesheet" href="./attachments-overview.css">
 
 <style>
@@ -155,8 +156,6 @@ try {
   if (typeof firebase !== 'undefined' && typeof firebase.firestore === 'function') {
     db = firebase.firestore();
     window.db = db;
-
-    // ⭐ v14.7：已移除離線持久化
     dbRef = db.collection("tohoku_trip").doc("shared_expenses");
     window.dbRef = dbRef;
     console.log("✅ Firestore 初始化成功（無離線持久化）");
@@ -167,7 +166,6 @@ try {
   window.dbRefError = err.message;
 }
 
-// ⭐ v14.7：離線狀態檢測 + 寫入守衛
 window.isOnline = function() {
   return navigator.onLine !== false;
 };
@@ -175,10 +173,7 @@ window.isOnline = function() {
 window.requireOnline = function(actionLabel) {
   if (!window.isOnline()) {
     if (typeof showToast === 'function') {
-      showToast(
-        '📡 離線中' + (actionLabel ? `，無法${actionLabel}` : '，無法儲存'),
-        '⚠️'
-      );
+      showToast('📡 離線中' + (actionLabel ? `，無法${actionLabel}` : '，無法儲存'), '⚠️');
     }
     if (typeof haptic === 'function') haptic(50);
     return false;
@@ -190,29 +185,18 @@ window.requireOnline = function(actionLabel) {
   const banner = document.createElement('div');
   banner.id = 'offline-banner';
   banner.style.cssText = [
-    'position:fixed',
-    'top:0', 'left:0', 'right:0',
-    'z-index:9999',
-    'background:linear-gradient(135deg,#dc2626,#991b1b)',
-    'color:white',
-    'font-size:12px',
-    'font-weight:900',
-    'text-align:center',
-    'padding:8px 12px',
-    'transform:translateY(-100%)',
-    'transition:transform 0.3s ease',
-    'box-shadow:0 4px 12px rgba(0,0,0,0.3)',
-    'pointer-events:none'
+    'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9999',
+    'background:linear-gradient(135deg,#dc2626,#991b1b)', 'color:white',
+    'font-size:12px', 'font-weight:900', 'text-align:center', 'padding:8px 12px',
+    'transform:translateY(-100%)', 'transition:transform 0.3s ease',
+    'box-shadow:0 4px 12px rgba(0,0,0,0.3)', 'pointer-events:none'
   ].join(';');
   banner.textContent = '📡 已離線 · 請恢復網路後再操作';
   document.body.appendChild(banner);
 
   function updateBanner() {
-    if (navigator.onLine === false) {
-      banner.style.transform = 'translateY(0)';
-    } else {
-      banner.style.transform = 'translateY(-100%)';
-    }
+    if (navigator.onLine === false) banner.style.transform = 'translateY(0)';
+    else banner.style.transform = 'translateY(-100%)';
   }
   window.addEventListener('offline', updateBanner);
   window.addEventListener('online', updateBanner);
@@ -243,17 +227,14 @@ async function syncDataToCloud() {
   }
 }
 
-// ============================================================
-// ⭐ v3.10：Firestore 同步（修復「重整後附件消失」）
-// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.dbRef) return;
 
   let _snapshotTimer = null;
   let _pendingCloudData = null;
   let _hydratedOnce = false;
-
   let _lastShoppingHash = '';
+
   function _hashShopping(data) {
     try {
       if (!currentUser || currentUser === "訪客") return '';
@@ -266,14 +247,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function _applyCloudData(cloudData) {
     try {
       if (Array.isArray(cloudData.expenses)) {
-        if (typeof state !== 'undefined') {
-          state.expenses = cloudData.expenses;
-        }
+        if (typeof state !== 'undefined') state.expenses = cloudData.expenses;
         if (!window.state) window.state = {};
         window.state.expenses = cloudData.expenses;
-        if (typeof window.renderAttachmentsOverview === 'function') {
-          window.renderAttachmentsOverview();
-        }
+        if (typeof window.renderAttachmentsOverview === 'function') window.renderAttachmentsOverview();
       }
 
       if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
@@ -308,18 +285,14 @@ document.addEventListener('DOMContentLoaded', () => {
         cloudUserPins = cloudData.userPins;
       }
 
-      // ⭐ v3.10：附件用「展開合併」而非「直接覆蓋」
       if (cloudData.attachments && typeof cloudData.attachments === 'object') {
         window.cloudAttachments = { ...(window.cloudAttachments || {}), ...cloudData.attachments };
         if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
           window.Uploads.renderAllAttachments();
         }
-        if (typeof window.renderAttachmentsOverview === 'function') {
-          window.renderAttachmentsOverview();
-        }
+        if (typeof window.renderAttachmentsOverview === 'function') window.renderAttachmentsOverview();
       }
 
-      // ⭐ v3.10：備註同理
       if (cloudData.eventNotes && typeof cloudData.eventNotes === 'object') {
         window.cloudEventNotes = { ...(window.cloudEventNotes || {}), ...cloudData.eventNotes };
         if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
@@ -334,7 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ⭐ v3.10：修正 hasPendingWrites 檢查
   window.dbRef.onSnapshot({ includeMetadataChanges: true }, docSnap => {
     if (!docSnap.exists) return;
     if (docSnap.metadata?.hasPendingWrites && docSnap.metadata?.fromCache) return;
@@ -350,7 +322,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 200);
   }, err => console.warn("Firestore Sync Warning:", err));
 
-  // ⭐ v3.10：主動抓一次雲端（保險）
   setTimeout(() => {
     if (!window.dbRef) return;
     window.dbRef.get().then(snap => {
@@ -403,138 +374,70 @@ document.addEventListener('DOMContentLoaded', () => {
   letter-spacing: 10px; text-align: center; font-size: 22px; font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
-#btn-collapse-all {
-  transition: background-color 0.2s, transform 0.1s;
-}
-#btn-collapse-all:active {
-  transform: scale(0.94);
-}
+#btn-collapse-all { transition: background-color 0.2s, transform 0.1s; }
+#btn-collapse-all:active { transform: scale(0.94); }
 
-/* ============================================================
- * ⭐ v15.0：底部導航 SVG 圖示
- * ============================================================ */
 .bottom-nav button .nav-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  color: currentColor;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; color: currentColor;
 }
-.bottom-nav button .nav-icon svg {
-  width: 22px;
-  height: 22px;
-}
+.bottom-nav button .nav-icon svg { width: 22px; height: 22px; }
 
-/* ============================================================
- * ⭐ v15.0：Modal 標題圖示（SVG 對齊）
- * ============================================================ */
 .modal-title-icon {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
+  display: inline-flex !important; align-items: center; justify-content: center;
   color: var(--t-color-primary, #0284c7);
 }
-.modal-title-icon svg {
-  width: 22px;
-  height: 22px;
-  display: block;
-}
-[data-theme="dark"] .modal-title-icon {
-  color: var(--t-color-accent, #38bdf8);
-}
+.modal-title-icon svg { width: 22px; height: 22px; display: block; }
+[data-theme="dark"] .modal-title-icon { color: var(--t-color-accent, #38bdf8); }
 
 .album-hero-icon {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
+  display: inline-flex !important; align-items: center; justify-content: center;
   color: #16a34a;
 }
-.album-hero-icon svg {
-  width: 26px;
-  height: 26px;
-  display: block;
-}
+.album-hero-icon svg { width: 26px; height: 26px; display: block; }
 
 .modal-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 18px;
-  font-weight: 900;
-  color: #0f172a;
-  margin-bottom: 16px;
-  letter-spacing: 0.01em;
-  line-height: 1.3;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 18px; font-weight: 900; color: #0f172a;
+  margin-bottom: 16px; letter-spacing: 0.01em; line-height: 1.3;
 }
 .modal-subtitle {
-  font-size: 12px;
-  color: #64748b;
-  font-weight: 600;
-  margin-top: 0;
-  margin-bottom: 16px;
-  line-height: 1.5;
+  font-size: 12px; color: #64748b; font-weight: 600;
+  margin-top: 0; margin-bottom: 16px; line-height: 1.5;
 }
 [data-theme="dark"] .modal-title { color: #f1f5f9; }
 [data-theme="dark"] .modal-subtitle { color: #94a3b8; }
 
 .event-att-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 11.5px;
-  font-weight: 800;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: #e0f2fe;
-  color: #0369a1;
-  border: 1px solid #bae6fd;
-  letter-spacing: 0.02em;
-  line-height: 1.4;
-  white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11.5px; font-weight: 800; padding: 1px 8px;
+  border-radius: 999px; background: #e0f2fe; color: #0369a1;
+  border: 1px solid #bae6fd; letter-spacing: 0.02em;
+  line-height: 1.4; white-space: nowrap;
 }
 
 .event-attachments {
-  margin: 12px 18px 4px;
-  padding: 12px 14px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  margin: 12px 18px 4px; padding: 12px 14px;
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
 }
 
 .event-att-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
 }
 
 .event-att-title {
-  font-size: 12.5px;
-  font-weight: 900;
-  color: #334155;
-  letter-spacing: 0.03em;
+  font-size: 12.5px; font-weight: 900; color: #334155; letter-spacing: 0.03em;
 }
 
 .event-att-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: #0284c7;
-  color: #ffffff;
-  font-size: 10.5px;
-  font-weight: 900;
-  line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 6px;
+  border-radius: 999px; background: #0284c7; color: #ffffff;
+  font-size: 10.5px; font-weight: 900; line-height: 1;
 }
 
 .event-att-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
 }
 
 @media (max-width: 480px) {
@@ -542,372 +445,178 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 
 .event-att-item {
-  position: relative;
-  aspect-ratio: 1 / 1;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  cursor: pointer;
-  transition: transform 0.15s;
+  position: relative; aspect-ratio: 1 / 1;
+  border-radius: 8px; overflow: hidden;
+  background: #ffffff; border: 1px solid #e2e8f0;
+  cursor: pointer; transition: transform 0.15s;
 }
 .event-att-item:active { transform: scale(0.96); }
 
 .event-att-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+  width: 100%; height: 100%; object-fit: cover; display: block;
 }
 
 .event-att-del {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(15, 23, 42, 0.75);
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 900;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  position: absolute; top: 3px; right: 3px;
+  width: 20px; height: 20px; border-radius: 50%; border: none;
+  background: rgba(15, 23, 42, 0.75); color: #ffffff;
+  font-size: 13px; font-weight: 900; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
   transition: background 0.15s, transform 0.15s;
 }
-.event-att-del:active {
-  background: #dc2626;
-  transform: scale(0.9);
-}
+.event-att-del:active { background: #dc2626; transform: scale(0.9); }
 
 .event-att-add {
-  aspect-ratio: 1 / 1;
-  border-radius: 8px;
-  border: 1.5px dashed #cbd5e1;
-  background: #ffffff;
-  color: #64748b;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  padding: 0;
-  font-family: inherit;
-  transition: all 0.15s;
-  min-height: 0;
+  aspect-ratio: 1 / 1; border-radius: 8px;
+  border: 1.5px dashed #cbd5e1; background: #ffffff;
+  color: #64748b; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 0; font-family: inherit;
+  transition: all 0.15s; min-height: 0;
 }
 .event-att-add:active {
-  background: #eff6ff;
-  border-color: #93c5fd;
-  color: #0284c7;
+  background: #eff6ff; border-color: #93c5fd; color: #0284c7;
   transform: scale(0.96);
 }
-.event-att-add-icon {
-  font-size: 20px;
-  line-height: 1;
-  font-weight: 900;
-}
-.event-att-add-text {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-}
+.event-att-add-icon { font-size: 20px; line-height: 1; font-weight: 900; }
+.event-att-add-text { font-size: 10px; font-weight: 800; letter-spacing: 0.05em; }
 
 .event-att-empty {
-  font-size: 12px;
-  color: #94a3b8;
-  font-weight: 700;
-  text-align: center;
-  padding: 8px 0 4px;
+  font-size: 12px; color: #94a3b8; font-weight: 700;
+  text-align: center; padding: 8px 0 4px;
 }
 
 .event-att-add-line {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 12px;
-  border: 1.5px dashed #cbd5e1;
-  background: #f8fafc;
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  font-family: inherit;
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; width: 100%; padding: 12px; margin-top: 10px;
+  border-radius: 12px; border: 1.5px dashed #cbd5e1;
+  background: #f8fafc; color: #64748b;
+  font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit;
   transition: all 0.15s;
 }
-.event-att-add-line:active {
-  background: #eff6ff;
-  border-color: #93c5fd;
-  color: #0284c7;
-}
+.event-att-add-line:active { background: #eff6ff; border-color: #93c5fd; color: #0284c7; }
 .event-att-add-line-icon { font-size: 16px; font-weight: 900; }
 
 .event-note-display {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-top: 8px;
-  padding: 10px 12px;
-  background: #fffbeb;
-  border-left: 3px solid #fbbf24;
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-top: 8px; padding: 10px 12px;
+  background: #fffbeb; border-left: 3px solid #fbbf24;
   border-radius: 0 10px 10px 0;
-  font-size: 13px;
-  color: #78350f;
-  line-height: 1.6;
+  font-size: 13px; color: #78350f; line-height: 1.6;
 }
 .event-note-icon { flex-shrink: 0; font-size: 14px; }
 .event-note-text { word-break: break-word; white-space: pre-wrap; }
 
 .event-data-tabs {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #e2e8f0;
+  display: flex; gap: 6px; margin-bottom: 14px;
+  padding-bottom: 10px; border-bottom: 1px solid #e2e8f0;
 }
 .event-data-tab {
-  flex: 1;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1.5px solid #e2e8f0;
-  background: #f8fafc;
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  font-family: inherit;
+  flex: 1; padding: 10px 14px; border-radius: 10px;
+  border: 1.5px solid #e2e8f0; background: #f8fafc; color: #64748b;
+  font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit;
   transition: all 0.15s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
 }
 .event-data-tab:active { transform: scale(0.97); }
 .event-data-tab.active {
   background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: white;
-  border-color: transparent;
+  color: white; border-color: transparent;
   box-shadow: 0 3px 10px rgba(14, 165, 233, 0.3);
 }
 .event-data-tab .tab-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: #cbd5e1;
-  color: #475569;
-  font-size: 10.5px;
-  font-weight: 900;
-  line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 999px; background: #cbd5e1; color: #475569;
+  font-size: 10.5px; font-weight: 900; line-height: 1;
 }
-.event-data-tab.active .tab-count {
-  background: rgba(255,255,255,0.3);
-  color: white;
-}
-.event-data-tab span[data-icon] {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+.event-data-tab.active .tab-count { background: rgba(255,255,255,0.3); color: white; }
+.event-data-tab span[data-icon] { display: inline-flex; align-items: center; justify-content: center; }
 
 .event-note-textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 14px;
-  font-family: inherit;
-  color: #0f172a;
-  background: #ffffff;
-  resize: vertical;
-  outline: none;
-  transition: border-color 0.15s;
-  line-height: 1.6;
-  min-height: 120px;
+  width: 100%; padding: 12px 14px;
+  border: 1.5px solid #e2e8f0; border-radius: 12px;
+  font-size: 14px; font-family: inherit; color: #0f172a;
+  background: #ffffff; resize: vertical; outline: none;
+  transition: border-color 0.15s; line-height: 1.6; min-height: 120px;
 }
 .event-note-textarea:focus { border-color: #38bdf8; }
 .event-note-textarea::placeholder { color: #94a3b8; }
 
 .event-note-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-top: 12px;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; margin-top: 12px;
 }
-.event-note-meta {
-  font-size: 11px;
-  color: #94a3b8;
-  font-weight: 700;
-  flex: 1;
-  min-width: 0;
-}
+.event-note-meta { font-size: 11px; color: #94a3b8; font-weight: 700; flex: 1; min-width: 0; }
 .event-note-save-btn {
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: none;
+  padding: 10px 20px; border-radius: 10px; border: none;
   background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: white;
-  font-size: 13px;
-  font-weight: 900;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.15s;
-  flex-shrink: 0;
+  color: white; font-size: 13px; font-weight: 900;
+  cursor: pointer; font-family: inherit; transition: all 0.15s; flex-shrink: 0;
 }
 .event-note-save-btn:active { transform: scale(0.97); }
 
 .event-note-readonly {
-  padding: 14px;
-  border-radius: 12px;
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  font-size: 13.5px;
-  color: #334155;
-  line-height: 1.7;
-  white-space: pre-wrap;
-  word-break: break-word;
-  min-height: 80px;
+  padding: 14px; border-radius: 12px;
+  background: #f8fafc; border: 1px dashed #cbd5e1;
+  font-size: 13.5px; color: #334155; line-height: 1.7;
+  white-space: pre-wrap; word-break: break-word; min-height: 80px;
 }
 .event-note-readonly.event-note-empty { color: #94a3b8; font-style: italic; }
 
 .event-action-buttons {
-  display: flex;
-  gap: 5px;
-  flex: 1;
-  min-width: 0;
-  flex-wrap: nowrap;
-  overflow: hidden;
+  display: flex; gap: 5px; flex: 1; min-width: 0;
+  flex-wrap: nowrap; overflow: hidden;
 }
 .event-action-btn {
-  padding: 8px 10px !important;
-  font-size: 12px !important;
-  min-height: 36px !important;
-  gap: 3px !important;
-  flex-shrink: 1 !important;
-  min-width: 0 !important;
+  padding: 8px 10px !important; font-size: 12px !important;
+  min-height: 36px !important; gap: 3px !important;
+  flex-shrink: 1 !important; min-width: 0 !important;
   white-space: nowrap !important;
 }
-.event-action-btn .badge {
-  font-size: 10px !important;
-  padding: 0 4px !important;
-}
+.event-action-btn .badge { font-size: 10px !important; padding: 0 4px !important; }
 
-[data-theme="dark"] .event-att-badge {
-  background: #0c4a6e;
-  color: #7dd3fc;
-  border-color: #0369a1;
-}
-[data-theme="dark"] .event-attachments {
-  background: #0f172a;
-  border-color: #334155;
-}
+[data-theme="dark"] .event-att-badge { background: #0c4a6e; color: #7dd3fc; border-color: #0369a1; }
+[data-theme="dark"] .event-attachments { background: #0f172a; border-color: #334155; }
 [data-theme="dark"] .event-att-title { color: #cbd5e1; }
-[data-theme="dark"] .event-att-item {
-  background: #1e293b;
-  border-color: #334155;
-}
-[data-theme="dark"] .event-att-add {
-  background: #1e293b;
-  border-color: #475569;
-  color: #94a3b8;
-}
-[data-theme="dark"] .event-att-add:active {
-  background: #0c4a6e;
-  border-color: #0369a1;
-  color: #7dd3fc;
-}
+[data-theme="dark"] .event-att-item { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .event-att-add { background: #1e293b; border-color: #475569; color: #94a3b8; }
+[data-theme="dark"] .event-att-add:active { background: #0c4a6e; border-color: #0369a1; color: #7dd3fc; }
 [data-theme="dark"] .event-att-empty { color: #64748b; }
-[data-theme="dark"] .event-att-add-line {
-  background: #1e293b;
-  border-color: #475569;
-  color: #94a3b8;
-}
-[data-theme="dark"] .event-att-add-line:active {
-  background: #0c4a6e;
-  border-color: #0369a1;
-  color: #7dd3fc;
-}
+[data-theme="dark"] .event-att-add-line { background: #1e293b; border-color: #475569; color: #94a3b8; }
+[data-theme="dark"] .event-att-add-line:active { background: #0c4a6e; border-color: #0369a1; color: #7dd3fc; }
 
-[data-theme="dark"] .event-note-display {
-  background: #422006;
-  border-left-color: #f59e0b;
-  color: #fde68a;
-}
+[data-theme="dark"] .event-note-display { background: #422006; border-left-color: #f59e0b; color: #fde68a; }
 [data-theme="dark"] .event-data-tabs { border-bottom-color: #334155; }
-[data-theme="dark"] .event-data-tab {
-  background: #1e293b;
-  border-color: #334155;
-  color: #94a3b8;
-}
-[data-theme="dark"] .event-data-tab .tab-count {
-  background: #334155;
-  color: #cbd5e1;
-}
-[data-theme="dark"] .event-note-textarea {
-  background: #0f172a;
-  border-color: #334155;
-  color: #f1f5f9;
-}
-[data-theme="dark"] .event-note-readonly {
-  background: #0f172a;
-  border-color: #334155;
-  color: #cbd5e1;
-}
+[data-theme="dark"] .event-data-tab { background: #1e293b; border-color: #334155; color: #94a3b8; }
+[data-theme="dark"] .event-data-tab .tab-count { background: #334155; color: #cbd5e1; }
+[data-theme="dark"] .event-note-textarea { background: #0f172a; border-color: #334155; color: #f1f5f9; }
+[data-theme="dark"] .event-note-readonly { background: #0f172a; border-color: #334155; color: #cbd5e1; }
 
 [data-theme="dark"] .album-hero-icon { color: #34d399; }
 
 /* ============================================================
- * 🚑 修復 Android WebView 幽靈白框問題（v3.10 新增）
+ * 🚑 修復 Android WebView 幽靈白框問題
  * ============================================================ */
-
-/* 1. 修復 content-visibility 導致的幽靈白框 */
 .day-section {
   content-visibility: visible !important;
   contain-intrinsic-size: auto !important;
 }
-
-/* 2. 防止未激活的 Modal 遺漏出空白的白框 */
 .modal-overlay:not(.active) .modal-box {
   display: none !important;
   opacity: 0 !important;
   visibility: hidden !important;
 }
-
-/* 3. 強制 #snow-fall 完全透明，防止渲染成白色塊 */
-#snow-fall, 
-#snow-fall canvas {
+#snow-fall, #snow-fall canvas {
   background: transparent !important;
-  opacity: 0.35 !important; /* 降低雪花干擾，若你喜歡原本的雪，可改回 1 */
+  opacity: 0.35 !important;
 }
-
-/* 4. 修復 backdrop-filter 在部分 Android 機型的白色偽影 */
-.glass-card, 
-.modal-box,
-.app-header .tools-menu-backdrop {
+.glass-card, .modal-box, .app-header .tools-menu-backdrop {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
-
-/* 5. 確保空的 Modal 內容不會顯示白框 */
-.modal-box .modal-scrollable:empty {
-  display: none !important;
-}
+.modal-box .modal-scrollable:empty { display: none !important; }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
@@ -1399,15 +1108,12 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative"
          onclick="event.stopPropagation()"
          style="max-height:88vh">
-
       <div class="modal-handle-area" data-drag-handle="attachments-overview-modal">
         <div class="modal-handle"></div>
       </div>
       <button onclick="closeAttachmentsOverview()" class="modal-close">✕</button>
-
       <div class="modal-scrollable px-5 pb-6 pt-2">
         <h2 class="modal-title"><span class="modal-title-icon" data-icon="attach" data-icon-size="22"></span>附件總覽</h2>
-
         <button type="button" onclick="openPhotoAlbum()" class="album-hero-btn">
           <span class="album-hero-icon" data-icon="camera" data-icon-size="24"></span>
           <span class="album-hero-info">
@@ -1416,15 +1122,11 @@ document.addEventListener('DOMContentLoaded', () => {
           </span>
           <span class="album-hero-arrow">›</span>
         </button>
-
         <div class="flex items-center gap-2 my-4">
           <div class="flex-1 h-px bg-slate-200"></div>
-          <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">
-            行程附件
-          </span>
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">行程附件</span>
           <div class="flex-1 h-px bg-slate-200"></div>
         </div>
-
         <div class="att-filter-row" id="att-filter-row">
           <button type="button" class="att-filter-btn active" data-filter="all" onclick="setAttFilter('all')">
             全部 <span class="att-filter-count" id="att-count-all">0</span>
@@ -1433,9 +1135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span data-icon="user" data-icon-size="12" style="display:inline-block;vertical-align:-2px;margin-right:2px"></span> 我上傳的 <span class="att-filter-count" id="att-count-mine">0</span>
           </button>
         </div>
-
         <div id="attachments-overview-content"></div>
-
       </div>
     </div>
   </div>
@@ -1447,7 +1147,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <button onclick="Uploads.closeEventData()" class="modal-close">✕</button>
       <div class="modal-scrollable px-5 pb-6 pt-2">
         <h2 id="event-data-title" class="modal-title"><span class="modal-title-icon" data-icon="attach" data-icon-size="22"></span>資料</h2>
-
         <div class="event-data-tabs">
           <button type="button" data-event-data-tab="attach" class="event-data-tab active" onclick="Uploads.switchEventDataTab('attach')">
             <span data-icon="attach" data-icon-size="14"></span> 附件 <span class="tab-count">0</span>
@@ -1456,14 +1155,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <span data-icon="note" data-icon-size="14"></span> 備註
           </button>
         </div>
-
         <div id="event-data-attach-panel"></div>
         <div id="event-data-note-panel" class="hidden"></div>
       </div>
     </div>
   </div>
 
-  <!-- 📋 準備總覽 Modal -->
+  <!-- 📋 準備總覽 Modal（保留舊的，萬一有其他地方呼叫） -->
   <div id="prep-overview-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closePrepOverviewModal()">
     <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()" style="max-height:88vh">
       <div class="modal-handle-area" data-drag-handle="prep-overview-modal"><div class="modal-handle"></div></div>
@@ -1472,6 +1170,47 @@ document.addEventListener('DOMContentLoaded', () => {
         <h2 class="modal-title"><span class="modal-title-icon" data-icon="list" data-icon-size="22"></span>準備總覽</h2>
         <div id="prep-overview-content"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ⭐ 滑動式準備清單 Modal（行前預訂 ↔ 我的裝備） -->
+  <div id="prep-swipe-modal"
+       class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+       onclick="closePrepSwipeModal()">
+    <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative prep-swipe-modal-box"
+         onclick="event.stopPropagation()"
+         style="max-height:88vh">
+
+      <div class="modal-handle-area" data-drag-handle="prep-swipe-modal">
+        <div class="modal-handle"></div>
+      </div>
+      <button onclick="closePrepSwipeModal()" class="modal-close">✕</button>
+
+      <div class="prep-swipe-header">
+        <h2 class="modal-title">
+          <span class="modal-title-icon" data-icon="list" data-icon-size="22"></span>
+          準備清單
+        </h2>
+        <div class="prep-swipe-tabs">
+          <button type="button" class="prep-swipe-tab active" onclick="scrollToPrepSlide(0)">
+            📌 行前預訂
+          </button>
+          <button type="button" class="prep-swipe-tab" onclick="scrollToPrepSlide(1)">
+            🎒 我的裝備
+          </button>
+          <span class="prep-swipe-indicator" id="prep-swipe-indicator"></span>
+        </div>
+      </div>
+
+      <div class="prep-swipe-container" id="prep-swipe-container">
+        <div class="prep-slide">
+          <div id="prep-booking-content"></div>
+        </div>
+        <div class="prep-slide">
+          <div id="prep-equip-content"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 

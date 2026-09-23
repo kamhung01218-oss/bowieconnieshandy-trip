@@ -1,5 +1,5 @@
 /* ============================================================
- * app-lists.js — v7.6
+ * app-lists.js — v7.7
  * 清單：行前預訂清單、裝備清單、購物清單、購物總覽
  *
  * v7.4：購物總覽加「＋ 新增物品」按鈕
@@ -8,6 +8,9 @@
  *   - ⭐ 去 Emoji 化（UI 層）：
  *       標題圖示、按鈕圖示、分類徽章改用 SVG
  *       清單項目 emoji、類別選擇 emoji 保留（內容型）
+ * v7.7：
+ *   - ⭐ 支援外部渲染目標（window._bookingRenderTarget / _equipRenderTarget）
+ *     用於「準備清單」滑動式 Modal
  * ============================================================ */
 
 // ⭐ v7.6：SVG helper
@@ -71,7 +74,8 @@ const bookingList = [
 let customBookingItems = [];
 
 function renderBookingChecklist() {
-  const container = document.getElementById("booking-modal-inner"); if (!container) return;
+  // ⭐ v7.7：支援外部渲染目標（準備清單滑動 Modal）
+  const container = window._bookingRenderTarget || document.getElementById("booking-modal-inner"); if (!container) return;
   const isAdmin = isAdminUnlocked();
   const categories = ["航班", "住宿", "租車", "保險", "門票", "通訊", "其他"];
   const allItems = [...bookingList, ...customBookingItems];
@@ -115,7 +119,8 @@ function toggleCategory(modalId, cat) { const expanded = modalUIState[modalId].e
 const equipmentList = [ { id: "passport", category: "重要證件", label: "身份證 / 護照（效期需剩餘6個月以上）", icon: "🪪" }, { id: "license", category: "重要證件", label: "國際車牌 / 駕駛執照", icon: "🚗" }, { id: "tickets", category: "重要證件", label: "機票 / 住宿憑證 / Visit Japan Web QR Code", icon: "✈️" }, { id: "money", category: "重要證件", label: "日幣現金與信用卡", icon: "💴" }, { id: "car-mount", category: "重要證件", label: "車用手機架", icon: "📱" }, { id: "thermal", category: "保暖衣物", label: "發熱衣 / 保暖內衣（3-4件）", icon: "👕" }, { id: "mid-layer", category: "保暖衣物", label: "中層保暖衣物（2-3件）", icon: "🧶" }, { id: "outer-coat", category: "保暖衣物", label: "防風防水厚外套 / 羽絨服", icon: "🧥" }, { id: "pants", category: "保暖衣物", label: "長褲與發熱內搭褲", icon: "👖" }, { id: "scarf", category: "保暖衣物", label: "圍巾、毛帽或耳罩", icon: "🧣" }, { id: "gloves", category: "保暖衣物", label: "觸控手套", icon: "🧤" }, { id: "boots", category: "保暖衣物", label: "防水防滑雪靴", icon: "👢" }, { id: "socks", category: "保暖衣物", label: "厚羊毛襪（3-5雙）", icon: "🧦" }, { id: "sim", category: "電子與隨身", label: "日本上網卡", icon: "📶" }, { id: "powerbank", category: "電子與隨身", label: "行動電源（僅限手提）", icon: "🔋" }, { id: "thermos", category: "電子與隨身", label: "保溫瓶", icon: "🍶" }, { id: "skincare", category: "電子與隨身", label: "保濕護膚品與潤唇膏", icon: "🧴" }, { id: "medicine", category: "電子與隨身", label: "常備藥品", icon: "💊" }, { id: "warmpack", category: "電子與隨身", label: "暖暖包", icon: "🔥" }, { id: "adult-crampons", category: "其他", label: "簡易冰爪", icon: "⛸️" }, { id: "kid-hat", category: "小孩", label: "小孩毛帽 (蓋耳)", icon: "🧢" }, { id: "kid-gloves", category: "小孩", label: "小孩手套 (備2雙)", icon: "🧤" }, { id: "kid-scarf", category: "小孩", label: "小孩圍脖", icon: "🧣" }, { id: "kid-snowpants", category: "小孩", label: "小孩防水雪褲", icon: "👖" }, { id: "kid-boots", category: "小孩", label: "小孩雪靴 (防水)", icon: "👢" }, { id: "swimwear", category: "其他", label: "泳衣 (溫泉泳池用)", icon: "🩱" }, { id: "safetybelt", category: "其他", label: "便攜式兒童安全帶", icon: "🪑" }, { id: "firstaid", category: "其他", label: "簡易急救包", icon: "🩹" } ];
 
 function renderEquipChecklist() {
-  const container = document.getElementById("equip-modal-inner"); if (!container) return;
+  // ⭐ v7.7：支援外部渲染目標（準備清單滑動 Modal）
+  const container = window._equipRenderTarget || document.getElementById("equip-modal-inner"); if (!container) return;
   if (!currentUser) { container.innerHTML = '<div class="text-center py-8 text-slate-500">請先登入身份</div>'; return; }
   if (currentUser === "訪客") { container.innerHTML = `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用專屬清單</p><p class="text-xs text-slate-500 leading-relaxed">請切換為家庭成員身份<br>才能建立自己的裝備清單</p></div>`; return; }
   const userData = getUserData();
@@ -626,4 +631,4 @@ function updateShoppingBadges(day) {
 }
 window.updateShoppingBadges = updateShoppingBadges;
 
-console.log('[Lists] v7.6（去 Emoji UI）載入完成');
+console.log('[Lists] v7.7（支援外部渲染目標）載入完成');

@@ -1,5 +1,5 @@
 /* ============================================================
- * AppHeader v16.5
+ * AppHeader v16.6
  * - 品牌列：❄️ 標題 + [搜尋] + [天氣] + [重整] + [工具]
  * - Focus Card：出發前 / 中 / 後
  * - 旅行中順序：廣播 → 天氣 → 現在 → 下一站 → CTA(購物/留言)
@@ -8,6 +8,8 @@
  * v16.4：去 Emoji 化（UI 層）
  * v16.5：
  *   - ⭐ 修正下拉同步誤觸（工具選單、按鈕、Header、底部導航）
+ * v16.6：
+ *   - ⭐ 準備進度改開滑動式 Modal（行前預訂 ↔ 我的裝備）
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -411,7 +413,7 @@ window.AppHeader = (function () {
   }
 
   // ============================================================
-  // 準備總覽 Modal
+  // 準備總覽 Modal（保留，作為備用）
   // ============================================================
   function openPrepOverviewModal() {
     const m = document.getElementById('prep-overview-modal');
@@ -1370,7 +1372,8 @@ window.AppHeader = (function () {
           case "navigate":       openNavigateMenu(); break;
           case "messages":       openMessagesModal(); break;
           case "shoot":          cb.onShoot && cb.onShoot();         break;
-          case "prep-overview":  openPrepOverviewModal();            break;
+          // ⭐ v16.6：改開滑動式 Modal
+          case "prep-overview":  openPrepSwipeModal();               break;
           case "scrollToDay": {
             const idx = getCurrentDayIndex();
             const day = idx >= 0 ? idx + 1 : 1;
@@ -1559,6 +1562,115 @@ window.AppHeader = (function () {
   window.closeSearchModal = closeSearchModal;
   window.openPrepOverviewModal = openPrepOverviewModal;
   window.closePrepOverviewModal = closePrepOverviewModal;
+
+  // ============================================================
+  // ⭐ v16.6：滑動式準備清單 Modal
+  // ============================================================
+  function openPrepSwipeModal() {
+    const m = document.getElementById('prep-swipe-modal');
+    if (!m) {
+      console.warn('[PrepSwipe] 找不到 #prep-swipe-modal，改用舊版 Modal');
+      openPrepOverviewModal();
+      return;
+    }
+
+    window._bookingRenderTarget = document.getElementById('prep-booking-content');
+    window._equipRenderTarget = document.getElementById('prep-equip-content');
+
+    if (typeof window.renderBookingChecklist === 'function') window.renderBookingChecklist();
+    if (typeof window.renderEquipChecklist === 'function') window.renderEquipChecklist();
+
+    const container = document.getElementById('prep-swipe-container');
+    if (container) {
+      container.scrollLeft = 0;
+      requestAnimationFrame(() => {
+        updatePrepSwipeIndicator(0);
+        updatePrepSwipeTabs(0);
+      });
+    }
+
+    m.style.display = 'flex';
+    m.classList.add('active');
+    document.body.classList.add('modal-open');
+    haptic(8);
+  }
+
+  function closePrepSwipeModal() {
+    const m = document.getElementById('prep-swipe-modal');
+    if (!m) return;
+    m.classList.remove('active');
+    setTimeout(() => { m.style.display = 'none'; }, 300);
+    const a = document.querySelector('.modal-overlay.active');
+    if (!a) document.body.classList.remove('modal-open');
+
+    window._bookingRenderTarget = null;
+    window._equipRenderTarget = null;
+
+    haptic(6);
+  }
+
+  function scrollToPrepSlide(index) {
+    const container = document.getElementById('prep-swipe-container');
+    if (!container) return;
+    container.scrollTo({
+      left: container.clientWidth * index,
+      behavior: 'smooth'
+    });
+    updatePrepSwipeTabs(index);
+    updatePrepSwipeIndicator(index);
+    haptic(6);
+  }
+
+  function updatePrepSwipeTabs(index) {
+    document.querySelectorAll('.prep-swipe-tab').forEach((tab, i) => {
+      tab.classList.toggle('active', i === index);
+    });
+  }
+
+  function updatePrepSwipeIndicator(index) {
+    const indicator = document.getElementById('prep-swipe-indicator');
+    if (!indicator) return;
+    const tabs = document.querySelectorAll('.prep-swipe-tab');
+    if (tabs.length < 2) return;
+
+    const tabWidth = tabs[0].offsetWidth;
+    const gap = 6;
+    const left = tabs[0].offsetLeft + (tabWidth + gap) * index;
+
+    indicator.style.width = tabWidth + 'px';
+    indicator.style.transform = `translateX(${left}px)`;
+    indicator.style.left = '0';
+    indicator.style.position = 'absolute';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('prep-swipe-container');
+    if (!container) return;
+
+    setTimeout(() => updatePrepSwipeIndicator(0), 100);
+
+    let scrollTimer;
+    container.addEventListener('scroll', () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        const slideIndex = Math.round(container.scrollLeft / container.clientWidth);
+        updatePrepSwipeTabs(slideIndex);
+        updatePrepSwipeIndicator(slideIndex);
+      }, 80);
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      const m = document.getElementById('prep-swipe-modal');
+      if (m && m.classList.contains('active')) {
+        const slideIndex = Math.round(container.scrollLeft / container.clientWidth);
+        updatePrepSwipeIndicator(slideIndex);
+      }
+    });
+  });
+
+  window.openPrepSwipeModal = openPrepSwipeModal;
+  window.closePrepSwipeModal = closePrepSwipeModal;
+  window.scrollToPrepSlide = scrollToPrepSlide;
 
   // ============================================================
   // 對外 API
@@ -2168,7 +2280,6 @@ function _svgMsgIcon() {
   const iconEl = indicator.querySelector('.pull-sync-icon');
   const textEl = indicator.querySelector('.pull-sync-text');
 
-  // ⭐ v16.5：三種阻擋判斷
   function isModalOpen() {
     return !!document.querySelector('.modal-overlay.active');
   }

@@ -1,37 +1,17 @@
 /* ============================================================
- * design-v16.css — 旅行手帳風（v1.0）
+ * design-v16.css — 旅行手帳風（v2.1）
  *
- * 設計目標：
- *   讓 App 從「企業儀表板」變成「旅行手帳」
- *   - 雪地紙張紋路（底層質感）
- *   - 票券時間膠囊（旅行感）
- *   - 手寫日期（人性化）
- *   - 暖橙進行中（視覺焦點）
- *
- * ⚠️ 載入順序：必須放在 patches.css 之後
- *    <link rel="stylesheet" href="./design-v16.css">
- *
- * 設計原則：
- *   - 克制：只加 4 個改動，不做過多裝飾
- *   - 有目的：每個變化都有語意
- *   - 不干擾：裝飾透明度 ≤ 0.3，不搶主角
+ * 更新：
+ *   - ⭐ 移除手寫日期（繁體中文混排效果差）
+ *   - ⭐ 改為「螢光筆底線」裝飾，保留趣味但不干擾閱讀
  * ============================================================ */
-
-/* ============================================================
- * 0. 手寫字體引入
- *    Caveat 用於數字與英文，中文自動回退到 Noto Sans TC
- * ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
 
 /* ============================================================
  * 1. 雪地紙張紋路
- *    給卡片加一層極淡的斜向紋路 + 頂部微光
- *    遠看沒感覺，近看有質感
  * ============================================================ */
 .glass-card.event-card {
   background-color: #ffffff;
   background-image:
-    /* 極淡的斜向紋路（像雪地陽光） */
     repeating-linear-gradient(
       135deg,
       transparent 0px,
@@ -39,7 +19,6 @@
       rgba(186, 230, 253, 0.10) 40px,
       rgba(186, 230, 253, 0.10) 41px
     ),
-    /* 頂部微光 */
     radial-gradient(
       ellipse at top left,
       rgba(224, 242, 254, 0.55) 0%,
@@ -47,8 +26,6 @@
     );
   background-size: 100% 100%, 100% 100%;
 }
-
-/* 展開時，紋路更明顯一點（因為使用者已經在閱讀） */
 .glass-card.event-card[open] {
   background-image:
     repeating-linear-gradient(
@@ -68,30 +45,20 @@
 
 /* ============================================================
  * 2. 票券時間膠囊
- *    時間從「藍色膠囊」變成「淡黃票根」
- *    左側有打孔效果
  * ============================================================ */
 .timeline-stamp-time {
   position: relative !important;
-
-  /* 票券配色 */
   background: linear-gradient(135deg, #fef9e7 0%, #fde68a 100%) !important;
   color: #78350f !important;
   border: 1.5px dashed #d97706 !important;
   border-radius: 6px !important;
-
-  /* 票券立體感 */
   box-shadow: 2px 2px 0 rgba(217, 119, 6, 0.15) !important;
-
-  /* 字體改用襯線體（票券感） */
   font-family: 'Playfair Display', Georgia, serif !important;
   font-weight: 700 !important;
   font-size: 14px !important;
   letter-spacing: 0.02em !important;
   padding: 4px 14px 4px 18px !important;
 }
-
-/* 票券左側的「打孔」 */
 .timeline-stamp-time::before {
   content: '' !important;
   position: absolute !important;
@@ -105,8 +72,6 @@
   transform: translateY(-50%) !important;
   z-index: 2 !important;
 }
-
-/* 票券右側的「撕線」裝飾 */
 .timeline-stamp-time::after {
   content: '' !important;
   position: absolute !important;
@@ -126,16 +91,12 @@
   background-size: 1px 4px;
   pointer-events: none !important;
 }
-
-/* 結束時間：配合票券風格 */
 .timeline-stamp-end {
   font-family: 'Playfair Display', Georgia, serif !important;
   font-weight: 600 !important;
   color: #92400e !important;
   font-size: 12px !important;
 }
-
-/* 已完成：票券褪色 */
 .timeline-item.status-done .timeline-stamp-time {
   background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
   color: #64748b !important;
@@ -154,11 +115,41 @@
 }
 
 /* ============================================================
- * 4. 暖橙「進行中」
- *    進行中的卡片是唯一暖色，成為視覺焦點
+ * 3. 日期裝飾（螢光筆底線，不用手寫體）
  * ============================================================ */
+#schedule-container .text-sky-600 {
+  font-family: var(--t-font-sans) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+  color: #0284c7 !important;
+  transform: none;
+  display: inline-block;
+  opacity: 1;
+  position: relative;
+  padding-bottom: 3px;
+}
+#schedule-container .text-sky-600::after {
+  content: '';
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  bottom: 0;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    rgba(186, 230, 253, 0.7) 0%,
+    rgba(186, 230, 253, 0.4) 100%
+  );
+  border-radius: 2px;
+  z-index: -1;
+  transform: rotate(-0.5deg);
+}
 
-/* 進行中的時間膠囊：暖橙 */
+/* ============================================================
+ * 4. 暖橙「進行中」
+ * ============================================================ */
 .timeline-item.status-active .timeline-stamp-time {
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
   color: #78350f !important;
@@ -188,8 +179,6 @@
 .timeline-item.status-active .timeline-stamp-end {
   color: #78350f !important;
 }
-
-/* 進行中的卡片邊框：暖橙微光 */
 .timeline-item.status-active .glass-card.event-card {
   border-color: rgba(245, 158, 11, 0.45) !important;
   box-shadow:
@@ -197,8 +186,6 @@
     0 8px 24px -8px rgba(245, 158, 11, 0.3),
     0 1px 3px rgba(2, 132, 199, 0.06) !important;
 }
-
-/* 進行中的 timeline 節點：暖橙脈動 */
 .timeline-item.status-active .timeline-node {
   background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
   box-shadow:
@@ -207,11 +194,151 @@
 }
 
 /* ============================================================
- * 5. 深色模式適配
- *    手帳感在深色模式改為「夜間手帳」
+ * 5. 印章標籤
  * ============================================================ */
+.event-priority-badge.highlight {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 2px 8px !important;
+  background: transparent !important;
+  border: 1.5px solid #dc2626 !important;
+  border-radius: 4px !important;
+  color: #dc2626 !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.12em !important;
+  line-height: 1.3 !important;
+  transform: rotate(-3deg);
+  box-shadow: 1px 1px 0 rgba(220, 38, 38, 0.15);
+  opacity: 0.9;
+  white-space: nowrap;
+  text-shadow: none !important;
+}
+.event-priority-badge.optional {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 2px 8px !important;
+  background: transparent !important;
+  border: 1.5px dashed #94a3b8 !important;
+  border-radius: 4px !important;
+  color: #64748b !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+  line-height: 1.3 !important;
+  transform: rotate(-2deg);
+  opacity: 0.75;
+  white-space: nowrap;
+}
 
-/* 雪地紋路：深色模式改用星光感 */
+/* ============================================================
+ * 6. 塗鴉分隔線
+ * ============================================================ */
+.glass-card.event-card .event-title::after {
+  content: '' !important;
+  display: block !important;
+  width: 40px !important;
+  height: 6px !important;
+  margin-top: 4px !important;
+  margin-left: 0 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6'%3E%3Cpath d='M0 3 Q5 0, 10 3 T20 3 T30 3 T40 3' stroke='%2338bdf8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  background-size: 40px 6px !important;
+  background-repeat: no-repeat !important;
+  background-position: left center !important;
+  opacity: 0.55 !important;
+  pointer-events: none !important;
+}
+
+/* ============================================================
+ * 7. 拍立得縮圖
+ * ============================================================ */
+details.event-card:not([open]) .event-thumb {
+  position: relative !important;
+  border: 4px solid #ffffff !important;
+  border-radius: 3px !important;
+  box-shadow:
+    0 2px 6px rgba(2, 132, 199, 0.18),
+    0 0 0 1px rgba(2, 132, 199, 0.06) !important;
+  transform: rotate(3deg);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: #ffffff !important;
+}
+details.event-card[open] .event-thumb {
+  transform: rotate(0deg);
+}
+details.event-card:not([open]) .event-thumb::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  top: -7px !important;
+  left: 50% !important;
+  transform: translateX(-50%) rotate(-2deg) !important;
+  width: 26px !important;
+  height: 11px !important;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(241, 245, 249, 0.85) 100%) !important;
+  border: 1px solid rgba(186, 230, 253, 0.9) !important;
+  border-radius: 1px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  z-index: 3 !important;
+  pointer-events: none !important;
+}
+
+/* ============================================================
+ * 8a. 角落雪花
+ * ============================================================ */
+.glass-card.event-card[open]::before {
+  content: '❄' !important;
+  display: block !important;
+  position: absolute !important;
+  bottom: 12px !important;
+  right: 14px !important;
+  left: auto !important;
+  top: auto !important;
+  width: auto !important;
+  height: auto !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  color: rgba(186, 230, 253, 0.55) !important;
+  transform: rotate(-15deg) !important;
+  pointer-events: none !important;
+  transition: transform 0.4s ease, color 0.3s ease !important;
+  z-index: 1 !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-family: serif !important;
+}
+@media (hover: hover) {
+  .glass-card.event-card[open]:hover::before {
+    transform: rotate(15deg) scale(1.1) !important;
+    color: rgba(125, 211, 252, 0.75) !important;
+  }
+}
+
+/* ============================================================
+ * 8b. 山脈剪影
+ * ============================================================ */
+.app-header::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40 L0 25 L80 12 L160 22 L260 5 L360 18 L480 8 L600 20 L720 6 L840 15 L960 4 L1080 18 L1200 10 L1200 40 Z' fill='%23ffffff' fill-opacity='0.55'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at top right,
+      rgba(125, 211, 252, 0.4) 0%,
+      transparent 60%);
+  background-size: 100% 40px, 100% 100%;
+  background-position: bottom center, top right;
+  background-repeat: no-repeat, no-repeat;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* ============================================================
+ * 深色模式
+ * ============================================================ */
 [data-theme="dark"] .glass-card.event-card {
   background-color: #1e293b;
   background-image:
@@ -245,8 +372,6 @@
     );
   background-size: 100% 100%, 100% 100%;
 }
-
-/* 票券：深色模式改深棕 */
 [data-theme="dark"] .timeline-stamp-time {
   background: linear-gradient(135deg, #422006 0%, #78350f 100%) !important;
   color: #fde68a !important;
@@ -272,8 +397,6 @@
 [data-theme="dark"] .timeline-stamp-end {
   color: #fbbf24 !important;
 }
-
-/* 已完成：深色模式票券褪色 */
 [data-theme="dark"] .timeline-item.status-done .timeline-stamp-time {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
   color: #64748b !important;
@@ -283,21 +406,16 @@
   background: #1e293b !important;
   border-color: #475569 !important;
 }
-
-/* 手寫日期：深色模式微調顏色 */
 [data-theme="dark"] #schedule-container .text-sky-600 {
   color: #7dd3fc !important;
-  opacity: 0.95;
 }
 [data-theme="dark"] #schedule-container .text-sky-600::after {
   background: linear-gradient(
     90deg,
-    rgba(56, 189, 248, 0.3) 0%,
+    rgba(56, 189, 248, 0.35) 0%,
     rgba(56, 189, 248, 0.15) 100%
   );
 }
-
-/* 進行中：深色模式暖橙稍微降飽和 */
 [data-theme="dark"] .timeline-item.status-active .timeline-stamp-time {
   background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
   color: #fef3c7 !important;
@@ -331,13 +449,47 @@
     0 8px 24px -8px rgba(217, 119, 6, 0.35),
     0 1px 3px rgba(0, 0, 0, 0.3) !important;
 }
+[data-theme="dark"] .glass-card.event-card .event-title::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6'%3E%3Cpath d='M0 3 Q5 0, 10 3 T20 3 T30 3 T40 3' stroke='%237dd3fc' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  opacity: 0.4 !important;
+}
+[data-theme="dark"] .glass-card.event-card[open]::before {
+  color: rgba(125, 211, 252, 0.25) !important;
+}
+[data-theme="dark"] .glass-card.event-card[open]:hover::before {
+  color: rgba(125, 211, 252, 0.45) !important;
+}
+[data-theme="dark"] .app-header::after {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40 L0 25 L80 12 L160 22 L260 5 L360 18 L480 8 L600 20 L720 6 L840 15 L960 4 L1080 18 L1200 10 L1200 40 Z' fill='%230f172a' fill-opacity='0.5'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at top right,
+      rgba(56, 189, 248, 0.3) 0%,
+      transparent 60%);
+  background-size: 100% 40px, 100% 100%;
+  background-position: bottom center, top right;
+  background-repeat: no-repeat, no-repeat;
+}
+[data-theme="dark"] .event-priority-badge.highlight {
+  border-color: #f87171 !important;
+  color: #fca5a5 !important;
+}
+[data-theme="dark"] .event-priority-badge.optional {
+  border-color: #64748b !important;
+  color: #94a3b8 !important;
+}
 
 /* ============================================================
- * 6. 無障礙：偏好減少動態
+ * 無障礙 & 響應式
  * ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-  #schedule-container .text-sky-600 {
+  details.event-card:not([open]) .event-thumb {
     transform: none;
+  }
+  .glass-card.event-card[open]::before {
+    transition: none !important;
+  }
+  .glass-card.event-card[open]:hover::before {
+    transform: rotate(-15deg) !important;
   }
   .timeline-item.status-active .timeline-node {
     box-shadow:
@@ -345,16 +497,22 @@
       0 0 8px 2px rgba(245, 158, 11, 0.4) !important;
   }
 }
-
-/* ============================================================
- * 7. 小螢幕微調
- * ============================================================ */
 @media (max-width: 380px) {
   .timeline-stamp-time {
     font-size: 13px !important;
     padding: 3px 10px 3px 14px !important;
   }
-  #schedule-container .text-sky-600 {
-    font-size: 19px !important;
+  details.event-card:not([open]) .event-thumb {
+    border-width: 3px !important;
+  }
+  details.event-card:not([open]) .event-thumb::before {
+    width: 22px !important;
+    height: 9px !important;
+    top: -6px !important;
+  }
+  .glass-card.event-card[open]::before {
+    font-size: 20px !important;
+    bottom: 10px !important;
+    right: 12px !important;
   }
 }
