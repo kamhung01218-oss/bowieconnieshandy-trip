@@ -155,6 +155,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!docSnap.exists) return;
       if (docSnap.metadata?.hasPendingWrites) return;
       const cloudData = docSnap.data();
+
+      // ⭐ v14.3：把 expenses 同步到主站（讓附件總覽能讀到記帳收據）
+      if (Array.isArray(cloudData.expenses)) {
+        if (typeof state !== 'undefined') {
+          state.expenses = cloudData.expenses;
+        }
+        if (!window.state) window.state = {};
+        window.state.expenses = cloudData.expenses;
+        if (typeof window.renderAttachmentsOverview === 'function') {
+          window.renderAttachmentsOverview();
+        }
+      }
+
       if (cloudData.checkedItems && typeof cloudData.checkedItems === 'object') {
         const localNonBooking = {};
         Object.keys(state.checkedItems).forEach(k => {
@@ -972,7 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <!-- 📎 附件總覽 Modal（取代舊的共享資料櫃） -->
+  <!-- 📎 附件總覽 Modal -->
   <div id="attachments-overview-modal"
        class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
        onclick="closeAttachmentsOverview()">
@@ -1051,7 +1064,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <!-- 📋 準備總覽 Modal（⭐ v16.1 新增） -->
+  <!-- 📋 準備總覽 Modal -->
   <div id="prep-overview-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closePrepOverviewModal()">
     <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()" style="max-height:88vh">
       <div class="modal-handle-area" data-drag-handle="prep-overview-modal"><div class="modal-handle"></div></div>
