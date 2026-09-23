@@ -1,15 +1,17 @@
 /* ============================================================
- * AppHeader v16.6
+ * AppHeader v16.8
  * - 品牌列：❄️ 標題 + [搜尋] + [天氣] + [重整] + [工具]
  * - Focus Card：出發前 / 中 / 後
  * - 旅行中順序：廣播 → 天氣 → 現在 → 下一站 → CTA(購物/留言)
  *
  * v16.3：留言訂閱移除 phase 檢查
  * v16.4：去 Emoji 化（UI 層）
- * v16.5：
- *   - ⭐ 修正下拉同步誤觸（工具選單、按鈕、Header、底部導航）
- * v16.6：
- *   - ⭐ 準備進度改開滑動式 Modal（行前預訂 ↔ 我的裝備）
+ * v16.5：修正下拉同步誤觸
+ * v16.6：準備進度改開滑動式 Modal
+ * v16.7：Focus Card v2（圓形進度環、一週天氣條、時段色調、地標剪影、立體 CTA）
+ * v16.8：
+ *   - ⭐ 點擊天氣欄（一週天氣條 / 當天天氣行）開啟完整天氣 Modal
+ *   - ⭐ data-action 元素加鍵盤支援（Enter / Space）
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -251,7 +253,92 @@ window.AppHeader = (function () {
   }
 
   // ============================================================
-  // 出發前 Focus Card 輔助
+  // Focus Card v2 輔助函式
+  // ============================================================
+
+  /**
+   * 取得當前時段（dawn / day / dusk / night）
+   */
+  function getTimeOfDay() {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 9) return 'dawn';
+    if (h >= 9 && h < 16) return 'day';
+    if (h >= 16 && h < 19) return 'dusk';
+    return 'night';
+  }
+
+  /**
+   * 建立圓形進度環
+   */
+  function buildCountdownRing(days, totalDays) {
+    const radius = 52;
+    const circumference = 2 * Math.PI * radius;
+    const progress = Math.max(0, Math.min(1, (totalDays - days) / totalDays));
+    const offset = circumference * (1 - progress);
+
+    return `
+      <div class="focus-ring-wrap">
+        <svg class="focus-ring" viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <linearGradient id="focusRingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="100%" stop-color="#0284c7"/>
+            </linearGradient>
+          </defs>
+          <circle class="focus-ring-track" cx="60" cy="60" r="${radius}"/>
+          <circle class="focus-ring-progress" cx="60" cy="60" r="${radius}"
+                  stroke-dasharray="${circumference.toFixed(2)}"
+                  stroke-dashoffset="${offset.toFixed(2)}"/>
+        </svg>
+        <div class="focus-ring-center">
+          <div class="focus-ring-days">${days}</div>
+          <div class="focus-ring-unit">天</div>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * ⭐ v16.8：建立一週天氣條（可點擊 → 開啟完整天氣）
+   */
+  function buildWeeklyWeatherBar() {
+    const tripDates = _config.tripDates || [];
+    if (tripDates.length === 0) return '';
+
+    const cells = tripDates.map((dateStr, idx) => {
+      const weather = window.weatherCache?.[dateStr];
+      const d = new Date(dateStr);
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
+
+      let icon = '⛅';
+      let temp = '--';
+      if (weather) {
+        icon = weather.icon || '⛅';
+        const mid = Math.round((weather.max + weather.min) / 2);
+        temp = mid + '°';
+      }
+
+      const isFirst = idx === 0;
+      return `
+        <div class="focus-weather-day ${isFirst ? 'focus-weather-day-active' : ''}">
+          <div class="focus-weather-day-date">${month}/${day}</div>
+          <div class="focus-weather-day-icon">${icon}</div>
+          <div class="focus-weather-day-temp">${temp}</div>
+        </div>
+      `;
+    }).join('');
+
+    // ⭐ v16.8：加 data-action="weather"、role、tabindex、aria-label
+    return `<div class="focus-weekly-weather focus-weather-clickable" 
+              data-action="weather" 
+              role="button" 
+              tabindex="0" 
+              aria-label="查看完整天氣預報">${cells}</div>`;
+  }
+
+  // ============================================================
+  // 出發前 Focus Card 輔助（舊版保留）
   // ============================================================
   function formatCountdownShort(ms) {
     if (ms <= 0) return "已開賣";
@@ -686,7 +773,7 @@ window.AppHeader = (function () {
   window._AppHeader_syncAll = syncAllData;
 
   // ============================================================
-  // 出發前：倒數更新
+  // 出發前：倒數更新（圓環 + 時分 + 時段）
   // ============================================================
   function updateCountdownNumbers() {
     if (!_container) return;
@@ -697,14 +784,38 @@ window.AppHeader = (function () {
     const days = Math.floor(diff / 86400000);
     const hours = Math.floor((diff % 86400000) / 3600000);
     const minutes = Math.floor((diff % 3600000) / 60000);
+
+    const daysEl = focusEl.querySelector('.focus-ring-days');
+    if (daysEl && daysEl.textContent !== String(days)) {
+      daysEl.textContent = String(days);
+      const progressEl = focusEl.querySelector('.focus-ring-progress');
+      if (progressEl) {
+        const radius = 52;
+        const circumference = 2 * Math.PI * radius;
+        const progress = Math.max(0, Math.min(1, (365 - days) / 365));
+        progressEl.style.strokeDashoffset = String(circumference * (1 - progress));
+      }
+    }
+
     const inlineEl = focusEl.querySelector("#focus-countdown-inline");
     if (inlineEl) {
-      const dayEl = inlineEl.querySelector('[data-inline="days"]');
       const hourEl = inlineEl.querySelector('[data-inline="hours"]');
       const minEl = inlineEl.querySelector('[data-inline="minutes"]');
-      if (dayEl && dayEl.textContent !== String(days)) dayEl.textContent = String(days);
-      if (hourEl && hourEl.textContent !== String(hours).padStart(2, "0")) hourEl.textContent = String(hours).padStart(2, "0");
-      if (minEl && minEl.textContent !== String(minutes).padStart(2, "0")) minEl.textContent = String(minutes).padStart(2, "0");
+      if (hourEl && hourEl.textContent !== String(hours).padStart(2, "0")) {
+        hourEl.textContent = String(hours).padStart(2, "0");
+      }
+      if (minEl && minEl.textContent !== String(minutes).padStart(2, "0")) {
+        minEl.textContent = String(minutes).padStart(2, "0");
+      }
+    }
+
+    const innerEl = focusEl.querySelector('.focus-inner-v2');
+    if (innerEl) {
+      const newTimeOfDay = getTimeOfDay();
+      const curTimeOfDay = innerEl.getAttribute('data-time-of-day');
+      if (newTimeOfDay !== curTimeOfDay) {
+        innerEl.setAttribute('data-time-of-day', newTimeOfDay);
+      }
     }
   }
 
@@ -899,6 +1010,9 @@ window.AppHeader = (function () {
     return window.weatherCache[dateStr + '|' + locId] || null;
   }
 
+  /**
+   * ⭐ v16.8：旅行中的當天天氣行（可點擊 → 開啟完整天氣）
+   */
   function renderWeatherRow(dayIdx, dateStr) {
     const locs = getWeatherLocationsForDay(dayIdx);
     if (locs.length === 0) return '';
@@ -947,8 +1061,13 @@ window.AppHeader = (function () {
       </div>`;
     }
 
+    // ⭐ v16.8：加 data-action="weather"、role、tabindex、aria-label
     return `
-      <div class="focus-weather-row">
+      <div class="focus-weather-row focus-weather-clickable"
+           data-action="weather"
+           role="button"
+           tabindex="0"
+           aria-label="查看完整天氣預報">
         ${tabsHtml}
         <div class="focus-weather-line1">${line1Html}</div>
         ${alertHtml}
@@ -1178,6 +1297,7 @@ window.AppHeader = (function () {
         const minutes = Math.floor((diff % 3600000) / 60000);
 
         const stage = currentStage || "seed";
+        const timeOfDay = getTimeOfDay();
 
         const bookingP = getProgressData("booking");
         const equipP = getProgressData("equip");
@@ -1185,10 +1305,8 @@ window.AppHeader = (function () {
         const donePrep = bookingP.done + equipP.done;
         const prepPercent = totalPrep > 0 ? Math.round((donePrep / totalPrep) * 100) : 0;
 
-        const departureDate = _config.tripDates[0];
-        const departureWeather = window.weatherCache?.[departureDate];
-        const departureLoc = getWeatherLocationsForDay(0)[0] || null;
-        const weatherHtml = departureWeather ? buildDepartureWeatherHtml(departureWeather, departureLoc) : '';
+        const ringHtml = buildCountdownRing(days, 365);
+        const weeklyWeatherHtml = buildWeeklyWeatherBar();
 
         const ticketCountdownHtml = (stage === "sprint" || stage === "final")
           ? buildTicketCountdownHtml() : '';
@@ -1205,22 +1323,22 @@ window.AppHeader = (function () {
         const task = getNextBigTask();
         const taskHtml = (stage !== "seed" && task) ? buildTaskHtml(task) : '';
 
-        innerHTML = `<div class="focus-inner">
-          <div class="focus-label">
-            <span class="focus-label-dot"></span>
-            <span class="focus-label-text">距離出發還有</span>
+        innerHTML = `<div class="focus-inner focus-inner-v2" data-time-of-day="${timeOfDay}">
+          <div class="focus-top-row">
+            ${ringHtml}
+            <div class="focus-ring-info">
+              <div class="focus-label">
+                <span class="focus-label-dot"></span>
+                <span class="focus-label-text">距離出發還有</span>
+              </div>
+              <div class="focus-time-remaining" id="focus-countdown-inline">
+                <span data-inline="hours">${String(hours).padStart(2, "0")}</span><small>時</small>
+                <span data-inline="minutes">${String(minutes).padStart(2, "0")}</span><small>分</small>
+              </div>
+            </div>
           </div>
 
-          <div class="countdown-inline" id="focus-countdown-inline">
-            <span class="countdown-inline-num" data-inline="days">${days}</span>
-            <span class="countdown-inline-unit">天</span>
-            <span class="countdown-inline-num-sm" data-inline="hours">${String(hours).padStart(2, "0")}</span>
-            <span class="countdown-inline-unit-sm">時</span>
-            <span class="countdown-inline-num-sm" data-inline="minutes">${String(minutes).padStart(2, "0")}</span>
-            <span class="countdown-inline-unit-sm">分</span>
-          </div>
-
-          ${weatherHtml}
+          ${weeklyWeatherHtml}
           ${progressHtml}
           ${ticketCountdownHtml}
           ${luggageHtml}
@@ -1238,6 +1356,8 @@ window.AppHeader = (function () {
               <span>${_icon('backpack', 14)}</span> 裝備
             </button>
           </div>
+
+          <div class="focus-mountains" aria-hidden="true"></div>
         </div>`;
 
         if (_container) {
@@ -1357,9 +1477,10 @@ window.AppHeader = (function () {
     }
   }
 
+  // ⭐ v16.8：支援 data-action 元素的鍵盤操作
   function bindFocusActions(focusEl, cb) {
     focusEl.querySelectorAll("[data-action]").forEach(el => {
-      el.addEventListener("click", () => {
+      const handleAction = () => {
         const action = el.dataset.action;
         switch (action) {
           case "booking":        cb.onBooking && cb.onBooking();     break;
@@ -1372,7 +1493,6 @@ window.AppHeader = (function () {
           case "navigate":       openNavigateMenu(); break;
           case "messages":       openMessagesModal(); break;
           case "shoot":          cb.onShoot && cb.onShoot();         break;
-          // ⭐ v16.6：改開滑動式 Modal
           case "prep-overview":  openPrepSwipeModal();               break;
           case "scrollToDay": {
             const idx = getCurrentDayIndex();
@@ -1381,7 +1501,19 @@ window.AppHeader = (function () {
             break;
           }
         }
-      });
+      };
+
+      el.addEventListener("click", handleAction);
+
+      // ⭐ 鍵盤支援（role="button" 的元素）
+      if (el.getAttribute('role') === 'button' && !el.matches('button, a')) {
+        el.addEventListener("keydown", (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleAction();
+          }
+        });
+      }
     });
 
     focusEl.querySelectorAll("[data-jump-day]").forEach(el => {
@@ -1564,7 +1696,7 @@ window.AppHeader = (function () {
   window.closePrepOverviewModal = closePrepOverviewModal;
 
   // ============================================================
-  // ⭐ v16.6：滑動式準備清單 Modal
+  // 滑動式準備清單 Modal
   // ============================================================
   function openPrepSwipeModal() {
     const m = document.getElementById('prep-swipe-modal');
@@ -2076,6 +2208,9 @@ function applyMessageTemplate(type) {
   if (navigator.vibrate) navigator.vibrate(6);
 }
 
+/* ============================================================
+ * 📍 分享我的位置（v2：多次採樣 + 精度提示）
+ * ============================================================ */
 function shareMyLocation() {
   if (!window.Messages || !window.Messages.canWrite()) {
     if (typeof showToast === 'function') showToast('🔒 訪客無法分享位置', '⚠️');
@@ -2088,33 +2223,116 @@ function shareMyLocation() {
 
   const btn = document.querySelector('[data-template="location"]');
   const originalHTML = btn ? btn.innerHTML : '';
-  if (btn) { btn.innerHTML = '📡 取得位置中...'; btn.disabled = true; btn.style.opacity = '0.6'; }
+  if (btn) { btn.innerHTML = '📡 定位中...'; btn.disabled = true; btn.style.opacity = '0.6'; }
   if (navigator.vibrate) navigator.vibrate(10);
 
-  navigator.geolocation.getCurrentPosition(
-    async (pos) => {
+  getBestPosition({ duration: 8000, goodEnough: 20 })
+    .then((pos) => {
       if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; btn.style.opacity = ''; }
+
+      if (!pos) {
+        showToast('📍 無法取得位置，請到空曠處再試', '⚠️');
+        if (navigator.vibrate) navigator.vibrate(50);
+        return;
+      }
+
+      const accuracy = Math.round(pos.coords.accuracy);
       const location = {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude,
-        accuracy: pos.coords.accuracy ? Math.round(pos.coords.accuracy) : null
+        accuracy
       };
-      await window.Messages.send('📍 我在這裡', {
-        type: 'location', location, pinned: true, duration: 30 * 60 * 1000
+
+      if (accuracy > 80) {
+        const ok = confirm(
+          `⚠️ 目前定位精度約 ±${accuracy} 公尺\n` +
+          `（訊號較弱，位置可能不準）\n\n` +
+          `要繼續分享嗎？\n\n` +
+          `💡 建議：\n` +
+          `• 移動到窗邊或空曠處\n` +
+          `• 手機設定 → 隱私 → 定位服務 → 開啟「精確位置」\n` +
+          `• 瀏覽器網址列左側 → 位置 → 允許「精確位置」`
+        );
+        if (!ok) return;
+      }
+
+      const accuracyNote = accuracy > 50 ? `（±${accuracy}m）` : '';
+      window.Messages.send(
+        `📍 我在這裡${accuracyNote}`,
+        { type: 'location', location, pinned: true, duration: 30 * 60 * 1000 }
+      ).then(() => {
+        if (accuracy <= 50) {
+          showToast(`✅ 已分享位置（±${accuracy}m）`, '📍');
+        } else {
+          showToast(`✅ 已分享（精度 ±${accuracy}m，可能偏移）`, '📍');
+        }
+        setTimeout(() => {
+          if (typeof closeMessagesModal === 'function') closeMessagesModal();
+        }, 400);
       });
-      if (typeof closeMessagesModal === 'function') setTimeout(() => closeMessagesModal(), 300);
-    },
-    (err) => {
+    })
+    .catch((err) => {
       if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; btn.style.opacity = ''; }
       let msg = '定位失敗';
       if (err.code === 1) msg = '請允許使用位置權限';
-      else if (err.code === 2) msg = '無法取得位置（訊號弱）';
+      else if (err.code === 2) msg = '無法取得位置（訊號弱，請到空曠處再試）';
       else if (err.code === 3) msg = '定位逾時，請再試';
       if (typeof showToast === 'function') showToast('📍 ' + msg, '⚠️');
       if (navigator.vibrate) navigator.vibrate(50);
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-  );
+    });
+}
+
+/* ============================================================
+ * 📡 多次採樣取最佳位置
+ * ============================================================ */
+function getBestPosition({ duration = 8000, goodEnough = 20 } = {}) {
+  return new Promise((resolve, reject) => {
+    let best = null;
+    let watchId = null;
+    let done = false;
+
+    const finish = () => {
+      if (done) return;
+      done = true;
+      if (watchId !== null) {
+        try { navigator.geolocation.clearWatch(watchId); } catch (e) {}
+      }
+      clearTimeout(timer);
+      resolve(best);
+    };
+
+    const timer = setTimeout(finish, duration);
+
+    try {
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          if (!best || pos.coords.accuracy < best.coords.accuracy) {
+            best = pos;
+          }
+          if (pos.coords.accuracy <= goodEnough) finish();
+        },
+        (err) => {
+          if (done) return;
+          done = true;
+          if (watchId !== null) {
+            try { navigator.geolocation.clearWatch(watchId); } catch (e) {}
+          }
+          clearTimeout(timer);
+          if (best) resolve(best);
+          else reject(err);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: duration,
+          maximumAge: 0
+        }
+      );
+    } catch (err) {
+      done = true;
+      clearTimeout(timer);
+      reject(err);
+    }
+  });
 }
 window.shareMyLocation = shareMyLocation;
 
@@ -2252,10 +2470,6 @@ function _svgMsgIcon() {
 
 /* ============================================================
  * ☁️ 下拉同步資料
- *
- * ⭐ v16.5：修正誤觸
- *   - 工具選單 / 搜尋 Modal 開啟時禁止
- *   - 觸控目標是互動元素時禁止（按鈕、連結、輸入、header、底部導航）
  * ============================================================ */
 (function setupPullToSync() {
   const THRESHOLD = 75;

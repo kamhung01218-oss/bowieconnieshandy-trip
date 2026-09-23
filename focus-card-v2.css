@@ -1,0 +1,449 @@
+/* ============================================================
+ * focus-card-v2.css — Focus Card 視覺升級 v2.0
+ *
+ * 方案 A 完整版：
+ *   1. 圓形進度環
+ *   2. 地標剪影
+ *   3. 時段色調
+ *   4. 一週天氣條
+ *   5. 立體 CTA
+ *
+ * ⚠️ 載入順序：必須放在 design-v16.css 之後
+ * ============================================================ */
+
+/* ============================================================
+ * 卡片容器
+ * ============================================================ */
+.app-header .focus-inner-v2 {
+  position: relative;
+  overflow: hidden;
+  padding: 20px 18px 60px !important;
+  transition: background 1s ease;
+}
+
+/* ============================================================
+ * 1. 時段色調
+ *   根據使用者打開 App 的真實時間，頂部 45% 微調色調
+ * ============================================================ */
+
+/* 清晨 05:00–09:00：日出橘粉 */
+.app-header .focus-inner-v2[data-time-of-day="dawn"] {
+  background: linear-gradient(180deg,
+    rgba(255, 196, 158, 0.16) 0%,
+    rgba(255, 255, 255, 0.98) 45%
+  ) !important;
+}
+
+/* 白天 09:00–16:00：天藍 */
+.app-header .focus-inner-v2[data-time-of-day="day"] {
+  background: linear-gradient(180deg,
+    rgba(186, 230, 253, 0.20) 0%,
+    rgba(255, 255, 255, 0.98) 45%
+  ) !important;
+}
+
+/* 黃昏 16:00–19:00：紫橘（像銀山溫泉黃昏） */
+.app-header .focus-inner-v2[data-time-of-day="dusk"] {
+  background: linear-gradient(180deg,
+    rgba(214, 191, 232, 0.18) 0%,
+    rgba(255, 233, 209, 0.12) 30%,
+    rgba(255, 255, 255, 0.98) 55%
+  ) !important;
+}
+
+/* 夜晚 19:00–05:00：深藍 */
+.app-header .focus-inner-v2[data-time-of-day="night"] {
+  background: linear-gradient(180deg,
+    rgba(147, 197, 253, 0.14) 0%,
+    rgba(255, 255, 255, 0.98) 45%
+  ) !important;
+}
+
+/* ============================================================
+ * 頂部：圓環 + 文字（兩欄排版）
+ * ============================================================ */
+.app-header .focus-top-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+ * 1. 圓形進度環
+ * ============================================================ */
+.app-header .focus-ring-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.app-header .focus-ring {
+  width: 100%;
+  height: 100%;
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.app-header .focus-ring-track {
+  fill: none;
+  stroke: #e0f2fe;
+  stroke-width: 8;
+}
+
+.app-header .focus-ring-progress {
+  fill: none;
+  stroke: url(#focusRingGradient);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 2px 6px rgba(14, 165, 233, 0.35));
+}
+
+.app-header .focus-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.app-header .focus-ring-days {
+  font-family: var(--t-font-num);
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--t-color-primary-deep);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-header .focus-ring-unit {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--t-color-primary);
+  letter-spacing: 0.15em;
+  margin-top: 2px;
+}
+
+/* ============================================================
+ * 圓環右側文字
+ * ============================================================ */
+.app-header .focus-ring-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-header .focus-ring-info .focus-label {
+  margin-bottom: 6px;
+}
+
+.app-header .focus-time-remaining {
+  font-family: var(--t-font-num);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--t-color-primary-dark);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.app-header .focus-time-remaining small {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--t-color-primary);
+  margin-left: 2px;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+ * 4. 一週天氣條（7 天）
+ * ============================================================ */
+.app-header .focus-weekly-weather {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin: 0 0 14px;
+  padding: 10px 8px;
+  background: rgba(240, 249, 255, 0.6);
+  border: 1px solid rgba(186, 230, 253, 0.7);
+  border-radius: 12px;
+}
+
+.app-header .focus-weather-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 2px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.app-header .focus-weather-day-active {
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.app-header .focus-weather-day-date {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--t-color-text-mute);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-header .focus-weather-day-active .focus-weather-day-date {
+  color: var(--t-color-primary);
+}
+
+.app-header .focus-weather-day-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.app-header .focus-weather-day-temp {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--t-color-text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.app-header .focus-weather-day-active .focus-weather-day-temp {
+  color: var(--t-color-primary-dark);
+}
+
+/* ============================================================
+ * 5. 立體 CTA
+ * ============================================================ */
+.app-header .focus-cta-primary {
+  box-shadow:
+    0 4px 0 #0369a1,
+    0 6px 16px rgba(2, 132, 199, 0.3) !important;
+  transform: translateY(0);
+  transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+}
+
+.app-header .focus-cta-primary:active {
+  transform: translateY(3px) !important;
+  box-shadow:
+    0 1px 0 #0369a1,
+    0 2px 6px rgba(2, 132, 199, 0.3) !important;
+}
+
+/* ============================================================
+ * 2. 地標剪影（山脈）
+ * ============================================================ */
+.app-header .focus-mountains {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 80' preserveAspectRatio='none'%3E%3Cpath d='M0 80 L0 42 L70 22 L140 44 L220 18 L310 40 L400 24 L500 46 L600 20 L700 38 L800 16 L900 42 L1000 22 L1100 44 L1200 18 L1200 80 Z' fill='%230284c7'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 所有內容浮在剪影之上 */
+.app-header .focus-inner-v2 > *:not(.focus-mountains) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+ * 深色模式
+ * ============================================================ */
+
+/* 時段色調：深色模式 */
+[data-theme="dark"] .app-header .focus-inner-v2[data-time-of-day="dawn"] {
+  background: linear-gradient(180deg,
+    rgba(120, 53, 15, 0.35) 0%,
+    rgba(30, 41, 59, 0.95) 45%
+  ) !important;
+}
+[data-theme="dark"] .app-header .focus-inner-v2[data-time-of-day="day"] {
+  background: linear-gradient(180deg,
+    rgba(7, 89, 133, 0.4) 0%,
+    rgba(30, 41, 59, 0.95) 45%
+  ) !important;
+}
+[data-theme="dark"] .app-header .focus-inner-v2[data-time-of-day="dusk"] {
+  background: linear-gradient(180deg,
+    rgba(76, 29, 149, 0.35) 0%,
+    rgba(120, 53, 15, 0.25) 30%,
+    rgba(30, 41, 59, 0.95) 55%
+  ) !important;
+}
+[data-theme="dark"] .app-header .focus-inner-v2[data-time-of-day="night"] {
+  background: linear-gradient(180deg,
+    rgba(12, 74, 110, 0.5) 0%,
+    rgba(30, 41, 59, 0.95) 45%
+  ) !important;
+}
+
+/* 圓環 */
+[data-theme="dark"] .app-header .focus-ring-track {
+  stroke: #334155;
+}
+[data-theme="dark"] .app-header .focus-ring-days {
+  color: #e0f2fe;
+}
+[data-theme="dark"] .app-header .focus-ring-unit {
+  color: #7dd3fc;
+}
+[data-theme="dark"] .app-header .focus-time-remaining {
+  color: #7dd3fc;
+}
+[data-theme="dark"] .app-header .focus-time-remaining small {
+  color: #38bdf8;
+}
+
+/* 天氣條 */
+[data-theme="dark"] .app-header .focus-weekly-weather {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(51, 65, 85, 0.7);
+}
+[data-theme="dark"] .app-header .focus-weather-day-active {
+  background: rgba(56, 189, 248, 0.15);
+}
+[data-theme="dark"] .app-header .focus-weather-day-date {
+  color: #64748b;
+}
+[data-theme="dark"] .app-header .focus-weather-day-active .focus-weather-day-date {
+  color: #7dd3fc;
+}
+[data-theme="dark"] .app-header .focus-weather-day-temp {
+  color: #94a3b8;
+}
+[data-theme="dark"] .app-header .focus-weather-day-active .focus-weather-day-temp {
+  color: #7dd3fc;
+}
+
+/* 剪影：深色模式 */
+[data-theme="dark"] .app-header .focus-mountains {
+  opacity: 0.06;
+  filter: brightness(2.5);
+}
+
+/* 立體 CTA：深色模式 */
+[data-theme="dark"] .app-header .focus-cta-primary {
+  box-shadow:
+    0 4px 0 #0c4a6e,
+    0 6px 16px rgba(0, 0, 0, 0.4) !important;
+}
+[data-theme="dark"] .app-header .focus-cta-primary:active {
+  box-shadow:
+    0 1px 0 #0c4a6e,
+    0 2px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ============================================================
+ * 小螢幕
+ * ============================================================ */
+@media (max-width: 380px) {
+  .app-header .focus-inner-v2 {
+    padding: 16px 14px 55px !important;
+  }
+  .app-header .focus-ring-wrap {
+    width: 100px;
+    height: 100px;
+  }
+  .app-header .focus-ring-days {
+    font-size: 30px;
+  }
+  .app-header .focus-ring-unit {
+    font-size: 10px;
+  }
+  .app-header .focus-top-row {
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .app-header .focus-time-remaining {
+    font-size: 18px;
+  }
+  .app-header .focus-weekly-weather {
+    gap: 3px;
+    padding: 8px 6px;
+  }
+  .app-header .focus-weather-day-icon {
+    font-size: 13px;
+  }
+  .app-header .focus-weather-day-date,
+  .app-header .focus-weather-day-temp {
+    font-size: 9px;
+  }
+  .app-header .focus-mountains {
+    height: 55px;
+  }
+}
+
+/* ============================================================
+ * 無障礙：偏好減少動態
+ * ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .app-header .focus-ring-progress {
+    transition: none;
+  }
+  .app-header .focus-cta-primary {
+    transition: none !important;
+  }
+}
+/* ============================================================
+ * ⭐ v16.8：可點擊天氣欄
+ * ============================================================ */
+.app-header .focus-weather-clickable {
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* hover（桌面） */
+@media (hover: hover) {
+  .app-header .focus-weather-clickable:hover {
+    background: rgba(224, 242, 254, 0.8) !important;
+    border-color: rgba(56, 189, 248, 0.6) !important;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.12);
+  }
+  [data-theme="dark"] .app-header .focus-weather-clickable:hover {
+    background: rgba(12, 74, 110, 0.5) !important;
+    border-color: rgba(56, 189, 248, 0.35) !important;
+  }
+}
+
+/* active（按下） */
+.app-header .focus-weather-clickable:active {
+  transform: scale(0.985);
+  background: rgba(186, 230, 253, 0.9) !important;
+  border-color: rgba(14, 165, 233, 0.7) !important;
+}
+[data-theme="dark"] .app-header .focus-weather-clickable:active {
+  background: rgba(7, 89, 133, 0.6) !important;
+  border-color: rgba(125, 211, 252, 0.5) !important;
+}
+
+/* focus（鍵盤） */
+.app-header .focus-weather-clickable:focus-visible {
+  outline: 2px solid #0284c7;
+  outline-offset: 2px;
+}
+
+/* 天氣 Tab 內部：確保不被外層 active 樣式干擾 */
+.app-header .focus-weather-clickable .focus-weather-tab {
+  cursor: pointer;
+}
+.app-header .focus-weather-clickable .focus-weather-tab:active {
+  transform: scale(0.94);
+}
+
+/* 無障礙：減少動態 */
+@media (prefers-reduced-motion: reduce) {
+  .app-header .focus-weather-clickable {
+    transition: none;
+  }
+}
