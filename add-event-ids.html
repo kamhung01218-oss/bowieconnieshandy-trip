@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🆔 為 data.js 加 ID（瀏覽器版）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Noto Sans TC', sans-serif;
+    background: linear-gradient(180deg, #0f172a, #1e293b);
+    min-height: 100vh;
+    padding: 20px;
+    color: #e2e8f0;
+  }
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 24px;
+    max-width: 500px;
+    margin: 0 auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  h1 { font-size: 18px; font-weight: 900; margin-bottom: 6px; color: #38bdf8; }
+  .sub { font-size: 12px; color: #94a3b8; line-height: 1.7; margin-bottom: 18px; }
+  .sub code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; color: #7dd3fc; font-size: 11px; }
+  .step {
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid #38bdf8;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .step strong { color: #7dd3fc; }
+  button, label.btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: white;
+    margin-bottom: 10px;
+    display: block;
+    text-align: center;
+  }
+  button:active, label.btn:active { transform: scale(0.97); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+  .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
+  .btn-ghost { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; }
+  input[type="file"] { display: none; }
+  .status {
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.6;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status.idle { background: rgba(148,163,184,0.15); color: #cbd5e1; }
+  .status.ok { background: rgba(52,211,153,0.15); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.3); }
+  .status.err { background: rgba(248,113,113,0.15); color: #fca5a5; border: 1px solid rgba(248,113,113,0.3); }
+  .log {
+    background: rgba(0,0,0,0.35);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'Menlo', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #94a3b8;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🆔 data.js 加 ID 工具</h1>
+  <p class="sub">
+    為 <code>data.js</code> 的每個事件加上穩定 <code>id</code>，讓附件、拍攝建議等資料在調換行程順序後不會錯位。
+  </p>
+
+  <div class="step">
+    <strong>步驟 1</strong><br>
+    點下方按鈕，從手機選擇你的 <code>data.js</code> 檔案
+  </div>
+  <label for="file-input" class="btn btn-primary">📁 選擇 data.js</label>
+  <input type="file" id="file-input">
+
+  <div class="step">
+    <strong>步驟 2</strong><br>
+    程式自動處理 → 下載新的 <code>data.js</code>
+  </div>
+  <button id="btn-download" class="btn btn-success" disabled>⬇️ 下載新的 data.js</button>
+
+  <div id="status" class="status idle">
+    <span>⏳</span>
+    <span id="status-text">等待選擇檔案…</span>
+  </div>
+
+  <div class="step">
+    <strong>⚠️ 重要</strong><br>
+    下載後，用新的 <code>data.js</code> <b>覆蓋</b>手機上的舊檔案，然後<b>立刻</b>開 <code>migrate-attachments.html</code> 執行雲端遷移。
+  </div>
+
+  <div class="log" id="log">等待操作…</div>
+</div>
+
+<script>
+// ============================================================
+// 工具：title → id（與 add-event-ids.js 相同邏輯）
+// ============================================================
+function titleToId(title) {
+  if (!title) return 'event';
+  let s = String(title);
+  s = s.replace(/[（）()【】\[\]「」『』""'']/g, '');
+  s = s.replace(/[，,。.、；;：:！!？?·・｜|]/g, '');
+  s = s.replace(/[➔→⇒▶►]/g, '-');
+  s = s.replace(/[&＆]/g, '-');
+  s = s.replace(/[-–—－]/g, '-');
+  s = s.replace(/\s+/g, '-');
+  s = s.replace(/-+/g, '-');
+  s = s.replace(/^-|-$/g, '');
+  return s || 'event';
+}
+
+const fileInput = document.getElementById('file-input');
+const btnDownload = document.getElementById('btn-download');
+const statusEl = document.getElementById('status');
+const statusText = document.getElementById('status-text');
+const logEl = document.getElementById('log');
+
+let _newContent = '';
+let _newFilename = 'data.js';
+
+function log(msg) {
+  const t = new Date().toLocaleTimeString('zh-HK');
+  logEl.textContent = `[${t}] ${msg}\n` + logEl.textContent;
+}
+function setStatus(type, text) {
+  statusEl.className = 'status ' + type;
+  statusText.textContent = text;
+}
+
+// ============================================================
+// 主處理流程
+// ============================================================
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  logEl.textContent = '';
+  setStatus('idle', '讀取檔案中…');
+  btnDownload.disabled = true;
+  _newContent = '';
+
+  const reader = new FileReader();
+  reader.onerror = () => {
+    setStatus('err', '❌ 讀取失敗');
+    log('❌ FileReader error');
+  };
+  reader.onload = (ev) => {
+    const originalContent = String(ev.target.result);
+    log(`✅ 讀取成功（${(file.size / 1024).toFixed(1)} KB）`);
+    processContent(originalContent);
+  };
+  reader.readAsText(file, 'utf-8');
+});
+
+function processContent(content) {
+  let newContent = content;
+
+  // 1. 移除舊 id
+  newContent = newContent.replace(/^(\s*)id:\s*"[^"]*",\s*\n/gm, '');
+  newContent = newContent.replace(/^(\s*)id:\s*'[^']*',\s*\n/gm, '');
+  log('🧹 已移除舊 id（如有）');
+
+  // 2. 收集所有 title
+  const titleRegex = /title:\s*"([^"]+)"/g;
+  const titles = [];
+  let m;
+  while ((m = titleRegex.exec(newContent)) !== null) {
+    titles.push(m[1]);
+  }
+  log(`📋 掃描到 ${titles.length} 個 title`);
+
+  if (titles.length === 0) {
+    setStatus('err', '❌ 找不到任何 title，請確認檔案是否為 data.js');
+    return;
+  }
+
+  // 3. 產生唯一 ID
+  const usedIds = new Set();
+  const titleToGeneratedId = new Map();
+  titles.forEach(title => {
+    const baseId = titleToId(title);
+    let id = baseId;
+    let n = 2;
+    while (usedIds.has(id)) {
+      id = `${baseId}-${n}`;
+      n++;
+    }
+    usedIds.add(id);
+    titleToGeneratedId.set(title, id);
+  });
+
+  // 4. 插入 id
+  let inserted = 0;
+  newContent = newContent.replace(
+    /(\n(\s*)title:\s*"([^"]+)")/g,
+    (full, titlePart, indent, title) => {
+      const id = titleToGeneratedId.get(title);
+      if (!id) return full;
+      inserted++;
+      return `\n${indent}id: "${id}",${titlePart}`;
+    }
+  );
+  log(`✏️ 已插入 ${inserted} 個 id`);
+
+// 5. 語法檢查（用 Function 建構子，不執行）
+try {
+  // eslint-disable-next-line no-new-func
+  new Function(newContent);
+  log('🔍 語法檢查通過');
+} catch (err) {
+    setStatus('err', '❌ 語法檢查失敗：' + err.message);
+    log('❌ 語法錯誤：' + err.message);
+    return;
+  }
+
+  if (newContent === content) {
+    setStatus('ok', 'ℹ️ 內容無變化（可能已經有 id 了）');
+    log('ℹ️ 內容未變化');
+    return;
+  }
+
+  _newContent = newContent;
+  btnDownload.disabled = false;
+  setStatus('ok', `✅ 處理完成！插入了 ${inserted} 個 id`);
+  log('🎉 準備好下載');
+}
+
+// ============================================================
+// 下載
+// ============================================================
+btnDownload.addEventListener('click', () => {
+  if (!_newContent) return;
+  const blob = new Blob([_newContent], { type: 'text/javascript;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = _newFilename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  log(`⬇️ 已下載 ${_newFilename}`);
+  setStatus('ok', '✅ 已下載！請覆蓋原本的 data.js');
+});
+</script>
+</body>
+</html>

@@ -1,11 +1,10 @@
 /* ============================================================
- * attachments-overview.js — 附件總覽 v1.0
+ * attachments-overview.js — 附件總覽 v1.1
  *
- * 功能：
- *   - 聚合 Firestore 所有附件（cloudAttachments）
- *   - 依 Day 分組、可篩選「我上傳的」
- *   - 點標題跳回行程卡片
- *   - 相簿快速入口
+ * v1.1 新增：
+ *   - ⭐ 整合記帳收據（state.expenses[].receipts）
+ *   - ⭐ 記帳收據點擊 → 開燈箱
+ *   - ⭐ 記帳收據標題 → 跳記帳本
  * ============================================================ */
 
 (function () {
@@ -35,20 +34,26 @@
     try { return typeof window.isAdminUnlocked === 'function' && window.isAdminUnlocked(); }
     catch (e) { return false; }
   }
+  function _getExpenses() {
+    try {
+      if (typeof state !== 'undefined' && Array.isArray(state.expenses)) return state.expenses;
+      if (window.state && Array.isArray(window.state.expenses)) return window.state.expenses;
+    } catch (e) {}
+    return [];
+  }
 
   // ============================================================
   // 建立 eventKey → { day, index, title } 對照表
-  // 同時支援新格式（event.id）與舊格式（d{day}-e{index}）
   // ============================================================
   function _buildKeyLookup() {
     const lookup = {};
-    const itineraries = window.winterItineraries || [];
+    const itineraries = (typeof winterItineraries !== 'undefined')
+      ? winterItineraries
+      : (window.winterItineraries || []);
     itineraries.forEach(day => {
       day.events.forEach((evt, idx) => {
         const entry = { day: day.day, index: idx, title: evt.title };
-        // 舊格式永遠存在
         lookup[`d${day.day}-e${idx}`] = entry;
-        // 新格式（若 data.js 已加 id）
         if (evt.id) lookup[evt.id] = entry;
       });
     });
@@ -56,13 +61,14 @@
   }
 
   // ============================================================
-  // 聚合所有附件，依 Day 分組
+  // 聚合所有附件（行程 + 記帳收據），依 Day 分組
   // ============================================================
   function _getAllAttachmentsGrouped() {
     const attachments = window.cloudAttachments || {};
     const lookup = _buildKeyLookup();
-    const grouped = {}; // { dayNum: [ { eventKey, title, index, items } ] }
+    const grouped = {};
 
+    // 1. 行程附件
     Object.keys(attachments).forEach(eventKey => {
       const list = attachments[eventKey];
       if (!Array.isArray(list) || list.length === 0) return;
@@ -79,21 +85,39 @@
         eventKey,
         eventTitle: meta.title,
         eventIndex: meta.index,
+        isExpense: false,
         items: list
       });
     });
 
-    // 依 index 排序
+    // 2. 記帳收據
+    const expenses = _getExpenses();
+    expenses.forEach(exp => {
+      if (!Array.isArray(exp.receipts) || exp.receipts.length === 0) return;
+      const day = parseInt(exp.day) || 1;
+      if (!grouped[day]) grouped[day] = [];
+      grouped[day].push({
+        eventKey: `expense-${exp.id}`,
+        eventTitle: `🧾 ${exp.desc || '未命名'}（${exp.amount} ${exp.currency}）`,
+        eventIndex: -1,
+        isExpense: true,
+        expenseId: exp.id,
+        items: exp.receipts
+      });
+    });
+
+    // 3. 排序：行程在前，記帳在後
     Object.values(grouped).forEach(arr => {
-      arr.sort((a, b) => a.eventIndex - b.eventIndex);
+      arr.sort((a, b) => {
+        if (a.isExpense && !b.isExpense) return 1;
+        if (!a.isExpense && b.isExpense) return -1;
+        return a.eventIndex - b.eventIndex;
+      });
     });
 
     return grouped;
   }
 
-  // ============================================================
-  // 篩選狀態
-  // ============================================================
   let _attFilter = 'all';
 
   // ============================================================
@@ -106,9 +130,7 @@
     const grouped = _getAllAttachmentsGrouped();
     const me = _currentUser();
 
-    // 統計
-    let totalAll = 0;
-    let totalMine = 0;
+    let totalAll = 0, totalMine = 0;
     Object.values(grouped).forEach(arr => {
       arr.forEach(g => {
         totalAll += g.items.length;
@@ -121,7 +143,6 @@
     if (elAll) elAll.textContent = totalAll;
     if (elMine) elMine.textContent = totalMine;
 
-    // 空狀態
     if (totalAll === 0) {
       container.innerHTML = `
         <div class="att-empty">
@@ -135,7 +156,6 @@
       return;
     }
 
-    // 若選「我上傳的」但沒有 → 提示
     if (_attFilter === 'mine' && totalMine === 0) {
       container.innerHTML = `
         <div class="att-empty">
@@ -146,14 +166,12 @@
       return;
     }
 
-    // 渲染
     let html = '';
     const dayNums = Object.keys(grouped).map(Number).sort((a, b) => a - b);
 
     dayNums.forEach(dayNum => {
       const events = grouped[dayNum];
 
-      // 套用篩選
       const filteredEvents = events.map(g => {
         const items = _attFilter === 'mine'
           ? g.items.filter(a => a.uploader === me)
@@ -175,10 +193,19 @@
         const safeKey = _esc(g.eventKey);
 
         html += `<div class="att-event-block">`;
-        html += `<button type="button" class="att-event-title" onclick="jumpToEventFromAttachments(${dayNum}, ${g.eventIndex})">`;
-        html += `<span class="att-event-title-text">${_esc(g.eventTitle)}</span>`;
-        html += `<span class="att-event-title-arrow">›</span>`;
-        html += `</button>`;
+
+        if (g.isExpense) {
+          html += `<button type="button" class="att-event-title att-event-title-expense" onclick="jumpToLedgerFromAttachments()">`;
+          html += `<span class="att-event-title-text">${_esc(g.eventTitle)}</span>`;
+          html += `<span class="att-event-title-arrow">›</span>`;
+          html += `</button>`;
+        } else {
+          html += `<button type="button" class="att-event-title" onclick="jumpToEventFromAttachments(${dayNum}, ${g.eventIndex})">`;
+          html += `<span class="att-event-title-text">${_esc(g.eventTitle)}</span>`;
+          html += `<span class="att-event-title-arrow">›</span>`;
+          html += `</button>`;
+        }
+
         html += `<div class="att-thumb-grid">`;
 
         g.items.forEach((att, i) => {
@@ -186,11 +213,21 @@
           const canDelete = _canWrite() && (att.uploader === me || _isAdmin());
 
           html += `<div class="att-thumb">`;
-          html += `<img src="${_esc(att.thumb || att.url)}" alt="" loading="lazy" decoding="async"`;
-          html += ` onclick="Uploads.openAttLightbox('${safeKey}', ${i})">`;
+          if (g.isExpense) {
+            html += `<img src="${_esc(att.thumb || att.url)}" alt="" loading="lazy" decoding="async"`;
+            html += ` onclick="openExpenseReceiptLightbox('${_esc(g.expenseId)}', ${i})">`;
+          } else {
+            html += `<img src="${_esc(att.thumb || att.url)}" alt="" loading="lazy" decoding="async"`;
+            html += ` onclick="Uploads.openAttLightbox('${safeKey}', ${i})">`;
+          }
+
           if (canDelete) {
             html += `<button type="button" class="att-thumb-del"`;
-            html += ` onclick="event.stopPropagation();Uploads.deleteAttachment('${safeKey}','${safeId}');setTimeout(renderAttachmentsOverview,300)"`;
+            if (g.isExpense) {
+              html += ` onclick="event.stopPropagation();deleteExpenseReceiptFromOverview('${_esc(g.expenseId)}','${safeId}')"`;
+            } else {
+              html += ` onclick="event.stopPropagation();Uploads.deleteAttachment('${safeKey}','${safeId}');setTimeout(renderAttachmentsOverview,300)"`;
+            }
             html += ` aria-label="刪除">×</button>`;
           }
           html += `</div>`;
@@ -205,9 +242,6 @@
     container.innerHTML = html;
   }
 
-  // ============================================================
-  // 篩選切換
-  // ============================================================
   function setAttFilter(filter) {
     _attFilter = filter === 'mine' ? 'mine' : 'all';
     document.querySelectorAll('.att-filter-btn').forEach(btn => {
@@ -217,9 +251,6 @@
     _haptic(6);
   }
 
-  // ============================================================
-  // 開啟 / 關閉
-  // ============================================================
   function openAttachmentsOverview() {
     const m = document.getElementById('attachments-overview-modal');
     if (!m) {
@@ -250,9 +281,6 @@
     _haptic(6);
   }
 
-  // ============================================================
-  // 跳回行程卡片
-  // ============================================================
   function jumpToEventFromAttachments(day, eventIndex) {
     closeAttachmentsOverview();
     setTimeout(() => {
@@ -281,14 +309,47 @@
     _haptic(12);
   }
 
-  // ============================================================
-  // 匯出
-  // ============================================================
+  function jumpToLedgerFromAttachments() {
+    closeAttachmentsOverview();
+    setTimeout(() => {
+      if (typeof window.switchMainTab === 'function') {
+        window.switchMainTab('ledger');
+      }
+    }, 250);
+    _haptic(12);
+  }
+
+  function openExpenseReceiptLightbox(expenseId, index) {
+    const expenses = _getExpenses();
+    const exp = expenses.find(e => e.id === expenseId);
+    if (!exp) return;
+    const urls = (exp.receipts || []).map(r => r.url);
+    if (typeof window.openLightbox === 'function') {
+      window.openLightbox(urls, index);
+    }
+  }
+
+  function deleteExpenseReceiptFromOverview(expenseId, receiptId) {
+    if (!_canWrite()) return;
+    if (typeof window.deleteReceipt === 'function') {
+      window.deleteReceipt(expenseId, receiptId);
+      setTimeout(renderAttachmentsOverview, 800);
+    } else {
+      console.warn('[附件總覽] deleteReceipt 未載入');
+      if (typeof window.showToast === 'function') {
+        window.showToast('⚠️ 無法刪除記帳收據', '⚠️');
+      }
+    }
+  }
+
   window.openAttachmentsOverview = openAttachmentsOverview;
   window.closeAttachmentsOverview = closeAttachmentsOverview;
   window.setAttFilter = setAttFilter;
   window.jumpToEventFromAttachments = jumpToEventFromAttachments;
+  window.jumpToLedgerFromAttachments = jumpToLedgerFromAttachments;
+  window.openExpenseReceiptLightbox = openExpenseReceiptLightbox;
+  window.deleteExpenseReceiptFromOverview = deleteExpenseReceiptFromOverview;
   window.renderAttachmentsOverview = renderAttachmentsOverview;
 
-  console.log('[附件總覽] v1.0 載入完成');
+  console.log('[附件總覽] v1.1 載入完成（含記帳收據整合）');
 })();

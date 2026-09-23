@@ -894,6 +894,26 @@ function openPhotoAlbum() {
 }
 window.openPhotoAlbum = openPhotoAlbum;
 
+// ==================== 📡 離線 / 上線提示 ====================
+window.addEventListener('offline', () => {
+  if (typeof showToast === 'function') {
+    showToast('📡 已離線，資料將於恢復後同步', '⚠️');
+  }
+  haptic(50);
+});
+
+window.addEventListener('online', () => {
+  if (typeof showToast === 'function') {
+    showToast('✅ 網路已恢復', '🌐');
+  }
+  haptic(15);
+  setTimeout(() => {
+    if (typeof window._AppHeader_syncAll === 'function') {
+      window._AppHeader_syncAll().catch(() => {});
+    }
+  }, 800);
+});
+
 // ==================== Service Worker ====================
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

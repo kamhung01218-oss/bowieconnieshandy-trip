@@ -17,12 +17,14 @@ const winterItineraries = [
   {
     day: 1,
     dateLabel: "DAY 1 · 2027年1月21日 (週四)",
+    id: "落地仙台-機場美食充電-瑞鳳溫泉放電",
     title: "落地仙台 ➔ 機場美食充電 ➔ 瑞鳳溫泉放電",
     subtitle: "♨️ 秋保溫泉初體驗",
     emoji: "♨️",
     events: [
       {
         time: "14:05 - 14:50",
+        id: "落地仙台機場-SDJ-入境手續",
         title: "落地仙台機場 (SDJ) & 入境手續",
         img: "https://hk.wamazing.com/media/wp-content/uploads/sites/5/2024/08/sdjdutyfreeshop_pixta_98589488_M.jpg.webp",
         tag: { text: "🛬 抵達雪國", class: "tag-teal" },
@@ -41,6 +43,7 @@ const winterItineraries = [
       },
       {
         time: "14:50 - 15:30",
+        id: "仙台機場美食充電",
         title: "仙台機場美食充電",
         tag: { text: "🍽️ 機場美食", class: "tag-amber" },
         navUrl: "",
@@ -61,6 +64,7 @@ const winterItineraries = [
       },
       {
         time: "15:30 - 16:00",
+        id: "提領-Nippon-Rent-A-Car-7-8-人座雪地車",
         title: "提領 Nippon Rent-A-Car 7-8 人座雪地車",
         img: "https://rimage.gnst.jp/livejapan.com/public/img/spot/lj/01/45/lj0145539/lj0145539_6a39f0b20dd93_main.jpg",
         tag: { text: "🚗 冬季自駕", class: "tag-teal" },
@@ -81,6 +85,7 @@ const winterItineraries = [
       },
       {
         time: "16:00 - 16:45",
+        id: "平地直達秋保溫泉",
         title: "平地直達秋保溫泉",
         tag: { text: "🛣️ 零風險路線", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Hotel+Zuiho+Akiu",
@@ -98,6 +103,7 @@ const winterItineraries = [
       },
       {
         time: "16:45 - 17:00",
+        id: "抵達秋保溫泉瑞鳳大飯店Check-in",
         title: "抵達秋保溫泉「瑞鳳大飯店」Check-in",
         img: "https://rimage.gnst.jp/livejapan.com/public/article/detail/a/30/00/a3000138/img/zh-tw/a3000138_parts_5f717fd1acf77.jpg?20210210161203&q=80&rw=686&rh=490",
         images: [
@@ -125,6 +131,7 @@ const winterItineraries = [
       },
       {
         time: "17:30 - 19:30",
+        id: "饗宴Seasons豪華自助晚餐",
         title: "饗宴「Seasons」豪華自助晚餐",
         img: "https://img.kenalice.tw/2025/04/20250420231941_0_5dbb05.jpg",
         tag: { text: "🦀 痛快美食", class: "tag-amber" },
@@ -147,6 +154,7 @@ const winterItineraries = [
       },
       {
         time: "20:30 -",
+        id: "露天雪景風呂-榻榻米好眠",
         title: "露天雪景風呂 → 榻榻米好眠",
         img: "https://rimage.gnst.jp/livejapan.com/public/article/detail/a/30/00/a3000138/img/zh-tw/a3000138_parts_5f717fbc08a88.jpg?20210210161203&q=80&rw=686&rh=490",
         tag: { text: "♨️ 泡湯暖身", class: "tag-sky" },
@@ -172,12 +180,14 @@ const winterItineraries = [
 {
   day: 2,
   dateLabel: "DAY 2 · 2027年1月22日 (週五)",
+  id: "AEON-買裝備-幼兒充電-銀山溫泉夢幻夜景",
   title: "AEON 買裝備 ➔ 幼兒充電 ➔ 銀山溫泉夢幻夜景",
   subtitle: "🏮 大正浪漫銀山夜景",
   emoji: "🏮",
   events: [
     {
       time: "09:30 - 10:30",
+      id: "退房出發跨縣前往山形天童",
       title: "退房出發，跨縣前往山形天童",
       tag: { text: "🚗 雪地幹線", class: "tag-teal" },
       navUrl: "",
@@ -198,6 +208,7 @@ const winterItineraries = [
     },
     {
       time: "10:30 - 14:30",
+      id: "AEON-MALL-天童裝備補給與美食",
       title: "AEON MALL 天童：裝備補給與美食",
       img: "https://japanshopping.org/files/shopimg/84ab29edbe4c8f9e96cfb4024eb95bc2.jpg",
       tag: { text: "🛍️ 裝備補給", class: "tag-rose" },
@@ -228,6 +239,7 @@ const winterItineraries = [
     },
     {
       time: "14:30 - 15:00",
+      id: "YUKIHIRA-COFFEE-休憩",
       title: "YUKIHIRA COFFEE 休憩",
       img: "https://cdn-ak.f.st-hatena.com/images/fotolife/d/deep-karuma-waap-ec-real-s1/20260720/20260720185804.jpg",
       tag: { text: "☕ 咖啡小憩", class: "tag-amber" },
@@ -242,6 +254,7 @@ const winterItineraries = [
     },
     {
       time: "15:00 - 15:30",
+      id: "微笑の宿-瀧之湯-Check-in",
       title: "微笑の宿 瀧之湯 Check-in",
       img: "https://sendai-kouiki-mice.com/wp-content/uploads/2024/12/pic-hohoeminoyado-02.jpg",
       tag: { text: "🏨 溫泉名宿", class: "tag-indigo" },
@@ -257,6 +270,7 @@ const winterItineraries = [
     },
     {
       time: "15:30 - 19:15",
+      id: "極重要銀山溫泉夢幻夜景",
       title: "【極重要】銀山溫泉夢幻夜景",
       img: "https://mimigo.tw/wp-content/uploads/20230105083619_51.jpg",
       tag: { text: "🏮 大正浪漫", class: "tag-sky" },
@@ -287,6 +301,7 @@ const winterItineraries = [
     },
     {
       time: "19:30 - 21:00",
+      id: "天童溫泉周邊深夜美食",
       title: "天童溫泉周邊深夜美食",
       tag: { text: "🥩 彈性晚餐", class: "tag-amber" },
       navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
@@ -334,12 +349,14 @@ const winterItineraries = [
 {
   day: 3,
   dateLabel: "DAY 3 · 2027年1月23日 (週六)",
+  id: "自駕直達藏王樹冰-壽司午餐-瀧之湯包廂與懷石",
   title: "自駕直達藏王樹冰 ➔ 壽司午餐 ➔ 瀧之湯包廂與懷石",
   subtitle: "☃️ 藏王樹冰震撼之旅",
   emoji: "☃️",
   events: [
     {
       time: "07:40 - 09:20",
+      id: "提早出發全自駕直達藏王纜車站",
       title: "提早出發，全自駕直達藏王纜車站",
       img: "https://cclalice.com/wp-content/uploads/2024/12/DSC09203-1170x780.jpg",
       tag: { text: "🚗 週末早鳥", class: "tag-teal" },
@@ -357,6 +374,7 @@ const winterItineraries = [
     },
     {
       time: "09:20 - 12:30",
+      id: "搭乘雙段纜車登頂-觀賞震撼藏王樹冰",
       title: "搭乘雙段纜車登頂 ➔ 觀賞震撼「藏王樹冰」",
       img: "https://hk.wamazing.com/media/wp-content/uploads/sites/5/2023/09/zaoujuhyou_pixta_73308950_M.jpg.webp",
       images: [
@@ -410,6 +428,7 @@ const winterItineraries = [
     },
     {
       time: "12:30 - 14:00",
+      id: "山形市區午餐-うまい鮨勘-山形南支店",
       title: "山形市區午餐 ➔ うまい鮨勘 山形南支店",
       img: "https://site-images.hp.admin.can-ly.com/images/cms/edited/directories/18/stores/214980/20260123165120%E5%B1%B1%E5%BD%A2%E5%8D%97%E6%94%AF%E5%BA%97.JPG",
       tag: { text: "🍣 人氣壽司", class: "tag-amber" },
@@ -432,6 +451,7 @@ const winterItineraries = [
     },
  {
   time: "14:30 - 15:30",
+  id: "寒河江草莓園-冬季溫室草莓吃到飽",
   title: "寒河江草莓園 ➔ 冬季溫室草莓吃到飽",
   img: "https://i.meee.com.tw/wLuaEeJ.jpg",
   tag: { text: "🍓 溫室採果", class: "tag-sky" },
@@ -456,6 +476,7 @@ const winterItineraries = [
 },
     {
       time: "15:30 - 16:30",
+      id: "返回天童溫泉市區輕鬆漫步",
       title: "返回天童溫泉，市區輕鬆漫步",
       tag: { text: "☕ 悠閒午後", class: "tag-indigo" },
       navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
@@ -469,6 +490,7 @@ const winterItineraries = [
     },
     {
       time: "16:30 - 20:00",
+      id: "獨享貸切風呂與懷石晚餐",
       title: "獨享「貸切風呂」與懷石晚餐",
       img: "https://www.nipponsensor.net/wp-content/uploads/2025/08/%E5%BE%AE%E7%AC%91%E4%B9%8B%E5%AE%BF%E7%80%A7%E4%B9%8B%E6%B9%AF-04.jpg",
       tag: { text: "♨️ 私人包廂", class: "tag-indigo" },
@@ -493,12 +515,14 @@ const winterItineraries = [
 {
   day: 4,
   dateLabel: "DAY 4 · 2027年1月24日 (週日)",
+  id: "Spring-Valley-泉高原玩雪-入住-Hotel-Grand-Bach",
   title: "Spring Valley 泉高原玩雪 ➔ 入住 Hotel Grand Bach",
   subtitle: "⛷️ 玩雪放電再出發",
   emoji: "⛷️",
   events: [
     {
       time: "09:30 - 10:45",
+      id: "退房出發跨縣前往Spring-Valley-仙台泉",
       title: "退房出發，跨縣前往【Spring Valley 仙台泉】",
       img: "https://lovetogo.tw/201802-tohoku/spring-valley/photo/20180204-1124-0289.jpg",
       tag: { text: "🚗 雪地自駕", class: "tag-teal" },
@@ -517,6 +541,7 @@ const winterItineraries = [
     },
     {
       time: "10:45 - 14:30",
+      id: "雪之冒險王國玩雪放電與滑雪場午餐",
       title: "【雪之冒險王國】玩雪放電與滑雪場午餐",
       img: "https://lovetogo.tw/201802-tohoku/spring-valley/photo/20180204-1310-0344.jpg",
       tag: { text: "☃️ 玩雪放電", class: "tag-sky" },
@@ -556,6 +581,7 @@ const winterItineraries = [
     },
     {
       time: "14:30 - 15:30",
+      id: "驅車下山-入住Hotel-Grand-Bach-仙台",
       title: "驅車下山 ➔ 入住【Hotel Grand Bach 仙台】",
       img: "https://cdn.jalan.jp/jalan/images/pict2L/Y5/Y318775/Y318775163.jpg",
       tag: { text: "🏨 舒適連住", class: "tag-indigo" },
@@ -575,6 +601,7 @@ const winterItineraries = [
     },
     {
       time: "17:30 - 20:00",
+      id: "晚餐-伊達の牛たん本舗-本店",
       title: "晚餐 ➔ 伊達の牛たん本舗 本店",
       img: "https://tohoku365.com/desk_jp/wp/wp-content/uploads/2016/06/dateno.jpg",
       tag: { text: "🥩 必吃名店", class: "tag-amber" },
@@ -615,12 +642,14 @@ const winterItineraries = [
 {
   day: 5,
   dateLabel: "DAY 5 · 2027年1月25日 (週一)",
+  id: "客美多早餐-狐狸村-仙台市區血拼",
   title: "客美多早餐 ➔ 狐狸村 ➔ 仙台市區血拼",
   subtitle: "🦊 狐狸村萌寵互動",
   emoji: "🦊",
   events: [
     {
       time: "08:30 - 09:30",
+      id: "早餐-客美多咖啡-仙台富澤店",
       title: "早餐 ➔ 客美多咖啡 仙台富澤店",
       img: "https://www.fukushige1219.co.jp/wp-content/uploads/example2-3.jpg",
       tag: { text: "☕ 悠閒晨活", class: "tag-amber" },
@@ -639,6 +668,7 @@ const winterItineraries = [
     },
     {
       time: "09:30 - 12:00",
+      id: "出發與宮城藏王狐狸村雪地互動",
       title: "出發與【宮城藏王狐狸村】雪地互動",
       img: "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-0946-3472.jpg",
       images: [
@@ -682,6 +712,7 @@ const winterItineraries = [
     },
     {
       time: "12:15 - 13:45",
+      id: "白石午餐-傳統名物白石溫麵三選一",
       title: "白石午餐 ➔ 傳統名物「白石溫麵」三選一",
       tag: { text: "🍜 在地名物", class: "tag-amber" },
       navUrl: "",
@@ -721,6 +752,7 @@ const winterItineraries = [
     },
     {
       time: "13:45 - 14:45",
+      id: "驅車返回仙台市區",
       title: "驅車返回仙台市區",
       tag: { text: "🚗 輕鬆車程", class: "tag-teal" },
       navUrl: "",
@@ -732,6 +764,7 @@ const winterItineraries = [
     },
     {
       time: "14:45 - 18:00",
+      id: "仙台市區購物PARCO-/-3COINS-/-Daiso-/-唐吉訶德",
       title: "仙台市區購物（PARCO / 3COINS / Daiso / 唐吉訶德）",
       tag: { text: "🛍️ 市區血拼", class: "tag-rose" },
       navUrl: "",
@@ -767,6 +800,7 @@ const winterItineraries = [
     },
     {
       time: "18:00 - 20:00",
+      id: "晚餐S-PAL-美食街或飯店周邊",
       title: "晚餐：S-PAL 美食街或飯店周邊",
       tag: { text: "🍱 味蕾轉換", class: "tag-amber" },
       navUrl: "",
@@ -791,12 +825,14 @@ const winterItineraries = [
 {
   day: 6,
   dateLabel: "DAY 6 · 2027年1月26日 (週二)",
+  id: "晨間二選一水族館/採草莓-仔虎和牛-Outlet大血拚",
   title: "晨間二選一(水族館/採草莓) ➔ 仔虎和牛 ➔ Outlet大血拚",
   subtitle: "🐬 水族館 / 草莓二選一",
   emoji: "🐬",
   events: [
     {
       time: "08:00 - 09:15",
+      id: "☕-THE-MOST-BAKERY-COFFEE-東口店-早餐",
       title: "☕ THE MOST BAKERY ＆ COFFEE 東口店 早餐",
       img: "https://sendaiminami-tusin.com/wp-content/uploads/2023/08/img_7984.jpg",
       tag: { text: "🥐 人氣麵包", class: "tag-amber" },
@@ -815,6 +851,7 @@ const winterItineraries = [
     },
     {
       time: "09:15 - 09:50",
+      id: "輕鬆出發前往仙台郊區-水族館或草莓園",
       title: "輕鬆出發前往仙台郊區 (水族館或草莓園)",
       tag: { text: "🚗 輕鬆車程", class: "tag-teal" },
       navUrl: "",
@@ -827,6 +864,7 @@ const winterItineraries = [
     },
     {
       time: "10:00 - 12:30",
+      id: "晨間二選一海洋水族館-🐧-OR-溫室採草莓-🍓",
       title: "晨間二選一：海洋水族館 🐧 OR 溫室採草莓 🍓",
       tag: { text: "🎯 彈性早晨", class: "tag-sky" },
       navUrl: "https://maps.app.goo.gl/BxaETtqtFLNmQoJf8?g_st=ac",
@@ -875,6 +913,7 @@ const winterItineraries = [
     },
     {
       time: "12:45 - 14:15",
+      id: "極致和牛燒肉午餐-仔虎-利府店",
       title: "極致和牛燒肉午餐 ➔ 【仔虎 利府店】",
       img: "https://matipura.com/CORE/wp-content/uploads/2021/03/DSC00724.jpg",
       tag: { text: "🥩 頂級和牛", class: "tag-amber" },
@@ -910,6 +949,7 @@ const winterItineraries = [
     },
     {
       time: "14:30 - 17:30",
+      id: "Mitsui-Outlet-Park-仙台港大血拚",
       title: "【Mitsui Outlet Park 仙台港】大血拚",
       img: "https://resources.matcha-jp.com/resize/720x2000/2025/08/24-242139.webp",
       tag: { text: "🛍️ 狂買免提", class: "tag-rose" },
@@ -932,6 +972,7 @@ const winterItineraries = [
     },
     {
       time: "18:00 - 19:30",
+      id: "返抵飯店從容打包行李",
       title: "返抵飯店，從容打包行李",
       tag: { text: "🧳 零壓力打包", class: "tag-indigo" },
       navUrl: "",
@@ -951,12 +992,14 @@ const winterItineraries = [
   {
     day: 7,
     dateLabel: "DAY 7 · 2027年1月27日 (週三)",
+    id: "仙台車站伴手禮採買-機場還車-滿載返港",
     title: "仙台車站伴手禮採買 ➔ 機場還車 ➔ 滿載返港",
     subtitle: "✈️ 滿載而歸",
     emoji: "✈️",
     events: [
       {
         time: "10:00 - 10:30",
+        id: "飯店退房與裝車",
         title: "飯店退房與裝車",
         tag: { text: "🏡 悠閒早晨", class: "tag-indigo" },
         navUrl: "",
@@ -969,6 +1012,7 @@ const winterItineraries = [
       },
       {
         time: "10:45 - 13:00",
+        id: "仙台車站-S-PAL採購伴手禮-+-輕鬆午餐",
         title: "【仙台車站 S-PAL】採購伴手禮 + 輕鬆午餐",
         tag: { text: "🛍️ 一站買齊", class: "tag-rose" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Station",
@@ -995,6 +1039,7 @@ const winterItineraries = [
       },
       {
         time: "13:00 - 13:30",
+        id: "全平地開車直達仙台機場",
         title: "全平地開車直達仙台機場",
         tag: { text: "🚗 順暢平地", class: "tag-teal" },
         navUrl: "",
@@ -1008,6 +1053,7 @@ const winterItineraries = [
       },
       {
         time: "13:30 - 14:15",
+        id: "加滿油-Nippon-Rent-A-Car-還車",
         title: "加滿油 ➔ Nippon Rent-A-Car 還車",
         tag: { text: "⛽ 輕鬆還車", class: "tag-teal" },
         navUrl: "",
@@ -1024,6 +1070,7 @@ const winterItineraries = [
       },
       {
         time: "14:15 - 16:05",
+        id: "辦理登機-順利返港",
         title: "辦理登機 ➔ 順利返港",
         tag: { text: "✈️ 完美句點", class: "tag-teal" },
         navUrl: "",

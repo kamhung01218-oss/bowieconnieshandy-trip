@@ -322,3 +322,25 @@
 
 [data-theme="dark"] .att-empty-title { color: #cbd5e1; }
 [data-theme="dark"] .att-empty-desc { color: #64748b; }
+
+/* ---- 記帳收據：標題樣式（橙黃色） ---- */
+.att-event-title-expense {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-color: #fbbf24;
+}
+.att-event-title-expense .att-event-title-text { color: #78350f; }
+.att-event-title-expense:active {
+  background: linear-gradient(135deg, #fde68a, #fcd34d);
+  border-color: #f59e0b;
+}
+.att-event-title-expense .att-event-title-arrow { color: #b45309; }
+
+[data-theme="dark"] .att-event-title-expense {
+  background: linear-gradient(135deg, #422006, #78350f);
+  border-color: #92400e;
+}
+[data-theme="dark"] .att-event-title-expense .att-event-title-text { color: #fde68a; }
+[data-theme="dark"] .att-event-title-expense:active {
+  background: linear-gradient(135deg, #78350f, #92400e);
+}
+[data-theme="dark"] .att-event-title-expense .att-event-title-arrow { color: #fbbf24; }
