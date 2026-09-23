@@ -1,0 +1,360 @@
+/* ============================================================
+ * design-v16.css — 旅行手帳風（v1.0）
+ *
+ * 設計目標：
+ *   讓 App 從「企業儀表板」變成「旅行手帳」
+ *   - 雪地紙張紋路（底層質感）
+ *   - 票券時間膠囊（旅行感）
+ *   - 手寫日期（人性化）
+ *   - 暖橙進行中（視覺焦點）
+ *
+ * ⚠️ 載入順序：必須放在 patches.css 之後
+ *    <link rel="stylesheet" href="./design-v16.css">
+ *
+ * 設計原則：
+ *   - 克制：只加 4 個改動，不做過多裝飾
+ *   - 有目的：每個變化都有語意
+ *   - 不干擾：裝飾透明度 ≤ 0.3，不搶主角
+ * ============================================================ */
+
+/* ============================================================
+ * 0. 手寫字體引入
+ *    Caveat 用於數字與英文，中文自動回退到 Noto Sans TC
+ * ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
+
+/* ============================================================
+ * 1. 雪地紙張紋路
+ *    給卡片加一層極淡的斜向紋路 + 頂部微光
+ *    遠看沒感覺，近看有質感
+ * ============================================================ */
+.glass-card.event-card {
+  background-color: #ffffff;
+  background-image:
+    /* 極淡的斜向紋路（像雪地陽光） */
+    repeating-linear-gradient(
+      135deg,
+      transparent 0px,
+      transparent 40px,
+      rgba(186, 230, 253, 0.10) 40px,
+      rgba(186, 230, 253, 0.10) 41px
+    ),
+    /* 頂部微光 */
+    radial-gradient(
+      ellipse at top left,
+      rgba(224, 242, 254, 0.55) 0%,
+      transparent 55%
+    );
+  background-size: 100% 100%, 100% 100%;
+}
+
+/* 展開時，紋路更明顯一點（因為使用者已經在閱讀） */
+.glass-card.event-card[open] {
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0px,
+      transparent 40px,
+      rgba(186, 230, 253, 0.14) 40px,
+      rgba(186, 230, 253, 0.14) 41px
+    ),
+    radial-gradient(
+      ellipse at top left,
+      rgba(224, 242, 254, 0.7) 0%,
+      transparent 55%
+    );
+  background-size: 100% 100%, 100% 100%;
+}
+
+/* ============================================================
+ * 2. 票券時間膠囊
+ *    時間從「藍色膠囊」變成「淡黃票根」
+ *    左側有打孔效果
+ * ============================================================ */
+.timeline-stamp-time {
+  position: relative !important;
+
+  /* 票券配色 */
+  background: linear-gradient(135deg, #fef9e7 0%, #fde68a 100%) !important;
+  color: #78350f !important;
+  border: 1.5px dashed #d97706 !important;
+  border-radius: 6px !important;
+
+  /* 票券立體感 */
+  box-shadow: 2px 2px 0 rgba(217, 119, 6, 0.15) !important;
+
+  /* 字體改用襯線體（票券感） */
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  letter-spacing: 0.02em !important;
+  padding: 4px 14px 4px 18px !important;
+}
+
+/* 票券左側的「打孔」 */
+.timeline-stamp-time::before {
+  content: '' !important;
+  position: absolute !important;
+  left: -7px !important;
+  top: 50% !important;
+  width: 9px !important;
+  height: 9px !important;
+  border-radius: 50% !important;
+  background: var(--t-color-bg-1, #f0f9ff) !important;
+  border: 1.5px dashed #d97706 !important;
+  transform: translateY(-50%) !important;
+  z-index: 2 !important;
+}
+
+/* 票券右側的「撕線」裝飾 */
+.timeline-stamp-time::after {
+  content: '' !important;
+  position: absolute !important;
+  right: 6px !important;
+  top: 20% !important;
+  bottom: 20% !important;
+  width: 1px !important;
+  background-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 20%,
+    rgba(217, 119, 6, 0.4) 20%,
+    rgba(217, 119, 6, 0.4) 80%,
+    transparent 80%,
+    transparent 100%
+  );
+  background-size: 1px 4px;
+  pointer-events: none !important;
+}
+
+/* 結束時間：配合票券風格 */
+.timeline-stamp-end {
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-weight: 600 !important;
+  color: #92400e !important;
+  font-size: 12px !important;
+}
+
+/* 已完成：票券褪色 */
+.timeline-item.status-done .timeline-stamp-time {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+  color: #64748b !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: none !important;
+  text-decoration: line-through !important;
+  text-decoration-color: #94a3b8 !important;
+  text-decoration-thickness: 1.5px !important;
+}
+.timeline-item.status-done .timeline-stamp-time::before {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+.timeline-item.status-done .timeline-stamp-time::after {
+  background-image: none !important;
+}
+
+/* ============================================================
+ * 4. 暖橙「進行中」
+ *    進行中的卡片是唯一暖色，成為視覺焦點
+ * ============================================================ */
+
+/* 進行中的時間膠囊：暖橙 */
+.timeline-item.status-active .timeline-stamp-time {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+  color: #78350f !important;
+  border-color: #d97706 !important;
+  border-style: solid !important;
+  box-shadow:
+    0 4px 12px rgba(245, 158, 11, 0.4),
+    2px 2px 0 rgba(217, 119, 6, 0.3) !important;
+}
+.timeline-item.status-active .timeline-stamp-time::before {
+  background: var(--t-color-bg-1, #f0f9ff) !important;
+  border-color: #d97706 !important;
+  border-style: solid !important;
+}
+.timeline-item.status-active .timeline-stamp-time::after {
+  background-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 20%,
+    rgba(120, 53, 15, 0.4) 20%,
+    rgba(120, 53, 15, 0.4) 80%,
+    transparent 80%,
+    transparent 100%
+  ) !important;
+  background-size: 1px 4px !important;
+}
+.timeline-item.status-active .timeline-stamp-end {
+  color: #78350f !important;
+}
+
+/* 進行中的卡片邊框：暖橙微光 */
+.timeline-item.status-active .glass-card.event-card {
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  box-shadow:
+    0 0 0 1.5px rgba(245, 158, 11, 0.18),
+    0 8px 24px -8px rgba(245, 158, 11, 0.3),
+    0 1px 3px rgba(2, 132, 199, 0.06) !important;
+}
+
+/* 進行中的 timeline 節點：暖橙脈動 */
+.timeline-item.status-active .timeline-node {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+  box-shadow:
+    0 0 0 2.5px var(--t-color-bg-1, #f0f9ff),
+    0 0 12px 3px rgba(245, 158, 11, 0.55) !important;
+}
+
+/* ============================================================
+ * 5. 深色模式適配
+ *    手帳感在深色模式改為「夜間手帳」
+ * ============================================================ */
+
+/* 雪地紋路：深色模式改用星光感 */
+[data-theme="dark"] .glass-card.event-card {
+  background-color: #1e293b;
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0px,
+      transparent 40px,
+      rgba(125, 211, 252, 0.06) 40px,
+      rgba(125, 211, 252, 0.06) 41px
+    ),
+    radial-gradient(
+      ellipse at top left,
+      rgba(56, 189, 248, 0.08) 0%,
+      transparent 55%
+    );
+  background-size: 100% 100%, 100% 100%;
+}
+[data-theme="dark"] .glass-card.event-card[open] {
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0px,
+      transparent 40px,
+      rgba(125, 211, 252, 0.09) 40px,
+      rgba(125, 211, 252, 0.09) 41px
+    ),
+    radial-gradient(
+      ellipse at top left,
+      rgba(56, 189, 248, 0.12) 0%,
+      transparent 55%
+    );
+  background-size: 100% 100%, 100% 100%;
+}
+
+/* 票券：深色模式改深棕 */
+[data-theme="dark"] .timeline-stamp-time {
+  background: linear-gradient(135deg, #422006 0%, #78350f 100%) !important;
+  color: #fde68a !important;
+  border-color: #92400e !important;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .timeline-stamp-time::before {
+  background: #0f172a !important;
+  border-color: #92400e !important;
+}
+[data-theme="dark"] .timeline-stamp-time::after {
+  background-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 20%,
+    rgba(253, 230, 138, 0.35) 20%,
+    rgba(253, 230, 138, 0.35) 80%,
+    transparent 80%,
+    transparent 100%
+  ) !important;
+  background-size: 1px 4px !important;
+}
+[data-theme="dark"] .timeline-stamp-end {
+  color: #fbbf24 !important;
+}
+
+/* 已完成：深色模式票券褪色 */
+[data-theme="dark"] .timeline-item.status-done .timeline-stamp-time {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  color: #64748b !important;
+  border-color: #475569 !important;
+}
+[data-theme="dark"] .timeline-item.status-done .timeline-stamp-time::before {
+  background: #1e293b !important;
+  border-color: #475569 !important;
+}
+
+/* 手寫日期：深色模式微調顏色 */
+[data-theme="dark"] #schedule-container .text-sky-600 {
+  color: #7dd3fc !important;
+  opacity: 0.95;
+}
+[data-theme="dark"] #schedule-container .text-sky-600::after {
+  background: linear-gradient(
+    90deg,
+    rgba(56, 189, 248, 0.3) 0%,
+    rgba(56, 189, 248, 0.15) 100%
+  );
+}
+
+/* 進行中：深色模式暖橙稍微降飽和 */
+[data-theme="dark"] .timeline-item.status-active .timeline-stamp-time {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+  color: #fef3c7 !important;
+  box-shadow:
+    0 4px 12px rgba(217, 119, 6, 0.4),
+    2px 2px 0 rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .timeline-item.status-active .timeline-stamp-time::before {
+  background: #0f172a !important;
+  border-color: #d97706 !important;
+}
+[data-theme="dark"] .timeline-item.status-active .timeline-stamp-time::after {
+  background-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 20%,
+    rgba(254, 243, 199, 0.35) 20%,
+    rgba(254, 243, 199, 0.35) 80%,
+    transparent 80%,
+    transparent 100%
+  ) !important;
+  background-size: 1px 4px !important;
+}
+[data-theme="dark"] .timeline-item.status-active .timeline-stamp-end {
+  color: #fef3c7 !important;
+}
+[data-theme="dark"] .timeline-item.status-active .glass-card.event-card {
+  border-color: rgba(217, 119, 6, 0.5) !important;
+  box-shadow:
+    0 0 0 1.5px rgba(217, 119, 6, 0.25),
+    0 8px 24px -8px rgba(217, 119, 6, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ============================================================
+ * 6. 無障礙：偏好減少動態
+ * ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  #schedule-container .text-sky-600 {
+    transform: none;
+  }
+  .timeline-item.status-active .timeline-node {
+    box-shadow:
+      0 0 0 2.5px var(--t-color-bg-1, #f0f9ff),
+      0 0 8px 2px rgba(245, 158, 11, 0.4) !important;
+  }
+}
+
+/* ============================================================
+ * 7. 小螢幕微調
+ * ============================================================ */
+@media (max-width: 380px) {
+  .timeline-stamp-time {
+    font-size: 13px !important;
+    padding: 3px 10px 3px 14px !important;
+  }
+  #schedule-container .text-sky-600 {
+    font-size: 19px !important;
+  }
+}
