@@ -49,6 +49,7 @@
 <link rel="stylesheet" href="./design-v14.css">
 <link rel="stylesheet" href="./design-v14b.css">
 <link rel="stylesheet" href="./design-v15.css">
+<link rel="stylesheet" href="./attachments-overview.css">
 
 <script>
 /* ⭐ Tailwind 整合設計令牌：使用 var(--t-*) 讓深色模式自動跟隨 */
@@ -180,6 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
         window.cloudAttachments = cloudData.attachments;
         if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
           window.Uploads.renderAllAttachments();
+        }
+        if (typeof window.renderAttachmentsOverview === 'function') {
+          window.renderAttachmentsOverview();
         }
       }
       if (cloudData.eventNotes && typeof cloudData.eventNotes === 'object') {
@@ -968,84 +972,55 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <!-- 📁 共享資料櫃 Modal -->
-  <div id="receipt-modal" class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeReceiptModal()">
-    <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative" onclick="event.stopPropagation()">
-      <div class="modal-handle-area" data-drag-handle="receipt-modal"><div class="modal-handle"></div></div>
-      <button onclick="closeReceiptModal()" class="modal-close">✕</button>
-      <div class="modal-scrollable px-6 pb-6">
-        <h2 class="text-xl font-black mb-2 flex items-center gap-2"><span class="text-2xl">📁</span> 共享資料櫃</h2>
-        <p class="text-xs text-slate-500 mb-5 leading-relaxed">全家人的旅行照片、租車資料、酒店訂單與收據，通通都在這裡。</p>
+  <!-- 📎 附件總覽 Modal（取代舊的共享資料櫃） -->
+  <div id="attachments-overview-modal"
+       class="modal-overlay hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+       onclick="closeAttachmentsOverview()">
+    <div class="modal-box bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full relative"
+         onclick="event.stopPropagation()"
+         style="max-height:88vh">
 
-        <button onclick="openPhotoAlbum()" 
-                class="drive-folder-btn mb-4" 
-                style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border-color:#86efac;">
-          <span class="drive-folder-icon" style="background:linear-gradient(135deg,#bbf7d0,#86efac); border-color:#4ade80;">📸</span>
-          <span class="drive-folder-info">
-            <span class="drive-folder-title" style="color:#166534;">旅行共享相簿</span>
-            <span class="drive-folder-desc" style="color:#15803d;">大家拍的照片都在這裡，點擊查看</span>
+      <div class="modal-handle-area" data-drag-handle="attachments-overview-modal">
+        <div class="modal-handle"></div>
+      </div>
+      <button onclick="closeAttachmentsOverview()" class="modal-close">✕</button>
+
+      <div class="modal-scrollable px-5 pb-6 pt-2">
+
+        <h2 class="text-lg font-black mb-3 flex items-center gap-2">
+          <span class="text-xl">📎</span> 附件總覽
+        </h2>
+
+        <!-- 📸 旅行相簿（置頂） -->
+        <button type="button" onclick="openPhotoAlbum()" class="album-hero-btn">
+          <span class="album-hero-icon">📸</span>
+          <span class="album-hero-info">
+            <span class="album-hero-title">旅行共享相簿</span>
+            <span class="album-hero-desc">全家精選照片都在這</span>
           </span>
-          <span class="drive-folder-arrow" style="color:#22c55e;">›</span>
+          <span class="album-hero-arrow">›</span>
         </button>
 
         <div class="flex items-center gap-2 my-4">
           <div class="flex-1 h-px bg-slate-200"></div>
-          <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">文件與收據</span>
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+            行程附件
+          </span>
           <div class="flex-1 h-px bg-slate-200"></div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1nG_pov6bLtfY1mxL5mPl7gp6Eb_fvxZA')" class="drive-folder-btn">
-            <span class="drive-folder-icon">🚗</span>
-            <span class="drive-folder-info">
-              <span class="drive-folder-title">租車資料</span>
-              <span class="drive-folder-desc">合約、駕照、保險</span>
-            </span>
-            <span class="drive-folder-arrow">›</span>
+        <!-- 篩選列 -->
+        <div class="att-filter-row" id="att-filter-row">
+          <button type="button" class="att-filter-btn active" data-filter="all" onclick="setAttFilter('all')">
+            全部 <span class="att-filter-count" id="att-count-all">0</span>
           </button>
-
-          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1e_SxcY3flho123h9cei6PV2vNCsGpBNx')" class="drive-folder-btn">
-            <span class="drive-folder-icon">🏨</span>
-            <span class="drive-folder-info">
-              <span class="drive-folder-title">酒店訂單</span>
-              <span class="drive-folder-desc">訂房確認、入住憑證</span>
-            </span>
-            <span class="drive-folder-arrow">›</span>
-          </button>
-
-          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1NH_5a0f-bSyp2sGo-mnty7VUgXPFIE-y')" class="drive-folder-btn">
-            <span class="drive-folder-icon">🛍️</span>
-            <span class="drive-folder-info">
-              <span class="drive-folder-title">購物收據</span>
-              <span class="drive-folder-desc">退稅單、購物明細</span>
-            </span>
-            <span class="drive-folder-arrow">›</span>
-          </button>
-
-          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1Be8UWtkkosodDK3gK1ipM56kTjPwGwFl')" class="drive-folder-btn">
-            <span class="drive-folder-icon">🍜</span>
-            <span class="drive-folder-info">
-              <span class="drive-folder-title">餐飲收據</span>
-              <span class="drive-folder-desc">餐廳、咖啡廳單據</span>
-            </span>
-            <span class="drive-folder-arrow">›</span>
-          </button>
-
-          <button onclick="openDriveFolder('https://drive.google.com/drive/folders/1XyMETso2S-UT-M5G3k_DRZqhbrpybNmo')" class="drive-folder-btn sm:col-span-2">
-            <span class="drive-folder-icon">📁</span>
-            <span class="drive-folder-info">
-              <span class="drive-folder-title">其他文件</span>
-              <span class="drive-folder-desc">護照影本、保險單、緊急聯絡資訊</span>
-            </span>
-            <span class="drive-folder-arrow">›</span>
+          <button type="button" class="att-filter-btn" data-filter="mine" onclick="setAttFilter('mine')">
+            👤 我上傳的 <span class="att-filter-count" id="att-count-mine">0</span>
           </button>
         </div>
 
-        <div class="mt-5 p-3 bg-sky-50 border border-sky-200 rounded-xl">
-          <p class="text-[11px] text-sky-800 leading-relaxed">
-            💡 點擊按鈕會開啟對應的 App 或瀏覽器。如果無法開啟，請確認你已登入正確的 Google 帳號，並擁有該資料夾的存取權限。
-          </p>
-        </div>
+        <!-- 附件列表 -->
+        <div id="attachments-overview-content"></div>
 
       </div>
     </div>
@@ -1189,6 +1164,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <script src="./app-lists.js"></script>
   <script src="./app-itinerary.js"></script>
   <script src="./header.js"></script>
+  <script src="./attachments-overview.js"></script>
   <script src="./simulator.js"></script>
 
 </body>

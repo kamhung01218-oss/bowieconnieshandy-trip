@@ -1,16 +1,20 @@
 /* ============================================================
- * app-core.js — v14.1
+ * app-core.js — v14.2
  * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
  *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
  *
  * v14.0 變更：
  *   - ⭐ 移除「行前預訂」密碼驗證
- *     登入的成員即可編輯，訪客仍唯讀
  *   - ⭐ initAppAfterLogin() 開頭清掉舊的 admin_unlocked 旗標
  *
  * v14.1 變更：
  *   - ⭐ 註冊 prep-overview-modal 到 setupModalDrag
  *   - ⭐ 新增 getPendingBookingItems / getPendingEquipItems callback
+ *
+ * v14.2 變更：
+ *   - ⭐ 移除「共享收據/憑證」舊 modal
+ *   - ⭐ 註冊 attachments-overview-modal 到 setupModalDrag
+ *   - ⭐ 保留 openPhotoAlbum / openDriveFolder（還在用）
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -326,7 +330,8 @@ function initAppAfterLogin() {
   fetchLiveRates();
   initSnowEffect();
 
-  setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal', 'receipt-modal', 'prep-overview-modal']);
+  // ⭐ v14.2：註冊附件總覽 Modal 到拖動系統
+  setupModalDrag(['booking-modal', 'equip-modal', 'drive-modal', 'ticket-modal', 'weather-modal', 'trip-overview-modal', 'shoot-tips-modal', 'vlog-plan-modal', 'common-tips-modal', 'shopping-modal', 'all-shopping-modal', 'currency-modal', 'attachments-overview-modal', 'prep-overview-modal']);
 
   renderDayItinerary(`day-section-${initialDay}`, winterItineraries[initialDay - 1]);
   setupImageFadeIn(document);
@@ -424,7 +429,6 @@ function initAppAfterLogin() {
             remaining
           };
         },
-        // ⭐ v14.1：新增未完成清單 callback
         getPendingBookingItems: () => {
           const all = [...bookingList, ...customBookingItems];
           return all.filter(item => {
@@ -636,6 +640,7 @@ function setupModalDrag(modals) {
         box.style.transform = `translateY(100%)`; modal.style.opacity = '0';
         haptic(15);
         setTimeout(() => {
+          // ⭐ v14.2：加入 attachments-overview-modal
           const closers = {
             'booking-modal': window.closeBookingModal,
             'equip-modal': window.closeEquipModal,
@@ -649,7 +654,7 @@ function setupModalDrag(modals) {
             'shopping-modal': window.closeShoppingModal,
             'all-shopping-modal': window.closeAllShoppingModal,
             'currency-modal': window.closeCurrencyModal,
-            'receipt-modal': window.closeReceiptModal,
+            'attachments-overview-modal': window.closeAttachmentsOverview,
             'prep-overview-modal': window.closePrepOverviewModal
           };
           if (closers[id]) closers[id]();
@@ -874,30 +879,15 @@ function hideModal(id) { const overlay = document.getElementById(id); if (overla
 window.showModal = showModal;
 window.hideModal = hideModal;
 
-// ==================== 📸 共享收據/憑證 ====================
-function openReceiptModal() {
-  const m = document.getElementById('receipt-modal');
-  if (!m) return;
-  m.style.display = 'flex';
-  m.classList.add('active');
-  document.body.classList.add('modal-open');
-  haptic(8);
-}
-function closeReceiptModal() {
-  const m = document.getElementById('receipt-modal');
-  if (!m) return;
-  m.classList.remove('active');
-  setTimeout(() => { m.style.display = 'none'; }, 300);
-  const a = document.querySelector('.modal-overlay.active');
-  if (!a) document.body.classList.remove('modal-open');
-}
+// ==================== 📸 相簿 / Drive 資料夾 ====================
+// ⭐ v14.2：移除舊的 openReceiptModal / closeReceiptModal
+// 保留 openPhotoAlbum 與 openDriveFolder（相簿與 Drive 連結還在用）
 function openDriveFolder(url) {
   haptic(10);
   window.location.href = url;
 }
-window.openReceiptModal = openReceiptModal;
-window.closeReceiptModal = closeReceiptModal;
 window.openDriveFolder = openDriveFolder;
+
 function openPhotoAlbum() {
   haptic(10);
   window.location.href = 'https://photos.app.goo.gl/Y8vBtxiH1e52C1337';

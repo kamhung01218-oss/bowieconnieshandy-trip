@@ -419,21 +419,14 @@ function buildEventActionsHtml(day, index, eventTitle, shoppingCount, dayKey) {
   return html;
 }
 
-// 折疊專用的資料徽章（放在標籤列）
+// ⭐ v16.7：折疊時的附件標記（只有圖示 + (數字)，無底色）
 function buildInlineDataBadge(dayKey, eventTitle, dataCount) {
   if (!dayKey || dataCount <= 0) return '';
-  var safeKey = escAttr(dayKey);
-  var safeTitle = escAttr(eventTitle);
-  return '<button type="button" class="event-inline-data-badge"'
-    + ' data-action="event-data"'
-    + ' data-event-key="' + safeKey + '"'
-    + ' data-event-title="' + safeTitle + '"'
-    + ' onclick="event.preventDefault();event.stopPropagation();Uploads.openEventData(this.dataset.eventKey, this.dataset.eventTitle)"'
-    + ' aria-label="查看資料">'
-    + '<span class="event-inline-data-badge-icon">📎</span>'
-    + '<span>資料</span>'
-    + '<span class="event-inline-data-badge-count">' + dataCount + '</span>'
-    + '</button>';
+  var attachIcon = '<svg class="event-inline-data-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
+  return '<span class="event-inline-data-badge" aria-label="' + dataCount + ' 個附件">'
+    + attachIcon
+    + '<span class="event-inline-data-badge-count">（' + dataCount + '）</span>'
+    + '</span>';
 }
 
 const TAG_EMOJI_FALLBACK = {

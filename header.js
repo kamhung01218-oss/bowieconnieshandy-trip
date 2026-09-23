@@ -1,5 +1,5 @@
 /* ============================================================
- * AppHeader v16.1
+ * AppHeader v16.2
  * - 品牌列：❄️ 標題 + [🔍 搜尋] + [⛅ 天氣] + [🔄 重整] + [☰ 工具]
  * - Focus Card：出發前 / 中 / 後
  * - 旅行中順序：廣播 → 天氣 → 現在 → 下一站 → CTA(購物/留言)
@@ -14,6 +14,10 @@
  * v16.1 變更：
  *   - ⭐ 準備進度可點擊 → 打開「準備總覽」Modal
  *   - ⭐ 準備總覽 Modal 顯示未完成項與一鍵前往處理
+ *
+ * v16.2 變更：
+ *   - ⭐ 工具選單：「共享收據/憑證」→「附件總覽」
+ *   - ⭐ 綁定 openAttachmentsOverview
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -294,7 +298,6 @@ window.AppHeader = (function () {
     </div>`;
   }
 
-  // 準備進度 HTML（真實完成度 + 可點擊）
   function buildPrepProgressHtml(bookingP, equipP, totalPrep, donePrep, prepPercent) {
     if (totalPrep === 0) return '';
     const pending = totalPrep - donePrep;
@@ -387,7 +390,7 @@ window.AppHeader = (function () {
   }
 
   // ============================================================
-  // ⭐ v16.1：準備總覽 Modal
+  // 準備總覽 Modal
   // ============================================================
   function openPrepOverviewModal() {
     const m = document.getElementById('prep-overview-modal');
@@ -1462,7 +1465,7 @@ window.AppHeader = (function () {
         <button type="button" class="tools-item" data-tool-action="search"><span class="tools-item-icon">${ICONS.search}</span><span class="tools-item-label">搜尋行程</span><span class="tools-item-arrow">›</span></button>
         <button type="button" class="tools-item" data-tool-action="overview"><span class="tools-item-icon">${ICONS.overview}</span><span class="tools-item-label">行程速覽</span><span class="tools-item-arrow">›</span></button>
         <button type="button" class="tools-item" data-tool-action="ledger"><span class="tools-item-icon">${ICONS.ledger}</span><span class="tools-item-label">快速記帳</span><span class="tools-item-arrow">›</span></button>
-        <button type="button" class="tools-item" data-tool-action="receipts"><span class="tools-item-icon">${ICONS.receipt}</span><span class="tools-item-label">共享收據/憑證</span><span class="tools-item-tag new">新增</span><span class="tools-item-arrow">›</span></button>
+        <button type="button" class="tools-item" data-tool-action="attachments"><span class="tools-item-icon">📎</span><span class="tools-item-label">附件總覽</span><span class="tools-item-arrow">›</span></button>
       </div>
       ${showInstall ? `<div class="tools-section"><div class="tools-section-label"><span>📲</span> 應用程式</div>
         <button type="button" class="tools-item" data-tool-action="install"><span class="tools-item-icon">${ICONS.install}</span><span class="tools-item-label">安裝 App 到桌面</span><span class="tools-item-tag new">推薦</span><span class="tools-item-arrow">›</span></button>
@@ -1515,7 +1518,7 @@ window.AppHeader = (function () {
             account: () => { if (typeof window.switchUser === "function") window.switchUser(); },
             theme: () => { if (typeof window.toggleAppTheme === "function") window.toggleAppTheme(); },
             emergency: () => { if (typeof window.openEmergencyModal === "function") window.openEmergencyModal(); },
-            receipts: () => { if (typeof window.openReceiptModal === "function") window.openReceiptModal(); }
+            attachments: () => { if (typeof window.openAttachmentsOverview === "function") window.openAttachmentsOverview(); }
           };
           if (map[action]) map[action]();
         }, 180);

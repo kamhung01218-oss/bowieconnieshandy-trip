@@ -3737,3 +3737,625 @@ details.event-card:not([open]) .event-action-buttons {
 [data-theme="dark"] .day-dot.today {
   background: #34d399 !important;
 }
+/* ============================================================
+ * 36. ⭐ v16.7：折疊附件標記（只有圖示 + (數字)）
+ *    - 無底色、無邊框、無陰影
+ *    - 灰藍色，與標籤列協調
+ *    - 不可點擊
+ * ============================================================ */
+
+.event-inline-data-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.4;
+  white-space: nowrap;
+  flex-shrink: 0;
+  vertical-align: middle;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: none;
+}
+
+.event-inline-data-badge .event-inline-data-badge-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  display: inline-block;
+  color: inherit;
+  stroke: currentColor;
+  opacity: 0.85;
+}
+
+.event-inline-data-badge .event-inline-data-badge-count {
+  display: inline;
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-weight: 900;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 深色模式 */
+[data-theme="dark"] .event-inline-data-badge {
+  color: #64748b;
+}
+[data-theme="dark"] .event-inline-data-badge .event-inline-data-badge-icon {
+  color: #64748b;
+  stroke: #64748b;
+}
+[data-theme="dark"] .event-inline-data-badge .event-inline-data-badge-count {
+  color: #64748b;
+}
+
+/* 清除舊版殘留 */
+.event-inline-data-badge:active,
+.event-inline-data-badge:hover,
+.event-inline-data-badge:focus {
+  background: transparent;
+  transform: none;
+  box-shadow: none;
+  color: #94a3b8;
+}
+[data-theme="dark"] .event-inline-data-badge:active,
+[data-theme="dark"] .event-inline-data-badge:hover,
+[data-theme="dark"] .event-inline-data-badge:focus {
+  background: transparent;
+  transform: none;
+  box-shadow: none;
+  color: #64748b;
+}
+/* ============================================================
+ * 37. ⭐ v16.8 最終版：折疊附件標記（淡藍底膠囊）
+ * ============================================================ */
+
+.event-inline-data-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  padding: 2px 9px !important;
+  border-radius: 999px !important;
+
+  /* 淡藍底 */
+  background: #eff6ff !important;
+  background-image: none !important;
+  border: 1px solid #dbeafe !important;
+  box-shadow: 0 1px 2px rgba(2, 132, 199, 0.06) !important;
+
+  color: #0284c7 !important;
+  font-size: 11.5px !important;
+  font-weight: 900 !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+
+  cursor: default !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  pointer-events: none !important;
+  text-shadow: none !important;
+}
+
+/* 圖標 */
+.event-inline-data-badge .event-inline-data-badge-icon {
+  width: 12px !important;
+  height: 12px !important;
+  flex-shrink: 0 !important;
+  display: inline-block !important;
+  color: #0284c7 !important;
+  stroke: #0284c7 !important;
+  fill: none !important;
+  opacity: 1 !important;
+}
+
+/* 數字 */
+.event-inline-data-badge .event-inline-data-badge-count {
+  display: inline !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  color: #0284c7 !important;
+  font-size: 11.5px !important;
+  font-weight: 900 !important;
+  line-height: 1.4 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* 深色模式 */
+[data-theme="dark"] .event-inline-data-badge {
+  background: #0c4a6e !important;
+  border-color: #0369a1 !important;
+  color: #7dd3fc !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .event-inline-data-badge .event-inline-data-badge-icon {
+  color: #7dd3fc !important;
+  stroke: #7dd3fc !important;
+}
+[data-theme="dark"] .event-inline-data-badge .event-inline-data-badge-count {
+  color: #7dd3fc !important;
+}
+
+/* 清除 hover / active 效果 */
+.event-inline-data-badge:hover,
+.event-inline-data-badge:active,
+.event-inline-data-badge:focus {
+  transform: none !important;
+}
+
+/* ============================================================
+ * 39. ⭐ P3：排版系統統一（中文字體優化）
+ *    - 中文標點擠壓（palt / halt）
+ *    - 中英文混排間距
+ *    - 數字對齊
+ *    - 全域字體特徵
+ * ============================================================ */
+
+/* ---- 39.1 全域字體特徵 ---- */
+body {
+  font-family: var(--t-font-sans);
+  font-feature-settings: 
+    'palt' 1,     /* 中文標點半形寬度 */
+    'kern' 1,     /* 字距微調 */
+    'liga' 1,     /* 連字 */
+    'calt' 1;     /* 上下文替代字 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: 0.01em;
+}
+
+/* ---- 39.2 中文標點擠壓 ---- */
+.event-title,
+.event-location,
+.event-collapsible p,
+.event-collapsible li,
+.tip-block,
+.modal-box h2,
+.modal-box h3,
+.focus-title,
+.focus-subtitle {
+  text-spacing-trim: space-first;
+  font-feature-settings: 'halt' 1, 'vhal' 1, 'palt' 1, 'kern' 1;
+}
+
+/* ---- 39.3 數字使用 tabular-nums ---- */
+.timeline-stamp-time,
+.timeline-stamp-end,
+.countdown-value,
+.countdown-inline-num,
+.countdown-inline-num-sm,
+.day-subtotal,
+.tab-count,
+.stat-num,
+.budget-pct,
+.daily-bar-amt,
+.forecast-temp,
+.weather-card .weather-temp,
+.emergency-hotel-day,
+.tools-item-progress,
+.ftc-time,
+.prep-overview-percent,
+.prep-section-count,
+.flp-count,
+.focus-progress-count,
+.broadcast-count,
+.broadcast-countdown,
+.message-time,
+.today-summary-meta,
+.btt-ring-progress {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* ---- 39.4 大標題：Playfair 或 Inter ---- */
+.focus-title,
+.focus-now-title,
+.overview-day-title,
+.event-title {
+  font-family: var(--t-font-sans);
+  letter-spacing: var(--t-ls-cn);
+}
+
+.countdown-value,
+.countdown-inline-num,
+.countdown-inline-num-sm,
+.weather-hero-temp,
+.prep-overview-percent {
+  font-family: var(--t-font-num);
+  letter-spacing: -0.02em;
+}
+
+/* ---- 39.5 中英文混排間距 ---- */
+.event-title,
+.event-location,
+.event-collapsible p,
+.event-collapsible li,
+.focus-task-title,
+.focus-task-hint {
+  word-spacing: 0.05em;
+}
+
+/* ---- 39.6 行高統一 ---- */
+.event-title,
+.focus-title,
+.focus-now-title,
+.focus-next-title,
+.overview-day-title,
+.modal-box h2,
+.modal-box h3 {
+  line-height: var(--t-lh-tight);
+}
+
+.event-collapsible p,
+.event-collapsible li,
+.tip-block,
+details:not(.event-card) > div,
+.mini-card-body,
+.shoot-block-text,
+.shoot-list li,
+.common-tip-advice {
+  line-height: var(--t-lh-base);
+}
+
+/* ---- 39.7 深色模式：文字清晰度提升 ---- */
+[data-theme="dark"] body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ============================================================
+ * 40. ⭐ P4：品牌一致性深化（雪國主題）
+ *    - 霜凍邊框
+ *    - 雪堆分隔線
+ *    - 冰晶載入動畫
+ *    - 溫泉蒸氣效果
+ * ============================================================ */
+
+/* ---- 40.1 卡片霜凍邊框 ---- */
+.glass-card.event-card {
+  position: relative;
+}
+.glass-card.event-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(186, 230, 253, 0.9),
+    transparent);
+  pointer-events: none;
+  z-index: 3;
+}
+[data-theme="dark"] .glass-card.event-card::after {
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(125, 211, 252, 0.4),
+    transparent);
+}
+
+/* ---- 40.2 雪堆分隔線（Day 分頁之間） ---- */
+.snow-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 32px 0 24px;
+  padding: 0 20px;
+  color: #cbd5e1;
+  font-size: 14px;
+  letter-spacing: 0.8em;
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.7;
+}
+.snow-divider::before,
+.snow-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+}
+[data-theme="dark"] .snow-divider {
+  color: #475569;
+}
+[data-theme="dark"] .snow-divider::before,
+[data-theme="dark"] .snow-divider::after {
+  background: linear-gradient(90deg, transparent, #334155, transparent);
+}
+
+/* ---- 40.3 冰晶載入動畫 ---- */
+@keyframes ice-crystal-spin {
+  0%   { transform: rotate(0deg)   scale(1);   opacity: 0.7; }
+  50%  { transform: rotate(180deg) scale(1.15); opacity: 1;   }
+  100% { transform: rotate(360deg) scale(1);   opacity: 0.7; }
+}
+.loading-ice {
+  display: inline-block;
+  font-size: 32px;
+  animation: ice-crystal-spin 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 2px 6px rgba(56, 189, 248, 0.4));
+}
+
+/* 取代既有的 focus-spinner */
+.app-header .focus-spinner {
+  display: none;
+}
+.app-header .focus-loading::before {
+  content: '❄️';
+  font-size: 32px;
+  animation: ice-crystal-spin 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 2px 6px rgba(56, 189, 248, 0.5));
+  display: inline-block;
+}
+
+/* ---- 40.4 溫泉蒸氣效果（天氣 Hero） ---- */
+.weather-hero {
+  position: relative;
+  overflow: hidden;
+}
+.weather-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 50px;
+  background: radial-gradient(ellipse at bottom,
+    rgba(255, 255, 255, 0.35) 0%,
+    transparent 70%);
+  animation: steam-rise 4s ease-in-out infinite;
+  pointer-events: none;
+  filter: blur(8px);
+}
+@keyframes steam-rise {
+  0%, 100% { transform: translateY(0)    scale(1);   opacity: 0.6; }
+  50%      { transform: translateY(-12px) scale(1.05); opacity: 0.9; }
+}
+[data-theme="dark"] .weather-hero::after {
+  background: radial-gradient(ellipse at bottom,
+    rgba(125, 211, 252, 0.2) 0%,
+    transparent 70%);
+}
+
+/* ---- 40.5 雪花裝飾（卡片右上角） ---- */
+.glass-card.event-card[open] {
+  position: relative;
+}
+.glass-card.event-card[open]::before {
+  content: '❄';
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 14px;
+  color: rgba(186, 230, 253, 0.5);
+  pointer-events: none;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+.glass-card.event-card[open]:hover::before {
+  transform: rotate(180deg);
+}
+[data-theme="dark"] .glass-card.event-card[open]::before {
+  color: rgba(125, 211, 252, 0.2);
+}
+
+/* ---- 40.6 品牌色微調：雪白 + 冰藍 ---- */
+:root {
+  --t-snow-white: #fbfdff;
+  --t-ice-blue:   #e0f2fe;
+  --t-frost-blue: #bae6fd;
+}
+
+/* ---- 40.7 尊重 prefers-reduced-motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .loading-ice,
+  .app-header .focus-loading::before,
+  .weather-hero::after {
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+ * 41. ⭐ P5：微交互系統（觸覺 + 漣漪 + 長按）
+ * ============================================================ */
+
+/* ---- 41.1 漣漪動效（從觸點擴散） ---- */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-ripple > .ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  transform: scale(0);
+  animation: ripple-expand 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+@keyframes ripple-expand {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* 自動套用到主要按鈕 */
+.event-action-btn,
+.focus-cta,
+.nav-fab,
+.msg-send-btn,
+.prep-section-cta,
+.focus-progress-clickable,
+.simulator-toggle {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---- 41.2 按鈕觸覺回饋強化 ---- */
+button:not(:disabled):active,
+[role="button"]:not(:disabled):active {
+  transform: scale(0.96);
+  transition: transform 0.08s ease;
+}
+
+.nav-fab:active {
+  transform: scale(0.92);
+}
+
+.day-tab:active {
+  transform: scale(0.94);
+}
+
+.event-action-btn:active {
+  transform: scale(0.94);
+}
+
+.focus-cta:active {
+  transform: scale(0.96);
+}
+
+/* ---- 41.3 長按提示（危險操作） ---- */
+.btn-longpress {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.btn-longpress .longpress-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    rgba(239, 68, 68, 0.5) 0%,
+    rgba(239, 68, 68, 0.5) var(--progress, 0%),
+    transparent var(--progress, 0%)
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.btn-longpress.pressing .longpress-ring {
+  opacity: 1;
+}
+
+/* ---- 41.4 觸覺回饋：Toast / Modal 進入 ---- */
+#toast {
+  transition: 
+    transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.25s ease;
+}
+#toast.translate-y-0 {
+  transform: translate(-50%, 0) scale(1);
+}
+#toast.-translate-y-24 {
+  transform: translate(-50%, -96px) scale(0.95);
+}
+
+.modal-overlay.active .modal-box {
+  animation: modal-bounce-in 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modal-bounce-in {
+  0%   { transform: scale(0.9) translateY(20px); opacity: 0; }
+  60%  { transform: scale(1.02) translateY(-4px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* ---- 41.5 狀態改變：Tab / Day 切換 ---- */
+.day-tab {
+  transition: 
+    background 0.22s ease,
+    color 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    transform 0.12s ease !important;
+}
+
+.day-tab.active {
+  animation: tab-pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes tab-pop {
+  0%   { transform: scale(0.94); }
+  60%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+/* ---- 41.6 數字翻轉動效 ---- */
+.countdown-value.tick,
+.countdown-inline-num.tick,
+.countdown-inline-num-sm.tick {
+  animation: number-flip 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes number-flip {
+  0%   { transform: rotateX(0deg)   scale(1);    }
+  40%  { transform: rotateX(-90deg) scale(0.9);  opacity: 0.5; }
+  100% { transform: rotateX(0deg)   scale(1);    opacity: 1;   }
+}
+
+/* ---- 41.7 焦點脈衝（重要元素） ---- */
+@keyframes focus-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+  50%      { box-shadow: 0 0 0 6px rgba(14, 165, 233, 0.18); }
+}
+.focus-pulse {
+  animation: focus-pulse 2s ease-in-out infinite;
+}
+
+/* ---- 41.8 尊重 prefers-reduced-motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .btn-ripple > .ripple-effect,
+  .modal-overlay.active .modal-box,
+  .day-tab.active,
+  .countdown-value.tick,
+  .countdown-inline-num.tick,
+  .countdown-inline-num-sm.tick,
+  .focus-pulse {
+    animation: none !important;
+  }
+  button:not(:disabled):active,
+  [role="button"]:not(:disabled):active {
+    transform: none !important;
+  }
+}
+
+/* ============================================================
+ * 42. ⭐ P5 續：微交互 JS 掛鉤類別
+ *    - 由 app-core.js 或各模組自動套用
+ * ============================================================ */
+
+/* 漣漪掛鉤：套用到主要按鈕 */
+.btn-ripple-ready {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 長按掛鉤：套用到危險操作 */
+.btn-longpress-ready {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
