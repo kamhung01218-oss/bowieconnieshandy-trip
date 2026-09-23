@@ -1,10 +1,14 @@
 /* ============================================================
- * attachments-overview.js — 附件總覽 v1.1
+ * attachments-overview.js — 附件總覽 v1.2
  *
  * v1.1 新增：
  *   - ⭐ 整合記帳收據（state.expenses[].receipts）
  *   - ⭐ 記帳收據點擊 → 開燈箱
  *   - ⭐ 記帳收據標題 → 跳記帳本
+ *
+ * v1.2 新增：
+ *   - ⭐ _buildKeyLookup 加入快取（用結構簽名偵測變化）
+ *   - ⭐ 避免每次 render 都重建 lookup table
  * ============================================================ */
 
 (function () {
@@ -41,23 +45,72 @@
     } catch (e) {}
     return [];
   }
-
-  // ============================================================
-  // 建立 eventKey → { day, index, title } 對照表
-  // ============================================================
-  function _buildKeyLookup() {
-    const lookup = {};
-    const itineraries = (typeof winterItineraries !== 'undefined')
+  function _getItineraries() {
+    return (typeof winterItineraries !== 'undefined')
       ? winterItineraries
       : (window.winterItineraries || []);
+  }
+
+  // ============================================================
+  // ⭐ v1.2：行程結構簽名（用於快取失效偵測）
+  // 只要 days 數、events 數、或任何 event.id 有變化，簽名就會不同
+  // ============================================================
+  function _computeItinerarySignature(itineraries) {
+    let sig = '';
+    for (let i = 0; i < itineraries.length; i++) {
+      const day = itineraries[i];
+      sig += day.day + ':' + day.events.length + ';';
+      for (let j = 0; j < day.events.length; j++) {
+        const evt = day.events[j];
+        // 用 id（若無則用 title）的長度 + 前 4 字元當簽名
+        const key = evt.id || evt.title || '';
+        sig += key.length + '#' + key.substring(0, 4) + ',';
+      }
+      sig += '|';
+    }
+    return sig;
+  }
+
+  // ============================================================
+  // ⭐ v1.2：lookup 快取
+  // ============================================================
+  let _cachedLookup = null;
+  let _cachedSignature = '';
+
+  function _buildKeyLookup() {
+    const itineraries = _getItineraries();
+
+    // 計算目前簽名
+    const sig = _computeItinerarySignature(itineraries);
+
+    // 簽名一致 → 直接回傳快取
+    if (_cachedLookup && _cachedSignature === sig) {
+      return _cachedLookup;
+    }
+
+    // 重建 lookup
+    const lookup = {};
     itineraries.forEach(day => {
       day.events.forEach((evt, idx) => {
         const entry = { day: day.day, index: idx, title: evt.title };
+        // 舊格式永遠存在
         lookup[`d${day.day}-e${idx}`] = entry;
+        // 新格式（若 data.js 已加 id）
         if (evt.id) lookup[evt.id] = entry;
       });
     });
+
+    _cachedLookup = lookup;
+    _cachedSignature = sig;
+
+    console.log('[附件總覽] lookup 重建（事件數：' + Object.keys(lookup).length + '）');
     return lookup;
+  }
+
+  // ⭐ 讓外部可手動清快取（萬一 data.js 熱更新）
+  function invalidateLookupCache() {
+    _cachedLookup = null;
+    _cachedSignature = '';
   }
 
   // ============================================================
@@ -342,6 +395,9 @@
     }
   }
 
+  // ============================================================
+  // 匯出
+  // ============================================================
   window.openAttachmentsOverview = openAttachmentsOverview;
   window.closeAttachmentsOverview = closeAttachmentsOverview;
   window.setAttFilter = setAttFilter;
@@ -350,6 +406,8 @@
   window.openExpenseReceiptLightbox = openExpenseReceiptLightbox;
   window.deleteExpenseReceiptFromOverview = deleteExpenseReceiptFromOverview;
   window.renderAttachmentsOverview = renderAttachmentsOverview;
+  // ⭐ v1.2：對外暴露清快取 API
+  window.invalidateAttachmentsLookupCache = invalidateLookupCache;
 
-  console.log('[附件總覽] v1.1 載入完成（含記帳收據整合）');
+  console.log('[附件總覽] v1.2 載入完成（含快取）');
 })();

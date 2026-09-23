@@ -1,10 +1,8 @@
 /* ============================================================
- * tokens.css — 設計令牌唯一來源（v3.0）
+ * tokens.css — 設計令牌唯一來源（v3.1）
  *
- * v3.0 變更：
- *   - ⭐ 新增基礎組件（.t-btn / .t-card / .t-input / .t-chip）
- *   - ⭐ 新增行程卡專用變數（--t-event-*）
- *   - ⭐ 深色模式提高對比度（WCAG AA）
+ * v3.1 變更：
+ *   - ⭐ 字體加入繁體 fallback（PingFang TC / Microsoft JhengHei / Heiti TC）
  * ============================================================ */
 
 :root {
@@ -54,9 +52,26 @@
   --t-color-cat-scenery:     #7c3aed;
   --t-color-cat-shopping:    #e11d48;
 
-  /* ========== 7. 字體 ========== */
-  --t-font-sans: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
-  --t-font-num:  'Playfair Display', 'Noto Sans TC', Georgia, serif;
+  /* ========== 7. 字體（⭐ v3.1：加入繁體 fallback） ========== */
+  --t-font-sans:
+    'Noto Sans TC',
+    'Noto Sans CJK TC',
+    'PingFang TC',
+    'PingFang HK',
+    'Microsoft JhengHei',
+    'Heiti TC',
+    'STHeiti',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  --t-font-num:
+    'Playfair Display',
+    'Noto Sans TC',
+    'PingFang TC',
+    'Microsoft JhengHei',
+    Georgia,
+    serif;
 
   /* ========== 8. 字級 ========== */
   --t-fs-2xs:  12px;
@@ -91,10 +106,10 @@
   --t-space-12: 48px;
 
   /* ========== 12. 圓角（統一 4 級） ========== */
-  --t-radius-sm:   12px;   /* 按鈕、輸入框、標籤容器 */
-  --t-radius-md:   16px;   /* 卡片、列表項、內層容器 */
-  --t-radius-lg:   24px;   /* Modal、大區塊 */
-  --t-radius-full: 9999px; /* 膠囊、圓形、徽章 */
+  --t-radius-sm:   12px;
+  --t-radius-md:   16px;
+  --t-radius-lg:   24px;
+  --t-radius-full: 9999px;
 
   /* ========== 13. 陰影（統一 3 層） ========== */
   --t-shadow-sm:    0 1px 2px rgba(2, 132, 199, 0.06);
@@ -134,9 +149,7 @@
   --t-status-next:   #0ea5e9;
   --t-status-done:   #94a3b8;
 
-  /* ============================================================
-   * 19. ⭐ 行程卡專用變數（原 patches.css 硬編碼集中）
-   * ============================================================ */
+  /* ========== 19. 行程卡專用變數 ========== */
   --t-event-bg:              #ffffff;
   --t-event-border:          rgba(186, 230, 253, 0.6);
   --t-event-title-color:     var(--t-blue-deep);
@@ -151,7 +164,6 @@
   --t-event-stamp-color:     var(--t-blue-deep);
   --t-event-stamp-border:    #bae6fd;
 
-  /* Tip block */
   --t-tip-bg:                #f8fafc;
   --t-tip-border:            #cbd5e1;
   --t-tip-color:             #475569;
@@ -162,7 +174,6 @@
   --t-tip-danger-border:     #f87171;
   --t-tip-danger-color:      #7f1d1d;
 
-  /* 內層 details */
   --t-details-bg:            #ffffff;
   --t-details-border:        #e2e8f0;
   --t-details-accent:        #38bdf8;
@@ -173,22 +184,19 @@
   --t-details-body-bg:       #fafbfc;
   --t-details-body-color:    #475569;
 
-  /* 附件 */
   --t-att-bg:                #f8fafc;
   --t-att-border:            #e2e8f0;
   --t-att-title-color:       #334155;
   --t-att-item-bg:           #ffffff;
 
-  /* 進度條 */
   --t-progress-track:        var(--t-color-primary-lighter);
   --t-progress-fill:         linear-gradient(90deg, #38bdf8, var(--t-color-primary));
 }
 
 /* ============================================================
- * 深色模式：只覆蓋變數值
+ * 深色模式
  * ============================================================ */
 [data-theme="dark"] {
-  /* 品牌 */
   --t-color-primary:         #0ea5e9;
   --t-color-primary-dark:    #0284c7;
   --t-color-primary-deep:    #7dd3fc;
@@ -196,7 +204,6 @@
   --t-color-primary-lighter: #1e293b;
   --t-color-accent:          #38bdf8;
 
-  /* 表面 */
   --t-color-bg-1:            #0f172a;
   --t-color-bg-2:            #1e293b;
   --t-color-bg-3:            #0f172a;
@@ -204,33 +211,27 @@
   --t-color-surface-soft:    #1e293b;
   --t-color-surface-muted:   #334155;
 
-  /* 文字：⭐ 提高對比度（P1-1） */
-  --t-color-text-main:       #f1f5f9;   /* 15.6:1 ✅ */
-  --t-color-text-soft:       #e2e8f0;   /* 12.4:1 ✅ */
-  --t-color-text-mute:       #cbd5e1;   /* 8.9:1  ✅ */
-  --t-color-text-faint:      #94a3b8;   /* 4.6:1  ✅ (舊 #64748b 僅 3.5:1) */
+  --t-color-text-main:       #f1f5f9;
+  --t-color-text-soft:       #e2e8f0;
+  --t-color-text-mute:       #cbd5e1;
+  --t-color-text-faint:      #94a3b8;
 
-  /* 邊框 */
   --t-color-border:          #334155;
   --t-color-border-sky:      rgba(56, 189, 248, 0.2);
 
-  /* 語意 */
   --t-color-success-bg:      #064e3b;
   --t-color-warning-bg:      #422006;
   --t-color-danger-bg:       #450a0a;
   --t-color-info-bg:         #0c4a6e;
 
-  /* 陰影 */
   --t-shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.3);
   --t-shadow-card:  0 4px 12px -2px rgba(0, 0, 0, 0.4);
   --t-shadow-lg:    0 12px 32px -8px rgba(0, 0, 0, 0.5);
 
-  /* 語意色 */
   --t-blue-main:  #38bdf8;
   --t-blue-light: #0c4a6e;
   --t-blue-deep:  #e0f2fe;
 
-  /* 行程卡 */
   --t-event-bg:              #1e293b;
   --t-event-border:          #334155;
   --t-event-title-color:     #e0f2fe;
@@ -245,7 +246,6 @@
   --t-event-stamp-color:     #7dd3fc;
   --t-event-stamp-border:    #0369a1;
 
-  /* Tip block */
   --t-tip-bg:                #0f172a;
   --t-tip-border:            #475569;
   --t-tip-color:             #cbd5e1;
@@ -256,7 +256,6 @@
   --t-tip-danger-border:     #ef4444;
   --t-tip-danger-color:      #fecaca;
 
-  /* 內層 details */
   --t-details-bg:            #1e293b;
   --t-details-border:        #334155;
   --t-details-accent:        #0ea5e9;
@@ -267,21 +266,17 @@
   --t-details-body-bg:       #0f172a;
   --t-details-body-color:    #cbd5e1;
 
-  /* 附件 */
   --t-att-bg:                #0f172a;
   --t-att-border:            #334155;
   --t-att-title-color:       #cbd5e1;
   --t-att-item-bg:           #1e293b;
 
-  /* 進度條 */
   --t-progress-track:        #334155;
 }
 
 /* ============================================================
- * 20. ⭐ 基礎組件（P0-2：統一按鈕 / 卡片 / 輸入框 / 標籤）
+ * 基礎組件
  * ============================================================ */
-
-/* ---------- 按鈕 ---------- */
 .t-btn {
   display: inline-flex;
   align-items: center;
@@ -334,7 +329,6 @@
   flex-shrink: 0;
 }
 
-/* ---------- 卡片 ---------- */
 .t-card {
   background: var(--t-color-surface);
   border: 1px solid var(--t-color-border);
@@ -342,12 +336,8 @@
   box-shadow: var(--t-shadow-sm);
   padding: var(--t-space-4);
 }
+.t-card--elevated { box-shadow: var(--t-shadow-card); }
 
-.t-card--elevated {
-  box-shadow: var(--t-shadow-card);
-}
-
-/* ---------- 輸入框 ---------- */
 .t-input {
   width: 100%;
   min-height: 44px;
@@ -365,11 +355,8 @@
   border-color: var(--t-blue-main);
   box-shadow: var(--t-shadow-focus);
 }
-.t-input::placeholder {
-  color: var(--t-color-text-faint);
-}
+.t-input::placeholder { color: var(--t-color-text-faint); }
 
-/* ---------- 標籤 / 膠囊 ---------- */
 .t-chip {
   display: inline-flex;
   align-items: center;
@@ -385,7 +372,6 @@
   text-transform: uppercase;
 }
 
-/* ---------- 徽章 ---------- */
 .t-badge {
   display: inline-flex;
   align-items: center;
@@ -403,7 +389,7 @@
 }
 
 /* ============================================================
- * 21. 相容層：舊變數名指向新令牌
+ * 相容層
  * ============================================================ */
 :root {
   --sky-primary:       var(--t-color-primary);
