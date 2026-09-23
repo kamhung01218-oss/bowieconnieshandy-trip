@@ -1,11 +1,13 @@
 /* ============================================================
- * app-uploads.js — 通用上傳 + 行程資料 v3.8
+ * app-uploads.js — 通用上傳 + 行程資料 v3.9
  *
  * v3.5：雙徽章同步
  * v3.6：renderAllAttachments 支援 scope 參數
  * v3.7：uploadFiles 並行上傳
- * v3.8：
- *   - ⭐ 離線守衛：_saveAttachments / _saveNote 檢查 navigator.onLine
+ * v3.8：離線守衛
+ * v3.9：
+ *   - ⭐ Fallback：讀取時新 id 找不到 → 試舊 key d{day}-e{index}
+ *   - ⭐ 寫入時統一存到新 id，順便清理舊 key
  * ============================================================ */
 
 (function () {
@@ -24,6 +26,71 @@
   let _currentEventKey = null;
   let _currentEventTitle = '';
   let _currentTab = 'attach';
+
+  // ============================================================
+  // ⭐ v3.9：Key 映射（新 id ↔ 舊 key）
+  // ============================================================
+  let _keyMapCache = null;
+  let _keyMapCacheSignature = '';
+
+  function _computeItinerarySignature() {
+    const itineraries = window.winterItineraries || [];
+    let sig = '';
+    for (const day of itineraries) {
+      sig += day.day + ':' + day.events.length + ';';
+      for (const evt of day.events) {
+        const key = evt.id || evt.title || '';
+        sig += key.length + '#' + key.substring(0, 4) + ',';
+      }
+      sig += '|';
+    }
+    return sig;
+  }
+
+  function _buildKeyMap() {
+    const sig = _computeItinerarySignature();
+    if (_keyMapCache && _keyMapCacheSignature === sig) return _keyMapCache;
+
+    const newToOld = {};  // 新 id → 舊 key
+    const oldToNew = {};  // 舊 key → 新 id
+    const itineraries = window.winterItineraries || [];
+
+    itineraries.forEach(day => {
+      day.events.forEach((evt, idx) => {
+        const oldKey = `d${day.day}-e${idx}`;
+        if (evt.id) {
+          newToOld[evt.id] = oldKey;
+          oldToNew[oldKey] = evt.id;
+        }
+      });
+    });
+
+    _keyMapCache = { newToOld, oldToNew };
+    _keyMapCacheSignature = sig;
+    return _keyMapCache;
+  }
+
+  function _getOldKeyForNewId(newId) {
+    if (!newId) return null;
+    const map = _buildKeyMap();
+    return map.newToOld[newId] || null;
+  }
+
+  function _getNewIdForOldKey(oldKey) {
+    if (!oldKey) return null;
+    const map = _buildKeyMap();
+    return map.oldToNew[oldKey] || null;
+  }
+
+  // 把任何 key 標準化成「新 id」（若無法轉換則原樣返回）
+  function _normalizeKey(dayKey) {
+    if (!dayKey) return dayKey;
+    // 若是舊 key → 轉成新 id
+    const newId = _getNewIdForOldKey(dayKey);
+    if (newId) return newId;
+    // 否則原樣返回（可能是新 id，或非事件 key）
+    return dayKey;
+  }
 
   // ============================================================
   // 工具
@@ -121,11 +188,9 @@
     };
   }
 
-  // ⭐ v3.7：Worker pool（3 並行）上傳
   async function uploadFiles(files, opts = {}) {
     if (!_canWrite()) { _toast('🔒 訪客無法上傳', '⚠️'); return { success: [], failed: [] }; }
 
-    // ⭐ v3.8：離線守衛
     if (typeof window.requireOnline === 'function' && !window.requireOnline('上傳')) {
       return { success: [], failed: [] };
     }
@@ -179,55 +244,111 @@
     else window.open(urls[idx], '_blank');
   }
 
+  // ============================================================
+  // ⭐ v3.9：getAttachments 加 Fallback
+  //   1. 先試傳入的 key
+  //   2. 找不到 → 試對應的另一種 key（新 id ↔ 舊 key）
+  //   3. 都找不到 → 空陣列
+  // ============================================================
   function getAttachments(dayKey) {
     if (!dayKey) return [];
-    const list = window.cloudAttachments && window.cloudAttachments[dayKey];
-    return Array.isArray(list) ? list : [];
+    const store = window.cloudAttachments || {};
+
+    // 1. 直接查
+    const direct = store[dayKey];
+    if (Array.isArray(direct) && direct.length > 0) return direct;
+
+    // 2. Fallback：試另一種 key
+    const altKey = _getOldKeyForNewId(dayKey) || _getNewIdForOldKey(dayKey);
+    if (altKey && altKey !== dayKey) {
+      const alt = store[altKey];
+      if (Array.isArray(alt) && alt.length > 0) return alt;
+    }
+
+    // 3. 都沒有
+    return Array.isArray(direct) ? direct : [];
   }
 
+  // ⭐ v3.9：getEventNote 加 Fallback
   function getEventNote(dayKey) {
     if (!dayKey) return null;
-    const notes = window.cloudEventNotes;
-    return (notes && notes[dayKey]) ? notes[dayKey] : null;
+    const notes = window.cloudEventNotes || {};
+
+    if (notes[dayKey]) return notes[dayKey];
+
+    const altKey = _getOldKeyForNewId(dayKey) || _getNewIdForOldKey(dayKey);
+    if (altKey && altKey !== dayKey && notes[altKey]) return notes[altKey];
+
+    return null;
   }
 
-  // ⭐ v3.8：加離線守衛
+  // ============================================================
+  // ⭐ v3.9：_saveAttachments 統一存到新 id，並清理舊 key
+  // ============================================================
   async function _saveAttachments(dayKey, list) {
     if (typeof window.requireOnline === 'function' && !window.requireOnline('儲存附件')) {
       throw new Error('離線中');
     }
     if (!window.dbRef) throw new Error('雲端未連線');
-    window.cloudAttachments[dayKey] = list;
+
+    // 標準化：統一存到「新 id」
+    const targetKey = _normalizeKey(dayKey);
+    const staleKey = _getOldKeyForNewId(targetKey);
+
+    // 本地快取：寫到 targetKey，刪掉 staleKey
+    window.cloudAttachments[targetKey] = list;
+    if (staleKey && staleKey !== targetKey) {
+      delete window.cloudAttachments[staleKey];
+    }
+
     renderAllAttachments();
     renderEventDataModal();
 
+    // 雲端：讀取 → 合併 → 寫入
     const docSnap = await window.dbRef.get();
     const cloudData = docSnap.exists ? docSnap.data() : {};
     const attachments = { ...(cloudData.attachments || {}) };
-    attachments[dayKey] = list;
+
+    attachments[targetKey] = list;
+    if (staleKey && staleKey !== targetKey) {
+      delete attachments[staleKey];
+    }
+
     await window.dbRef.set({ attachments, updatedAt: Date.now() }, { merge: true });
   }
 
-  // ⭐ v3.8：加離線守衛
+  // ⭐ v3.9：_saveNote 同樣邏輯
   async function _saveNote(dayKey, noteObj) {
     if (typeof window.requireOnline === 'function' && !window.requireOnline('儲存備註')) {
       throw new Error('離線中');
     }
     if (!window.dbRef) throw new Error('雲端未連線');
-    window.cloudEventNotes[dayKey] = noteObj;
+
+    const targetKey = _normalizeKey(dayKey);
+    const staleKey = _getOldKeyForNewId(targetKey);
+
+    window.cloudEventNotes[targetKey] = noteObj;
+    if (staleKey && staleKey !== targetKey) {
+      delete window.cloudEventNotes[staleKey];
+    }
+
     renderAllAttachments();
     renderEventDataModal();
 
     const docSnap = await window.dbRef.get();
     const cloudData = docSnap.exists ? docSnap.data() : {};
     const eventNotes = { ...(cloudData.eventNotes || {}) };
-    eventNotes[dayKey] = noteObj;
+
+    eventNotes[targetKey] = noteObj;
+    if (staleKey && staleKey !== targetKey) {
+      delete eventNotes[staleKey];
+    }
+
     await window.dbRef.set({ eventNotes, updatedAt: Date.now() }, { merge: true });
   }
 
   function pickAndUpload(dayKey) {
     if (!_canWrite()) { _toast('🔒 訪客無法上傳', '⚠️'); return; }
-    // ⭐ v3.8：離線守衛（選檔前先檢查）
     if (typeof window.requireOnline === 'function' && !window.requireOnline('上傳')) return;
     const input = document.createElement('input');
     input.type = 'file';
@@ -274,7 +395,6 @@
 
   async function deleteAttachment(dayKey, attId) {
     if (!_canWrite()) { _toast('🔒 訪客無法刪除', '⚠️'); return; }
-    // ⭐ v3.8：離線守衛
     if (typeof window.requireOnline === 'function' && !window.requireOnline('刪除')) return;
     const list = getAttachments(dayKey);
     const att = list.find(a => a.id === attId);
@@ -376,7 +496,6 @@
       const titleEl = card.querySelector('.event-title');
       const eventTitle = titleEl ? titleEl.textContent.trim() : '';
 
-      // 2a. 標籤列徽章
       const tagRow = card.querySelector('.event-tag-row');
       if (tagRow) {
         let inlineBadge = tagRow.querySelector('.event-inline-data-badge');
@@ -410,7 +529,6 @@
         }
       }
 
-      // 2b. 動作列按鈕徽章
       const btn = card.querySelector('.event-action-btn[data-action="event-data"]');
       if (btn) {
         btn.dataset.eventKey = dayKey;
@@ -561,8 +679,12 @@
     closeEventData,
     switchEventDataTab,
     saveEventNote,
-    renderEventDataModal
+    renderEventDataModal,
+    // ⭐ v3.9：對外暴露工具
+    normalizeKey: _normalizeKey,
+    getOldKeyForNewId: _getOldKeyForNewId,
+    getNewIdForOldKey: _getNewIdForOldKey
   };
 
-  console.log('[Uploads] v3.8（並行上傳 + scope 參數 + 離線守衛）載入完成');
+  console.log('[Uploads] v3.9（Fallback 新舊 key 相容）載入完成');
 })();
