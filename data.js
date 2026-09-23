@@ -1038,3 +1038,5 @@ const winterItineraries = [
     ]
   }
 ];
+// ⭐ 讓其他模組也能透過 window 存取
+window.winterItineraries = winterItineraries;
