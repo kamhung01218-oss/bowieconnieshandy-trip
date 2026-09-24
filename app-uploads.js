@@ -1,23 +1,19 @@
 /* ============================================================
- * app-uploads.js — 通用上傳 + 行程資料 v3.11
+ * app-uploads.js — 通用上傳 + 行程資料 v3.10
  *
  * v3.5：雙徽章同步
  * v3.6：renderAllAttachments 支援 scope 參數
  * v3.7：uploadFiles 並行上傳
  * v3.8：離線守衛
  * v3.9：
- *   - Fallback：讀取時新 id 找不到 → 試舊 key d{day}-e{index}
- *   - 寫入時統一存到新 id，順便清理舊 key
+ *   - ⭐ Fallback：讀取時新 id 找不到 → 試舊 key d{day}-e{index}
+ *   - ⭐ 寫入時統一存到新 id，順便清理舊 key
  * v3.10（修復「重整後附件消失」）：
- *   - _saveAttachments 改為「與雲端合併」
- *   - _doUpload 只傳「這次新圖」
- *   - 新增 _hydrateFromCloud()
- * v3.11（PDF 支援）：
- *   - ⭐ 支援 PDF 上傳（走 catbox.moe，不需 API key）
- *   - ⭐ 附件物件多 type 欄位（"image" | "pdf"）
- *   - ⭐ PDF 縮圖用 📄 圖示 + 檔名
- *   - ⭐ PDF 點擊 → 開新視窗
- *   - ⭐ 向下相容：舊附件無 type → 當作 image
+ *   - ⭐ _saveAttachments 改為「與雲端合併」而非直接覆蓋
+ *   - ⭐ _saveAttachments 支援 opts.replace（刪除用）
+ *   - ⭐ _doUpload 只傳「這次新圖」，合併交給 _saveAttachments
+ *   - ⭐ 新增 _hydrateFromCloud()，啟動後主動補一次雲端
+ *   - ⭐ _saveNote 也同步從雲端讀取後再寫
  * ============================================================ */
 
 (function () {
@@ -25,11 +21,9 @@
 
   const IMGBB_API_KEY = 'c810acea8fd53f787b34d7e81e6f759a';
   const IMGBB_ENDPOINT = 'https://api.imgbb.com/1/upload';
-  const CATBOX_ENDPOINT = 'https://catbox.moe/user/api.php';
   const MAX_EDGE = 1600;
   const QUALITY = 0.82;
-  const MAX_IMAGE_SIZE = 10 * 1024 * 1024;   // 圖片 10 MB
-  const MAX_PDF_SIZE = 32 * 1024 * 1024;     // PDF 32 MB
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
   const UPLOAD_CONCURRENCY = 3;
 
   if (!window.cloudAttachments) window.cloudAttachments = {};
@@ -133,44 +127,13 @@
     return null;
   }
 
-  function _isPdfAttachment(att) {
-    return att && att.type === 'pdf';
-  }
-
-  function _formatFileSize(bytes) {
-    if (!bytes) return '';
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
-    return (bytes / 1024 / 1024).toFixed(1) + ' MB';
-  }
-
   // ============================================================
-  // 壓縮（圖片壓縮、PDF 直接通過）
+  // 圖片壓縮
   // ============================================================
   function compress(file) {
     return new Promise((resolve, reject) => {
-      if (!file) { reject(new Error('沒有檔案')); return; }
-
-      // ⭐ PDF：不壓縮，直接回傳
-      if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')) {
-        if (file.size > MAX_PDF_SIZE) {
-          reject(new Error(`PDF 過大（${(file.size / 1024 / 1024).toFixed(1)}MB，上限 ${MAX_PDF_SIZE / 1024 / 1024}MB）`));
-          return;
-        }
-        resolve(file);
-        return;
-      }
-
-      // 圖片流程
-      if (!file.type || !file.type.startsWith('image/')) {
-        reject(new Error('只支援圖片或 PDF'));
-        return;
-      }
-      if (file.size > MAX_IMAGE_SIZE) {
-        reject(new Error(`圖片過大（${Math.round(file.size / 1024 / 1024)}MB）`));
-        return;
-      }
-
+      if (!file || !file.type || !file.type.startsWith('image/')) { reject(new Error('不是圖片檔案')); return; }
+      if (file.size > MAX_FILE_SIZE) { reject(new Error(`檔案過大（${Math.round(file.size / 1024 / 1024)}MB）`)); return; }
       const reader = new FileReader();
       reader.onerror = () => reject(new Error('讀取失敗'));
       reader.onload = (e) => {
@@ -190,7 +153,6 @@
       reader.readAsDataURL(file);
     });
   }
-
   function _blobToBase64(blob) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -204,69 +166,23 @@
   }
 
   // ============================================================
-  // 上傳：依類型分流
+  // 上傳 imgbb
   // ============================================================
   async function uploadBlob(blob, opts = {}) {
-    const isPdf = (blob.type === 'application/pdf') || (opts.type === 'pdf');
-    if (isPdf) {
-      return await _uploadToCatbox(blob, opts);
-    }
-    return await _uploadToImgbb(blob, opts);
-  }
-
-  async function _uploadToImgbb(blob, opts = {}) {
     const base64 = await _blobToBase64(blob);
     const formData = new FormData();
     formData.append('key', IMGBB_API_KEY);
     formData.append('image', base64);
     const res = await fetch(IMGBB_ENDPOINT, { method: 'POST', body: formData });
-    if (!res.ok) throw new Error(`imgbb HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
-    if (!json || !json.success || !json.data) throw new Error('imgbb 上傳失敗');
+    if (!json || !json.success || !json.data) throw new Error('imgbb 失敗');
     const data = json.data;
     return {
       id: _genId(),
-      type: 'image',
       url: data.url || data.display_url,
       thumb: (data.thumb && data.thumb.url) || data.url,
       deleteUrl: data.delete_url || '',
-      name: opts.name || '',
-      size: blob.size || null,
-      uploader: _currentUser(),
-      uploadedAt: Date.now(),
-      category: opts.category || 'other',
-      day: opts.day || null,
-      note: opts.note || ''
-    };
-  }
-
-  // ⭐ PDF 走 catbox.moe（免費、無 API key、支援 200MB）
-  async function _uploadToCatbox(blob, opts = {}) {
-    const filename = opts.name || opts.filename || ('file-' + Date.now() + '.pdf');
-    const formData = new FormData();
-    formData.append('reqtype', 'fileupload');
-    formData.append('fileToUpload', blob, filename);
-
-    let res;
-    try {
-      res = await fetch(CATBOX_ENDPOINT, { method: 'POST', body: formData });
-    } catch (e) {
-      throw new Error('PDF 上傳失敗（網路或 CORS）：' + (e.message || e));
-    }
-    if (!res.ok) throw new Error(`catbox HTTP ${res.status}`);
-
-    const text = (await res.text()).trim();
-    if (!text || !/^https?:\/\//i.test(text)) {
-      throw new Error('catbox 回應異常：' + text.substring(0, 80));
-    }
-
-    return {
-      id: _genId(),
-      type: 'pdf',
-      url: text,
-      thumb: null,
-      name: filename,
-      size: blob.size || null,
       uploader: _currentUser(),
       uploadedAt: Date.now(),
       category: opts.category || 'other',
@@ -299,18 +215,8 @@
         try {
           if (onProgress) onProgress({ phase: 'compress', current: done + 1, total });
           const blob = await compress(file);
-
           if (onProgress) onProgress({ phase: 'upload', current: done + 1, total });
-
-          // ⭐ 依檔案類型分流
-          const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
-          const meta = await uploadBlob(blob, {
-            ...opts,
-            type: isPdf ? 'pdf' : 'image',
-            name: file.name || (isPdf ? 'file.pdf' : 'image.jpg'),
-            filename: file.name || (isPdf ? 'file.pdf' : 'image.jpg')
-          });
-
+          const meta = await uploadBlob(blob, opts);
           success.push(meta);
         } catch (e) {
           failed.push({ file: file && file.name, error: e.message || String(e) });
@@ -342,7 +248,7 @@
   }
 
   // ============================================================
-  // getAttachments / getEventNote（含 Fallback）
+  // getAttachments 加 Fallback
   // ============================================================
   function getAttachments(dayKey) {
     if (!dayKey) return [];
@@ -462,47 +368,27 @@
     await window.dbRef.set({ eventNotes, updatedAt: Date.now() }, { merge: true });
   }
 
-  // ============================================================
-  // 選擇檔案
-  // ============================================================
   function pickAndUpload(dayKey) {
-    _pickFiles(dayKey, 'image/*', '圖片');
-  }
-
-  // ⭐ PDF 上傳
-  function pickAndUploadPdf(dayKey) {
-    _pickFiles(dayKey, 'application/pdf', 'PDF');
-  }
-
-  function _pickFiles(dayKey, accept, label) {
     if (!_canWrite()) { _toast('🔒 訪客無法上傳', '⚠️'); return; }
     if (typeof window.requireOnline === 'function' && !window.requireOnline('上傳')) return;
-
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = accept;
+    input.accept = 'image/*';
     input.multiple = true;
     input.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;';
     document.body.appendChild(input);
-
     input.addEventListener('change', async () => {
       const files = Array.from(input.files || []);
-      setTimeout(() => { try { document.body.removeChild(input); } catch (e) {} }, 100);
+      setTimeout(() => { try { document.body.removeChild(input); } catch(e) {} }, 100);
       if (files.length === 0) return;
       await _doUpload(dayKey, files);
     });
-
-    setTimeout(() => {
-      try { input.click(); }
-      catch (e) { _toast('無法開啟檔案選擇器', '⚠️'); }
-    }, 0);
+    setTimeout(() => { try { input.click(); } catch (e) { _toast('無法開啟檔案選擇器', '⚠️'); } }, 0);
   }
 
-  // ⭐ 上傳流程（只傳新檔，合併交給 _saveAttachments）
   async function _doUpload(dayKey, files) {
     const total = files.length;
-    _toast(`⏳ 處理 ${total} 個檔案…`, '📤');
-
+    _toast(`⏳ 處理 ${total} 張…`, '📤');
     const result = await uploadFiles(files, {
       onProgress: ({ phase, current, total: t }) => {
         const p25 = Math.floor(t * 0.25);
@@ -513,56 +399,36 @@
         }
       }
     });
-
     if (result.success.length === 0) {
       if (result.failed.length > 0) {
-        _toast(`❌ 全部失敗（${result.failed.length} 個）`, '⚠️');
-        console.warn('[Uploads] 失敗詳情:', result.failed);
+        _toast(`❌ 全部失敗（${result.failed.length} 張）`, '⚠️');
       }
       return;
     }
-
     try {
       await _saveAttachments(dayKey, result.success);
-      _toast(`✅ 已加入 ${result.success.length} 個附件`, '📎');
-    } catch (e) {
-      _toast('❌ 儲存失敗：' + e.message, '⚠️');
-    }
-
-    if (result.failed.length > 0) {
-      setTimeout(() => _toast(`⚠️ ${result.failed.length} 個上傳失敗`, '⚠️'), 1500);
-    }
+      _toast(`✅ 已加入 ${result.success.length} 張附件`, '📎');
+    } catch (e) { _toast('❌ 儲存失敗：' + e.message, '⚠️'); }
+    if (result.failed.length > 0) setTimeout(() => _toast(`⚠️ ${result.failed.length} 張上傳失敗`, '⚠️'), 1500);
   }
 
-  // ============================================================
-  // 刪除附件
-  // ============================================================
   async function deleteAttachment(dayKey, attId) {
     if (!_canWrite()) { _toast('🔒 訪客無法刪除', '⚠️'); return; }
     if (typeof window.requireOnline === 'function' && !window.requireOnline('刪除')) return;
-
     const list = getAttachments(dayKey);
     const att = list.find(a => a.id === attId);
     if (!att) return;
-
     const isOwner = att.uploader === _currentUser();
     if (!isOwner && !_isAdmin()) { _toast('🔒 只能刪除自己上傳的附件', '⚠️'); return; }
-    if (!confirm('確定要移除這個附件嗎？')) return;
-
+    if (!confirm('確定要移除這張附件嗎？')) return;
     const next = list.filter(a => a.id !== attId);
-
     try {
       await _saveAttachments(dayKey, next, { replace: true });
       _toast('🗑 已移除', '📎');
       _haptic(10);
-    } catch (e) {
-      _toast('❌ 刪除失敗', '⚠️');
-    }
+    } catch (e) { _toast('❌ 刪除失敗', '⚠️'); }
   }
 
-  // ============================================================
-  // 產生附件區 HTML
-  // ============================================================
   function buildAttachmentsInnerHtml(dayKey, options) {
     const opts = options || {};
     const showAddBtn = opts.showAddBtn !== false;
@@ -581,35 +447,17 @@
       html += '<div class="event-att-grid">';
       list.forEach((att, i) => {
         const canDelete = writable && (att.uploader === me || admin);
+        const safeUrl = _esc(att.thumb || att.url);
         const safeId = _esc(att.id);
         const safeKey = _esc(dayKey);
-
-        if (_isPdfAttachment(att)) {
-          // ⭐ PDF 縮圖
-          const safeName = _esc(att.name || 'PDF');
-          const sizeLabel = att.size ? _formatFileSize(att.size) : '';
-          html += `
-            <div class="event-att-item event-att-item-pdf"
-                 onclick="Uploads.openPdfAttachment('${safeKey}', ${i})">
-              <div class="event-att-pdf-icon">📄</div>
-              <div class="event-att-pdf-name">${safeName}</div>
-              ${sizeLabel ? `<div class="event-att-pdf-size">${sizeLabel}</div>` : ''}
-              ${canDelete ? `<button type="button" class="event-att-del"
+        html += `
+          <div class="event-att-item">
+            <img src="${safeUrl}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"
+                 onclick="Uploads.openAttLightbox('${safeKey}', ${i})">
+            ${canDelete ? `<button type="button" class="event-att-del"
                  onclick="event.stopPropagation();Uploads.deleteAttachment('${safeKey}','${safeId}')"
                  aria-label="刪除">×</button>` : ''}
-            </div>`;
-        } else {
-          // 圖片
-          const safeUrl = _esc(att.thumb || att.url);
-          html += `
-            <div class="event-att-item">
-              <img src="${safeUrl}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"
-                   onclick="Uploads.openAttLightbox('${safeKey}', ${i})">
-              ${canDelete ? `<button type="button" class="event-att-del"
-                   onclick="event.stopPropagation();Uploads.deleteAttachment('${safeKey}','${safeId}')"
-                   aria-label="刪除">×</button>` : ''}
-            </div>`;
-        }
+          </div>`;
       });
       html += '</div>';
     }
@@ -617,18 +465,11 @@
     if (writable && showAddBtn) {
       const safeKey = _esc(dayKey);
       html += `
-        <div class="event-att-add-row">
-          <button type="button" class="event-att-add-line"
-                  onclick="event.preventDefault();event.stopPropagation();Uploads.pickAndUpload('${safeKey}')">
-            <span class="event-att-add-line-icon">📷</span>
-            <span>加入圖片</span>
-          </button>
-          <button type="button" class="event-att-add-line event-att-add-line-pdf"
-                  onclick="event.preventDefault();event.stopPropagation();Uploads.pickAndUploadPdf('${safeKey}')">
-            <span class="event-att-add-line-icon">📄</span>
-            <span>加入 PDF</span>
-          </button>
-        </div>`;
+        <button type="button" class="event-att-add-line"
+                onclick="event.preventDefault();event.stopPropagation();Uploads.pickAndUpload('${safeKey}')">
+          <span class="event-att-add-line-icon">＋</span>
+          <span>加入附件</span>
+        </button>`;
     }
 
     return html;
@@ -653,22 +494,12 @@
         inner += '<div class="event-att-grid">';
         list.forEach((att, i) => {
           const canDelete = _canWrite() && (att.uploader === _currentUser() || _isAdmin());
+          const safeUrl = _esc(att.thumb || att.url);
           const safeId = _esc(att.id);
           const safeKey = _esc(dayKey);
-
-          if (_isPdfAttachment(att)) {
-            const safeName = _esc(att.name || 'PDF');
-            inner += `<div class="event-att-item event-att-item-pdf" onclick="Uploads.openPdfAttachment('${safeKey}', ${i})">
-              <div class="event-att-pdf-icon">📄</div>
-              <div class="event-att-pdf-name">${safeName}</div>`;
-            if (canDelete) inner += `<button type="button" class="event-att-del" onclick="event.stopPropagation();Uploads.deleteAttachment('${safeKey}','${safeId}')" aria-label="刪除">×</button>`;
-            inner += `</div>`;
-          } else {
-            const safeUrl = _esc(att.thumb || att.url);
-            inner += `<div class="event-att-item"><img src="${safeUrl}" alt="" loading="lazy" referrerpolicy="no-referrer" onclick="Uploads.openAttLightbox('${safeKey}', ${i})">`;
-            if (canDelete) inner += `<button type="button" class="event-att-del" onclick="event.stopPropagation();Uploads.deleteAttachment('${safeKey}','${safeId}')" aria-label="刪除">×</button>`;
-            inner += `</div>`;
-          }
+          inner += `<div class="event-att-item"><img src="${safeUrl}" alt="" loading="lazy" referrerpolicy="no-referrer" onclick="Uploads.openAttLightbox('${safeKey}', ${i})">`;
+          if (canDelete) inner += `<button type="button" class="event-att-del" onclick="event.stopPropagation();Uploads.deleteAttachment('${safeKey}','${safeId}')" aria-label="刪除">×</button>`;
+          inner += `</div>`;
         });
         inner += '</div>';
       }
@@ -739,32 +570,12 @@
     });
   }
 
-  // ============================================================
-  // 燈箱 / 開啟
-  // ============================================================
   function openAttLightbox(dayKey, index) {
     const list = getAttachments(dayKey);
-    const urls = list.filter(a => !_isPdfAttachment(a)).map(a => a.url);
-    // 找出對應的圖片在過濾後的 index
-    const original = list[index];
-    if (!original || _isPdfAttachment(original)) return;
-    const imageList = list.filter(a => !_isPdfAttachment(a));
-    const imgIdx = imageList.findIndex(a => a.id === original.id);
-    openLightbox(urls, imgIdx >= 0 ? imgIdx : 0);
+    const urls = list.map(a => a.url);
+    openLightbox(urls, index);
   }
 
-  // ⭐ 點擊 PDF → 開新視窗
-  function openPdfAttachment(dayKey, index) {
-    const list = getAttachments(dayKey);
-    const att = list[index];
-    if (!att || !att.url) return;
-    _haptic(8);
-    window.open(att.url, '_blank', 'noopener,noreferrer');
-  }
-
-  // ============================================================
-  // Modal
-  // ============================================================
   function openEventData(dayKey, eventTitle) {
     _currentEventKey = dayKey;
     _currentEventTitle = eventTitle || '';
@@ -902,7 +713,7 @@
 
       if (changed) {
         renderAllAttachments();
-        console.log('[Uploads] v3.11 已從雲端補齊附件');
+        console.log('[Uploads] v3.10 已從雲端補齊附件');
       }
     } catch (e) {
       console.warn('[Uploads] hydrate 失敗:', e);
@@ -924,9 +735,6 @@
     }
   });
 
-  // ============================================================
-  // 對外 API
-  // ============================================================
   window.Uploads = {
     compress, uploadBlob, uploadFiles, openLightbox, test,
     canWrite: _canWrite, currentUser: _currentUser,
@@ -935,10 +743,8 @@
     buildAttachmentsInnerHtml,
     renderAllAttachments,
     pickAndUpload,
-    pickAndUploadPdf,
     deleteAttachment,
     openAttLightbox,
-    openPdfAttachment,
     openEventData,
     closeEventData,
     switchEventDataTab,
@@ -950,5 +756,5 @@
     hydrateFromCloud: _hydrateFromCloud
   };
 
-  console.log('[Uploads] v3.11（支援 PDF）載入完成');
+  console.log('[Uploads] v3.10（雲端合併 + 主動補資料）載入完成');
 })();
