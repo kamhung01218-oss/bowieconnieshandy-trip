@@ -863,54 +863,67 @@ const winterItineraries = [
       `
     },
     {
-      time: "10:00 - 12:30",
-      id: "晨間二選一海洋水族館-🐧-OR-溫室採草莓-🍓",
-      title: "晨間二選一：海洋水族館 🐧 OR 溫室採草莓 🍓",
-      tag: { text: "🎯 彈性早晨", class: "tag-sky" },
-      navUrl: "https://maps.app.goo.gl/BxaETtqtFLNmQoJf8?g_st=ac",
-      navName: "仙台海洋森林水族館",
-      priority: "must",
-      highlight: true,
-      open: true,
-      content: `
-        <p>今天早上，水族館還是草莓園？</p>
-        <details>
-          <summary>🐬 選擇 A：仙台海洋森林水族館</summary>
-          <div>
-            <img src="https://www.uminomori.jp/assets/img/top/main_img01.jpg" alt="仙台海洋森林水族館" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-            <p>門票｜成人 ¥2,400 · 幼兒 ¥800</p>
-            <p><strong>冬季限定</strong><br><span class="text-slate-500 text-xs">企鵝雪地散步</span></p>
-            <p><strong>室內海豚秀</strong><br><span class="text-slate-500 text-xs">防風透光頂棚 + 暖氣，不必吹冷風</span></p>
-            <p><strong>閃耀生命之海</strong><br><span class="text-slate-500 text-xs">數萬尾沙丁魚群隨音樂游動</span></p>
-            <p><strong>互動摸摸池</strong><br><span class="text-slate-500 text-xs">適合 4 歲幼兒高度</span></p>
-            <a href="https://www.google.com/maps/search/?api=1&query=Sendai+Umino+Mori+Aquarium" target="_blank">📍 導航前往</a>
+  time: "10:00 - 12:30",
+  id: "晨間二選一海洋水族館-🐧-OR-溫室採草莓-🍓",
+  title: "晨間二選一：海洋水族館 🐧 OR 溫室採草莓 🍓",
+  tag: { text: "🎯 彈性早晨", class: "tag-sky" },
+  navUrl: "https://maps.app.goo.gl/BxaETtqtFLNmQoJf8?g_st=ac",
+  navName: "仙台海洋森林水族館",
+  priority: "must",
+  highlight: true,
+  open: true,
+  content: `
+    <p>今天早上，水族館還是草莓園？</p>
+    <details>
+      <summary>🐬 選擇 A：仙台海洋森林水族館</summary>
+      <div>
+        <div class="event-image-carousel mt-2 rounded-xl overflow-hidden shadow-sm">
+          <div class="carousel-track">
+            <img src="https://i.meee.com.tw/erT0EXg.jpg" alt="仙台海洋森林水族館" class="lazy-fade carousel-img" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-index="0" onclick="openLightboxCarousel(this)">
+            <img src="https://i.meee.com.tw/w5vQ6oa.jpg" alt="仙台海洋森林水族館" class="lazy-fade carousel-img" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-index="1" onclick="openLightboxCarousel(this)">
+            <img src="https://i.meee.com.tw/xrl4bWg.jpg" alt="仙台海洋森林水族館" class="lazy-fade carousel-img" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-index="2" onclick="openLightboxCarousel(this)">
           </div>
-        </details>
-        <details>
-          <summary>🍓 選擇 B：仙台市區溫室採草莓（三選一）</summary>
-          <div>
-            <p><strong>1. 一苺一笑 松森農場（免預約）</strong></p>
-            <img src="https://www.ichigo-issho.jp/wp-content/uploads/2022/12/IMG_4522.jpg" alt="一苺一笑 松森農場" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-            <p><strong>⭐️ 4.4 分</strong><br><span class="text-slate-500 text-xs">40 分鐘吃到飽・北海道煉乳無限續加</span></p>
-            <p><span class="text-slate-500 text-xs">優勢：現場排隊制，行程最彈性（建議早上到，大草莓還沒被採光）</span></p>
-            <a href="https://maps.app.goo.gl/Q91PEDo22zahngNy5?g_st=ac" target="_blank">📍 導航前往</a>
-            <hr class="my-3 border-slate-200">
-            <p><strong>2. JR 水果公園仙台荒濱（官網預約）</strong></p>
-            <img src="https://jr-fruitpark-sendai.jp/wp-content/uploads/2022/01/strawberry.jpg" alt="JR水果公園仙台荒濱" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-            <p><strong>⭐️ 4.0 分</strong><br><span class="text-slate-500 text-xs">園區大且極乾淨・附設農產市集與大飯店主廚監製餐廳</span></p>
-            <p><span class="text-slate-500 text-xs">優勢：有繁中/英文網路介面，適合出發前搞定名額（30 分鐘限制）</span></p>
-            <a href="https://maps.app.goo.gl/H3EDkLGrVGBg3Sth9?g_st=ac" target="_blank">📍 導航前往</a>
-            <hr class="my-3 border-slate-200">
-            <p><strong>3. Berry Planet（燦燦園）</strong></p>
-            <img src="https://berryplanet.jp/wp-content/uploads/2021/12/strawberry-farm.jpg" alt="Berry Planet" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-            <p><strong>⭐️ 4.3 分</strong><br><span class="text-slate-500 text-xs">老字號農家・完熟甜度極高・附設網美咖啡廳</span></p>
-            <p><span class="text-slate-500 text-xs">優勢：假日必須提早預約，但品質有保障</span></p>
-            <a href="https://maps.app.goo.gl/yHuF1t7Vk9s3iPGc8?g_st=ac" target="_blank">📍 導航前往</a>
+          <div class="carousel-indicator">
+            <span class="carousel-current">1</span>
+            <span class="carousel-sep">/</span>
+            <span class="carousel-total">3</span>
           </div>
-        </details>
-        <div class="tip-block">💡 兩個行程都在仙台市區周邊，中午結束後 15–20 分鐘可到仔虎利府店</div>
-      `
-    },
+          <div class="carousel-hint carousel-hint-left">‹</div>
+          <div class="carousel-hint carousel-hint-right">›</div>
+        </div>
+        <p>門票｜成人 ¥2,400 · 幼兒 ¥800</p>
+        <p><strong>冬季限定</strong><br><span class="text-slate-500 text-xs">企鵝雪地散步</span></p>
+        <p><strong>室內海豚秀</strong><br><span class="text-slate-500 text-xs">防風透光頂棚 + 暖氣，不必吹冷風</span></p>
+        <p><strong>閃耀生命之海</strong><br><span class="text-slate-500 text-xs">數萬尾沙丁魚群隨音樂游動</span></p>
+        <p><strong>互動摸摸池</strong><br><span class="text-slate-500 text-xs">適合 4 歲幼兒高度</span></p>
+        <a href="https://www.google.com/maps/search/?api=1&query=Sendai+Umino+Mori+Aquarium" target="_blank">📍 導航前往</a>
+      </div>
+    </details>
+    <details>
+      <summary>🍓 選擇 B：仙台市區溫室採草莓（三選一）</summary>
+      <div>
+        <p><strong>1. 一苺一笑 松森農場（免預約）</strong></p>
+        <img src="https://i.meee.com.tw/oATDVIV.jpg" alt="一苺一笑 松森農場" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+        <p><strong>⭐️ 4.4 分</strong><br><span class="text-slate-500 text-xs">40 分鐘吃到飽・北海道煉乳無限續加</span></p>
+        <p><span class="text-slate-500 text-xs">優勢：現場排隊制，行程最彈性（建議早上到，大草莓還沒被採光）</span></p>
+        <a href="https://maps.app.goo.gl/Q91PEDo22zahngNy5?g_st=ac" target="_blank">📍 導航前往</a>
+        <hr class="my-3 border-slate-200">
+        <p><strong>2. JR 水果公園仙台荒濱（官網預約）</strong></p>
+        <img src="https://i.meee.com.tw/r2jWInj.webp" alt="JR水果公園仙台荒濱" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+        <p><strong>⭐️ 4.0 分</strong><br><span class="text-slate-500 text-xs">園區大且極乾淨・附設農產市集與大飯店主廚監製餐廳</span></p>
+        <p><span class="text-slate-500 text-xs">優勢：有繁中/英文網路介面，適合出發前搞定名額（30 分鐘限制）</span></p>
+        <a href="https://maps.app.goo.gl/H3EDkLGrVGBg3Sth9?g_st=ac" target="_blank">📍 導航前往</a>
+        <hr class="my-3 border-slate-200">
+        <p><strong>3. Berry Planet（燦燦園）</strong></p>
+        <img src="https://i.meee.com.tw/frEJBxZ.jpg" alt="Berry Planet" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+        <p><strong>⭐️ 4.3 分</strong><br><span class="text-slate-500 text-xs">老字號農家・完熟甜度極高・附設網美咖啡廳</span></p>
+        <p><span class="text-slate-500 text-xs">優勢：假日必須提早預約，但品質有保障</span></p>
+        <a href="https://maps.app.goo.gl/yHuF1t7Vk9s3iPGc8?g_st=ac" target="_blank">📍 導航前往</a>
+      </div>
+    </details>
+    <div class="tip-block">💡 兩個行程都在仙台市區周邊，中午結束後 15–20 分鐘可到仔虎利府店</div>
+  `
+},
     {
       time: "12:45 - 14:15",
       id: "極致和牛燒肉午餐-仔虎-利府店",
