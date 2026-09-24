@@ -1,5 +1,5 @@
 /* ============================================================
- * AppHeader v16.8
+ * AppHeader v16.9
  * - 品牌列：❄️ 標題 + [搜尋] + [天氣] + [重整] + [工具]
  * - Focus Card：出發前 / 中 / 後
  * - 旅行中順序：廣播 → 天氣 → 現在 → 下一站 → CTA(購物/留言)
@@ -12,6 +12,11 @@
  * v16.8：
  *   - ⭐ 點擊天氣欄（一週天氣條 / 當天天氣行）開啟完整天氣 Modal
  *   - ⭐ data-action 元素加鍵盤支援（Enter / Space）
+ * v16.9：
+ *   - ⭐ 修復時段色調不隨時間轉變（updateCountdownNumbers 提前 return 問題）
+ *   - ⭐ tick 無條件呼叫 updateCountdownNumbers（stage 有變時也呼叫）
+ *   - ⭐ getTimeOfDay 支援 ?tod= 測試參數
+ *   - ⭐ 時段切換加 console.log 方便除錯
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -257,9 +262,18 @@ window.AppHeader = (function () {
   // ============================================================
 
   /**
-   * 取得當前時段（dawn / day / dusk / night）
+   * ⭐ v16.9：取得當前時段（dawn / day / dusk / night）
+   * 支援 ?tod=dawn|day|dusk|night 測試參數
    */
   function getTimeOfDay() {
+    // ⭐ 開發測試用：?tod=dawn / day / dusk / night
+    try {
+      const forced = new URLSearchParams(window.location.search).get('tod');
+      if (forced && ['dawn', 'day', 'dusk', 'night'].includes(forced)) {
+        return forced;
+      }
+    } catch (e) {}
+
     const h = new Date().getHours();
     if (h >= 5 && h < 9) return 'dawn';
     if (h >= 9 && h < 16) return 'day';
@@ -773,14 +787,29 @@ window.AppHeader = (function () {
   window._AppHeader_syncAll = syncAllData;
 
   // ============================================================
-  // 出發前：倒數更新（圓環 + 時分 + 時段）
+  // ⭐ v16.9：時段色調 + 倒數更新
+  //   時段色調獨立更新，不受 diff <= 0 影響
   // ============================================================
   function updateCountdownNumbers() {
     if (!_container) return;
     const focusEl = _container.querySelector("#app-header-focus");
     if (!focusEl) return;
+
+    // ⭐ 時段色調：獨立更新，不受倒數邏輯影響
+    const innerEl = focusEl.querySelector('.focus-inner-v2');
+    if (innerEl) {
+      const newTimeOfDay = getTimeOfDay();
+      const curTimeOfDay = innerEl.getAttribute('data-time-of-day');
+      if (newTimeOfDay !== curTimeOfDay) {
+        innerEl.setAttribute('data-time-of-day', newTimeOfDay);
+        console.log('[Focus] 時段切換：', curTimeOfDay, '→', newTimeOfDay);
+      }
+    }
+
+    // 倒數數字更新（維持原本邏輯）
     const diff = _config.tripStart - Date.now();
     if (diff <= 0) return;
+
     const days = Math.floor(diff / 86400000);
     const hours = Math.floor((diff % 86400000) / 3600000);
     const minutes = Math.floor((diff % 3600000) / 60000);
@@ -806,15 +835,6 @@ window.AppHeader = (function () {
       }
       if (minEl && minEl.textContent !== String(minutes).padStart(2, "0")) {
         minEl.textContent = String(minutes).padStart(2, "0");
-      }
-    }
-
-    const innerEl = focusEl.querySelector('.focus-inner-v2');
-    if (innerEl) {
-      const newTimeOfDay = getTimeOfDay();
-      const curTimeOfDay = innerEl.getAttribute('data-time-of-day');
-      if (newTimeOfDay !== curTimeOfDay) {
-        innerEl.setAttribute('data-time-of-day', newTimeOfDay);
       }
     }
   }
@@ -1914,14 +1934,16 @@ window.AppHeader = (function () {
         const phase = getTripPhase();
         if (phase !== _lastRenderedPhase) { renderFocusCard(); return; }
 
+        // ⭐ v16.9：不管 stage 有沒有變，都更新一次
+        // updateCountdownNumbers 內部會先處理時段色調，再處理倒數
         if (phase === "before") {
           const days = Math.floor((_config.tripStart - Date.now()) / 86400000);
           const stage = getPrepStage(days);
           if (stage !== _lastPrepStage) {
             renderFocusCard(true);
-          } else {
-            updateCountdownNumbers();
           }
+          // ⭐ 無條件呼叫（時段色調每秒檢查一次）
+          updateCountdownNumbers();
         }
 
         if (phase === "during") {
@@ -2629,5 +2651,5 @@ function _svgMsgIcon() {
     resetIndicator();
   }, { passive: true });
 
-  console.log('[pull-sync] v16.5 已註冊下拉同步手勢（含誤觸修正）');
+  console.log('[pull-sync] v16.9 已註冊下拉同步手勢（含誤觸修正）');
 })();
