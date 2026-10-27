@@ -1,16 +1,6 @@
 /* ============================================================
- * app-lists.js — v7.7
+ * app-lists.js — v7.8 (移除寒河江草莓預訂項目)
  * 清單：行前預訂清單、裝備清單、購物清單、購物總覽
- *
- * v7.4：購物總覽加「＋ 新增物品」按鈕
- * v7.5：新增 updateShoppingBadges
- * v7.6：
- *   - ⭐ 去 Emoji 化（UI 層）：
- *       標題圖示、按鈕圖示、分類徽章改用 SVG
- *       清單項目 emoji、類別選擇 emoji 保留（內容型）
- * v7.7：
- *   - ⭐ 支援外部渲染目標（window._bookingRenderTarget / _equipRenderTarget）
- *     用於「準備清單」滑動式 Modal
  * ============================================================ */
 
 // ⭐ v7.6：SVG helper
@@ -50,10 +40,11 @@ const bookingList = [
   { id: "hotel-akiu", category: "住宿", label: "1/21 秋保溫泉 瑞鳳大飯店 (含自助晚餐)", icon: "🏨" },
   { id: "hotel-tendo", category: "住宿", label: "1/22-23 微笑之宿 瀧之湯 (含懷石晚餐)", icon: "🏨" },
   { id: "hotel-sendai", category: "住宿", label: "1/24-26 Hotel Grand Bach 仙台 (連住3晚)", icon: "🏨" },
+  { id: "hotel-sendai-2", category: "住宿", label: "1/27 仙台市區新飯店", icon: "🏨" },
   { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
   { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
   { id: "car-pickup", category: "租車", label: "1/21 15:30 機場取車", icon: "⏰" },
-  { id: "car-dropoff", category: "租車", label: "1/27 13:45 機場還車", icon: "⏰" },
+  { id: "car-dropoff", category: "租車", label: "1/28 13:45 機場還車", icon: "⏰" },
   { id: "insurance-travel", category: "保險", label: "旅遊平安險 / 意外險", icon: "🛡️" },
   { id: "insurance-medical", category: "保險", label: "海外突發疾病醫療險", icon: "🏥" },
   { id: "insurance-trip", category: "保險", label: "旅程不便險（班機/行李延誤）", icon: "🧳" },
@@ -65,7 +56,6 @@ const bookingList = [
   { id: "sim-esim", category: "通訊", label: "日本 eSIM / 上網卡", icon: "📶" },
   { id: "wifi-router", category: "通訊", label: "WiFi 分享器 (若需要)", icon: "📡" },
   { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/23 16:30)", icon: "♨️" },
-  { id: "other-strawberry", category: "其他", label: "寒河江草莓園 (1/23 14:00)", icon: "🍓" },
   { id: "other-passport", category: "其他", label: "護照效期檢查 (需剩餘 6 個月以上)", icon: "🪪" },
   { id: "other-visit-japan-web", category: "其他", label: "Visit Japan Web 登錄 + QR Code", icon: "📱" },
   { id: "other-credit-card", category: "其他", label: "信用卡通知銀行 / 開通海外交易", icon: "💳" },
@@ -631,4 +621,4 @@ function updateShoppingBadges(day) {
 }
 window.updateShoppingBadges = updateShoppingBadges;
 
-console.log('[Lists] v7.7（支援外部渲染目標）載入完成');
+console.log('[Lists] v7.8（移除寒河江草莓預訂項目）載入完成');

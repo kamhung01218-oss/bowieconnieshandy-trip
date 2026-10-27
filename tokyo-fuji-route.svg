@@ -1,0 +1,137 @@
+<svg viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans TC','PingFang TC','Microsoft JhengHei','Heiti TC',sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0f9ff"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+
+    <linearGradient id="tokyoGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <linearGradient id="kawaguchikoGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+
+    <linearGradient id="hakoneGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+
+    <linearGradient id="gotembaGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0284c7" flood-opacity="0.15"/>
+    </filter>
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="1000" height="700" fill="url(#bg)"/>
+
+  <!-- 雪花裝飾 -->
+  <g fill="#ffffff" opacity="0.5">
+    <circle cx="100" cy="100" r="3"/>
+    <circle cx="300" cy="60" r="2"/>
+    <circle cx="500" cy="90" r="4"/>
+    <circle cx="700" cy="50" r="2"/>
+    <circle cx="900" cy="80" r="3"/>
+    <circle cx="150" cy="400" r="2"/>
+    <circle cx="850" cy="450" r="3"/>
+    <circle cx="550" cy="600" r="2"/>
+    <circle cx="50" cy="600" r="3"/>
+    <circle cx="950" cy="600" r="2"/>
+  </g>
+
+  <!-- 標題 -->
+  <text x="500" y="55" text-anchor="middle" font-size="28" font-weight="900" fill="#0c4a6e">東京富士山親子看雪 7 日路線圖</text>
+  <text x="500" y="85" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">2027-01-21 至 2027-01-27 · 4大2小 · 半自駕</text>
+
+  <!-- 路線 -->
+  <path d="M 760 220 Q 500 110 240 220" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 6" marker-end="url(#arrow)"/>
+  <path d="M 240 220 Q 180 385 240 550" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 6" marker-end="url(#arrow)"/>
+  <path d="M 240 550 Q 330 500 420 420" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 6" marker-end="url(#arrow)"/>
+  <path d="M 420 420 Q 590 350 760 220" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 6" marker-end="url(#arrow)"/>
+
+  <!-- 返港箭頭 -->
+  <path d="M 760 220 Q 850 180 920 140" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrow)" opacity="0.6"/>
+
+  <!-- 路線標籤 -->
+  <g font-size="12" font-weight="800" fill="#0284c7">
+    <rect x="455" y="115" width="90" height="22" rx="11" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5"/>
+    <text x="500" y="131" text-anchor="middle">D2 自駕 2.5h</text>
+
+    <rect x="100" y="370" width="80" height="22" rx="11" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5"/>
+    <text x="140" y="386" text-anchor="middle">D4 自駕 1.5h</text>
+
+    <rect x="270" y="500" width="90" height="22" rx="11" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5"/>
+    <text x="315" y="516" text-anchor="middle">D5 御殿場</text>
+
+    <rect x="545" y="355" width="90" height="22" rx="11" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5"/>
+    <text x="590" y="371" text-anchor="middle">D5 返東京</text>
+  </g>
+
+  <!-- 東京 -->
+  <g filter="url(#shadow)">
+    <circle cx="760" cy="220" r="40" fill="#ffffff"/>
+    <circle cx="760" cy="220" r="32" fill="url(#tokyoGrad)"/>
+    <text x="760" y="220" text-anchor="middle" dominant-baseline="central" font-size="24">🏙️</text>
+  </g>
+  <text x="760" y="285" text-anchor="middle" font-size="16" font-weight="900" fill="#1e293b">東京</text>
+  <text x="760" y="305" text-anchor="middle" font-size="12" font-weight="700" fill="#64748b">上野 · D1 · D6</text>
+
+  <!-- 河口湖 -->
+  <g filter="url(#shadow)">
+    <circle cx="240" cy="220" r="40" fill="#ffffff"/>
+    <circle cx="240" cy="220" r="32" fill="url(#kawaguchikoGrad)"/>
+    <text x="240" y="220" text-anchor="middle" dominant-baseline="central" font-size="24">🗻</text>
+  </g>
+  <text x="240" y="285" text-anchor="middle" font-size="16" font-weight="900" fill="#1e293b">河口湖</text>
+  <text x="240" y="305" text-anchor="middle" font-size="12" font-weight="700" fill="#64748b">富士山 · D2-D3</text>
+
+  <!-- 箱根 -->
+  <g filter="url(#shadow)">
+    <circle cx="240" cy="550" r="40" fill="#ffffff"/>
+    <circle cx="240" cy="550" r="32" fill="url(#hakoneGrad)"/>
+    <text x="240" y="550" text-anchor="middle" dominant-baseline="central" font-size="24">♨️</text>
+  </g>
+  <text x="240" y="615" text-anchor="middle" font-size="16" font-weight="900" fill="#1e293b">箱根</text>
+  <text x="240" y="635" text-anchor="middle" font-size="12" font-weight="700" fill="#64748b">溫泉 · D4-D5</text>
+
+  <!-- 御殿場 -->
+  <g filter="url(#shadow)">
+    <circle cx="420" cy="420" r="40" fill="#ffffff"/>
+    <circle cx="420" cy="420" r="32" fill="url(#gotembaGrad)"/>
+    <text x="420" y="420" text-anchor="middle" dominant-baseline="central" font-size="24">🛍️</text>
+  </g>
+  <text x="420" y="485" text-anchor="middle" font-size="14" font-weight="900" fill="#1e293b">御殿場 Outlet</text>
+  <text x="420" y="503" text-anchor="middle" font-size="11" font-weight="700" fill="#64748b">購物 · D5</text>
+
+  <!-- 返港 -->
+  <g>
+    <rect x="855" y="105" width="120" height="52" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="915" y="128" text-anchor="middle" font-size="14" font-weight="900" fill="#1e293b">✈️ 返港</text>
+    <text x="915" y="146" text-anchor="middle" font-size="11" font-weight="700" fill="#64748b">D7 · 成田/羽田</text>
+  </g>
+
+  <!-- 圖例 -->
+  <g transform="translate(50, 665)">
+    <text x="0" y="0" font-size="12" font-weight="900" fill="#64748b">圖例：</text>
+    <circle cx="70" cy="-4" r="6" fill="#0284c7"/>
+    <text x="82" y="0" font-size="12" font-weight="700" fill="#475569">東京</text>
+    <circle cx="140" cy="-4" r="6" fill="#4f46e5"/>
+    <text x="152" y="0" font-size="12" font-weight="700" fill="#475569">河口湖</text>
+    <circle cx="220" cy="-4" r="6" fill="#db2777"/>
+    <text x="232" y="0" font-size="12" font-weight="700" fill="#475569">箱根</text>
+    <circle cx="290" cy="-4" r="6" fill="#d97706"/>
+    <text x="302" y="0" font-size="12" font-weight="700" fill="#475569">御殿場</text>
+  </g>
+</svg>

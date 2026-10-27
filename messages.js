@@ -1,14 +1,5 @@
 /* ============================================================
- * messages.js — 家庭廣播 v1.5
- *
- * v1.4 變更：
- *   - ⭐ send 自動記錄當前 Day
- *   - ⭐ renderFull 顯示 Day 標籤（可點擊跳行程）
- *   - ⭐ 新增 getTodaySummary() 取今日置頂摘要
- *
- * v1.5 變更：
- *   - ⭐ getTodaySummary() 只看「置頂 + 未過期」，不看 Day
- *     這樣 D2 睡前置頂的「明早集合」到 D3 早上仍然看得到
+ * messages.js — 家庭廣播 v1.6 (8天7夜版)
  * ============================================================ */
 window.Messages = (function () {
   let _cache = [];
@@ -16,7 +7,8 @@ window.Messages = (function () {
   let _unsub = null;
   let _started = false;
 
-  const TRIP_DATES = ['2027-01-21','2027-01-22','2027-01-23','2027-01-24','2027-01-25','2027-01-26','2027-01-27'];
+  // ⭐ 修改：加入 1/28
+  const TRIP_DATES = ['2027-01-21','2027-01-22','2027-01-23','2027-01-24','2027-01-25','2027-01-26','2027-01-27','2027-01-28'];
 
   function canWrite() {
     try {
@@ -50,7 +42,6 @@ window.Messages = (function () {
     return s + '秒';
   }
 
-  // 取得當前 Day（1~7，0 表示不在旅行期間）
   function getCurrentDayNum() {
     try {
       const urlParams = new URLSearchParams(window.location.search);
@@ -58,7 +49,8 @@ window.Messages = (function () {
       const testMode = urlParams.get('test');
       if (testMode === 'during' && testDay) {
         const n = parseInt(testDay);
-        if (n >= 1 && n <= 7) return n;
+        // ⭐ 修改：上限改為 8
+        if (n >= 1 && n <= 8) return n;
       }
     } catch (e) {}
 
@@ -138,7 +130,6 @@ window.Messages = (function () {
       type: opts.type || 'normal'
     };
 
-    // 自動記錄當前 Day
     const dayNum = getCurrentDayNum();
     if (dayNum >= 1) msg.day = dayNum;
 
@@ -193,9 +184,9 @@ window.Messages = (function () {
     return m.type === 'location' && m.location && typeof m.location.lat === 'number';
   }
 
-  // Day 標籤
   function buildDayTagHtml(m) {
-    if (!m.day || m.day < 1 || m.day > 7) return '';
+    // ⭐ 修改：上限改為 8
+    if (!m.day || m.day < 1 || m.day > 8) return '';
     return `<button type="button" class="message-day-tag" onclick="event.stopPropagation();window._Messages_jumpToDay(${m.day})">D${m.day}</button>`;
   }
 
@@ -258,8 +249,6 @@ window.Messages = (function () {
     }).join('');
   }
 
-  // ⭐ v1.5：摘要只看「置頂 + 未過期」，不看 Day
-  // 這樣 D2 睡前置頂的「明早集合」到 D3 早上仍然看得到
   function getTodaySummary() {
     const now = Date.now();
     const items = process(_cache).filter(m => {

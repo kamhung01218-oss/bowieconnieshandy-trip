@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>❄️ 東北冬季親子溫泉自駕之旅 (7天6夜)</title>
+<title>❄️ 東北冬季親子溫泉自駕之旅 (8天7夜)</title>
 <meta name="theme-color" content="#0c1929">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -791,6 +791,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button onclick="switchDay(5)" id="tab-d5" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D5 (1/25)</button>
                 <button onclick="switchDay(6)" id="tab-d6" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D6 (1/26)</button>
                 <button onclick="switchDay(7)" id="tab-d7" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D7 (1/27)</button>
+                <!-- ⭐ 新增 D8 按鈕 -->
+                <button onclick="switchDay(8)" id="tab-d8" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D8 (1/28)</button>
               </div>
               <button id="btn-collapse-all" onclick="collapseAllItineraries()" title="展開／收合全部行程"
                 class="shrink-0 flex items-center gap-1 px-3 h-[38px] rounded-full bg-white border border-slate-200 text-slate-600 text-[11px] font-bold shadow-sm transition-all hover:bg-slate-50 active:scale-95">
@@ -802,39 +804,41 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div id="schedule-container" class="space-y-6 pt-2 pb-4">
             <div id="day-section-1" class="day-section">
-  <div class="mb-8">
-    <div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex items-center gap-2.5">
-      <div class="w-10 h-10 rounded-full skeleton shrink-0"></div>
-      <div class="flex-1 space-y-2">
-        <div class="skeleton skeleton-line short" style="height:10px;width:30%"></div>
-        <div class="skeleton skeleton-line long" style="height:14px;width:70%"></div>
-      </div>
-    </div>
-    <div class="timeline">
-      <div class="skeleton-card" style="margin-left:42px">
-        <div class="skeleton skeleton-line short" style="height:10px;width:28%"></div>
-        <div class="skeleton skeleton-line long" style="height:16px;width:80%;margin-top:8px"></div>
-        <div class="skeleton skeleton-line medium" style="height:10px;width:55%;margin-top:8px"></div>
-        <div class="skeleton" style="height:120px;width:100%;margin-top:12px;border-radius:12px"></div>
-      </div>
-      <div class="skeleton-card" style="margin-left:42px">
-        <div class="skeleton skeleton-line short" style="height:10px;width:22%"></div>
-        <div class="skeleton skeleton-line long" style="height:16px;width:75%;margin-top:8px"></div>
-        <div class="skeleton skeleton-line medium" style="height:10px;width:50%;margin-top:8px"></div>
-      </div>
-      <div class="skeleton-card" style="margin-left:42px">
-        <div class="skeleton skeleton-line short" style="height:10px;width:26%"></div>
-        <div class="skeleton skeleton-line long" style="height:16px;width:68%;margin-top:8px"></div>
-      </div>
-    </div>
-  </div>
-</div>
+              <div class="mb-8">
+                <div class="bg-slate-50/95 py-2.5 mb-2 px-1 border-b border-slate-200/50 flex items-center gap-2.5">
+                  <div class="w-10 h-10 rounded-full skeleton shrink-0"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="skeleton skeleton-line short" style="height:10px;width:30%"></div>
+                    <div class="skeleton skeleton-line long" style="height:14px;width:70%"></div>
+                  </div>
+                </div>
+                <div class="timeline">
+                  <div class="skeleton-card" style="margin-left:42px">
+                    <div class="skeleton skeleton-line short" style="height:10px;width:28%"></div>
+                    <div class="skeleton skeleton-line long" style="height:16px;width:80%;margin-top:8px"></div>
+                    <div class="skeleton skeleton-line medium" style="height:10px;width:55%;margin-top:8px"></div>
+                    <div class="skeleton" style="height:120px;width:100%;margin-top:12px;border-radius:12px"></div>
+                  </div>
+                  <div class="skeleton-card" style="margin-left:42px">
+                    <div class="skeleton skeleton-line short" style="height:10px;width:22%"></div>
+                    <div class="skeleton skeleton-line long" style="height:16px;width:75%;margin-top:8px"></div>
+                    <div class="skeleton skeleton-line medium" style="height:10px;width:50%;margin-top:8px"></div>
+                  </div>
+                  <div class="skeleton-card" style="margin-left:42px">
+                    <div class="skeleton skeleton-line short" style="height:10px;width:26%"></div>
+                    <div class="skeleton skeleton-line long" style="height:16px;width:68%;margin-top:8px"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div id="day-section-2" class="day-section hidden"></div>
             <div id="day-section-3" class="day-section hidden"></div>
             <div id="day-section-4" class="day-section hidden"></div>
             <div id="day-section-5" class="day-section hidden"></div>
             <div id="day-section-6" class="day-section hidden"></div>
             <div id="day-section-7" class="day-section hidden"></div>
+            <!-- ⭐ 新增 D8 容器 -->
+            <div id="day-section-8" class="day-section hidden"></div>
           </div>
         </div>
       </main>

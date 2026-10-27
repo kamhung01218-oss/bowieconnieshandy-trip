@@ -1,17 +1,5 @@
 /* ============================================================
- * app-core.js — v14.9
- * 核心：工具函數、用戶認證、全局狀態、彈窗系統、匯率、Toast、
- *       燈箱、角色、Service Worker、可拖動 FAB、返回頂部、主題切換
- *
- * v14.0：移除行前預訂密碼驗證
- * v14.1：註冊 prep-overview-modal
- * v14.2：移除共享收據舊 modal，註冊 attachments-overview-modal
- * v14.3：切換用戶清空 _renderedDays、補註冊 5 個 modal、PIN 自動提交
- * v14.4：setupModalDrag handleArea 加 fallback、PIN 自動提交加防抖
- * v14.7：移除離線持久化、加離線守衛
- * v14.8：saveUserData 加離線守衛
- * v14.9：
- *   - ⭐ C1：initSnowEffect 改 Canvas（CPU -90%）
+ * app-core.js — v15.0 (8天7夜版)
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -74,9 +62,11 @@ const USER_COLORS = {
   "訪客": "linear-gradient(135deg,#94a3b8,#475569)"
 };
 
-const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27"];
+// ⭐ 修改：加入 1/28
+const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27", "2027-01-28"];
 const TRIP_START = new Date("2027-01-21T10:00:00+08:00").getTime();
-const TRIP_END = new Date("2027-01-27T23:59:59+08:00").getTime();
+// ⭐ 修改：TRIP_END 改為 1/28
+const TRIP_END = new Date("2027-01-28T23:59:59+08:00").getTime();
 const GINZAN_TARGET = new Date("2027-01-08T23:00:00+08:00").getTime();
 const ZAO_TARGET = new Date("2027-01-15T23:00:00+08:00").getTime();
 const ADMIN_PASSWORD = "tohoku2027admin";
@@ -93,7 +83,8 @@ function getInitialDay() {
     const urlDay = urlParams.get('day');
     if (urlDay) {
       const n = parseInt(urlDay);
-      if (n >= 1 && n <= 7) return n;
+      // ⭐ 修改：上限改為 8
+      if (n >= 1 && n <= 8) return n;
     }
   } catch (e) {}
 
@@ -107,7 +98,8 @@ function getInitialDay() {
   }
 
   const last = parseInt(localStorage.getItem('tohoku_last_day') || '0');
-  if (last >= 1 && last <= 7) return last;
+  // ⭐ 修改：上限改為 8
+  if (last >= 1 && last <= 8) return last;
 
   return 1;
 }
@@ -604,7 +596,7 @@ window.addEventListener('message', (e) => {
 function scrollToToday() {
   const now = Date.now();
   if (now < TRIP_START) { switchDay(1); showToast("📅 行程尚未開始，已跳到 D1", "✈️"); }
-  else if (now > TRIP_END) { switchDay(7); showToast("📅 行程已結束，已跳到 D7", "🏁"); }
+  else if (now > TRIP_END) { switchDay(8); showToast("📅 行程已結束，已跳到 D8", "🏁"); }
   else { for (let i = 0; i < tripDates.length; i++) { const dayStart = new Date(tripDates[i] + "T00:00:00+08:00").getTime(); const dayEnd = new Date(tripDates[i] + "T23:59:59+08:00").getTime(); if (now >= dayStart && now <= dayEnd) { switchDay(i + 1); showToast(`📅 已跳到 Day ${i + 1}`, "📍"); break; } } }
   haptic(12); setTimeout(() => { const tabs = document.querySelector('.day-tabs-wrapper'); if (tabs) tabs.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
 }
@@ -911,7 +903,6 @@ function initSnowEffect() {
   const c = document.getElementById("snow-fall");
   if (!c) return;
 
-  // 若已初始化過，先清理
   if (window._snowCanvasRAF) {
     cancelAnimationFrame(window._snowCanvasRAF);
     window._snowCanvasRAF = null;

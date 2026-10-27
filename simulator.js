@@ -1,15 +1,12 @@
 /* ============================================================
- * simulator.js — 旅行模擬控制器 v1.1
- *
- * v1.1 變更：
- *   - 面板預設收起，只顯示狀態藥丸
- *   - 點外部自動關閉面板
- *   - 藥丸文字顯示當前狀態（D1~D7 或「模擬」）
+ * simulator.js — 旅行模擬控制器 v1.2 (8天7夜版)
  * ============================================================ */
 (function () {
   const TRIP_START = new Date('2027-01-21T00:00:00+08:00').getTime();
-  const TRIP_END = new Date('2027-01-27T23:59:59+08:00').getTime();
-  const TRIP_DAYS = 7;
+  // ⭐ 修改：TRIP_END 改為 1/28
+  const TRIP_END = new Date('2027-01-28T23:59:59+08:00').getTime();
+  // ⭐ 修改：TRIP_DAYS 改為 8
+  const TRIP_DAYS = 8;
 
   function isTripActive() {
     const now = Date.now();
@@ -72,7 +69,6 @@
     }
 
     updateToggleText();
-    // ⭐ v1.1：不自動展開面板
   }
 
   function togglePanel() {
@@ -94,7 +90,6 @@
     window.location.href = buildUrl(null, null);
   }
 
-  // 點面板外部自動關閉
   document.addEventListener('click', (e) => {
     const widget = document.getElementById('simulator-widget');
     if (!widget || widget.classList.contains('hidden')) return;
