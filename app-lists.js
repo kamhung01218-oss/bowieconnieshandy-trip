@@ -1,5 +1,5 @@
 /* ============================================================
- * app-lists.js — v7.8 (移除寒河江草莓預訂項目)
+ * app-lists.js — v8.0 (Grand Bach 連住4晚版 + renderTarget 修復)
  * 清單：行前預訂清單、裝備清單、購物清單、購物總覽
  * ============================================================ */
 
@@ -39,8 +39,8 @@ const bookingList = [
   { id: "flight-checkin", category: "航班", label: "網路報到 + 下載登機證", icon: "🎫" },
   { id: "hotel-akiu", category: "住宿", label: "1/21 秋保溫泉 瑞鳳大飯店 (含自助晚餐)", icon: "🏨" },
   { id: "hotel-tendo", category: "住宿", label: "1/22-23 微笑之宿 瀧之湯 (含懷石晚餐)", icon: "🏨" },
-  { id: "hotel-sendai", category: "住宿", label: "1/24-26 Hotel Grand Bach 仙台 (連住3晚)", icon: "🏨" },
-  { id: "hotel-sendai-2", category: "住宿", label: "1/27 仙台市區新飯店", icon: "🏨" },
+  { id: "hotel-sendai", category: "住宿", label: "1/24-27 Hotel Grand Bach 仙台 (連住4晚)", icon: "🏨" },
+  { id: "hotel-sendai-2", category: "住宿", label: "1/27 續住 Hotel Grand Bach 仙台 (第4晚)", icon: "🏨" },
   { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
   { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
   { id: "car-pickup", category: "租車", label: "1/21 15:30 機場取車", icon: "⏰" },
@@ -577,10 +577,11 @@ function loadCustomItems() { const b = localStorage.getItem("custom_booking_item
 function restoreChecklistUI() { renderBookingChecklist(); renderEquipChecklist(); renderAllShoppingContent(); }
 
 // ==================== 模態視窗開關 ====================
-function toggleBookingModal() { const modal = document.getElementById('booking-modal'); if (modal.classList.contains('hidden')) { showModal('booking-modal'); modal.classList.remove('hidden'); renderBookingChecklist(); } else { hideModal('booking-modal'); setTimeout(() => modal.classList.add('hidden'), 300); } }
-function closeBookingModal() { hideModal('booking-modal'); setTimeout(() => document.getElementById('booking-modal').classList.add('hidden'), 300); }
-function toggleEquipModal() { const modal = document.getElementById('equip-modal'); if (modal.classList.contains('hidden')) { showModal('equip-modal'); modal.classList.remove('hidden'); renderEquipChecklist(); } else { hideModal('equip-modal'); setTimeout(() => modal.classList.add('hidden'), 300); } }
-function closeEquipModal() { hideModal('equip-modal'); setTimeout(() => document.getElementById('equip-modal').classList.add('hidden'), 300); }
+// ⭐ P0 修復：開啟/關閉時重置 renderTarget，避免從準備清單滑動 Modal 過來時渲染到舊目標
+function toggleBookingModal() { window._bookingRenderTarget = null; const modal = document.getElementById('booking-modal'); if (modal.classList.contains('hidden')) { showModal('booking-modal'); modal.classList.remove('hidden'); renderBookingChecklist(); } else { hideModal('booking-modal'); setTimeout(() => modal.classList.add('hidden'), 300); } }
+function closeBookingModal() { window._bookingRenderTarget = null; hideModal('booking-modal'); setTimeout(() => document.getElementById('booking-modal').classList.add('hidden'), 300); }
+function toggleEquipModal() { window._equipRenderTarget = null; const modal = document.getElementById('equip-modal'); if (modal.classList.contains('hidden')) { showModal('equip-modal'); modal.classList.remove('hidden'); renderEquipChecklist(); } else { hideModal('equip-modal'); setTimeout(() => modal.classList.add('hidden'), 300); } }
+function closeEquipModal() { window._equipRenderTarget = null; hideModal('equip-modal'); setTimeout(() => document.getElementById('equip-modal').classList.add('hidden'), 300); }
 
 window.toggleBookingModal = toggleBookingModal;
 window.closeBookingModal = closeBookingModal;
@@ -621,4 +622,4 @@ function updateShoppingBadges(day) {
 }
 window.updateShoppingBadges = updateShoppingBadges;
 
-console.log('[Lists] v7.8（移除寒河江草莓預訂項目）載入完成');
+console.log('[Lists] v8.0（Grand Bach 連住4晚版 + renderTarget 修復）載入完成');

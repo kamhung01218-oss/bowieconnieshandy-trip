@@ -16,11 +16,11 @@
 const fs = require('fs');
 const path = require('path');
 
-// ⚠️ 改成你的 data.js 實際所在的完整路徑
-const BASE_DIR = '/storage/emulated/0/Download/仙台之旅';  // ← 改成你的
+// ⚠️ 改成你的 data.js 實際所在的完整路徑（Windows 請用 C:\\... 或正斜線）
+const BASE_DIR = '/storage/emulated/0/Download/仙台之旅';
 
 const DATA_FILE = path.join(BASE_DIR, 'data.js');
-const BACKUP_FILE = path.join(BASE_DIR, 'data.backup.js');ata.backup.js');
+const BACKUP_FILE = path.join(BASE_DIR, 'data.backup.js');
 
 function titleToId(title) {
   if (!title) return 'event';

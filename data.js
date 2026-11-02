@@ -1,7 +1,7 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 2.3.0 (8天7夜版)
+ *  版本: 2.4.5 (Day 2 二選一精簡文案：移除「方案 A/B」重複前綴)
  * ============================================================
  */
 
@@ -183,7 +183,7 @@ const winterItineraries = [
     emoji: "🏮",
     events: [
       {
-        time: "09:30 - 10:30",
+        time: "09:30 - 09:45",
         id: "退房出發跨縣前往山形天童",
         title: "退房出發，跨縣前往山形天童",
         tag: { text: "🚗 雪地幹線", class: "tag-teal" },
@@ -191,8 +191,8 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>告別秋保，駛往山形縣</p>
-          <p class="text-xs text-slate-500">國道 48 號（關山街道）→ 天童市，約 50–60 分鐘</p>
+          <p>告別秋保，準備駛往山形縣</p>
+          <p class="text-xs text-slate-500">今日有兩條路線可選，請依「購物需求」決定</p>
           <div class="tip-block warn">
             <strong>🚗 連續彎道多</strong>｜下雪時時速降至 30–40<br>
             後方有車緊跟 → 找避車道打左燈讓過
@@ -204,40 +204,72 @@ const winterItineraries = [
         `
       },
       {
-        time: "10:30 - 14:30",
-        id: "AEON-MALL-天童裝備補給與美食",
-        title: "AEON MALL 天童：裝備補給與美食",
-        img: "https://japanshopping.org/files/shopimg/84ab29edbe4c8f9e96cfb4024eb95bc2.jpg",
-        tag: { text: "🛍️ 裝備補給", class: "tag-rose" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=Aeon+Mall+Tendo",
-        navName: "AEON天童",
+        time: "09:45 - 14:30",
+        id: "今日方案選擇-AEON-MALL購物或秋保大瀑布看景",
+        title: "AEON MALL 購物 或 秋保大瀑布",
+        subtitle: "🔀 今日二選一方案",
+        img: "https://i.meee.com.tw/sG36Ug5.jpg",
+        tag: { text: "🔀 二選一", class: "tag-sky" },
+        navUrl: "",
         priority: "must",
+        highlight: true,
         open: true,
         content: `
-          <p>東北最大 AEON，一次補齊裝備</p>
-          <p class="text-xs text-slate-500">Montbell・UNIQLO・超市・藥妝全都有</p>
+          <p>依「購物需求」決定今日路線：</p>
+
+          <ul style="margin-bottom: 16px; line-height: 1.7;">
+            <li><strong>🅰️ 購物派</strong>：裝備未買齊、想逛 AEON。</li>
+            <li><strong>🅱️ 看景派</strong>：裝備已夠、想去秋保大瀑布（可遲至 10:30 退房）。</li>
+          </ul>
+
           <details>
-            <summary>🛍️ 必逛品牌</summary>
+            <summary>🅰️ AEON MALL 天童（購物 + 午餐）</summary>
             <div>
-              <p><strong>戶外運動</strong><br><span class="text-slate-500 text-xs">Montbell（機能服飾）・ABC-MART Grand Stage（限定鞋款）</span></p>
-              <p><strong>日系服飾</strong><br><span class="text-slate-500 text-xs">UNIQLO・GU・未來屋書店</span></p>
-              <p><strong>生活補給</strong><br><span class="text-slate-500 text-xs">AEON STYLE 生鮮超市（山形名產・清酒）・Welcia 藥妝</span></p>
+              <p><strong>09:45 退房 → 10:30-14:30 AEON MALL 天童</strong></p>
+              <img src="https://i.meee.com.tw/sG36Ug5.jpg" alt="AEON MALL 天童" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+              <p><strong>🛍️ 必逛品牌</strong><br>
+              <span class="text-slate-500 text-xs">Montbell（機能服飾）・ABC-MART Grand Stage（限定鞋款）・UNIQLO・GU・未來屋書店</span></p>
+              <p><strong>🍱 人氣餐廳</strong><br>
+              <span class="text-slate-500 text-xs">1F 大戶屋・いきなりステーキ・築地銀章魚燒</span><br>
+              <span class="text-slate-500 text-xs">2F 美食廣場：築地食堂 源ちゃん・丸龜製麵・幸樂苑</span></p>
+              <p><strong>🛒 生活補給</strong><br>
+              <span class="text-slate-500 text-xs">AEON STYLE 生鮮超市（山形名產・清酒）・Welcia 藥妝</span></p>
+              <div class="tip-block" style="margin-top:8px">💡 建議 1F 大戶屋吃午餐，吃飽再上 2F 逛</div>
+              <a href="https://www.google.com/maps/search/?api=1&query=Aeon+Mall+Tendo" target="_blank">📍 導航前往 AEON MALL 天童</a>
             </div>
           </details>
+
           <details>
-            <summary>🍱 人氣餐廳</summary>
+            <summary>🅱️ 秋保大瀑布（可遲退房 + 天童午餐）</summary>
             <div>
-              <p><strong>1F 餐廳街</strong><br><span class="text-slate-500 text-xs">大戶屋・いきなりステーキ・築地銀章魚燒</span></p>
-              <p><strong>2F 美食廣場</strong><br><span class="text-slate-500 text-xs">築地食堂 源ちゃん・丸龜製麵・幸樂苑</span></p>
+              <p><strong>10:30 前退房</strong>（比方案 A 遲 45 分鐘，可從容吃早餐）</p>
+              <p><strong>10:45-11:45 秋保大瀑布</strong></p>
+              <img src="https://i.meee.com.tw/3mEgz7v.jpg" alt="秋保大瀑布" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+              <p><strong>🌊 日本三大名瀑之一</strong><br>
+              <span class="text-slate-500 text-xs">高 55m、寬 6m，冬季結冰時氣勢磅礴</span></p>
+              <p><strong>🚗 交通</strong><br>
+              <span class="text-slate-500 text-xs">從瑞鳳大飯店開車約 10 分鐘，有免費停車場</span></p>
+              <p><strong>🥾 步行</strong><br>
+              <span class="text-slate-500 text-xs">停車場 → 瀑布觀景台約 5-10 分鐘，有階梯（約 100 級）</span></p>
+              <div class="tip-block danger">
+                <strong>⚠️ 冬季注意</strong><br>
+                • 階梯結冰，<strong>必穿冰爪</strong><br>
+                • 緊牽小孩，欄杆可能結霜<br>
+                • 瀑布水量較夏季少，但雪景壯觀
+              </div>
+              <a href="https://maps.app.goo.gl/UTpDmpvRn6dK3LDc6?g_st=ac" target="_blank">📍 導航前往秋保大瀑布</a>
             </div>
           </details>
-          <div class="tip-block">💡 建議 1F 大戶屋吃午餐，吃飽再上 2F 逛</div>
+
+          <p style="font-size: 13px; color: #475569; margin-top: 16px; background: #f8fafc; padding: 10px 12px; border-radius: 10px; border-left: 3px solid #38bdf8;">
+            💡 選擇秋保大瀑布，抵達瀧之湯 Check-in 時間約 14:30-15:00，不影響後續銀山夜景
+          </p>
         `
       },
       {
         time: "14:30 - 15:00",
         id: "YUKIHIRA-COFFEE-休憩",
-        title: "YUKIHIRA COFFEE 休憩",
+        title: "YUKIHIRA COFFEE 休憩（方案 A 適用）",
         img: "https://cdn-ak.f.st-hatena.com/images/fotolife/d/deep-karuma-waap-ec-real-s1/20260720/20260720185804.jpg",
         tag: { text: "☕ 咖啡小憩", class: "tag-amber" },
         navUrl: "https://maps.app.goo.gl/PLAjJVoyuemACVNC8?g_st=ac",
@@ -246,7 +278,7 @@ const winterItineraries = [
         open: true,
         content: `
           <p>手沖一杯，喘口氣</p>
-          <p class="text-xs text-slate-500">逛完 AEON 順路休息</p>
+          <p class="text-xs text-slate-500">逛完 AEON 順路休息（方案 B 可直接跳過）</p>
         `
       },
       {
@@ -564,12 +596,15 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>入住仙台站旁，連住 3 晚</p>
+          <p>入住仙台站旁，<b>連住 4 晚</b>（D4–D7）</p>
           <p class="text-xs text-slate-500">2 間雙床房，車停東口 24HR 平面計費停車場</p>
           <div class="tip-block warn">
             <strong>🧳 卸貨動線</strong>｜先臨停飯店門口<br>
             一位家長帶小孩 + 大行李下車 → 駕駛獨自去停車<br>
             ⚠️ 不要全家跟著去停車再拖行李走回飯店
+          </div>
+          <div class="tip-block">
+            <strong>🅿️ 停車</strong>｜東口 24HR 平面停車場，連住期間不必每天移車
           </div>
         `
       },
@@ -938,20 +973,20 @@ const winterItineraries = [
         content: `
           <p>今晚把戰利品裝箱</p>
           <p class="text-xs text-slate-500">18:00 返回 Grand Bach，晚餐依狀態就近解決</p>
-          <div class="tip-block">💡 19:30 開始分類裝箱：服飾 / 藥妝 / 戰利品，為明日換飯店與後天返程預備</div>
+          <div class="tip-block">💡 19:30 開始分類裝箱：服飾 / 藥妝 / 戰利品，為明日 Outlet 與後日返程預備</div>
         `
       }
     ]
   },
 
   // ==========================================
-  // DAY 7 - 水族館 & Outlet (新增)
+  // DAY 7 - 水族館 & Outlet
   // ==========================================
   {
     day: 7,
     dateLabel: "DAY 7 · 2027年1月27日 (週三)",
-    id: "水族館-Outlet-入住新飯店",
-    title: "海洋森林水族館 ➔ 三井 Outlet 大血拚",
+    id: "水族館-Outlet-續住第4晚",
+    title: "海洋森林水族館 ➔ 三井 Outlet 大血拚 ➔ 續住 Grand Bach",
     subtitle: "🐧 海洋與購物之日",
     emoji: "🐧",
     events: [
@@ -1000,12 +1035,33 @@ const winterItineraries = [
             🎟️ 開逛前先憑護照至 1F 服務台領外國遊客 Coupon
           </div>
         `
+      },
+      {
+        time: "18:00 - 18:30",
+        id: "返回Hotel-Grand-Bach仙台連住第4晚",
+        title: "返回 Hotel Grand Bach 仙台（連住第4晚）",
+        tag: { text: "🏨 續住", class: "tag-indigo" },
+        navUrl: "https://maps.app.goo.gl/tumoctSbhRFgQkx89?g_st=ac",
+        navName: "Hotel Grand Bach 仙台",
+        priority: "must",
+        open: true,
+        content: `
+          <p>逛完 Outlet，返回熟悉的 Grand Bach</p>
+          <p class="text-xs text-slate-500">D4 入住後連住 4 晚，今晚是最後一晚</p>
+          <div class="tip-block">
+            <strong>🧳 行李整理</strong>｜明早退房前可先整理戰利品<br>
+            <strong>♨️ 大浴場</strong>｜頂樓大浴場放鬆，為明日返程充電
+          </div>
+          <div class="tip-block warn">
+            <strong>🅿️ 停車提醒</strong>｜車停東口 24HR 平面停車場，明早退房前記得取車
+          </div>
+        `
       }
     ]
   },
 
   // ==========================================
-  // DAY 8 - 返程 (原 Day 7)
+  // DAY 8 - 返程
   // ==========================================
   {
     day: 8,
@@ -1026,6 +1082,7 @@ const winterItineraries = [
         content: `
           <p>早餐後裝車，準備啟程回家</p>
           <p class="text-xs text-slate-500">收拾物品 → 行李裝上 Minivan → 退房</p>
+          <div class="tip-block">💡 別忘了先到東口停車場取車</div>
         `
       },
       {
@@ -1103,5 +1160,6 @@ const winterItineraries = [
     ]
   }
 ];
+
 // ⭐ 讓其他模組也能透過 window 存取
 window.winterItineraries = winterItineraries;

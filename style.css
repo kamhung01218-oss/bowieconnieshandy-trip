@@ -1492,14 +1492,14 @@ button:active::after {
   line-height: 1.35;
 }
 
+/* ⭐ v18.4：已移除第一子元素的白底框，改為透明背景，讓內文不再被關在籠子裡 */
 .glass-card.event-card .event-content-wrapper > div:first-child {
-  margin: 4px 18px 12px !important;
-  padding: 0 !important;
-  background: white !important;
-  border: 1px solid var(--t-color-border);
-  border-radius: var(--t-radius-md) !important;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.06);
-  overflow: hidden !important;
+  margin: 0 0 12px 0 !important;
+  padding: 0;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
   transition: transform 0.3s ease;
 }
 .glass-card.event-card .event-content-wrapper > div:first-child:hover {
@@ -1508,6 +1508,11 @@ button:active::after {
 .glass-card.event-card .event-content-wrapper > div:first-child img {
   border-radius: 0 !important;
   height: 160px !important;
+}
+
+/* 若 event-collapsible 本身剛好是第一子元素（無圖片時），仍要保有左右留白 */
+.glass-card.event-card .event-content-wrapper > div.event-collapsible:first-child {
+  padding: 0 20px 16px 20px !important;
 }
 
 .glass-card.event-card .event-content-wrapper > a {
@@ -2625,4 +2630,102 @@ details.event-card:not([open]) .event-content-wrapper {
 .event-collapsible p,
 .event-collapsible li {
   font-weight: 500;
+}
+/* ⭐ v18.2 優化：讓行程卡片的操作按鈕列更緊湊，減少冗長感 */
+.event-summary-actions {
+  padding: 8px 0 10px !important;
+}
+.event-action-btn {
+  padding: 6px 10px !important;
+  min-height: 32px !important;
+  font-size: 11.5px !important;
+  border-radius: 8px !important;
+}
+.event-expand-icon {
+  width: 24px !important;
+  height: 24px !important;
+}
+/* ============================================================
+ * ⭐ v18.3 排版修復：關閉自動重組後，增加文字呼吸空間
+ * ============================================================ */
+
+/* 1. 卡片標題左側豎線與文字的距離 */
+.event-title {
+  padding-left: 16px !important;
+}
+
+/* 2. 內文整體的左右留白 */
+.glass-card.event-card .event-collapsible {
+  padding: 0 20px 16px !important;
+}
+
+/* 3. 普通段落文字的間距 */
+.glass-card.event-card .event-collapsible p {
+  margin: 12px 0 !important;
+  line-height: 1.8 !important;
+  font-size: 14px !important;
+  color: #334155 !important;
+}
+
+/* 4. 確保 tip-block (提示框) 有正常的外觀與邊距 */
+.glass-card.event-card .event-collapsible .tip-block {
+  margin: 16px 0 !important;
+  padding: 14px 16px !important;
+  line-height: 1.7 !important;
+  border-radius: 0 12px 12px 0 !important;
+  background: #f8fafc !important;
+  border-left: 4px solid #38bdf8 !important;
+}
+
+/* 5. 確保折疊框有漂亮的邊距與圓角 */
+.glass-card.event-card .event-collapsible details:not(.event-card) {
+  margin: 16px 0 !important;
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  overflow: hidden !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) > summary {
+  padding: 14px 16px !important;
+  background: #f8fafc !important;
+  font-weight: 800 !important;
+}
+.glass-card.event-card .event-collapsible details:not(.event-card) > div {
+  padding: 16px !important;
+  background: #ffffff !important;
+}
+
+/* ⭐ v18.2 優化：讓行程卡片的操作按鈕列更緊湊，減少冗長感 */
+.event-summary-actions {
+  padding: 8px 0 10px !important;
+}
+.event-action-btn {
+  padding: 6px 10px !important;
+  min-height: 32px !important;
+  font-size: 11.5px !important;
+  border-radius: 8px !important;
+}
+.event-expand-icon {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* ============================================================
+ * ⭐ v18.4 最終修復：移除白底框 + 補上內文呼吸空間
+ * ============================================================ */
+
+/* 確保 event-collapsible 本身有足夠左右留白（無圖片時它是第一子元素） */
+.glass-card.event-card .event-collapsible {
+  padding: 0 20px 16px 20px !important;
+}
+
+/* 段落之間保持清爽間距 */
+.glass-card.event-card .event-collapsible p {
+  margin: 0 0 14px 0 !important;
+  line-height: 1.8 !important;
+  font-size: 14px !important;
+  color: #334155 !important;
+}
+
+.glass-card.event-card .event-collapsible p:last-child {
+  margin-bottom: 0 !important;
 }

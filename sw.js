@@ -1,20 +1,28 @@
 /* ============================================================
- * Service Worker - v3.1（字體 Cache-First）
+ * Service Worker - v3.2（8天7夜修正版）
  *
- * v3.1 變更：
- *   - ⭐ 移除 googleapis / gstatic 從 NETWORK_FIRST_HOSTS
- *   - ⭐ 字體 CSS / WOFF2 走 Cache-First（首次載入後秒開）
+ * v3.2 變更：
+ *   - 補全 ASSETS（tokens / dark / design-v15 / v16 / focus-card-v2
+ *     / prep-swipe / attachments-overview / icons.js / messages.js
+ *     / simulator.js / attachments-overview.js）
+ *   - Firebase SDK 加入 EXTERNAL_ASSETS 預快取
  * ============================================================ */
 
-const BUILD = '2026-09-24-4';
+const BUILD = '2026-11-02-1';
 
 const CACHE_NAME = `tohoku-trip-${BUILD}`;
 
 const ASSETS = [
   '/', '/index.html', '/ledger.html',
-  '/data.js', '/shoot-tips.js', '/shopping.js', '/emergency.js',
+  '/data.js', '/shoot-tips.js', '/shopping.js', '/emergency.js', '/messages.js',
   '/app-core.js', '/app-lists.js', '/app-itinerary.js', '/app-uploads.js',
-  '/header.css', '/header.js', '/style.css', '/ledger.css', '/ledger.js',
+  '/attachments-overview.js', '/header.js', '/icons.js', '/simulator.js',
+  '/ledger.js',
+  '/tokens.css', '/header.css', '/style.css', '/dark.css',
+  '/patches.css', '/perf.css',
+  '/design-v14.css', '/design-v14b.css', '/design-v15.css', '/design-v16.css',
+  '/focus-card-v2.css', '/prep-swipe.css', '/attachments-overview.css',
+  '/ledger.css',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
@@ -23,10 +31,12 @@ const ASSETS = [
 
 const EXTERNAL_ASSETS = [
   'https://cdn.tailwindcss.com',
+  'https://cdn.jsdelivr.net/npm/firebase@11.6.1/firebase-app-compat.js',
+  'https://cdn.jsdelivr.net/npm/firebase@11.6.1/firebase-auth-compat.js',
+  'https://cdn.jsdelivr.net/npm/firebase@11.6.1/firebase-firestore-compat.js',
   'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap'
 ];
 
-// ⭐ v3.1：移除 googleapis / gstatic，讓字體走 cache-first
 const NETWORK_FIRST_HOSTS = ['firebase', 'firestore', 'open-meteo', 'er-api'];
 
 function isFreshResource(url, request) {
@@ -99,7 +109,6 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // ⭐ 字體 / 圖片：Cache-First（含 Google Fonts）
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;

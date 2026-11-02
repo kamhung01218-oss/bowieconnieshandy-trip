@@ -1,16 +1,29 @@
 /* ============================================================
- * ledger.js — 隨行記帳本主邏輯 v3.1
+ * ledger.js — 隨行記帳本主邏輯 v3.4
  *
- * v2.8：收據綁定支出
- * v2.9：記帳時可一起加收據
- * v3.0：
- *   - ⭐ 修復：刪除一筆產生多條歷史（runTransaction 重試問題）
- *   - ⭐ 修復：收據不再彈新視窗，改用 iframe 內建燈箱
- *   - ⭐ 所有 createHistoryEntry / newEntry ID 移到 transaction 外
- * v3.1：
- *   - ⭐ M：deleteExpense Undo 只在刪除成功後顯示
+ * v3.4（本版）：
+ *   - ⭐ 修復「結算頁待還總額 / 應收總額永遠 $0.00」：
+ *     totalDebt / totalCredit 計算移至 while 循環之前
  * ============================================================ */
 'use strict';
+
+/* ============================================================
+ * ⭐ v3.3：全域載入兜底（放在最頂，即使 Firebase 完全掛掉也生效）
+ * ============================================================ */
+(function registerLoadingTimeout() {
+  const forceHide = () => {
+    const loading = document.getElementById('cloud-loading');
+    if (loading && !loading.classList.contains('hidden-loading')) {
+      console.warn('[Ledger] 載入超時，強制隱藏 loading');
+      loading.classList.add('hidden-loading');
+    }
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(forceHide, 8000));
+  } else {
+    setTimeout(forceHide, 8000);
+  }
+})();
 
 /* ============================================================
  * 一、通用工具
@@ -75,7 +88,7 @@ function verifyDangerousPassword() {
 }
 
 /* ============================================================
- * 四、Firebase 初始化
+ * 四、Firebase 初始化（⭐ v3.3：包 try/catch，失敗不中斷腳本）
  * ============================================================ */
 const firebaseConfig = (function() {
   try {
@@ -91,13 +104,24 @@ const firebaseConfig = (function() {
     measurementId: "G-9EN9JG5F3F"
   };
 })();
-if (!firebase.apps || !firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
+
+let db = null;
+let auth = null;
+try {
+  if (!firebase.apps || !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  db = firebase.app().firestore();
+  auth = firebase.auth();
+  window.db = db;
+  window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
+} catch (e) {
+  console.error('[Ledger] Firebase 初始化失敗：', e);
+  // 立即隱藏 loading，讓用戶至少看到空畫面
+  setTimeout(() => {
+    document.getElementById('cloud-loading')?.classList.add('hidden-loading');
+  }, 0);
 }
-const db = firebase.app().firestore();
-const auth = firebase.auth();
-window.db = db;
-window.dbRef = db.collection("tohoku_trip").doc("shared_expenses");
 
 /* ============================================================
  * 五、匯率
@@ -147,7 +171,7 @@ const memberStyle = {
 /* ============================================================
  * 七、旅行日期 / 類別
  * ============================================================ */
-const TRIP_DATES = ["2027-01-21","2027-01-22","2027-01-23","2027-01-24","2027-01-25","2027-01-26","2027-01-27"];
+const TRIP_DATES = ["2027-01-21","2027-01-22","2027-01-23","2027-01-24","2027-01-25","2027-01-26","2027-01-27","2027-01-28"];
 const WEEK_NAMES = ["日","一","二","三","四","五","六"];
 
 let selectedCategory = '餐飲';
@@ -350,56 +374,93 @@ function updateCloudBadge(isConnected) {
 }
 
 /* ============================================================
- * 十三、認證 + 監聽
+ * 十三、認證 + 監聽（⭐ v3.3：加多重兜底）
  * ============================================================ */
 let _authPromise = null;
 const initAuth = async () => {
   if (_authPromise) return _authPromise;
   _authPromise = (async () => {
-    try { await auth.signInAnonymously(); updateCloudBadge(true); }
-    catch (err) { console.warn("匿名登入失敗:", err); updateCloudBadge(false); }
+    if (!auth) {
+      // Firebase 完全沒載入
+      updateCloudBadge(false);
+      document.getElementById('cloud-loading')?.classList.add('hidden-loading');
+      return;
+    }
+    try {
+      await auth.signInAnonymously();
+      updateCloudBadge(true);
+    } catch (err) {
+      console.warn("匿名登入失敗:", err);
+      updateCloudBadge(false);
+      // ⭐ 登入失敗也要隱藏 loading，否則卡死
+      document.getElementById('cloud-loading')?.classList.add('hidden-loading');
+    }
   })();
   return _authPromise;
 };
 initAuth();
 
 let _snapshotUnsub = null;
-auth.onAuthStateChanged(user => {
-  if (!user) { initAuth().catch(() => {}); return; }
-  updateCloudBadge(true);
-  if (_snapshotUnsub) return;
-  _snapshotUnsub = window.dbRef.onSnapshot(docSnap => {
-    if (!docSnap.exists) {
-      window.dbRef.set({
-        expenses: [], history: [], settlementStatus: {},
-        historyClearedAt: 0, budget: { total: 0 }, updatedAt: Date.now()
-      }).catch(e => console.warn("init failed:", e));
+if (auth) {
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      initAuth().catch(() => {});
+      // ⭐ 3 秒後仍未登入 → 強制隱藏 loading
+      setTimeout(() => {
+        document.getElementById('cloud-loading')?.classList.add('hidden-loading');
+      }, 3000);
       return;
     }
-    const data = docSnap.data();
-    state.expenses = sanitizeExpenses(data.expenses || []);
-    state.history = sanitizeHistory(data.history || []);
-    state.settlementStatus = data.settlementStatus || {};
-    state.historyClearedAt = data.historyClearedAt || 0;
-    state.budget = data.budget || { total: 0 };
-    state.loaded = true;
-    document.getElementById('cloud-loading')?.classList.add('hidden-loading');
-    updateLedgerUI();
-  }, err => {
-    console.warn("[onSnapshot error]", err);
-    updateCloudBadge(false);
+    updateCloudBadge(true);
+    if (_snapshotUnsub) return;
+    if (!window.dbRef) {
+      document.getElementById('cloud-loading')?.classList.add('hidden-loading');
+      return;
+    }
+    _snapshotUnsub = window.dbRef.onSnapshot(docSnap => {
+      if (!docSnap.exists) {
+        window.dbRef.set({
+          expenses: [], history: [], settlementStatus: {},
+          historyClearedAt: 0, budget: { total: 0 }, updatedAt: Date.now()
+        }).catch(e => console.warn("init failed:", e));
+        document.getElementById('cloud-loading')?.classList.add('hidden-loading');
+        return;
+      }
+      const data = docSnap.data();
+      state.expenses = sanitizeExpenses(data.expenses || []);
+      state.history = sanitizeHistory(data.history || []);
+      state.settlementStatus = data.settlementStatus || {};
+      state.historyClearedAt = data.historyClearedAt || 0;
+      state.budget = data.budget || { total: 0 };
+      state.loaded = true;
+      document.getElementById('cloud-loading')?.classList.add('hidden-loading');
+      updateLedgerUI();
+    }, err => {
+      console.warn("[onSnapshot error]", err);
+      updateCloudBadge(false);
+      // ⭐ 訂閱失敗也要隱藏 loading
+      document.getElementById('cloud-loading')?.classList.add('hidden-loading');
+    });
   });
-});
+} else {
+  // Firebase 完全沒載入
+  setTimeout(() => {
+    document.getElementById('cloud-loading')?.classList.add('hidden-loading');
+  }, 0);
+}
 
 /* ============================================================
- * 十四、Transaction
+ * 十四、Transaction（⭐ v3.3：檢查 db / auth）
  * ============================================================ */
 async function runTransaction(mutateFn) {
   if (!canWrite()) throw new Error("NO_PERMISSION");
-  // ⭐ v3.2：離線守衛（ledger 在 iframe 內）
   if (navigator.onLine === false) {
     showToast('📡 離線中，無法儲存記帳', '⚠️');
     throw new Error("OFFLINE");
+  }
+  if (!db || !auth) {
+    showToast('📡 雲端未連線，無法儲存', '⚠️');
+    throw new Error("FIREBASE_NOT_READY");
   }
   if (!auth.currentUser) await initAuth();
   incPendingWrites();
@@ -706,7 +767,7 @@ function renderDailyChart() {
   const wrap = document.getElementById('daily-chart');
   if (!wrap) return;
   const sums = {};
-  for (let d = 1; d <= 7; d++) sums[d] = 0;
+  for (let d = 1; d <= 8; d++) sums[d] = 0;
   state.expenses.forEach(e => { sums[e.day] = (sums[e.day] || 0) + e.amountInHKD; });
   const max = Math.max(...Object.values(sums), 1);
   const todayIdx = (() => {
@@ -714,7 +775,7 @@ function renderDailyChart() {
     const idx = TRIP_DATES.indexOf(today);
     return idx >= 0 ? idx + 1 : -1;
   })();
-  wrap.innerHTML = [1,2,3,4,5,6,7].map(d => {
+  wrap.innerHTML = [1,2,3,4,5,6,7,8].map(d => {
     const amt = sums[d] || 0;
     const h = max > 0 ? Math.max(2, (amt / max) * 90) : 2;
     const isToday = d === todayIdx;
@@ -727,9 +788,8 @@ function renderDailyChart() {
 }
 
 /* ============================================================
- * 二十二、Phase 3：記帳憑證
+ * 二十二、記帳憑證
  * ============================================================ */
-
 function _getReceipts(expense) {
   if (!expense) return [];
   return Array.isArray(expense.receipts) ? expense.receipts : [];
@@ -1339,7 +1399,7 @@ async function saveExpense() {
 }
 
 /* ============================================================
- * 二十五、刪除（⭐ v3.1：Undo 只在刪除成功後顯示）
+ * 二十五、刪除
  * ============================================================ */
 async function deleteExpense(expenseId) {
   ensureWriteAccess(async () => {
@@ -1347,14 +1407,12 @@ async function deleteExpense(expenseId) {
     if (!expense) return;
     const snapshot = JSON.parse(JSON.stringify(expense));
 
-    // 在 transaction 外生成 history entry
     const historyEntry = createHistoryEntry(
       "delete",
       snapshot,
       `刪除了「${escapeHtml(snapshot.desc)}」(${snapshot.amount} ${snapshot.currency})`
     );
 
-    // ⭐ v3.1：先執行刪除，成功後才顯示 Undo
     try {
       await runTransaction(current => {
         const expenses = (current.expenses || []).filter(e => e.id !== expenseId);
@@ -1364,7 +1422,6 @@ async function deleteExpense(expenseId) {
         return { expenses, history };
       });
 
-      // ✅ 刪除成功 → 顯示 Undo
       haptic(10);
       showUndoToast(`已刪除「${snapshot.desc}」`, "🗑", async () => {
         const restoreEntry = createHistoryEntry(
@@ -1375,7 +1432,6 @@ async function deleteExpense(expenseId) {
         try {
           await runTransaction(current => {
             const expenses = [...(current.expenses || [])];
-            // 防止重複 push（另一台裝置可能已經還原）
             if (expenses.some(e => e.id === snapshot.id)) return {};
             expenses.push(snapshot);
             let history = [...(current.history || [])];
@@ -1390,7 +1446,6 @@ async function deleteExpense(expenseId) {
         }
       });
     } catch (e) {
-      // ❌ 刪除失敗 → 不顯示 Undo
       console.error("[deleteExpense]", e);
       showToast("❌ 刪除失敗", "⚠️");
     }
@@ -1695,6 +1750,11 @@ function renderSuggestedSettlements() {
   });
   debtors.sort((a, b) => b.amount - a.amount);
   creditors.sort((a, b) => b.amount - a.amount);
+
+  // ⭐ v3.4 P0 修復：先算總額（此時 amount 還沒被 while 循環歸零）
+  const totalDebt = debtors.reduce((sum, x) => sum + x.amount, 0).toFixed(2);
+  const totalCredit = creditors.reduce((sum, x) => sum + x.amount, 0).toFixed(2);
+
   const settlements = [];
   let d = 0, c = 0;
   while (d < debtors.length && c < creditors.length) {
@@ -1706,8 +1766,6 @@ function renderSuggestedSettlements() {
     if (creditor.amount < 0.01) c++;
   }
   _lastSettlements = settlements;
-  const totalDebt = debtors.reduce((sum, d) => sum + d.amount, 0).toFixed(2);
-  const totalCredit = creditors.reduce((sum, c) => sum + c.amount, 0).toFixed(2);
 
   document.getElementById("debt-total").innerText = `$${totalDebt}`;
   document.getElementById("credit-total").innerText = `$${totalCredit}`;

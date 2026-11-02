@@ -17,6 +17,7 @@
  *   - ⭐ tick 無條件呼叫 updateCountdownNumbers（stage 有變時也呼叫）
  *   - ⭐ getTimeOfDay 支援 ?tod= 測試參數
  *   - ⭐ 時段切換加 console.log 方便除錯
+ *   - ⭐ 家庭廣播 Day 8 支援（jumpToDay / pinned row 上限 7 → 8）
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -1246,7 +1247,8 @@ window.AppHeader = (function () {
     const countdownHtml = (expire && expire > 0)
       ? `<span class="broadcast-countdown" data-broadcast-countdown="${m.expiresAt}">還有 ${formatMsgCountdown(expire)}</span>`
       : '';
-    const dayTag = (m.day >= 1 && m.day <= 7)
+    // ⭐ Day 8 支援：上限由 7 改為 8
+    const dayTag = (m.day >= 1 && m.day <= 8)
       ? `<button type="button" class="message-day-tag" onclick="event.stopPropagation();window._Messages_jumpToDay(${m.day})">D${m.day}</button>`
       : '';
     const pinIcon = _icon('pin', 14);
@@ -2447,8 +2449,9 @@ function formatMsgCountdown(ms) {
   return s + '秒';
 }
 
+// ⭐ Day 8 支援：上限由 7 改為 8
 window._Messages_jumpToDay = function (day) {
-  if (!day || day < 1 || day > 7) return;
+  if (!day || day < 1 || day > 8) return;
   closeMessagesModal();
   setTimeout(() => {
     if (typeof window.switchDay === 'function') {

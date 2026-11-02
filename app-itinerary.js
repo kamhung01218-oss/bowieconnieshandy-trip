@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v18.0 (8天7夜版)
+ * app-itinerary.js — v18.3 (8天7夜版 + 天氣修復 + 導航按鈕優化 + 關閉自動重組)
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -225,6 +225,8 @@ async function fetchWeatherData(force = false) {
   });
 
   if (window.AppHeader) window.AppHeader.render();
+  // ⭐ P0 修復：天氣更新後清空渲染標記，確保所有 Day 重新渲染新天氣
+  window._renderedDays = new Set();
   if (window._lastActiveDay) {
     const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
     if (dayData) renderDayItinerary(`day-section-${dayData.day}`, dayData, true);
@@ -375,12 +377,12 @@ function renderTripOverview() {
   const container = document.getElementById('overview-timeline-content'); if (!container) return;
   const days = [ 
     { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達雪國", desc: "仙台機場 → 秋保溫泉 → 蟹腳 Buffet" }, 
-    { day: "D2", color: "#f59e0b", emoji: "🏮", title: "天童 + 銀山", desc: "AEON 天童 → 瀧之湯 → 銀山夜景" }, 
+    { day: "D2", color: "#f59e0b", emoji: "🏮", title: "天童 + 銀山", desc: "AEON 購物 / 秋保大瀑布 → 瀧之湯 → 銀山夜景" }, 
     { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → 樹冰 → 山形壽司 → 溫泉懷石" }, 
     { day: "D4", color: "#10b981", emoji: "⛷️", title: "Spring Valley", desc: "玩雪 → 入住 Grand Bach → 伊達牛舌" }, 
     { day: "D5", color: "#f43f5e", emoji: "🦊", title: "狐狸村", desc: "客美多早餐 → 狐狸村 → 白石溫麵 → 逛街" }, 
     { day: "D6", color: "#14b8a6", emoji: "🍓", title: "草莓 + 和牛", desc: "採草莓 → 仔虎和牛 → 市區閒逛" }, 
-    { day: "D7", color: "#8b5cf6", emoji: "🐧", title: "水族館 + Outlet", desc: "海洋森林水族館 → 三井 Outlet" }, 
+    { day: "D7", color: "#8b5cf6", emoji: "🐧", title: "水族館 + Outlet", desc: "海洋森林水族館 → 三井 Outlet → 續住 Grand Bach" }, 
     { day: "D8", color: "#475569", emoji: "✈️", title: "返港", desc: "仙台車站伴手禮 → 機場還車 → 起飛返港" } 
   ];
   container.innerHTML = `<div class="overview-timeline">${days.map(d => `<div class="overview-day"><div class="overview-day-marker" style="background:${d.color}">${d.day}</div><div class="overview-day-content"><div class="overview-day-title">${d.emoji} ${d.title}</div><div class="overview-day-desc">${d.desc}</div></div></div>`).join('')}</div>`;
@@ -555,11 +557,11 @@ function bindImageGridClicks(section) {
 }
 
 function buildEventNavBtn(navUrl, eventTitle, navName) {
-  var url = navUrl;
-  if (!url && eventTitle) { url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(eventTitle); }
-  if (!url) return '<div class="h-2"></div>';
+  // ⭐ v18.2：沒有 navUrl 就直接不顯示，避免生成假的 Google Maps 搜尋按鈕
+  if (!navUrl) return '';
+
   var label = navName || '景點';
-  var html = '<a href="' + escAttr(url) + '" target="_blank" class="event-nav-link w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-xs font-bold py-2 rounded-xl transition active:scale-95 shadow-sm mt-2 mb-2">';
+  var html = '<a href="' + escAttr(navUrl) + '" target="_blank" class="event-nav-link w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-xs font-bold py-2 rounded-xl transition active:scale-95 shadow-sm mt-2 mb-2">';
   html += EVENT_ICONS.nav + ' 導航前往 ' + escapeHtml(label);
   html += '</a>';
   return html;
@@ -723,13 +725,15 @@ function renderDayItinerary(sectionId, dayData, force) {
   if (!section) return;
   var dateStr = tripDates[dayData.day - 1];
   var weatherInfo = window.weatherCache[dateStr] || null;
-  var weatherHtml = '';
+  // ⭐ P0 修復：改為真正生成天氣 HTML（原本是空字串，導致卡片頭部冇天氣行）
+  var weatherHtml = buildWeatherHtml(dateStr, weatherInfo);
   var headerHtml = buildDayHeaderHtml(dayData, weatherHtml);
   var eventsHtml = buildEventsHtml(dayData);
   var diaryHtml = buildDiaryHtml(dayData);
   section.innerHTML = '<div class="mb-8">' + headerHtml + '<div class="timeline">' + eventsHtml + '</div>' + diaryHtml + '</div>';
 
-  normalizeEventContent(section);
+  // ⭐ v18.3：註解掉自動重組，讓 data.js 的排版原汁原味顯示
+  // normalizeEventContent(section);
 
   setupImageFadeIn(section);
   setupEventImageLightbox(section);

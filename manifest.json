@@ -1,9 +1,9 @@
 {
-  "name": "東北冬季親子自駕之旅",
+  "name": "東北冬季親子溫泉自駕之旅 (8天7夜)",
   "short_name": "東北之旅",
-  "description": "日本東北冬季親子溫泉自駕之旅 - 7天6夜行程規劃",
-  "start_url": "/",
-  "scope": "/",
+  "description": "日本東北冬季親子溫泉自駕之旅 — 8天7夜行程規劃",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f0f9ff",
@@ -12,19 +12,19 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "./icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "./icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512-maskable.png",
+      "src": "./icons/icon-512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

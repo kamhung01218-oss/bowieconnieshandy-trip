@@ -218,9 +218,8 @@ async function syncDataToCloud() {
       if (k.startsWith('booking-') || k.startsWith('custom-booking-')) merged[k] = state.checkedItems[k];
     });
     await window.dbRef.set({ checkedItems: merged, updatedAt: Date.now() }, { merge: true });
-    if (customBookingItems.length > 0) {
-      await window.dbRef.set({ customBookingItems: customBookingItems }, { merge: true });
-    }
+    // ⭐ P0 修復：無條件寫入 customBookingItems（即使是空陣列），避免刪除最後一項後刷新復活
+    await window.dbRef.set({ customBookingItems: customBookingItems }, { merge: true });
     showToast("✅ 已成功寫入雲端！", "☁️");
   } catch (e) {
     console.warn("Cloud save error:", e);
@@ -791,7 +790,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button onclick="switchDay(5)" id="tab-d5" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D5 (1/25)</button>
                 <button onclick="switchDay(6)" id="tab-d6" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D6 (1/26)</button>
                 <button onclick="switchDay(7)" id="tab-d7" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D7 (1/27)</button>
-                <!-- ⭐ 新增 D8 按鈕 -->
                 <button onclick="switchDay(8)" id="tab-d8" class="day-tab flex-shrink-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition">D8 (1/28)</button>
               </div>
               <button id="btn-collapse-all" onclick="collapseAllItineraries()" title="展開／收合全部行程"
@@ -837,7 +835,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <div id="day-section-5" class="day-section hidden"></div>
             <div id="day-section-6" class="day-section hidden"></div>
             <div id="day-section-7" class="day-section hidden"></div>
-            <!-- ⭐ 新增 D8 容器 -->
             <div id="day-section-8" class="day-section hidden"></div>
           </div>
         </div>

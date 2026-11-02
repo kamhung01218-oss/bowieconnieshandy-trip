@@ -222,18 +222,35 @@ async function runMigration() {
   try {
     const { attachments, eventNotes, keyMap } = _pendingMigration;
 
-    // 遷移 attachments
+    // ⭐ v2：遷移 attachments — 按 id 合併，避免同名 key 覆蓋丟失
     const newAttachments = {};
     Object.keys(attachments).forEach(key => {
       const newKey = keyMap[key] || key;
-      newAttachments[newKey] = attachments[key];
+      const oldList = attachments[key];
+      if (!Array.isArray(oldList)) {
+        if (!newAttachments[newKey]) newAttachments[newKey] = oldList;
+        return;
+      }
+      const existing = Array.isArray(newAttachments[newKey]) ? newAttachments[newKey] : [];
+      const existingIds = new Set(existing.map(a => a && a.id).filter(Boolean));
+      const merged = [...existing];
+      oldList.forEach(item => {
+        if (item && item.id) {
+          if (!existingIds.has(item.id)) { merged.push(item); existingIds.add(item.id); }
+        } else if (item) {
+          merged.push(item);
+        }
+      });
+      newAttachments[newKey] = merged;
     });
 
-    // 遷移 eventNotes
+    // 遷移 eventNotes（備註是單一物件，直接覆蓋即可，但保留 id 較完整者）
     const newNotes = {};
     Object.keys(eventNotes).forEach(key => {
       const newKey = keyMap[key] || key;
-      newNotes[newKey] = eventNotes[key];
+      if (!newNotes[newKey]) {
+        newNotes[newKey] = eventNotes[key];
+      }
     });
 
     // 寫回 Firestore

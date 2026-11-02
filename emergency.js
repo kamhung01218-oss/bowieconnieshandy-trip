@@ -14,7 +14,7 @@ const EMERGENCY_DATA = {
   hotels: [
     { day: "D1", date: "1/21", name: "秋保溫泉 瑞鳳大飯店", tel: "022-398-2311", note: "入住 15:00 / 退房 10:00" },
     { day: "D2-3", date: "1/22-23", name: "微笑之宿 瀧之湯", tel: "023-654-2211", note: "貸切風呂 16:30 預約" },
-    { day: "D4-6", date: "1/24-26", name: "Hotel Grand Bach 仙台", tel: "022-296-7333", note: "東口平面停車場 24HR" }
+    { day: "D4-7", date: "1/24-27", name: "Hotel Grand Bach 仙台", tel: "022-296-7333", note: "東口平面停車場 24HR · 連住4晚" }
   ],
   transport: [
     { icon: "🚗", label: "Nippon Rent-A-Car 仙台機場", tel: "022-383-1577", desc: "租車營業所" },
@@ -146,9 +146,7 @@ function openEmergencyModal() {
     console.warn('[Emergency] 找不到 #emergency-modal');
     return;
   }
-  // 先渲染內容
   renderEmergencyContent();
-  // 顯示
   if (typeof showModal === 'function') {
     showModal('emergency-modal');
   } else {
@@ -175,7 +173,6 @@ function closeEmergencyModal() {
   if (typeof haptic === 'function') haptic(6);
 }
 
-// ==================== 匯出到 window ====================
 window.openEmergencyModal = openEmergencyModal;
 window.closeEmergencyModal = closeEmergencyModal;
 
