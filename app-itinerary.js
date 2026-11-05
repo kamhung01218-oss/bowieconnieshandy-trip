@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v18.3 (8天7夜版 + 天氣修復 + 導航按鈕優化 + 關閉自動重組)
+ * app-itinerary.js — v19.2（新8天行程版：D6 不用早起 + 雪場 15:00 + 仔虎晚餐）
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -23,60 +23,67 @@ const WEATHER_LOCATIONS = {
     { id: 'sendai_airport', name: '仙台機場', shortName: '機場',
       lat: 38.1397, lon: 140.9169, timeFrom: '00:00', timeTo: '15:30',
       climate: { max: 5, min: -1, rain: 30 } },
-    { id: 'akiu', name: '秋保溫泉', shortName: '秋保',
-      lat: 38.2263, lon: 140.7242, timeFrom: '15:30', timeTo: '23:59',
-      climate: { max: 3, min: -2, rain: 35 } }
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台',
+      lat: 38.2682, lon: 140.8694, timeFrom: '15:30', timeTo: '23:59',
+      climate: { max: 5, min: -1, rain: 30 } }
   ],
   2: [
-    { id: 'tendo', name: '山形天童', shortName: '天童',
-      lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '15:00',
-      climate: { max: 4, min: -2, rain: 35 } },
-    { id: 'ginzan', name: '銀山溫泉', shortName: '銀山',
-      lat: 38.5747, lon: 140.5309, timeFrom: '15:00', timeTo: '23:59',
-      climate: { max: 1, min: -4, rain: 45 } }
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台',
+      lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '08:30',
+      climate: { max: 5, min: -1, rain: 30 } },
+    { id: 'zao_fox', name: '藏王狐狸村', shortName: '狐狸村',
+      lat: 38.0407, lon: 140.5322, timeFrom: '08:30', timeTo: '12:30',
+      climate: { max: 2, min: -3, rain: 35 } },
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台',
+      lat: 38.2682, lon: 140.8694, timeFrom: '12:30', timeTo: '23:59',
+      climate: { max: 5, min: -1, rain: 30 } }
   ],
   3: [
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台',
+      lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '09:30',
+      climate: { max: 5, min: -1, rain: 30 } },
+    { id: 'tendo', name: '山形天童', shortName: '天童',
+      lat: 38.3625, lon: 140.3694, timeFrom: '09:30', timeTo: '15:30',
+      climate: { max: 4, min: -2, rain: 35 } },
+    { id: 'ginzan', name: '銀山溫泉', shortName: '銀山',
+      lat: 38.5747, lon: 140.5309, timeFrom: '15:30', timeTo: '23:59',
+      climate: { max: 1, min: -4, rain: 45 } }
+  ],
+  4: [
     { id: 'zao', name: '藏王', shortName: '藏王',
-      lat: 38.1656, lon: 140.3986, timeFrom: '00:00', timeTo: '12:30',
+      lat: 38.1656, lon: 140.3986, timeFrom: '00:00', timeTo: '13:00',
       climate: { max: -2, min: -8, rain: 50 } },
     { id: 'yamagata', name: '山形', shortName: '山形',
-      lat: 38.2554, lon: 140.3396, timeFrom: '12:30', timeTo: '14:30',
+      lat: 38.2554, lon: 140.3396, timeFrom: '13:00', timeTo: '14:30',
       climate: { max: 4, min: -2, rain: 35 } },
     { id: 'tendo', name: '山形天童', shortName: '天童',
       lat: 38.3625, lon: 140.3694, timeFrom: '14:30', timeTo: '23:59',
       climate: { max: 4, min: -2, rain: 35 } }
   ],
-  4: [
-    { id: 'tendo', name: '山形天童', shortName: '天童',
-      lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '10:45',
-      climate: { max: 4, min: -2, rain: 35 } },
-    { id: 'spring_valley', name: 'Spring Valley 泉高原', shortName: '滑雪場',
-      lat: 38.3694, lon: 140.6908, timeFrom: '10:45', timeTo: '14:30',
-      climate: { max: 0, min: -5, rain: 40 } },
-    { id: 'sendai', name: '宮城仙台', shortName: '仙台',
-      lat: 38.2682, lon: 140.8694, timeFrom: '14:30', timeTo: '23:59',
-      climate: { max: 5, min: -1, rain: 30 } }
-  ],
   5: [
-    { id: 'sendai', name: '宮城仙台', shortName: '仙台',
-      lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '23:59',
-      climate: { max: 5, min: -1, rain: 30 } },
-    { id: 'zao_fox', name: '藏王狐狸村', shortName: '狐狸村',
-      lat: 38.0407, lon: 140.5322, timeFrom: '09:30', timeTo: '13:45',
-      climate: { max: 2, min: -3, rain: 35 } }
+    { id: 'tendo', name: '山形天童', shortName: '天童',
+      lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '09:30',
+      climate: { max: 4, min: -2, rain: 35 } },
+    { id: 'akiu', name: '秋保溫泉', shortName: '秋保',
+      lat: 38.2263, lon: 140.7242, timeFrom: '09:30', timeTo: '23:59',
+      climate: { max: 3, min: -2, rain: 35 } }
   ],
   6: [
+    { id: 'akiu', name: '秋保溫泉', shortName: '秋保',
+      lat: 38.2263, lon: 140.7242, timeFrom: '00:00', timeTo: '09:30',
+      climate: { max: 3, min: -2, rain: 35 } },
+    { id: 'spring_valley', name: 'Spring Valley 泉高原', shortName: '滑雪場',
+      lat: 38.3694, lon: 140.6908, timeFrom: '09:30', timeTo: '15:00',
+      climate: { max: 0, min: -5, rain: 40 } },
     { id: 'sendai', name: '宮城仙台', shortName: '仙台',
-      lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '23:59',
+      lat: 38.2682, lon: 140.8694, timeFrom: '15:00', timeTo: '23:59',
       climate: { max: 5, min: -1, rain: 30 } }
   ],
-  // ⭐ 修改 Day 7
   7: [
     { id: 'sendai_port', name: '仙台港', shortName: '仙台港',
       lat: 38.2766, lon: 141.0086, timeFrom: '00:00', timeTo: '23:59',
       climate: { max: 5, min: -1, rain: 30 } }
   ],
-  // ⭐ 新增 Day 8
   8: [
     { id: 'sendai_airport', name: '仙台機場', shortName: '機場',
       lat: 38.1397, lon: 140.9169, timeFrom: '00:00', timeTo: '23:59',
@@ -97,7 +104,7 @@ const CLIMATE_SUN_TIMES = {
   "2027-01-25": { sunrise: "06:50", sunset: "16:39" },
   "2027-01-26": { sunrise: "06:50", sunset: "16:40" },
   "2027-01-27": { sunrise: "06:49", sunset: "16:41" },
-  "2027-01-28": { sunrise: "06:49", sunset: "16:42" } // ⭐ 加入 1/28
+  "2027-01-28": { sunrise: "06:49", sunset: "16:42" }
 };
 
 function weatherCodeToIconTag(code) {
@@ -225,7 +232,6 @@ async function fetchWeatherData(force = false) {
   });
 
   if (window.AppHeader) window.AppHeader.render();
-  // ⭐ P0 修復：天氣更新後清空渲染標記，確保所有 Day 重新渲染新天氣
   window._renderedDays = new Set();
   if (window._lastActiveDay) {
     const dayData = winterItineraries.find(d => d.day === window._lastActiveDay);
@@ -319,8 +325,9 @@ function renderWeatherDetail() {
 }
 
 // ==================== findShootTips ====================
-function findShootTips(eventTitle, eventKey) {
+function findShootTips(eventTitle, eventKey, eventId) {
   if (typeof shootTips === 'undefined') return null;
+  if (eventId && shootTips[eventId]) return shootTips[eventId];
   if (eventKey && shootTips[eventKey]) return shootTips[eventKey];
   if (!eventTitle) return null;
   if (shootTips[eventTitle]) return shootTips[eventTitle];
@@ -368,22 +375,22 @@ function findShootTips(eventTitle, eventKey) {
     return bestMatch;
   }
 
-  console.warn('[shootTips] ❌ 找不到匹配：', eventTitle, '（key:', eventKey, '）');
+  console.warn('[shootTips] ❌ 找不到匹配：', eventTitle, '（key:', eventKey, 'eventId:', eventId, '）');
   return null;
 }
 
 // ==================== 行程速覽 ====================
 function renderTripOverview() {
   const container = document.getElementById('overview-timeline-content'); if (!container) return;
-  const days = [ 
-    { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達雪國", desc: "仙台機場 → 秋保溫泉 → 蟹腳 Buffet" }, 
-    { day: "D2", color: "#f59e0b", emoji: "🏮", title: "天童 + 銀山", desc: "AEON 購物 / 秋保大瀑布 → 瀧之湯 → 銀山夜景" }, 
-    { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → 樹冰 → 山形壽司 → 溫泉懷石" }, 
-    { day: "D4", color: "#10b981", emoji: "⛷️", title: "Spring Valley", desc: "玩雪 → 入住 Grand Bach → 伊達牛舌" }, 
-    { day: "D5", color: "#f43f5e", emoji: "🦊", title: "狐狸村", desc: "客美多早餐 → 狐狸村 → 白石溫麵 → 逛街" }, 
-    { day: "D6", color: "#14b8a6", emoji: "🍓", title: "草莓 + 和牛", desc: "採草莓 → 仔虎和牛 → 市區閒逛" }, 
-    { day: "D7", color: "#8b5cf6", emoji: "🐧", title: "水族館 + Outlet", desc: "海洋森林水族館 → 三井 Outlet → 續住 Grand Bach" }, 
-    { day: "D8", color: "#475569", emoji: "✈️", title: "返港", desc: "仙台車站伴手禮 → 機場還車 → 起飛返港" } 
+  const days = [
+    { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達仙台", desc: "機場 → 入住市區 → 小補給" },
+    { day: "D2", color: "#f59e0b", emoji: "🦊", title: "狐狸村 + 草莓", desc: "客美多 → 狐狸村 → 採草莓 → 補給主場" },
+    { day: "D3", color: "#6366f1", emoji: "🏮", title: "天童 + 銀山", desc: "仙台退房 → 天童 → 銀山夜景" },
+    { day: "D4", color: "#10b981", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → 樹冰 → 山形壽司 → 溫泉懷石" },
+    { day: "D5", color: "#f43f5e", emoji: "🌊", title: "秋保瀑布", desc: "天童 → 秋保大瀑布 → 瑞鳳放鬆" },
+    { day: "D6", color: "#14b8a6", emoji: "⛷️", title: "Spring Valley", desc: "玩雪到 15:00 → 仔虎晚餐 → 入住 Grand Bach" },
+    { day: "D7", color: "#8b5cf6", emoji: "🐧", title: "水族館 + Outlet", desc: "水族館 → 三井 Outlet → 大血拚" },
+    { day: "D8", color: "#475569", emoji: "✈️", title: "返港", desc: "S-PAL 伴手禮 → 機場還車 → 起飛" }
   ];
   container.innerHTML = `<div class="overview-timeline">${days.map(d => `<div class="overview-day"><div class="overview-day-marker" style="background:${d.color}">${d.day}</div><div class="overview-day-content"><div class="overview-day-title">${d.emoji} ${d.title}</div><div class="overview-day-desc">${d.desc}</div></div></div>`).join('')}</div>`;
 }
@@ -557,7 +564,6 @@ function bindImageGridClicks(section) {
 }
 
 function buildEventNavBtn(navUrl, eventTitle, navName) {
-  // ⭐ v18.2：沒有 navUrl 就直接不顯示，避免生成假的 Google Maps 搜尋按鈕
   if (!navUrl) return '';
 
   var label = navName || '景點';
@@ -725,15 +731,11 @@ function renderDayItinerary(sectionId, dayData, force) {
   if (!section) return;
   var dateStr = tripDates[dayData.day - 1];
   var weatherInfo = window.weatherCache[dateStr] || null;
-  // ⭐ P0 修復：改為真正生成天氣 HTML（原本是空字串，導致卡片頭部冇天氣行）
   var weatherHtml = buildWeatherHtml(dateStr, weatherInfo);
   var headerHtml = buildDayHeaderHtml(dayData, weatherHtml);
   var eventsHtml = buildEventsHtml(dayData);
   var diaryHtml = buildDiaryHtml(dayData);
   section.innerHTML = '<div class="mb-8">' + headerHtml + '<div class="timeline">' + eventsHtml + '</div>' + diaryHtml + '</div>';
-
-  // ⭐ v18.3：註解掉自動重組，讓 data.js 的排版原汁原味顯示
-  // normalizeEventContent(section);
 
   setupImageFadeIn(section);
   setupEventImageLightbox(section);
@@ -882,6 +884,9 @@ function buildSingleEventHtml(dayData, event, index) {
     html += '<div class="event-tag-row">' + tagHtml + priorityBadge + inlineDataBadge + '</div>';
   }
   html += '<h3 class="event-title">' + escapeHtml(event.title) + '</h3>';
+  if (event.subtitle) {
+    html += '<div class="event-subtitle">' + escapeHtml(event.subtitle) + '</div>';
+  }
   if (event.location) {
     html += '<div class="event-location">📍 ' + escapeHtml(event.location) + '</div>';
   }
@@ -1009,7 +1014,7 @@ function setDriveTab(tab) { driveTabState = tab; haptic(6); document.querySelect
 function renderDriveContent() { const container = document.getElementById('drive-content'); if (!container) return; const data = { basic: [ { title: "全程使用 4WD + 雪胎", desc: "出發前確認車輛配置，並檢查雪胎深度（建議 ≥ 5mm）與胎壓", type: "success" }, { title: "保持 3 秒以上車距", desc: "雪地煞車距離約為乾地的 3-5 倍", type: "success" }, { title: "避免急煞、急加速、急轉彎", desc: "所有動作放慢 2 倍", type: "warn" }, { title: "下坡善用低速檔", desc: "用引擎煞車取代腳踩煞車", type: "success" }, { title: "轉彎前先減速", desc: "彎中不踩煞車", type: "warn" } ], road: [ { title: "Black Ice 最危險", desc: "看似乾燥的柏油路面其實結冰", type: "danger" }, { title: "橋樑與陰影處優先結冰", desc: "通過前先減速", type: "warn" }, { title: "山區連續彎道", desc: "減速至 20-30 km/h", type: "warn" }, { title: "除雪車後方保持距離", desc: "保持 50m 以上距離", type: "success" }, { title: "隧道兩端注意", desc: "進出時提前減速", type: "warn" } ], emergency: [ { title: "備用保暖衣物與毯子", desc: "保暖是第一優先", type: "success" }, { title: "行動電源 2 個 + 車充", desc: "手機沒電等於失去導航", type: "success" }, { title: "食物與飲水", desc: "餅乾、巧克力、保溫瓶裝熱水", type: "success" }, { title: "小鏟子 + 拖車繩 + 三角牌", desc: "車輪陷入雪中時可自救", type: "success" }, { title: "緊急聯絡資訊", desc: "日本道路緊急電話 #9910", type: "warn" } ] }; const items = data[driveTabState] || []; container.innerHTML = items.map((item, i) => `<div class="numbered-card ${item.type}" style="margin-bottom:8px"><div class="numbered-index">${i + 1}</div><div class="numbered-content"><div class="numbered-title">${item.title}</div><div class="numbered-desc">${item.desc}</div></div></div>`).join(''); }
 
 // ==================== 搶票攻略 ====================
-function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">首選方案</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/8 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>1/8 22:55 設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 15:30-19:15 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/15 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
+function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">12/1 開賣</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">12/1 日本 10:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>12/1 08:55 香港時間設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 15:30-19:15 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/16 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週日優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
 
 // ==================== 拍攝靈感 ====================
 function openShootTipsModal(day, eventIndex) {
@@ -1019,7 +1024,8 @@ function openShootTipsModal(day, eventIndex) {
   if (!event) return;
 
   const eventKey = `d${day}-e${eventIndex}`;
-  const tips = findShootTips(event.title, eventKey);
+  const eventId = event.id || null;
+  const tips = findShootTips(event.title, eventKey, eventId);
 
   const content = document.getElementById("shoot-tips-content");
   const headerTitle = document.getElementById("shoot-tips-title");
@@ -1299,7 +1305,7 @@ function openVlogPlanModal(day) {
 function closeVlogPlanModal() { hideModal('vlog-plan-modal'); setTimeout(() => document.getElementById('vlog-plan-modal').classList.add('hidden'), 300); }
 
 // ==================== 快速記帳 ====================
-function openLedgerAdd() { const lc = document.getElementById('ledger-frame-container'); const iframe = document.getElementById('ledger-iframe'); if (lc && iframe) { haptic(12); lc.classList.remove('hidden-view'); lc.style.cssText = 'position: fixed; inset: 0; z-index: 9990; background: #f0f9ff; overflow: auto;'; let attempts = 0; const tryOpen = () => { if (iframe.contentWindow && iframe.contentWindow.openExpenseModal) { iframe.contentWindow.openExpenseModal(); } else if (attempts < 10) { attempts++; setTimeout(tryOpen, 200); } else { showToast('記帳本載入失敗', '⚠️'); } }; tryOpen(); } }
+function openLedgerAdd() { const lc = document.getElementById('ledger-frame-container'); const iframe = document.getElementById('ledger-iframe'); if (lc && iframe) { haptic(12); lc.classList.remove('hidden-view'); lc.style.cssText = 'position: fixed; inset: 0; z-index: 9990; background: #f0f9ff; overflow: auto;'; iframe.style.height = '100dvh'; document.body.classList.add('modal-open'); let attempts = 0; const tryOpen = () => { if (iframe.contentWindow && iframe.contentWindow.openExpenseModal) { iframe.contentWindow.openExpenseModal(); } else if (attempts < 10) { attempts++; setTimeout(tryOpen, 200); } else { showToast('記帳本載入失敗', '⚠️'); } }; tryOpen(); } }
 
 // ==================== 行程切換 ====================
 function switchDay(day) {
@@ -1368,7 +1374,6 @@ function switchDay(day) {
 
 window.addEventListener('popstate', (e) => {
   const day = e.state && e.state.day;
-  // ⭐ 修改：上限改為 8
   if (typeof day === 'number' && day >= 1 && day <= 8) {
     window._suppressHistoryPush = true;
     switchDay(day);
@@ -1391,7 +1396,6 @@ function updateDayProgressDots() {
     return -1;
   })();
 
-  // ⭐ 修改：產生 8 個圓點
   container.innerHTML = Array.from({ length: 8 }, (_, i) => {
     const day = i + 1;
     const isActive = day === activeDay;
@@ -1406,7 +1410,6 @@ window.updateDayProgressDots = updateDayProgressDots;
 
 // ==================== 今天 tab 標記 ====================
 function updateDayTabTodayMark() {
-  // ⭐ 修改：加入 Day 8
   const originalTexts = {
     1: 'D1 (1/21)', 2: 'D2 (1/22)', 3: 'D3 (1/23)',
     4: 'D4 (1/24)', 5: 'D5 (1/25)', 6: 'D6 (1/26)', 
@@ -1433,7 +1436,6 @@ function updateDayTabTodayMark() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('test') === 'during') {
       const d = parseInt(urlParams.get('day'));
-      // ⭐ 修改：上限改為 8
       if (d >= 1 && d <= 8) testDay = d;
     }
   } catch (e) {}

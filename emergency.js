@@ -1,5 +1,5 @@
 /* ============================================================
- * emergency.js — 緊急資訊資料 + Modal 渲染
+ * emergency.js — v2.0（新8天行程版：4 段住宿）
  * ============================================================ */
 
 const EMERGENCY_DATA = {
@@ -12,9 +12,10 @@ const EMERGENCY_DATA = {
     { icon: "🇨🇳", label: "中國駐新潟總領事館", tel: "+81252287800", desc: "東北地區領事保護" }
   ],
   hotels: [
-    { day: "D1", date: "1/21", name: "秋保溫泉 瑞鳳大飯店", tel: "022-398-2311", note: "入住 15:00 / 退房 10:00" },
-    { day: "D2-3", date: "1/22-23", name: "微笑之宿 瀧之湯", tel: "023-654-2211", note: "貸切風呂 16:30 預約" },
-    { day: "D4-7", date: "1/24-27", name: "Hotel Grand Bach 仙台", tel: "022-296-7333", note: "東口平面停車場 24HR · 連住4晚" }
+    { day: "D1-2", date: "1/21-22", name: "Hotel Grand Bach 仙台（第1段）", tel: "022-296-7333", note: "東口平面停車場 24HR" },
+    { day: "D3-4", date: "1/23-24", name: "微笑之宿 瀧之湯", tel: "023-654-2211", note: "貸切風呂 1/24 16:30 預約" },
+    { day: "D5",    date: "1/25",    name: "秋保溫泉 瑞鳳大飯店", tel: "022-398-2311", note: "入住 15:00 / 退房 10:00" },
+    { day: "D6-7", date: "1/26-27", name: "Hotel Grand Bach 仙台（第2段）", tel: "022-296-7333", note: "東口平面停車場 24HR" }
   ],
   transport: [
     { icon: "🚗", label: "Nippon Rent-A-Car 仙台機場", tel: "022-383-1577", desc: "租車營業所" },
@@ -176,4 +177,4 @@ function closeEmergencyModal() {
 window.openEmergencyModal = openEmergencyModal;
 window.closeEmergencyModal = closeEmergencyModal;
 
-console.log('[Emergency] 載入完成，可呼叫 window.openEmergencyModal()');
+console.log('[Emergency] v2.0 載入完成（4 段住宿）');

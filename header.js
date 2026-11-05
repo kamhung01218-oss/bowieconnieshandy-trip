@@ -1,23 +1,17 @@
 /* ============================================================
- * AppHeader v16.9
+ * AppHeader v17.0
  * - 品牌列：❄️ 標題 + [搜尋] + [天氣] + [重整] + [工具]
  * - Focus Card：出發前 / 中 / 後
  * - 旅行中順序：廣播 → 天氣 → 現在 → 下一站 → CTA(購物/留言)
  *
- * v16.3：留言訂閱移除 phase 檢查
- * v16.4：去 Emoji 化（UI 層）
- * v16.5：修正下拉同步誤觸
- * v16.6：準備進度改開滑動式 Modal
- * v16.7：Focus Card v2（圓形進度環、一週天氣條、時段色調、地標剪影、立體 CTA）
- * v16.8：
- *   - ⭐ 點擊天氣欄（一週天氣條 / 當天天氣行）開啟完整天氣 Modal
- *   - ⭐ data-action 元素加鍵盤支援（Enter / Space）
  * v16.9：
  *   - ⭐ 修復時段色調不隨時間轉變（updateCountdownNumbers 提前 return 問題）
  *   - ⭐ tick 無條件呼叫 updateCountdownNumbers（stage 有變時也呼叫）
  *   - ⭐ getTimeOfDay 支援 ?tod= 測試參數
  *   - ⭐ 時段切換加 console.log 方便除錯
  *   - ⭐ 家庭廣播 Day 8 支援（jumpToDay / pinned row 上限 7 → 8）
+ * v17.0：
+ *   - ⭐ 圓環跨度改為動態（不再固定 365 天）
  * ============================================================ */
 
 window.AppHeader = (function () {
@@ -790,6 +784,7 @@ window.AppHeader = (function () {
   // ============================================================
   // ⭐ v16.9：時段色調 + 倒數更新
   //   時段色調獨立更新，不受 diff <= 0 影響
+  // ⭐ v17.0：圓環跨度改為動態（Math.max(days, 365)）
   // ============================================================
   function updateCountdownNumbers() {
     if (!_container) return;
@@ -822,7 +817,8 @@ window.AppHeader = (function () {
       if (progressEl) {
         const radius = 52;
         const circumference = 2 * Math.PI * radius;
-        const progress = Math.max(0, Math.min(1, (365 - days) / 365));
+        const totalDays = Math.max(days, 365);
+        const progress = Math.max(0, Math.min(1, (totalDays - days) / totalDays));
         progressEl.style.strokeDashoffset = String(circumference * (1 - progress));
       }
     }
@@ -1327,7 +1323,8 @@ window.AppHeader = (function () {
         const donePrep = bookingP.done + equipP.done;
         const prepPercent = totalPrep > 0 ? Math.round((donePrep / totalPrep) * 100) : 0;
 
-        const ringHtml = buildCountdownRing(days, 365);
+        const ringTotalDays = Math.max(days, 365);
+        const ringHtml = buildCountdownRing(days, ringTotalDays);
         const weeklyWeatherHtml = buildWeeklyWeatherBar();
 
         const ticketCountdownHtml = (stage === "sprint" || stage === "final")
@@ -2654,5 +2651,5 @@ function _svgMsgIcon() {
     resetIndicator();
   }, { passive: true });
 
-  console.log('[pull-sync] v16.9 已註冊下拉同步手勢（含誤觸修正）');
+  console.log('[pull-sync] v17.0 已註冊下拉同步手勢（含誤觸修正）');
 })();

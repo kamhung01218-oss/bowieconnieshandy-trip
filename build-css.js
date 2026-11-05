@@ -5,8 +5,8 @@
  *   node build-css.js
  *
  * 功能：
- *   1. 把主站 7 個 CSS 合併成 app.css
- *   2. 把記帳本 3 個 CSS 合併成 ledger.css（自動備份原檔）
+ *   1. 把主站 6 個 CSS 合併成 app.css
+ *   2. 把記帳本 2 個 CSS 合併成 ledger.css（自動備份原檔）
  *
  * ⚠️ 之後修改樣式請改「來源檔」，然後重新執行此腳本
  * ============================================================ */
@@ -56,8 +56,7 @@ merge('app.css', [
   'dark.css',
   'patches.css',
   'perf.css',
-  'design-v14.css',
-  'design-v14b.css'
+  'design.css'
 ], 'app.css');
 
 // ============ 記帳本 ============
@@ -66,10 +65,10 @@ if (fs.existsSync('ledger.css') && !fs.existsSync('ledger-base.css')) {
   console.log('📦 已備份 ledger.css → ledger-base.css');
 }
 
-const ledgerSources = ['ledger-base.css', 'design-v14.css', 'design-v14b.css'];
+const ledgerSources = ['ledger-base.css', 'design.css'];
 if (!fs.existsSync('ledger-base.css')) {
   // 如果沒有 base，就把 design 檔單獨拼
-  merge('ledger.css', ['ledger.css', 'design-v14.css', 'design-v14b.css'], 'ledger-bundle.css');
+  merge('ledger.css', ['ledger.css', 'design.css'], 'ledger-bundle.css');
   console.log('⚠️ 未找到 ledger-base.css，改用 ledger-bundle.css');
 } else {
   merge('ledger.css', ledgerSources, 'ledger.css');

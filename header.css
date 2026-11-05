@@ -1153,3 +1153,28 @@
     font-size: 14px;
   }
 }
+
+/* ============================================================
+ * ⭐ 一週天氣條：8 天版（8 列）
+ * 註：原 header.css 未包含此區塊，這裡補上以覆蓋 7 列設定
+ * ============================================================ */
+.app-header .focus-weekly-weather {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  margin: 0 0 14px;
+  padding: 10px 8px;
+  background: rgba(240, 249, 255, 0.6);
+  border: 1px solid rgba(186, 230, 253, 0.7);
+  border-radius: 12px;
+}
+
+@media (max-width: 380px) {
+  .app-header .focus-weekly-weather {
+    gap: 2px;
+    padding: 8px 4px;
+  }
+  .app-header .focus-weather-day-icon { font-size: 12px; }
+  .app-header .focus-weather-day-date,
+  .app-header .focus-weather-day-temp { font-size: 8.5px; }
+}

@@ -1579,6 +1579,19 @@ button:active::after {
   letter-spacing: -0.005em;
 }
 
+/* ⭐ v18.4：事件副標題（data.js subtitle 用） */
+.event-subtitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--t-color-primary);
+  letter-spacing: 0.02em;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+[data-theme="dark"] .event-subtitle {
+  color: #7dd3fc;
+}
+
 .event-location {
   font-size: var(--t-fs-xs);
   font-weight: 600;

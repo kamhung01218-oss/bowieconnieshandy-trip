@@ -4,6 +4,7 @@
  * v3.4（本版）：
  *   - ⭐ 修復「結算頁待還總額 / 應收總額永遠 $0.00」：
  *     totalDebt / totalCredit 計算移至 while 循環之前
+ *   - ⭐ state.viewingAs / state.activePayer 預設值改為動態讀取當前登入用戶
  * ============================================================ */
 'use strict';
 
@@ -225,8 +226,16 @@ let state = {
   settlementStatus: {},
   historyClearedAt: 0,
   budget: { total: 0 },
-  viewingAs: "余生",
-  activePayer: "余生",
+  viewingAs: (function () {
+    try {
+      const u = getCurrentUser();
+      return (u && members.includes(u)) ? u : "余生";
+    } catch (e) { return "余生"; }
+  })(),
+  activePayer: (function () {
+    try { return getCurrentUser() || "余生"; }
+    catch (e) { return "余生"; }
+  })(),
   activeSplitWith: members.map(m => ({ name: m, amount: 0 })),
   customSplitEnabled: false,
   loaded: false
@@ -1068,7 +1077,8 @@ function openExpenseModal() {
 
   if (!editingExpenseId) {
     setCategory('餐飲');
-    document.getElementById('payment-method-select').value = '現金';
+    selectedPaymentMethod = '現金';
+    document.getElementById('payment-method-select').value = selectedPaymentMethod;
     state.activePayer = getCurrentUser() || members[0];
     state.activeSplitWith = members.map(m => ({ name: m, amount: 0 }));
     state.customSplitEnabled = false;
@@ -1117,7 +1127,8 @@ function openEditExpenseModal(expenseId) {
 
     document.getElementById("ledger-day").value = expense.day;
     setCategory(expense.category);
-    document.getElementById("payment-method-select").value = expense.paymentMethod || '現金';
+    selectedPaymentMethod = expense.paymentMethod || '現金';
+    document.getElementById("payment-method-select").value = selectedPaymentMethod;
     document.getElementById("ledger-desc").value = expense.desc;
     document.getElementById("ledger-remark").value = expense.remark || "";
     document.getElementById("ledger-amount").value = expense.amount;
@@ -1309,6 +1320,7 @@ async function saveExpense() {
   const amount = document.getElementById("ledger-amount");
   const currency = document.getElementById("ledger-currency");
   const remark = document.getElementById("ledger-remark").value.trim();
+  const paymentMethod = document.getElementById('payment-method-select').value || '現金';
   const descValue = desc.value.trim();
   const amountValue = parseFloat(amount.value.replace(/,/g, ""));
   if (!descValue || isNaN(amountValue) || amountValue <= 0) { showToast("請輸入說明與金額", "⚠️"); haptic(50); return; }
@@ -1337,7 +1349,7 @@ async function saveExpense() {
     day: parseInt(day.value), category: selectedCategory, desc: descValue, remark,
     amount: amountValue, currency: currency.value, amountInHKD,
     payer: state.activePayer, splitWith,
-    paymentMethod: selectedPaymentMethod,
+    paymentMethod,
     createdAt: now, updatedAt: now, createdBy: state.activePayer, createdTime: currentTime, updatedBy: state.activePayer
   };
 

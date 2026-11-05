@@ -1,5 +1,5 @@
 /* ============================================================
- * app-lists.js — v8.0 (Grand Bach 連住4晚版 + renderTarget 修復)
+ * app-lists.js — v9.0 (新8天行程版：bookingList 住宿4項 + 門票3項 + 貸切風呂日期)
  * 清單：行前預訂清單、裝備清單、購物清單、購物總覽
  * ============================================================ */
 
@@ -37,10 +37,10 @@ const bookingList = [
   { id: "flight-inbound", category: "航班", label: "回程機票：仙台 (SDJ) → 香港", icon: "✈️" },
   { id: "flight-seat", category: "航班", label: "線上選位 / 加購行李", icon: "💺" },
   { id: "flight-checkin", category: "航班", label: "網路報到 + 下載登機證", icon: "🎫" },
-  { id: "hotel-akiu", category: "住宿", label: "1/21 秋保溫泉 瑞鳳大飯店 (含自助晚餐)", icon: "🏨" },
-  { id: "hotel-tendo", category: "住宿", label: "1/22-23 微笑之宿 瀧之湯 (含懷石晚餐)", icon: "🏨" },
-  { id: "hotel-sendai", category: "住宿", label: "1/24-27 Hotel Grand Bach 仙台 (連住4晚)", icon: "🏨" },
-  { id: "hotel-sendai-2", category: "住宿", label: "1/27 續住 Hotel Grand Bach 仙台 (第4晚)", icon: "🏨" },
+  { id: "hotel-sendai", category: "住宿", label: "1/21-22 Hotel Grand Bach 仙台（第1段）", icon: "🏨" },
+  { id: "hotel-tendo", category: "住宿", label: "1/23-24 微笑之宿 瀧之湯", icon: "🏨" },
+  { id: "hotel-akiu", category: "住宿", label: "1/25 秋保溫泉 瑞鳳大飯店", icon: "🏨" },
+  { id: "hotel-sendai-2", category: "住宿", label: "1/26-27 Hotel Grand Bach 仙台（第2段）", icon: "🏨" },
   { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車", icon: "🚗" },
   { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
   { id: "car-pickup", category: "租車", label: "1/21 15:30 機場取車", icon: "⏰" },
@@ -49,13 +49,13 @@ const bookingList = [
   { id: "insurance-medical", category: "保險", label: "海外突發疾病醫療險", icon: "🏥" },
   { id: "insurance-trip", category: "保險", label: "旅程不便險（班機/行李延誤）", icon: "🧳" },
   { id: "insurance-car", category: "保險", label: "租車免責補償 NOC / CDW", icon: "🚙" },
-  { id: "ticket-ginzan", category: "門票", label: "銀山溫泉 Fast Pass (1/8 23:00搶票)", icon: "🎟️" },
-  { id: "ticket-zao", category: "門票", label: "藏王纜車優先票 (1/15 23:00搶票)", icon: "🎟️" },
-  { id: "ticket-springvalley", category: "門票", label: "Spring Valley 雪之冒險王國 (1/24)", icon: "⛷️" },
+  { id: "ticket-ginzan", category: "門票", label: "銀山溫泉 Fast Pass (12/1 開賣)", icon: "🎟️" },
+  { id: "ticket-zao", category: "門票", label: "藏王纜車優先票 (1/16 23:00搶票)", icon: "🎟️" },
+  { id: "ticket-springvalley", category: "門票", label: "Spring Valley 雪之冒險王國 (1/26)", icon: "⛷️" },
   { id: "ticket-foxvillage", category: "門票", label: "狐狸村入場 (現場購票)", icon: "🦊" },
   { id: "sim-esim", category: "通訊", label: "日本 eSIM / 上網卡", icon: "📶" },
   { id: "wifi-router", category: "通訊", label: "WiFi 分享器 (若需要)", icon: "📡" },
-  { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/23 16:30)", icon: "♨️" },
+  { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/24 16:30)", icon: "♨️" },
   { id: "other-passport", category: "其他", label: "護照效期檢查 (需剩餘 6 個月以上)", icon: "🪪" },
   { id: "other-visit-japan-web", category: "其他", label: "Visit Japan Web 登錄 + QR Code", icon: "📱" },
   { id: "other-credit-card", category: "其他", label: "信用卡通知銀行 / 開通海外交易", icon: "💳" },
@@ -622,4 +622,4 @@ function updateShoppingBadges(day) {
 }
 window.updateShoppingBadges = updateShoppingBadges;
 
-console.log('[Lists] v8.0（Grand Bach 連住4晚版 + renderTarget 修復）載入完成');
+console.log('[Lists] v9.0（新8天行程版）載入完成');

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🆔 Shoot Tips Key 遷移工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Noto Sans TC', sans-serif;
+    background: #0f172a; color: #e2e8f0;
+    padding: 20px; min-height: 100vh;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 900; margin-bottom: 8px; color: #38bdf8; }
+  .sub { font-size: 12px; color: #64748b; margin-bottom: 20px; line-height: 1.7; }
+  .sub code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; color: #7dd3fc; font-size: 11px; }
+  .info-box {
+    background: rgba(56,189,248,0.08);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 10px; padding: 12px 14px;
+    font-size: 11.5px; color: #cbd5e1; line-height: 1.8;
+    margin-bottom: 16px;
+  }
+  .info-box strong { color: #7dd3fc; }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 14px; text-align: center;
+  }
+  .stat .num { font-size: 24px; font-weight: 900; color: #38bdf8; }
+  .stat.ok .num { color: #34d399; }
+  .stat.err .num { color: #f87171; }
+  .stat .lbl { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .btn {
+    padding: 10px 16px; border-radius: 8px; border: none;
+    font-size: 12px; font-weight: 800; cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-primary { background: linear-gradient(135deg, #0ea5e9, #6366f1); color: white; }
+  .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .row {
+    display: grid; grid-template-columns: 200px 1fr;
+    gap: 12px; padding: 10px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 3px solid #38bdf8;
+    border-radius: 10px; margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .row.ok { border-left-color: #34d399; }
+  .row.miss { border-left-color: #f87171; }
+  .row .key {
+    font-family: Menlo, Consolas, monospace;
+    font-size: 11px; font-weight: 900;
+    color: #7dd3fc; word-break: break-all;
+  }
+  .row .content .title { color: #e2e8f0; font-weight: 700; margin-bottom: 3px; word-break: break-all; }
+  .row .content .meta { font-size: 10px; color: #64748b; }
+  .day-header {
+    font-size: 12px; font-weight: 900; color: #38bdf8;
+    padding: 14px 4px 6px; letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(56,189,248,0.2);
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🆔 Shoot Tips Key 遷移工具</h1>
+  <p class="sub">
+    將 <code>shoot-tips.js</code> 的 key 從 <code>d{day}-e{index}</code> 遷移到 <code>event.id</code>（中文 ID）。<br>
+    這樣調換 <code>data.js</code> 的事件順序後，拍攝建議不會錯位。
+  </p>
+
+  <div class="info-box">
+    <strong>📌 前提：</strong><code>data.js</code> 的每個 event 已有 <code>id</code> 欄位（跑過 <code>add-event-ids</code>）。<br>
+    <strong>📌 遷移後：</strong>下載新的 <code>shoot-tips.js</code> 覆蓋舊檔即可。舊 key 會保留在輸出中（fallback）。<br>
+    <strong>📌 適用：</strong>只處理 <code>d{day}-e{index}</code> 格式的 key；已經是中文 ID 的會原樣保留。
+  </div>
+
+  <div class="summary">
+    <div class="stat"><div class="num" id="cnt-total">0</div><div class="lbl">總 key 數</div></div>
+    <div class="stat ok"><div class="num" id="cnt-migrated">0</div><div class="lbl">已遷移</div></div>
+    <div class="stat err"><div class="num" id="cnt-orphan">0</div><div class="lbl">孤立 key</div></div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="runMigration()">🔄 重新分析</button>
+    <button class="btn btn-success" id="btn-download" onclick="downloadNewFile()" disabled>⬇️ 下載新 shoot-tips.js</button>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script src="./data.js"></script>
+<script src="./shoot-tips.js"></script>
+
+<script>
+function buildKeyMap() {
+  const map = {};
+  const idSet = new Set();
+  if (typeof winterItineraries === 'undefined') return { map, idSet };
+  winterItineraries.forEach(day => {
+    day.events.forEach((evt, idx) => {
+      if (!evt.id) return;
+      const oldKey = `d${day.day}-e${idx}`;
+      map[oldKey] = { newKey: evt.id, title: evt.title, day: day.day };
+      idSet.add(evt.id);
+    });
+  });
+  return { map, idSet };
+}
+
+let migrationResult = null;
+
+function runMigration() {
+  const container = document.getElementById('results');
+  container.innerHTML = '';
+  migrationResult = null;
+
+  if (typeof winterItineraries === 'undefined' || typeof shootTips === 'undefined') {
+    container.innerHTML = '<div style="color:#f87171;padding:20px">❌ 無法載入 data.js 或 shoot-tips.js</div>';
+    return;
+  }
+
+  const { map, idSet } = buildKeyMap();
+  const newTips = {};
+  const migrated = [];
+  const kept = [];
+  const orphans = [];
+
+  Object.keys(shootTips).forEach(key => {
+    const info = map[key];
+    if (info) {
+      newTips[info.newKey] = shootTips[key];
+      migrated.push({ old: key, new: info.newKey, title: info.title });
+    } else if (idSet.has(key)) {
+      newTips[key] = shootTips[key];
+      kept.push({ key });
+    } else {
+      newTips[key] = shootTips[key];
+      orphans.push({ key });
+    }
+  });
+
+  migrationResult = { newTips, migrated, kept, orphans };
+
+  document.getElementById('cnt-total').textContent = Object.keys(shootTips).length;
+  document.getElementById('cnt-migrated').textContent = migrated.length;
+  document.getElementById('cnt-orphan').textContent = orphans.length;
+  document.getElementById('btn-download').disabled = false;
+
+  let html = '';
+  if (migrated.length > 0) {
+    html += '<div class="day-header">✅ 已遷移 ' + migrated.length + ' 個 key</div>';
+    migrated.forEach(m => {
+      html += '<div class="row ok"><div class="key">' + esc(m.old) + '</div><div class="content"><div class="title">→ ' + esc(m.new) + '</div><div class="meta">' + esc(m.title) + '</div></div></div>';
+    });
+  }
+  if (kept.length > 0) {
+    html += '<div class="day-header">🔄 已是 event.id，保留 ' + kept.length + ' 個</div>';
+    kept.forEach(k => {
+      html += '<div class="row ok"><div class="key">' + esc(k.key) + '</div><div class="content"><div class="title">' + esc(k.key) + '</div></div></div>';
+    });
+  }
+  if (orphans.length > 0) {
+    html += '<div class="day-header">⚠️ 孤立 key（找不到對應 event）' + orphans.length + ' 個</div>';
+    html += '<div style="color:#94a3b8;font-size:11px;padding:4px 8px">這些 key 會原樣保留，請手動處理。</div>';
+    orphans.forEach(o => {
+      html += '<div class="row miss"><div class="key">' + esc(o.key) + '</div><div class="content"><div class="title">' + esc(o.key) + '</div><div class="meta">找不到對應 event</div></div></div>';
+    });
+  }
+  container.innerHTML = html;
+}
+
+function generateNewFile() {
+  if (!migrationResult) return '';
+  const { newTips } = migrationResult;
+
+  let out = '/* ============================================================\n';
+  out += ' * shoot-tips.js — v4.0（event.id 版）\n';
+  out += ' *\n';
+  out += ' * 自動生成於：' + new Date().toLocaleString('zh-HK') + '\n';
+  out += ' * Key 格式：event.id（與 data.js 一致，穩定）\n';
+  out += ' *\n';
+  out += ' * ⚠️ 若你在 data.js 中改標題/改 id，請重新跑遷移工具。\n';
+  out += ' * ============================================================ */\n\n';
+  out += 'const shootTips = {\n';
+
+  const keys = Object.keys(newTips);
+  keys.forEach((key, i) => {
+    out += '\n  // ' + key + '\n';
+    out += '  ' + JSON.stringify(key) + ': ' + JSON.stringify(newTips[key], null, 4).split('\n').join('\n  ');
+    out += i < keys.length - 1 ? ',\n' : '\n';
+  });
+
+  out += '};\n\n';
+
+  if (typeof shootTipsCommon !== 'undefined') {
+    out += '/* ============================================================\n';
+    out += ' * 通用人像拍攝技巧（保留原樣）\n';
+    out += ' * ============================================================ */\n';
+    out += 'const shootTipsCommon = ' + JSON.stringify(shootTipsCommon, null, 2) + ';\n\n';
+  }
+
+  if (typeof vlogPlan !== 'undefined') {
+    out += '/* ============================================================\n';
+    out += ' * Vlog 構思（保留原樣）\n';
+    out += ' * ============================================================ */\n';
+    out += 'const vlogPlan = ' + JSON.stringify(vlogPlan, null, 2) + ';\n';
+  }
+
+  return out;
+}
+
+function downloadNewFile() {
+  const content = generateNewFile();
+  if (!content) return;
+  const blob = new Blob([content], { type: 'text/javascript;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'shoot-tips.js';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  alert('✅ 已下載新的 shoot-tips.js\n\n請覆蓋舊檔，然後重新載入 App。');
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+window.addEventListener('DOMContentLoaded', runMigration);
+</script>
+</body>
+</html>

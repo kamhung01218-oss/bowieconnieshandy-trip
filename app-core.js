@@ -1,5 +1,5 @@
 /* ============================================================
- * app-core.js — v15.0 (8天7夜版)
+ * app-core.js — v16.0 (新8天行程版：銀山 12/1 開賣、藏王 1/16 23:00)
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -62,13 +62,12 @@ const USER_COLORS = {
   "訪客": "linear-gradient(135deg,#94a3b8,#475569)"
 };
 
-// ⭐ 修改：加入 1/28
 const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27", "2027-01-28"];
 const TRIP_START = new Date("2027-01-21T10:00:00+08:00").getTime();
-// ⭐ 修改：TRIP_END 改為 1/28
 const TRIP_END = new Date("2027-01-28T23:59:59+08:00").getTime();
-const GINZAN_TARGET = new Date("2027-01-08T23:00:00+08:00").getTime();
-const ZAO_TARGET = new Date("2027-01-15T23:00:00+08:00").getTime();
+// ⭐ v16.0：銀山改 12/1 日本 10:00（= 香港 09:00）；藏王 D4 1/24 搭乘，提前 7 天日本 00:00 = 1/16 香港 23:00
+const GINZAN_TARGET = new Date("2026-12-01T10:00:00+09:00").getTime();
+const ZAO_TARGET = new Date("2027-01-16T23:00:00+08:00").getTime();
 const ADMIN_PASSWORD = "tohoku2027admin";
 
 let snowmanProgress = JSON.parse(localStorage.getItem("snowman_progress")) || 0;
@@ -83,7 +82,6 @@ function getInitialDay() {
     const urlDay = urlParams.get('day');
     if (urlDay) {
       const n = parseInt(urlDay);
-      // ⭐ 修改：上限改為 8
       if (n >= 1 && n <= 8) return n;
     }
   } catch (e) {}
@@ -98,7 +96,6 @@ function getInitialDay() {
   }
 
   const last = parseInt(localStorage.getItem('tohoku_last_day') || '0');
-  // ⭐ 修改：上限改為 8
   if (last >= 1 && last <= 8) return last;
 
   return 1;
@@ -343,7 +340,7 @@ function initAppAfterLogin() {
     'weather-modal', 'trip-overview-modal', 'shoot-tips-modal',
     'vlog-plan-modal', 'common-tips-modal', 'shopping-modal',
     'all-shopping-modal', 'currency-modal', 'attachments-overview-modal',
-    'prep-overview-modal',
+    'prep-overview-modal', 'prep-swipe-modal',
     'event-data-modal', 'weather-alert-modal', 'navigate-menu-modal',
     'messages-modal', 'emergency-modal'
   ]);
@@ -673,6 +670,7 @@ function setupModalDrag(modals) {
             'currency-modal': () => window.closeCurrencyModal && window.closeCurrencyModal(),
             'attachments-overview-modal': () => window.closeAttachmentsOverview && window.closeAttachmentsOverview(),
             'prep-overview-modal': () => window.closePrepOverviewModal && window.closePrepOverviewModal(),
+            'prep-swipe-modal': () => window.closePrepSwipeModal && window.closePrepSwipeModal(),
             'event-data-modal': () => window.Uploads && window.Uploads.closeEventData && window.Uploads.closeEventData(),
             'weather-alert-modal': () => window.closeWeatherAlertModal && window.closeWeatherAlertModal(),
             'navigate-menu-modal': () => window.closeNavigateMenu && window.closeNavigateMenu(),
@@ -749,7 +747,7 @@ function switchMainTab(tab) {
     hideView.classList.add('hidden-view'); hideView.classList.remove('view-exit-left', 'view-exit-right');
     if (isGoingToLedger) {
       const iframe = document.getElementById("ledger-iframe");
-      if (iframe) iframe.style.height = "calc(100dvh - 60px)";
+      if (iframe) iframe.style.height = "calc(100dvh - 68px - env(safe-area-inset-bottom, 0px))";
       const cur = document.documentElement.getAttribute('data-theme') || 'light';
       syncThemeToLedger(cur);
     }
@@ -874,8 +872,30 @@ window.closeLightbox = closeLightbox;
 window.changeLightbox = changeLightbox;
 
 // ==================== 歡迎 / 角色 ====================
-function closeWelcomeModal(skipForever = false) { const m = document.getElementById("welcome-modal"); if (m) { m.style.opacity = "0"; setTimeout(() => { m.style.display = "none"; }, 300); } if (skipForever) localStorage.setItem("tohoku_welcome_dismissed", "true"); haptic(10); }
-function checkWelcomeModal() { if (localStorage.getItem("tohoku_welcome_dismissed") === "true") { const m = document.getElementById("welcome-modal"); if (m) m.style.display = "none"; } }
+function closeWelcomeModal(skipForever = false) {
+  const m = document.getElementById("welcome-modal");
+  if (m) {
+    m.style.opacity = "0";
+    setTimeout(() => {
+      m.style.display = "none";
+      m.classList.add("hidden");
+    }, 300);
+  }
+  if (skipForever) localStorage.setItem("tohoku_welcome_dismissed", "true");
+  haptic(10);
+}
+function checkWelcomeModal() {
+  const m = document.getElementById("welcome-modal");
+  if (!m) return;
+  if (localStorage.getItem("tohoku_welcome_dismissed") === "true") {
+    m.style.display = "none";
+    m.classList.add("hidden");
+  } else {
+    m.classList.remove("hidden");
+    m.style.display = "flex";
+    m.style.opacity = "1";
+  }
+}
 let characterTimeout = null;
 function spawnCharacters() {
   clearTimeout(characterTimeout);
