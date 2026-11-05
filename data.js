@@ -1,14 +1,14 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 3.6.0（D2 晚上：HACHI 主推，排版精簡）
+ *  版本: 4.0.0（D2 早餐待定+取車+狐狸村+下午茶；D3 客美多+草莓+天童）
  * ============================================================
  */
 
 const winterItineraries = [
 
   // ==========================================
-  // DAY 1 - 抵達仙台（晚餐 17:30-19:00，19:00 後完整購物清單）
+  // DAY 1 - 抵達仙台（無車）
   // ==========================================
   {
     day: 1,
@@ -46,7 +46,7 @@ const winterItineraries = [
         priority: "optional",
         open: true,
         content: `
-          <p>取車前 30 分鐘，先餵飽肚子</p>
+          <p>搭車前 30 分鐘，先餵飽肚子</p>
           <details>
             <summary>🍽️ 三層美食速覽</summary>
             <div>
@@ -59,39 +59,47 @@ const winterItineraries = [
         `
       },
       {
-        time: "15:30 - 16:00",
-        id: "提領-Nippon-Rent-A-Car-7-8-人座雪地車",
-        title: "提領 Nippon Rent-A-Car 7-8 人座雪地車",
-        img: "https://rimage.gnst.jp/livejapan.com/public/img/spot/lj/01/45/lj0145539/lj0145539_6a39f0b20dd93_main.jpg",
-        tag: { text: "🚗 冬季自駕", class: "tag-teal" },
-        navUrl: "https://maps.app.goo.gl/WQM6cUyrzgxWruNU7?g_st=ac",
-        navName: "Nippon Rent-A-Car",
+        time: "15:30 - 16:10",
+        id: "搭仙台機場アクセス線到仙台站",
+        title: "搭仙台機場アクセス線到仙台站",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Sendai_Airport_Access_Railway_2000_series_2007.jpg/640px-Sendai_Airport_Access_Railway_2000_series_2007.jpg",
+        tag: { text: "🚃 機場電車", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Airport+Station",
+        navName: "仙台機場站",
         priority: "must",
         open: true,
         content: `
-          <p>車匙到手，雪國之旅正式開始</p>
-          <p class="text-xs text-slate-500">1F 櫃檯報到 → 接駁車 → 取車營業所</p>
+          <p>仙台機場 → 仙台站，25 分鐘直達</p>
+          <p class="text-xs text-slate-500">仙台機場アクセス線（仙台空港鉄道）</p>
+          <div class="tip-block">
+            <strong>🎫 票價與搭乘</strong><br>
+            • 成人 ¥660 / 兒童 ¥330（4 歲免費，但佔位需購票）<br>
+            • 每 15–20 分鐘一班<br>
+            • 終點站「仙台」下車，不用轉車
+          </div>
           <div class="tip-block warn">
-            <strong>✅ 取車必檢</strong><br>
-            • 4WD + 雪胎（胎紋 ≥ 5mm）<br>
-            • 2 套兒童安全帶裝第二排<br>
-            • 4 大箱 + 推車塞得下
+            <strong>🧳 行李搬運</strong>｜4 大箱 + 推車 + 2 小孩<br>
+            建議一人先推行李上車，另一人抱小孩
           </div>
         `
       },
       {
-        time: "16:00 - 16:30",
-        id: "自駕前往仙台市區",
-        title: "自駕前往仙台市區",
-        tag: { text: "🚗 市區自駕", class: "tag-teal" },
+        time: "16:10 - 16:30",
+        id: "步行到Hotel-Grand-Bach-仙台",
+        title: "步行到 Hotel Grand Bach 仙台",
+        img: "https://cdn.jalan.jp/jalan/images/pict2L/Y5/Y318775/Y318775163.jpg",
+        tag: { text: "🚶 步行5分鐘", class: "tag-teal" },
         navUrl: "https://maps.app.goo.gl/tumoctSbhRFgQkx89?g_st=ac",
         navName: "Hotel Grand Bach 仙台",
         priority: "must",
         open: true,
         content: `
-          <p>從機場開往仙台市區，約 30 分鐘</p>
-          <p class="text-xs text-slate-500">仙台東道路 → 仙台站東口</p>
-          <div class="tip-block">💡 先臨停飯店門口卸行李，駕駛再去停車</div>
+          <p>仙台站西口 → Grand Bach，步行 5 分鐘</p>
+          <p class="text-xs text-slate-500">走室內通道（地下街）不用吹冷風</p>
+          <div class="tip-block">
+            <strong>🚶 步行路線</strong>｜仙台站西口 → 地下街 → 南町通 → Grand Bach<br>
+            冬天走地下街最舒服，不用拖行李踩雪
+          </div>
         `
       },
       {
@@ -106,8 +114,11 @@ const winterItineraries = [
         open: true,
         content: `
           <p>仙台站旁，連住 2 晚（D1–D2）</p>
-          <p class="text-xs text-slate-500">2 間雙床房，車停東口 24HR 平面停車場</p>
-          <div class="tip-block">💡 D6–D7 會再回來住第 2 段，行李可分兩批</div>
+          <p class="text-xs text-slate-500">2 間雙床房，<strong>今晚沒車</strong>，明天早上才取車</p>
+          <div class="tip-block">
+            <strong>💡 行李放置</strong>｜今晚所有行李放房間，不用管停車<br>
+            <strong>🚗 明天取車</strong>｜08:00 仙台站前店取車，步行 5 分鐘可到
+          </div>
         `
       },
       {
@@ -155,7 +166,6 @@ const winterItineraries = [
         open: true,
         content: `
           <p>吃完牛舌，19:00 開始晚上購物，<strong>依小孩狀態自由決定逛多久</strong></p>
-          
           <div class="tip-block warn">
             <strong>⏰ 19:00 後的營業時間</strong><br>
             • <strong>3COINS PARCO 店</strong>｜20:00 關，要先去<br>
@@ -163,7 +173,6 @@ const winterItineraries = [
             • <strong>UNIQLO 仙台站前店</strong>｜21:00 關，可慢慢逛<br>
             • <strong>唐吉訶德 仙台駅西口本店</strong>｜深夜營業，最後去都行
           </div>
-
           <details>
             <summary>🛍️ 購物清單與導航</summary>
             <div>
@@ -182,9 +191,8 @@ const winterItineraries = [
               <p>✨ <strong>THE GALLERY BOX</strong><br><span class="text-slate-500 text-xs">仙台 PARCO 4F：Salomon・MM6 Maison Margiela 等限量聯名</span> <a href="https://www.google.com/maps/search/?api=1&query=Sendai+PARCO" target="_blank">📍 導航</a></p>
             </div>
           </details>
-
           <div class="tip-block warn">
-            💡 小孩若累，3COINS + UNIQLO 買完就撤退，唐吉訶德改 D2 或 D6 補。早點休息，明天 08:30 客美多早餐。
+            💡 小孩若累，3COINS + UNIQLO 買完就撤退，唐吉訶德改 D6 補。早點休息，明天 08:00 取車。
           </div>
         `
       }
@@ -192,119 +200,85 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 2 - 客美多早餐 → 草莓 → 白石午餐 → 狐狸村 → 回市區
+  // DAY 2 - 早餐待定 → 取車 → 宮城狐狸村 → 下午茶 → HACHI
   // ==========================================
   {
     day: 2,
     dateLabel: "DAY 2 · 2027年1月22日 (週五)",
-    id: "草莓-白石午餐-狐狸村-晚上補給",
-    title: "客美多早餐 ➔ 採草莓 ➔ 白石午餐 ➔ 狐狸村 ➔ 晚上補給",
-    subtitle: "🍓 草莓與萌寵之日",
-    emoji: "🍓",
+    id: "取車-宮城狐狸村-下午茶-HACHI",
+    title: "取車 ➔ 宮城狐狸村 ➔ 下午茶 ➔ HACHI",
+    subtitle: "🦊 萌寵與下午茶之日",
+    emoji: "🦊",
     events: [
       {
-        time: "08:30 - 09:30",
-        id: "早餐-客美多咖啡-仙台富澤店",
-        title: "早餐 ➔ 客美多咖啡 仙台富澤店",
-        img: "https://www.fukushige1219.co.jp/wp-content/uploads/example2-3.jpg",
-        tag: { text: "☕ 悠閒晨活", class: "tag-amber" },
-        navUrl: "https://maps.app.goo.gl/SYGcfygAcH7gamz2A",
-        navName: "客美多咖啡 仙台富澤店",
-        priority: "must",
+        time: "07:30 - 08:00",
+        id: "飯店早餐或便利店",
+        title: "早餐待定（飯店 / 便利店）",
+        tag: { text: "☕ 早餐待定", class: "tag-amber" },
+        navUrl: "",
+        priority: "optional",
         open: true,
         content: `
-          <p>名古屋來的早餐名店，開在仙台</p>
-          <p class="text-xs text-slate-500">從 Grand Bach 開車約 15 分鐘</p>
+          <p>今天要趕 08:00 取車，早餐簡單吃</p>
           <div class="tip-block">
-            <strong>🚗 順路！</strong>｜客美多 → 草莓園 → 白石，完全一條線<br>
-            Grand Bach（仙台站）→ 客美多富澤店（15分）→ 一苺一笑 松森農場（15分）→ 白石（45分）
+            <strong>☕ 三個選擇</strong><br>
+            • <strong>飯店早餐</strong>｜Grand Bach 07:00 開，吃 30 分鐘<br>
+            • <strong>便利店</strong>｜前晚買麵包、牛奶，房間吃<br>
+            • <strong>取車後路上吃</strong>｜便利商店買上車吃
           </div>
           <div class="tip-block warn">
-            <strong>⏰ 09:30 出發</strong>｜09:45 到草莓園，大草莓還沒被採光
+            <strong>⏰ 08:00 取車</strong>｜仙台站前店，步行 5 分鐘
           </div>
         `
       },
       {
-        time: "09:30 - 11:00",
-        id: "溫室採草莓-🍓",
-        title: "溫室採草莓 🍓",
-        tag: { text: "🍓 溫室採果", class: "tag-sky" },
-        navUrl: "https://maps.app.goo.gl/Q91PEDo22zahngNy5?g_st=ac",
-        navName: "一苺一笑 松森農場",
-        priority: "must",
-        highlight: true,
-        open: true,
-        content: `
-          <p>溫室裡，紅透的草莓垂手可得</p>
-          <p class="text-xs text-slate-500">09:45 開始採，玩到 11:00，剛好趕中午到白石</p>
-          <details>
-            <summary>🍓 仙台市區溫室採草莓（三選一）</summary>
-            <div>
-              <p><strong>1. 一苺一笑 松森農場（免預約）</strong></p>
-              <img src="https://i.meee.com.tw/oATDVIV.jpg" alt="一苺一笑 松森農場" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async" referrerpolicy="no-referrer">
-              <p><strong>⭐️ 4.4 分</strong><br><span class="text-slate-500 text-xs">40 分鐘吃到飽・北海道煉乳無限續加</span></p>
-              <p><span class="text-slate-500 text-xs">優勢：現場排隊制，行程最彈性（建議早上到，大草莓還沒被採光）</span></p>
-              <a href="https://maps.app.goo.gl/Q91PEDo22zahngNy5?g_st=ac" target="_blank">📍 導航前往</a>
-              <hr class="my-3 border-slate-200">
-              <p><strong>2. JR 水果公園仙台荒濱（官網預約）</strong></p>
-              <img src="https://i.meee.com.tw/r2jWInj.webp" alt="JR水果公園仙台荒濱" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async" referrerpolicy="no-referrer">
-              <p><strong>⭐️ 4.0 分</strong><br><span class="text-slate-500 text-xs">園區大且極乾淨・附設農產市集與大飯店主廚監製餐廳</span></p>
-              <p><span class="text-slate-500 text-xs">優勢：有繁中/英文網路介面，適合出發前搞定名額（30 分鐘限制）</span></p>
-              <a href="https://maps.app.goo.gl/H3EDkLGrVGBg3Sth9?g_st=ac" target="_blank">📍 導航前往</a>
-              <hr class="my-3 border-slate-200">
-              <p><strong>3. Berry Planet（燦燦園）</strong></p>
-              <img src="https://i.meee.com.tw/frEJBxZ.jpg" alt="Berry Planet" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async" referrerpolicy="no-referrer">
-              <p><strong>⭐️ 4.3 分</strong><br><span class="text-slate-500 text-xs">老字號農家・完熟甜度極高・附設網美咖啡廳</span></p>
-              <p><span class="text-slate-500 text-xs">優勢：假日必須提早預約，但品質有保障</span></p>
-              <a href="https://maps.app.goo.gl/yHuF1t7Vk9s3iPGc8?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-        `
-      },
-      {
-        time: "11:45 - 13:15",
-        id: "白石午餐-傳統名物白石溫麵三選一",
-        title: "白石午餐 ➔ 傳統名物「白石溫麵」三選一",
-        tag: { text: "🍜 在地名物", class: "tag-amber" },
-        navUrl: "",
+        time: "08:00 - 08:30",
+        id: "仙台站前店取車",
+        title: "仙台站前店取車 ➔ Nippon Rent-A-Car",
+        img: "https://rimage.gnst.jp/livejapan.com/public/img/spot/lj/01/45/lj0145539/lj0145539_6a39f0b20dd93_main.jpg",
+        tag: { text: "🚗 取車", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Nippon+Rent-A-Car+仙台駅前店",
+        navName: "Nippon Rent-A-Car 仙台站前店",
         priority: "must",
         open: true,
         content: `
-          <p>白石名物，溫麵三選一</p>
-          <p class="text-xs text-slate-500">草莓園 → 白石市區，走東北道約 45 分鐘</p>
-          <details>
-            <summary>🌟 手延白石溫麵 光庵（推薦）</summary>
-            <div>
-              <img src="https://oniwa.garden/wp-content/img/04_miyagi/2604_shiroishi_tsurigane/02.jpeg" alt="手延白石溫麵 光庵" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-              <p><strong>招牌冷麵：三種醬汁溫麵</strong><br><span class="text-slate-500 text-xs">經典鰹魚醬油・濃郁胡麻・當地核桃醬</span></p>
-              <p><strong>招牌熱麵</strong><br><span class="text-slate-500 text-xs">特製雞湯溫麵・葛粉勾芡蔬菜溫麵</span></p>
-              <a href="https://maps.app.goo.gl/wwgroAhTgSeapcXXA?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <details>
-            <summary>🥢 白石うーめん やまぶき亭（選擇豐富）</summary>
-            <div>
-              <img src="https://shiroishi-navi.jp/wp-content/uploads/2018/03/shzZkbG4791p6nR3sNXf8tnzqz1kl0.jpg" alt="白石うーめん やまぶき亭" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-              <p><strong>溫麵三昧</strong><br><span class="text-slate-500 text-xs">芝麻・核桃・醬油三種沾醬</span></p>
-              <p><strong>必吃</strong><br><span class="text-slate-500 text-xs">天ぷらうーめん（天婦羅溫麵）</span></p>
-              <a href="https://maps.app.goo.gl/VudKdyUMEgfc5CKJ8?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <details>
-            <summary>🍤 讃岐づくり本格手打ちうどん 麦の季</summary>
-            <div>
-              <img src="https://www.ichijoh.co.jp/wp/wp-content/uploads/2023/04/muginoki.jpg" alt="麦の季" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-              <p><strong>必吃</strong><br><span class="text-slate-500 text-xs">大蝦天婦羅盛りざるうどん（大蝦天婦羅冷烏龍麵）</span></p>
-              <p><strong>特色</strong><br><span class="text-slate-500 text-xs">高級藏王鴨「蔵王鴨つけうどん」</span></p>
-              <a href="https://maps.app.goo.gl/a25hoeAAf6BQtD44A" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <div class="tip-block">💡 吃完 13:15 出發，14:00 前到狐狸村</div>
+          <p>步行 5 分鐘到仙台站前店取車</p>
+          <p class="text-xs text-slate-500">Grand Bach → 仙台站前店，走路 5 分鐘</p>
+          <div class="tip-block warn">
+            <strong>✅ 取車必檢</strong><br>
+            • 4WD + 雪胎（胎紋 ≥ 5mm）<br>
+            • 2 套兒童安全帶裝第二排<br>
+            • 4 大箱 + 推車塞得下<br>
+            • ETC 卡已裝好、加滿油
+          </div>
+          <div class="tip-block">
+            <strong>🅿️ 停車</strong>｜取車後直接開去狐狸村，不用停回 Grand Bach<br>
+            <strong>💡 今晚起</strong>｜車停東口 24HR 平面停車場
+          </div>
         `
       },
       {
-        time: "14:00 - 16:00",
-        id: "出發與宮城藏王狐狸村雪地互動",
+        time: "08:30 - 10:00",
+        id: "開車前往宮城藏王狐狸村",
+        title: "開車前往【宮城藏王狐狸村】",
+        tag: { text: "🚗 雪地自駕", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Miyagi+Zao+Fox+Village",
+        navName: "宮城藏王狐狸村",
+        priority: "must",
+        open: true,
+        content: `
+          <p>仙台站前店 → 宮城藏王狐狸村，約 1 小時</p>
+          <p class="text-xs text-slate-500">走東北道 → 白石 IC → 山路，最後 15 分鐘為爬坡彎道</p>
+          <div class="tip-block warn">
+            <strong>🚗 山路結冰</strong>｜最後一段為山路，務必用 4WD + 雪胎<br>
+            下坡善用低速檔，不急煞、不急打方向盤
+          </div>
+          <div class="tip-block">💡 車上午睡時間，10:00 到狐狸村剛好</div>
+        `
+      },
+      {
+        time: "10:00 - 12:00",
+        id: "宮城藏王狐狸村",
         title: "【宮城藏王狐狸村】雪地互動",
         img: "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-0946-3472.jpg",
         images: [
@@ -321,7 +295,7 @@ const winterItineraries = [
         open: true,
         content: `
           <p>上百隻狐狸自由走動，超震撼</p>
-          <p class="text-xs text-slate-500">白石 → 狐狸村約 30-40 分鐘，14:00 進場，玩到 16:00</p>
+          <p class="text-xs text-slate-500">10:00 進場，玩到 12:00</p>
           <p class="text-xs text-slate-500">家長<strong>全程緊牽小孩</strong>，禁觸摸放養區狐狸</p>
           <div class="tip-block danger">
             <strong>⚠️ 軍訓級要求（行前教育）</strong><br>
@@ -345,54 +319,120 @@ const winterItineraries = [
               <p><strong>雪地駕駛</strong>｜山路極易結冰，務必用 4WD + 雪胎，下坡善用低速檔</p>
             </div>
           </details>
-          <div class="tip-block warn">
-            <strong>⏰ 16:00 一定要離開</strong>｜回市區還要 1 小時，晚了會塞車
-          </div>
         `
       },
       {
-        time: "16:00 - 17:00",
-        id: "驅車返回仙台市區",
-        title: "驅車返回仙台市區",
+        time: "12:15 - 13:30",
+        id: "白石午餐-傳統名物白石溫麵",
+        title: "白石午餐 ➔ 傳統名物「白石溫麵」",
+        tag: { text: "🍜 在地名物", class: "tag-amber" },
+        navUrl: "",
+        priority: "must",
+        open: true,
+        content: `
+          <p>回程順路到白石吃午餐</p>
+          <p class="text-xs text-slate-500">狐狸村 → 白石市區，約 30 分鐘</p>
+          <details>
+            <summary>🌟 手延白石溫麵 光庵（推薦）</summary>
+            <div>
+              <img src="https://oniwa.garden/wp-content/img/04_miyagi/2604_shiroishi_tsurigane/02.jpeg" alt="手延白石溫麵 光庵" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
+              <p><strong>招牌冷麵：三種醬汁溫麵</strong><br><span class="text-slate-500 text-xs">經典鰹魚醬油・濃郁胡麻・當地核桃醬</span></p>
+              <p><strong>招牌熱麵</strong><br><span class="text-slate-500 text-xs">特製雞湯溫麵・葛粉勾芡蔬菜溫麵</span></p>
+              <a href="https://maps.app.goo.gl/wwgroAhTgSeapcXXA?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <details>
+            <summary>🥢 白石うーめん やまぶき亭（選擇豐富）</summary>
+            <div>
+              <img src="https://shiroishi-navi.jp/wp-content/uploads/2018/03/shzZkbG4791p6nR3sNXf8tnzqz1kl0.jpg" alt="白石うーめん やまぶき亭" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
+              <p><strong>溫麵三昧</strong><br><span class="text-slate-500 text-xs">芝麻・核桃・醬油三種沾醬</span></p>
+              <p><strong>必吃</strong><br><span class="text-slate-500 text-xs">天ぷらうーめん（天婦羅溫麵）</span></p>
+              <a href="https://maps.app.goo.gl/VudKdyUMEgfc5CKJ8?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <div class="tip-block">💡 吃完 13:30 出發，14:30 回到仙台</div>
+        `
+      },
+      {
+        time: "13:30 - 14:30",
+        id: "開車返回仙台市區",
+        title: "開車返回仙台市區",
         tag: { text: "🚗 輕鬆車程", class: "tag-teal" },
         navUrl: "",
         priority: "must",
         open: false,
         content: `
-          <p>車上午睡，1 小時回到仙台</p>
-          <p class="text-xs text-slate-500">狐狸村 → 仙台站東口，走東北道約 1 小時</p>
+          <p>白石 → 仙台站東口，走東北道約 1 小時</p>
+          <p class="text-xs text-slate-500">車上午睡，回市區下午茶</p>
         `
       },
       {
-        time: "17:00 - 20:00",
-        id: "仙台市區購物PARCO-/-3COINS-/-Daiso-/-唐吉訶德",
-        title: "晚餐 HACHI ➔ 購物 / 小食",
-        tag: { text: "🍽️ 彈性行程", class: "tag-rose" },
+        time: "14:30 - 16:00",
+        id: "下午茶-仙台市區咖啡廳",
+        title: "下午茶 ➔ 仙台市區咖啡廳",
+        tag: { text: "☕ 下午茶", class: "tag-amber" },
         navUrl: "",
         priority: "must",
         highlight: true,
         open: true,
         content: `
-          <p>回到仙台後，<strong>先吃或先逛，交給小孩的肚子決定</strong>。</p>
-          
+          <p>回到仙台，先找間咖啡廳坐下來休息</p>
+          <p class="text-xs text-slate-500">車停回 Grand Bach 東口停車場，步行逛市區</p>
           <div class="tip-block">
-            <strong>💡 今晚策略</strong><br>
-            • <strong>小孩餓了</strong> → 直接去 <strong>HACHI</strong> 吃晚餐（洋食，有兒童餐盤）。<br>
-            • <strong>小孩還有電</strong> → 先逛 UNIQLO / 3COINS（20:00 關），逛完再去 HACHI（營業到 21:30）。<br>
-            • <strong>只想吃點小東西</strong> → 鯛魚燒 / 銅鑼燒墊胃，正餐回飯店附近解決。
+            <strong>☕ 下午茶選擇</strong><br>
+            • <strong>ずんだ茶寮</strong>｜毛豆奶昔＋毛豆甜點，仙台名物<br>
+            • <strong>星巴克 仙台一番町店</strong>｜連鎖但座位多、小孩友善<br>
+            • <strong>珈琲工房 いまい</strong>｜仙台老舗咖啡，手沖好喝<br>
+            • <strong>L'oisillon</strong>｜法式甜點店，蛋糕精緻
           </div>
-
-          <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:14px;margin:16px 0;">
-            <div style="font-weight:900;font-size:15px;margin-bottom:6px;">🍽️ 晚餐主推：Restaurant HACHI 仙台本店</div>
-            <p style="font-size:13px;margin:0 0 8px 0;line-height:1.6;">
-              <strong>洋食專賣</strong>｜招牌漢堡排、拿坡里義大利麵（極太麵）<br>
-              <strong>兒童餐</strong>｜新幹線造型餐盤（漢堡球、炸蝦、迷你義大利麵、薯條、布丁、果汁）<br>
-              <strong>營業</strong>｜10:00–21:30（週五晚上到 21:30，不用趕）<br>
-              <strong>人均</strong>｜約 ¥3,000–4,000
-            </p>
-            <a href="https://maps.app.goo.gl/n6ygWVvmkjZHFNqe8" target="_blank" style="display:inline-block;background:#f59e0b;color:#fff;font-weight:900;font-size:13px;padding:8px 16px;border-radius:8px;text-decoration:none;">📍 導航前往 HACHI</a>
+          <div class="tip-block">
+            <strong>🍰 小孩放電</strong>｜一番町步行街有屋頂，可推車慢慢逛<br>
+            <strong>🛍️ 順便逛</strong>｜PARCO、藤崎百貨都在附近
           </div>
-
+          <div class="tip-block warn">
+            <strong>⏰ 16:00 回飯店</strong>｜休息一下，17:30 去吃 HACHI
+          </div>
+        `
+      },
+      {
+        time: "16:00 - 17:00",
+        id: "回GrandBach休息",
+        title: "回 Hotel Grand Bach 休息",
+        tag: { text: "🏨 短暫休息", class: "tag-indigo" },
+        navUrl: "https://maps.app.goo.gl/tumoctSbhRFgQkx89?g_st=ac",
+        navName: "Hotel Grand Bach 仙台",
+        priority: "must",
+        open: true,
+        content: `
+          <p>回飯店上個廁所、補個水、小孩小睡一下</p>
+          <p class="text-xs text-slate-500">步行 5 分鐘回 Grand Bach</p>
+          <div class="tip-block">
+            <strong>💡 停車</strong>｜車停東口 24HR 平面停車場，明天早上再開<br>
+            <strong>🧳 戰利品</strong>｜下午茶買的甜點先放房間
+          </div>
+        `
+      },
+      {
+        time: "17:30 - 19:30",
+        id: "晚餐-HACHI仙台本店",
+        title: "晚餐 ➔ Restaurant HACHI 仙台本店",
+        img: "https://matipura.com/CORE/wp-content/uploads/2021/03/DSC00724.jpg",
+        tag: { text: "🍽️ 洋食晚餐", class: "tag-amber" },
+        navUrl: "https://maps.app.goo.gl/n6ygWVvmkjZHFNqe8",
+        navName: "Restaurant HACHI 仙台本店",
+        priority: "must",
+        highlight: true,
+        open: true,
+        content: `
+          <p>洋食專賣，招牌漢堡排、拿坡里義大利麵</p>
+          <p class="text-xs text-slate-500">Grand Bach → HACHI，步行約 10 分鐘</p>
+          <div class="tip-block" style="background:#fef3c7;border:1px solid #fcd34d;">
+            <strong>🍽️ HACHI 亮點</strong><br>
+            • <strong>兒童餐</strong>｜新幹線造型餐盤（漢堡球、炸蝦、迷你義大利麵、薯條、布丁、果汁）<br>
+            • <strong>大人招牌</strong>｜漢堡排、拿坡里義大利麵（極太麵）<br>
+            • <strong>營業</strong>｜10:00–21:30（週五晚上到 21:30，不用趕）<br>
+            • <strong>人均</strong>｜約 ¥3,000–4,000
+          </div>
           <details>
             <summary>🍣 其他非牛舌備選（如果 HACHI 客滿或小孩想換口味）</summary>
             <div>
@@ -401,30 +441,8 @@ const winterItineraries = [
               <p><strong>洋食自助餐</strong>｜FOREST KITCHEN with Outdoor Living（車站直結，空間大，選擇多）</p>
             </div>
           </details>
-
-          <hr style="border-color:#e2e8f0;margin:16px 0;">
-
-          <details>
-            <summary>🛍️ 購物清單（先買派 / 吃飽再逛）</summary>
-            <div>
-              <p>👕 <strong>UNIQLO 仙台站前店</strong>｜Heattech、羽絨、小孩內搭 <a href="https://maps.app.goo.gl/kVzzvRraes6pTDWu7?g_st=ac" target="_blank">📍 導航</a></p>
-              <p>🧥 <strong>GU 仙台店</strong>｜平價服飾、保暖配件 <a href="https://maps.app.goo.gl/odrpKX8m21PquvLt9?g_st=ac" target="_blank">📍 導航</a></p>
-              <p>🪙 <strong>3COINS 仙台 PARCO 店</strong>｜折疊袋、壓縮袋（<strong>20:00 關，要先去</strong>） <a href="https://maps.app.goo.gl/uFUSHdEotSbewYDZ9" target="_blank">📍 導航</a></p>
-              <p>🐧 <strong>唐吉訶德 仙台駅西口本店</strong>｜藥妝、零食、暖暖包（深夜營業） <a href="https://maps.app.goo.gl/6Ti8UJyEa1tFreBW7?g_st=ac" target="_blank">📍 導航</a></p>
-            </div>
-          </details>
-
-          <details>
-            <summary>🥟 小食清單（只想墊胃）</summary>
-            <div>
-              <p>🐟 <strong>鯛吉 名掛丁本店</strong>：現烤鯛魚燒 <a href="https://maps.app.goo.gl/D5GqutNmGGPh6WrQA?g_st=ac" target="_blank">📍 導航</a></p>
-              <p>🫘 <strong>ankoya 駅前店</strong>：豆沙銅鑼燒 <a href="https://maps.app.goo.gl/ayEVAqZY779V7WF49?g_st=ac" target="_blank">📍 導航</a></p>
-              <p>🍜 <strong>站前拉麵</strong>｜快速暖胃</p>
-            </div>
-          </details>
-
           <div class="tip-block warn">
-            💡 小孩若累，逛完 UNIQLO + 3COINS 就撤退，唐吉訶德改 D6 或 D8 補。
+            <strong>⏰ 19:30 吃完</strong>｜回飯店泡大浴場，早點休息，明天 08:30 客美多早餐
           </div>
         `
       }
@@ -432,27 +450,89 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 3 - 天童 & 銀山溫泉
+  // DAY 3 - 客美多早餐 → 草莓 → 天童 げんキッズ → 瀧之湯懷石
   // ==========================================
   {
     day: 3,
     dateLabel: "DAY 3 · 2027年1月23日 (週六)",
-    id: "仙台-天童-銀山溫泉夜景",
-    title: "仙台 ➔ 天童 ➔ 銀山溫泉夜景",
-    subtitle: "🏮 大正浪漫銀山夜景",
-    emoji: "🏮",
+    id: "客美多-草莓-天童-げんキッズ-瀧之湯懷石",
+    title: "客美多早餐 ➔ 採草莓 ➔ 天童 げんキッズ ➔ 瀧之湯懷石",
+    subtitle: "🍓 草莓與溫泉之日",
+    emoji: "🍓",
     events: [
       {
+        time: "08:30 - 09:30",
+        id: "早餐-客美多咖啡-仙台富澤店",
+        title: "早餐 ➔ 客美多咖啡 仙台富澤店",
+        img: "https://www.fukushige1219.co.jp/wp-content/uploads/example2-3.jpg",
+        tag: { text: "☕ 悠閒晨活", class: "tag-amber" },
+        navUrl: "https://maps.app.goo.gl/SYGcfygAcH7gamz2A",
+        navName: "客美多咖啡 仙台富澤店",
+        priority: "must",
+        open: true,
+        content: `
+          <p>名古屋來的早餐名店，開在仙台</p>
+          <p class="text-xs text-slate-500">Grand Bach → 客美多富澤店，開車 15 分鐘</p>
+          <div class="tip-block">
+            <strong>🚗 順路！</strong>｜客美多 → 草莓園，完全一條線<br>
+            Grand Bach → 客美多富澤店（15分）→ 一苺一笑 松森農場（15分）
+          </div>
+          <div class="tip-block warn">
+            <strong>⏰ 09:30 出發</strong>｜09:45 到草莓園，大草莓還沒被採光
+          </div>
+        `
+      },
+      {
         time: "09:30 - 11:00",
-        id: "退房出發跨縣前往山形天童",
-        title: "仙台退房，跨縣前往山形天童",
+        id: "溫室採草莓-🍓",
+        title: "溫室採草莓 🍓",
+        tag: { text: "🍓 溫室採果", class: "tag-sky" },
+        navUrl: "https://maps.app.goo.gl/Q91PEDo22zahngNy5?g_st=ac",
+        navName: "一苺一笑 松森農場",
+        priority: "must",
+        highlight: true,
+        open: true,
+        content: `
+          <p>溫室裡，紅透的草莓垂手可得</p>
+          <p class="text-xs text-slate-500">09:45 開始採，玩到 11:00，剛好趕中午到天童</p>
+          <details>
+            <summary>🍓 仙台市區溫室採草莓（三選一）</summary>
+            <div>
+              <p><strong>1. 一苺一笑 松森農場（免預約）</strong></p>
+              <img src="https://i.meee.com.tw/oATDVIV.jpg" alt="一苺一笑 松森農場" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+              <p><strong>⭐️ 4.4 分</strong><br><span class="text-slate-500 text-xs">40 分鐘吃到飽・北海道煉乳無限續加</span></p>
+              <p><span class="text-slate-500 text-xs">優勢：現場排隊制，行程最彈性（建議早上到，大草莓還沒被採光）</span></p>
+              <a href="https://maps.app.goo.gl/Q91PEDo22zahngNy5?g_st=ac" target="_blank">📍 導航前往</a>
+              <hr class="my-3 border-slate-200">
+              <p><strong>2. JR 水果公園仙台荒濱（官網預約）</strong></p>
+              <img src="https://i.meee.com.tw/r2jWInj.webp" alt="JR水果公園仙台荒濱" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+              <p><strong>⭐️ 4.0 分</strong><br><span class="text-slate-500 text-xs">園區大且極乾淨・附設農產市集與大飯店主廚監製餐廳</span></p>
+              <p><span class="text-slate-500 text-xs">優勢：有繁中/英文網路介面，適合出發前搞定名額（30 分鐘限制）</span></p>
+              <a href="https://maps.app.goo.gl/H3EDkLGrVGBg3Sth9?g_st=ac" target="_blank">📍 導航前往</a>
+              <hr class="my-3 border-slate-200">
+              <p><strong>3. Berry Planet（燦燦園）</strong></p>
+              <img src="https://i.meee.com.tw/frEJBxZ.jpg" alt="Berry Planet" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+              <p><strong>⭐️ 4.3 分</strong><br><span class="text-slate-500 text-xs">老字號農家・完熟甜度極高・附設網美咖啡廳</span></p>
+              <p><span class="text-slate-500 text-xs">優勢：假日必須提早預約，但品質有保障</span></p>
+              <a href="https://maps.app.goo.gl/yHuF1t7Vk9s3iPGc8?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <div class="tip-block warn">
+            <strong>⏰ 11:00 出發</strong>｜草莓園 → 天童，約 1.5 小時，12:30 到
+          </div>
+        `
+      },
+      {
+        time: "11:00 - 12:30",
+        id: "開車前往天童",
+        title: "開車前往天童",
         tag: { text: "🚗 雪地幹線", class: "tag-teal" },
         navUrl: "",
         priority: "must",
         open: true,
         content: `
-          <p>告別仙台，準備駛往山形縣</p>
-          <p class="text-xs text-slate-500">仙台 → 山形天童，約 1 小時 15 分鐘</p>
+          <p>草莓園 → 天童，走東北道 → 山形道，約 1.5 小時</p>
+          <p class="text-xs text-slate-500">車上午睡時間，剛好讓小孩補眠</p>
           <div class="tip-block warn">
             <strong>🚗 連續彎道多</strong>｜下雪時時速降至 30–40<br>
             後方有車緊跟 → 找避車道打左燈讓過
@@ -464,9 +544,42 @@ const winterItineraries = [
         `
       },
       {
-        time: "11:00 - 11:30",
+        time: "12:30 - 14:30",
+        id: "子育て未来館-げんキッズ",
+        title: "子育て未来館 げんキッズ（含午餐）",
+        img: "https://www.tendo-kanko.jp/wp-content/uploads/2021/03/genkids.jpg",
+        tag: { text: "🎠 室內遊戲館", class: "tag-sky" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=子育て未来館+げんキッズ",
+        navName: "子育て未来館 げんキッズ",
+        priority: "must",
+        highlight: true,
+        open: true,
+        content: `
+          <p>天童市區的室內兒童館，4 歲小孩放電好地方</p>
+          <p class="text-xs text-slate-500">12:30 進場，玩到 14:30（含午餐）</p>
+          <div class="tip-block">
+            <strong>🎠 館內設施</strong><br>
+            • 大型攀爬架、溜滑梯、彈跳床<br>
+            • 積木區、繪本區、扮家家酒<br>
+            • 幼兒專區（0–3 歲軟墊區）<br>
+            • 室內溫暖，不用吹冷風
+          </div>
+          <div class="tip-block warn">
+            <strong>🍜 午餐</strong>｜館內有軽食區，或步行 5 分鐘到天童市區吃<br>
+            建議 12:30–13:15 先吃，吃完繼續玩到 14:30
+          </div>
+          <div class="tip-block">
+            <strong>💰 費用</strong>｜免費入場（部分設施可能收費）<br>
+            <strong>🕐 營業</strong>｜09:00–19:00（週六有開）<br>
+            <strong>🅿️ 停車</strong>｜免費停車場
+          </div>
+          <div class="tip-block">💡 14:30 出發去瀧之湯，14:45 到，剛好 Check-in 前寄放行李</div>
+        `
+      },
+      {
+        time: "14:45 - 15:30",
         id: "微笑の宿-瀧之湯-Check-in",
-        title: "微笑の宿 瀧之湯 寄放行李",
+        title: "入住 微笑の宿 瀧之湯",
         img: "https://sendai-kouiki-mice.com/wp-content/uploads/2024/12/pic-hohoeminoyado-02.jpg",
         tag: { text: "🏨 溫泉名宿", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
@@ -474,132 +587,51 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>先到瀧之湯寄放行李，輕裝去吃午餐</p>
-          <p class="text-xs text-slate-500">Check-in 時間為 15:00，先寄放行李 + 確認銀山夜景專車集合位置</p>
-          <div class="tip-block">💡 貸切風呂時段：1/24 16:30（明晚）</div>
+          <p>抵達瀧之湯，木造溫泉旅館</p>
+          <p class="text-xs text-slate-500">天童市區 → 瀧之湯約 10 分鐘</p>
+          <div class="tip-block">
+            <strong>🧳 入住流程</strong>｜14:45 先寄放行李 → 15:00 正式 Check-in<br>
+            <strong>♨️ 貸切風呂</strong>｜16:30 私人包廂湯<br>
+            <strong>🍱 懷石晚餐</strong>｜18:00 開始
+          </div>
+          <div class="tip-block warn">
+            ⚠️ 貸切風呂 1/23 16:30，請確認飯店預約
+          </div>
         `
       },
       {
-        time: "11:30 - 13:00",
-        id: "天童市區午餐",
-        title: "天童市區午餐（水車生そば / 壽司 / 燒肉）",
-        tag: { text: "🍜 在地午餐", class: "tag-amber" },
-        navUrl: "",
-        priority: "must",
-        open: true,
-        content: `
-          <p>天童市區簡單吃，為下午銀山養精蓄銳</p>
-          <details>
-            <summary>🍜 手打 水車生そば</summary>
-            <div>
-              <img src="https://svcstrg.cld.navitime.jp/travelguide/p06020024/p06020024_02.webp" alt="手打 水車生そば" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-              <p>鳥中華、手打蕎麥</p>
-              <a href="https://maps.app.goo.gl/XvHHsWwn3RNpx67m6?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <details>
-            <summary>🍣 いろは寿司</summary>
-            <div>
-              <img src="https://www.convention.or.jp/umaibe_2024/data_img/umd_355_02.jpg" alt="いろは寿司" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-              <p>特上握壽司、鰻重</p>
-              <a href="https://maps.app.goo.gl/2FAqTdrbNJTeeQPu9?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <details>
-            <summary>🥩 大衆焼肉けむすけ</summary>
-            <div>
-              <img src="https://www.yakiniku-ousama.com/_p/acre/9340/images/pc/smart_phone_993fe882.jpg" alt="大衆焼肉けむすけ" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-              <p>名物アカ、名物シロ、炙り牛寿司</p>
-              <a href="https://maps.app.goo.gl/P3JM6zwqwNaGTmgTA?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <div class="tip-block">💡 銀山 Twilight Trip 預約時間是硬約束，吃完就回瀧之湯準備</div>
-        `
-      },
-      {
-        time: "15:30 - 19:30",
-        id: "極重要銀山溫泉夢幻夜景",
-        title: "【極重要】銀山溫泉夢幻夜景",
-        img: "https://mimigo.tw/wp-content/uploads/20230105083619_51.jpg",
-        tag: { text: "🏮 大正浪漫", class: "tag-sky" },
-        navUrl: "https://maps.app.goo.gl/R5FCE8fhY6jMzqjr7?g_st=ac",
-        navName: "銀山溫泉",
+        time: "16:30 - 20:00",
+        id: "獨享貸切風呂與懷石晚餐",
+        title: "獨享「貸切風呂」與懷石晚餐",
+        img: "https://www.nipponsensor.net/wp-content/uploads/2025/08/%E5%BE%AE%E7%AC%91%E4%B9%8B%E5%AE%BF%E7%80%A7%E4%B9%8B%E6%B9%AF-04.jpg",
+        tag: { text: "♨️ 私人包廂", class: "tag-indigo" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
+        navName: "微笑の宿 瀧之湯",
         priority: "must",
         highlight: true,
         open: true,
         content: `
-          <p>傍晚的銀山，像走進大正時代</p>
-          <p class="text-xs text-slate-500">瀧之湯 → 大正浪漫館（約 45 分鐘）→ 接駁車</p>
-          <div class="tip-block warn">
-            <strong>⏰ 預約 16:30 接駁車最保險</strong>（車程 45 分 + 提早 15 分到）
+          <p>私人包廂湯，全家一起泡</p>
+          <p class="text-xs text-slate-500">16:30 貸切風呂 → 18:00 懷石晚餐</p>
+          <div class="tip-block">
+            <strong>♨️ 貸切風呂</strong>｜私人包廂湯，免擔心小孩吵鬧<br>
+            <strong>🍱 懷石晚餐</strong>｜山形在地精緻食材
           </div>
-          <details>
-            <summary>🚌 交通二選一</summary>
-            <div>
-              <p><strong>方案A：接駁巴士 Fast Pass（首選）</strong><br><span class="text-slate-500 text-xs">¥1,500/人 · 出發前 1–2 個月上網搶票 · 持 Pass 免排隊上車</span></p>
-              <p><strong>方案B：Twilight 夢幻夜景專車（備案）</strong><br><span class="text-slate-500 text-xs">價格較高，Fast Pass 搶不到再考慮</span></p>
-            </div>
-          </details>
-          <div class="tip-block danger">
-            <strong>❄️ 極寒候車準備</strong>｜回程 18:00–18:30 集中排隊<br>
-            接駁站無遮蔽、入夜零下，預先在仙台市區買好<strong>貼身 + 手持暖暖包</strong><br>
-            ⚠️ 木棧道與橋面易結冰，穿防滑雪靴、緊牽小孩
-          </div>
-        `
-      },
-      {
-        time: "19:30 - 21:00",
-        id: "天童溫泉周邊深夜美食",
-        title: "天童溫泉周邊深夜美食",
-        tag: { text: "🥩 彈性晚餐", class: "tag-amber" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
-        navName: "微笑の宿 瀧之湯",
-        priority: "optional",
-        open: true,
-        content: `
-          <p>銀山回來大約 19:30，這 3 間還開著！</p>
-          <p class="text-xs text-slate-500">午餐已詳細介紹，晚上可選不同一家，或直接回飯店吃懷石（若方案含晚餐）</p>
-          <details>
-            <summary>🍜 手打 水車生そば</summary>
-            <div>
-              <p><strong>鳥中華</strong><br><span class="text-slate-500 text-xs">鰹魚醬油湯 + 拉麵 + 雞肉 + 天婦羅碎屑</span></p>
-              <p><strong>手打蕎麥</strong><br><span class="text-slate-500 text-xs">石臼研磨，粗麵條、超有咬口</span></p>
-              <a href="https://maps.app.goo.gl/XvHHsWwn3RNpx67m6?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <details>
-            <summary>🥩 大衆焼肉けむすけ</summary>
-            <div>
-              <p><strong>三大招牌</strong><br><span class="text-slate-500 text-xs">名物アカ（哈拉米）・名物シロ（豬大腸）・炙り牛寿司</span></p>
-              <p><strong>隱藏靈魂</strong><br><span class="text-slate-500 text-xs">桌上檸檬沙瓦水龍頭（1 小時無限暢飲）</span></p>
-              <a href="https://maps.app.goo.gl/P3JM6zwqwNaGTmgTA?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <details>
-            <summary>🍣 いろは寿司</summary>
-            <div>
-              <p><strong>頂級壽司</strong><br><span class="text-slate-500 text-xs">職人現捏「特上握壽司」（約 ¥2,000 起）</span></p>
-              <p><strong>招牌熟食</strong><br><span class="text-slate-500 text-xs">鰻魚飯「鰻重」（約 ¥2,500）</span></p>
-              <p><strong>小酌首選</strong><br><span class="text-slate-500 text-xs">海鮮居酒屋小菜 + 山形在地名酒</span></p>
-              <a href="https://maps.app.goo.gl/2FAqTdrbNJTeeQPu9?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <div class="tip-block">💡 吃飽回飯店泡大浴場，結束 Day 3</div>
         `
       }
     ]
   },
 
   // ==========================================
-  // DAY 4 - 藏王樹冰
+  // DAY 4 - 藏王樹冰 & 銀山溫泉夜景
   // ==========================================
   {
     day: 4,
     dateLabel: "DAY 4 · 2027年1月24日 (週日)",
-    id: "自駕直達藏王樹冰-壽司午餐-瀧之湯包廂與懷石",
-    title: "自駕直達藏王樹冰 ➔ 壽司午餐 ➔ 瀧之湯包廂與懷石",
-    subtitle: "☃️ 藏王樹冰震撼之旅",
-    emoji: "☃️",
+    id: "藏王樹冰-山形午餐-銀山溫泉夜景",
+    title: "藏王樹冰 ➔ 山形午餐 ➔ 銀山溫泉夜景",
+    subtitle: "❄️ 樹冰與銀山夜景之日",
+    emoji: "❄️",
     events: [
       {
         time: "06:45 - 07:45",
@@ -697,42 +729,96 @@ const winterItineraries = [
         `
       },
       {
-        time: "14:30 - 16:00",
-        id: "子育て未来館-げんキッズ",
-        title: "子育て未来館 げんキッズ（彈性備案）",
-        tag: { text: "🎠 彈性景點", class: "tag-sky" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=子育て未来館+げんキッズ",
-        navName: "げんキッズ",
-        priority: "optional",
-        open: false,
-        content: `
-          <p>藏王下山後，時間體力 OK 才去</p>
-          <p class="text-xs text-slate-500">天童市區，藏王溫泉過來約 26–30 分鐘</p>
-          <div class="tip-block warn">
-            <strong>⏰ 判定條件</strong><br>
-            午餐後 13:30 前出發、小孩體力 OK，才去玩 1–1.5 小時<br>
-            若藏王排隊太久或小孩累了 → 直接回瀧之湯休息
-          </div>
-          <div class="tip-block">💡 1/24 週日有開，營業到 19:00</div>
-        `
-      },
-      {
-        time: "15:30 - 20:00",
-        id: "獨享貸切風呂與懷石晚餐",
-        title: "獨享「貸切風呂」與懷石晚餐",
-        img: "https://www.nipponsensor.net/wp-content/uploads/2025/08/%E5%BE%AE%E7%AC%91%E4%B9%8B%E5%AE%BF%E7%80%A7%E4%B9%8B%E6%B9%AF-04.jpg",
-        tag: { text: "♨️ 私人包廂", class: "tag-indigo" },
+        time: "14:30 - 15:15",
+        id: "回瀧之湯休息準備銀山",
+        title: "回瀧之湯休息，準備銀山",
+        tag: { text: "🏨 短暫休息", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
         navName: "微笑の宿 瀧之湯",
         priority: "must",
         open: true,
         content: `
-          <p>私人包廂湯，全家一起泡</p>
-          <p class="text-xs text-slate-500">16:30 貸切風呂 → 18:00 懷石晚餐</p>
-          <div class="tip-block">
-            <strong>♨️ 貸切風呂</strong>｜私人包廂湯，免擔心小孩吵鬧<br>
-            <strong>🍱 懷石晚餐</strong>｜山形在地精緻食材
+          <p>山形市區 → 瀧之湯，約 30–40 分鐘</p>
+          <p class="text-xs text-slate-500">回飯店上個廁所、補個水、小孩小睡一下</p>
+          <div class="tip-block warn">
+            <strong>⏰ 15:15 前一定要出發</strong>｜瀧之湯 → 大正浪漫館 45 分鐘<br>
+            16:30 接駁車，要提早 15 分鐘到，所以 15:15 出發最保險
           </div>
+          <div class="tip-block">
+            <strong>❄️ 極寒準備</strong>｜出門前先穿好保暖衣物、貼暖暖包<br>
+            銀山回程 18:00–18:30 排隊，入夜零下
+          </div>
+        `
+      },
+      {
+        time: "16:00 - 19:30",
+        id: "極重要銀山溫泉夢幻夜景",
+        title: "【極重要】銀山溫泉夢幻夜景",
+        img: "https://mimigo.tw/wp-content/uploads/20230105083619_51.jpg",
+        tag: { text: "🏮 大正浪漫", class: "tag-sky" },
+        navUrl: "https://maps.app.goo.gl/R5FCE8fhY6jMzqjr7?g_st=ac",
+        navName: "銀山溫泉",
+        priority: "must",
+        highlight: true,
+        open: true,
+        content: `
+          <p>傍晚的銀山，像走進大正時代</p>
+          <p class="text-xs text-slate-500">瀧之湯 → 大正浪漫館（約 45 分鐘）→ 接駁車</p>
+          <div class="tip-block warn">
+            <strong>⏰ 預約 16:30 接駁車最保險</strong>（車程 45 分 + 提早 15 分到）<br>
+            15:15 從瀧之湯出發，16:00 到大正浪漫館，16:15 等車
+          </div>
+          <details>
+            <summary>🚌 交通二選一</summary>
+            <div>
+              <p><strong>方案A：接駁巴士 Fast Pass（首選）</strong><br><span class="text-slate-500 text-xs">¥1,500/人 · 出發前 1–2 個月上網搶票 · 持 Pass 免排隊上車</span></p>
+              <p><strong>方案B：Twilight 夢幻夜景專車（備案）</strong><br><span class="text-slate-500 text-xs">價格較高，Fast Pass 搶不到再考慮</span></p>
+            </div>
+          </details>
+          <div class="tip-block danger">
+            <strong>❄️ 極寒候車準備</strong>｜回程 18:00–18:30 集中排隊<br>
+            接駁站無遮蔽、入夜零下，預先在仙台市區買好<strong>貼身 + 手持暖暖包</strong><br>
+            ⚠️ 木棧道與橋面易結冰，穿防滑雪靴、緊牽小孩
+          </div>
+        `
+      },
+      {
+        time: "19:30 - 21:00",
+        id: "天童溫泉周邊深夜美食",
+        title: "天童溫泉周邊深夜美食",
+        tag: { text: "🥩 彈性晚餐", class: "tag-amber" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
+        navName: "微笑の宿 瀧之湯",
+        priority: "optional",
+        open: true,
+        content: `
+          <p>銀山回來大約 19:30，這 3 間還開著！</p>
+          <p class="text-xs text-slate-500">回瀧之湯放好東西，或直接在天童市區吃</p>
+          <details>
+            <summary>🍜 手打 水車生そば</summary>
+            <div>
+              <p><strong>鳥中華</strong><br><span class="text-slate-500 text-xs">鰹魚醬油湯 + 拉麵 + 雞肉 + 天婦羅碎屑</span></p>
+              <p><strong>手打蕎麥</strong><br><span class="text-slate-500 text-xs">石臼研磨，粗麵條、超有咬口</span></p>
+              <a href="https://maps.app.goo.gl/XvHHsWwn3RNpx67m6?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <details>
+            <summary>🥩 大衆焼肉けむすけ</summary>
+            <div>
+              <p><strong>三大招牌</strong><br><span class="text-slate-500 text-xs">名物アカ（哈拉米）・名物シロ（豬大腸）・炙り牛寿司</span></p>
+              <p><strong>隱藏靈魂</strong><br><span class="text-slate-500 text-xs">桌上檸檬沙瓦水龍頭（1 小時無限暢飲）</span></p>
+              <a href="https://maps.app.goo.gl/P3JM6zwqwNaGTmgTA?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <details>
+            <summary>🍣 いろは寿司</summary>
+            <div>
+              <p><strong>頂級壽司</strong><br><span class="text-slate-500 text-xs">職人現捏「特上握壽司」（約 ¥2,000 起）</span></p>
+              <p><strong>招牌熟食</strong><br><span class="text-slate-500 text-xs">鰻魚飯「鰻重」（約 ¥2,500）</span></p>
+              <a href="https://maps.app.goo.gl/2FAqTdrbNJTeeQPu9?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <div class="tip-block">💡 吃飽回飯店泡大浴場，結束 Day 4</div>
         `
       }
     ]
@@ -875,14 +961,14 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 6 - Spring Valley & 仔虎（不用早起 + 雪場到 15:00 + 仔虎晚餐）
+  // DAY 6 - Spring Valley → 入住 → 還車 → 仔虎
   // ==========================================
   {
     day: 6,
     dateLabel: "DAY 6 · 2027年1月26日 (週二)",
-    id: "Spring-Valley-玩雪-仔虎-入住-Grand-Bach",
-    title: "Spring Valley 玩雪 ➔ 仔虎 ➔ 入住 Grand Bach",
-    subtitle: "⛷️ 玩雪放電再出發",
+    id: "Spring-Valley-入住-Grand-Bach-還車-仔虎",
+    title: "Spring Valley 玩雪 ➔ 還車 ➔ 仔虎晚餐",
+    subtitle: "⛷️ 玩雪與和牛之日",
     emoji: "⛷️",
     events: [
       {
@@ -968,25 +1054,57 @@ const winterItineraries = [
             ⚠️ 不要全家跟著去停車再拖行李走回飯店
           </div>
           <div class="tip-block">
-            <strong>🅿️ 停車</strong>｜東口 24HR 平面停車場，連住期間不必每天移車<br>
-            <strong>💡 先放行李</strong>｜Check-in 後直接出門補貨，逛街回來再回房
+            <strong>💡 今晚上還車</strong>｜16:15 開車去仙台站前店還車<br>
+            <strong>🚗 停車</strong>｜東口 24HR 平面停車場，還車前先加滿油
           </div>
         `
       },
       {
-        time: "16:15 - 17:30",
-        id: "補貨-唐吉訶德-Daiso-3COINS",
-        title: "補貨（唐吉訶德 / Daiso / 3COINS）",
-        tag: { text: "🛍️ 彈性補貨", class: "tag-rose" },
-        navUrl: "",
-        priority: "optional",
+        time: "16:15 - 17:00",
+        id: "仙台站前店還車",
+        title: "仙台站前店還車 ➔ Nippon Rent-A-Car",
+        img: "https://rimage.gnst.jp/livejapan.com/public/img/spot/lj/01/45/lj0145539/lj0145539_6a39f0b20dd93_main.jpg",
+        tag: { text: "🚗 還車", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Nippon+Rent-A-Car+仙台駅前店",
+        navName: "Nippon Rent-A-Car 仙台站前店",
+        priority: "must",
         open: true,
         content: `
-          <p>D2 若沒買齊，今天下午補齊</p>
-          <p class="text-xs text-slate-500">仙台站周邊步行可到，17:30 前收隊</p>
+          <p>Grand Bach → 仙台站前店，開車 10 分鐘</p>
+          <p class="text-xs text-slate-500">還車前先加滿油（仙台站附近有加油站）</p>
           <div class="tip-block warn">
-            <strong>⏰ 時間控制</strong>｜17:30 一定要結束，17:30 出發去仔虎<br>
-            <strong>🧳 戰利品</strong>｜先拿回飯店放，再輕鬆出來
+            <strong>✅ 還車必檢</strong><br>
+            • 加滿油（保留發票）<br>
+            • 歸還 2 套便攜式兒童安全帶<br>
+            • 歸還 ETC 卡<br>
+            • 車內垃圾清空
+          </div>
+          <div class="tip-block">
+            <strong>💡 還車後</strong>｜步行 10 分鐘回 Grand Bach，或搭計程車 5 分鐘（約 ¥700）
+          </div>
+          <div class="tip-block warn">
+            ⚠️ 還車後就沒車了，仔虎晚餐要搭計程車去
+          </div>
+        `
+      },
+      {
+        time: "17:30 - 18:00",
+        id: "搭計程車前往仔虎",
+        title: "搭計程車前往仔虎",
+        tag: { text: "🚕 計程車", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=仔虎+ベガロポリス仙台南店",
+        navName: "仔虎 ベガロポリス仙台南店",
+        priority: "must",
+        open: true,
+        content: `
+          <p>Grand Bach → ベガロポリス仙台南，計程車約 20–25 分鐘</p>
+          <p class="text-xs text-slate-500">車資約 ¥2,000–2,500（單程）</p>
+          <div class="tip-block">
+            <strong>🚕 叫車方式</strong>｜飯店櫃檯可協助叫車，或路邊招車<br>
+            <strong>👶 兒童座椅</strong>｜日本計程車不強制兒童座椅，但可事先備註
+          </div>
+          <div class="tip-block warn">
+            <strong>⏰ 17:30 上車</strong>｜18:00 前到仔虎，剛好入座
           </div>
         `
       },
@@ -1003,14 +1121,13 @@ const winterItineraries = [
         open: true,
         content: `
           <p>頂級和牛燒肉，仙台人氣名店</p>
-          <p class="text-xs text-slate-500">Grand Bach → ベガロポリス仙台南，約 20–25 分鐘</p>
+          <p class="text-xs text-slate-500">計程車 20–25 分鐘，18:00 入座</p>
           <div class="tip-block warn">
-            <strong>⏰ 18:00 入座</strong>｜17:30 從 Grand Bach 出發（車程 20–25 分 + 停車）<br>
+            <strong>⏰ 18:00 入座</strong>｜17:30 從 Grand Bach 上車<br>
             若沒訂位 → 17:45 前到現場排
           </div>
           <div class="tip-block">
-            <strong>🚗 大車親子優勢</strong>｜ベガロポリス大型免費平面車位<br>
-            店內走道寬、無樓梯、有兒童專屬菜單
+            <strong>🚕 回程</strong>｜19:30 吃完，門口叫計程車回 Grand Bach（約 ¥2,000–2,500）
           </div>
           <details>
             <summary>🍱 晚餐推薦（附泡菜・湯・沙拉）</summary>
@@ -1046,22 +1163,46 @@ const winterItineraries = [
             <strong>♨️ 大浴場</strong>｜頂樓，可看仙台夜景<br>
             <strong>🧺 洗衣機</strong>｜16F 投幣式，可順便洗小孩雪衣
           </div>
+          <div class="tip-block warn">
+            ⚠️ 今晚起沒車，D7、D8 都搭 JR / 電車
+          </div>
         `
       }
     ]
   },
 
   // ==========================================
-  // DAY 7 - 水族館 & Outlet
+  // DAY 7 - 水族館 & Outlet（無車，搭 JR）
   // ==========================================
   {
     day: 7,
     dateLabel: "DAY 7 · 2027年1月27日 (週三)",
     id: "水族館-Outlet-續住第2晚",
     title: "海洋森林水族館 ➔ 三井 Outlet 大血拚 ➔ 續住 Grand Bach",
-    subtitle: "🐧 海洋與購物之日",
+    subtitle: "🐧 海洋與購物之日（無車）",
     emoji: "🐧",
     events: [
+      {
+        time: "09:30 - 10:00",
+        id: "搭JR仙石線到中野栄",
+        title: "搭 JR 仙石線到中野栄（水族館）",
+        tag: { text: "🚃 JR", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Station",
+        navName: "仙台站",
+        priority: "must",
+        open: true,
+        content: `
+          <p>仙台站 → 中野栄，JR 仙石線 18 分鐘</p>
+          <p class="text-xs text-slate-500">成人 ¥240 / 兒童 ¥120（4 歲免費，佔位需購票）</p>
+          <div class="tip-block">
+            <strong>🚃 搭乘方式</strong>｜仙台站 JR 仙石線月台 → 中野栄站下車<br>
+            <strong>🚶 步行</strong>｜中野栄站 → 水族館，步行 10 分鐘（有接駁車）
+          </div>
+          <div class="tip-block warn">
+            <strong>🧳 無車移動</strong>｜只帶輕便背包，水壺、暖暖包、小孩零食
+          </div>
+        `
+      },
       {
         time: "10:00 - 12:30",
         id: "仙台海洋森林水族館",
@@ -1102,14 +1243,39 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>水族館開車過來只要 10 分鐘，主攻童裝與戶外品牌。</p>
+          <p>水族館旁，步行 10 分鐘到 Outlet，或搭接駁車</p>
           <div class="tip-block warn">
             🎟️ 開逛前先憑護照至 1F 服務台領外國遊客 Coupon
+          </div>
+          <div class="tip-block">
+            <strong>🚶 無車移動</strong>｜水族館 → Outlet 步行 10 分鐘（有室內通道）<br>
+            或搭免費接駁車（約 5 分鐘一班）
           </div>
         `
       },
       {
-        time: "18:00 - 18:30",
+        time: "18:00 - 19:30",
+        id: "搭JR回仙台站-S-PAL周邊補貨",
+        title: "搭 JR 回仙台站 ➔ S-PAL 周邊補貨",
+        tag: { text: "🚃 回程", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Station",
+        navName: "仙台站",
+        priority: "optional",
+        open: true,
+        content: `
+          <p>Outlet → 中野栄站 → 仙台站，JR 18 分鐘</p>
+          <p class="text-xs text-slate-500">18:00 離開 Outlet，18:30 回到仙台站</p>
+          <div class="tip-block">
+            <strong>🛍️ 補貨</strong>｜D1、D2、D6 若沒買齊，今天在 S-PAL 周邊補齊<br>
+            • UNIQLO 仙台站前店（21:00 關）<br>
+            • Daiso ヨドバシ仙台店（21:00 關）<br>
+            • 唐吉訶德 仙台駅西口本店（深夜營業）
+          </div>
+          <div class="tip-block">💡 補完貨走路回 Grand Bach，5 分鐘</div>
+        `
+      },
+      {
+        time: "19:30 - 20:00",
         id: "返回Hotel-Grand-Bach仙台連住第2晚",
         title: "返回 Hotel Grand Bach 仙台（連住第2晚）",
         tag: { text: "🏨 續住", class: "tag-indigo" },
@@ -1118,14 +1284,14 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>逛完 Outlet，返回熟悉的 Grand Bach</p>
+          <p>逛完 Outlet 補完貨，返回熟悉的 Grand Bach</p>
           <p class="text-xs text-slate-500">D6 入住後連住 2 晚，今晚是最後一晚</p>
           <div class="tip-block">
             <strong>🧳 行李整理</strong>｜明早退房前可先整理戰利品<br>
             <strong>♨️ 大浴場</strong>｜頂樓大浴場放鬆，為明日返程充電
           </div>
           <div class="tip-block warn">
-            <strong>🅿️ 停車提醒</strong>｜車停東口 24HR 平面停車場，明早退房前記得取車
+            <strong>🚃 明天沒車</strong>｜搭仙台機場アクセス線到機場
           </div>
         `
       }
@@ -1133,28 +1299,31 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 8 - 返程
+  // DAY 8 - 返程（無車，搭電車）
   // ==========================================
   {
     day: 8,
     dateLabel: "DAY 8 · 2027年1月28日 (週四)",
-    id: "仙台車站伴手禮採買-機場還車-滿載返港",
-    title: "仙台車站伴手禮採買 ➔ 機場還車 ➔ 滿載返港",
+    id: "仙台車站伴手禮採買-機場電車-滿載返港",
+    title: "仙台車站伴手禮採買 ➔ 機場電車 ➔ 滿載返港",
     subtitle: "✈️ 滿載而歸",
     emoji: "✈️",
     events: [
       {
         time: "10:00 - 10:30",
-        id: "飯店退房與裝車",
-        title: "飯店退房與裝車",
+        id: "飯店退房與行李整理",
+        title: "飯店退房與行李整理",
         tag: { text: "🏡 悠閒早晨", class: "tag-indigo" },
         navUrl: "",
         priority: "must",
         open: true,
         content: `
-          <p>早餐後裝車，準備啟程回家</p>
-          <p class="text-xs text-slate-500">收拾物品 → 行李裝上 Minivan → 退房</p>
-          <div class="tip-block">💡 別忘了先到東口停車場取車</div>
+          <p>早餐後整理行李，準備退房</p>
+          <p class="text-xs text-slate-500">收拾物品 → 行李集中 → 退房 → 寄放行李</p>
+          <div class="tip-block">
+            <strong>💡 行李寄放</strong>｜Grand Bach 可寄放行李到 14:00<br>
+            先去 S-PAL 買伴手禮，回飯店拿行李再去車站
+          </div>
         `
       },
       {
@@ -1169,7 +1338,7 @@ const winterItineraries = [
         open: true,
         content: `
           <p>仙台車站，最後掃貨</p>
-          <p class="text-xs text-slate-500">車停車站連通停車場 → 走室內通道 → 不吹冷風</p>
+          <p class="text-xs text-slate-500">Grand Bach 步行 5 分鐘到 S-PAL</p>
           <details>
             <summary>🛍️ 伴手禮衝刺清單</summary>
             <div>
@@ -1186,32 +1355,24 @@ const winterItineraries = [
       },
       {
         time: "13:00 - 13:30",
-        id: "全平地開車直達仙台機場",
-        title: "全平地開車直達仙台機場",
-        tag: { text: "🚗 順暢平地", class: "tag-teal" },
-        navUrl: "",
+        id: "搭仙台機場アクセス線到機場",
+        title: "搭仙台機場アクセス線到機場",
+        tag: { text: "🚃 機場電車", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Station",
+        navName: "仙台站",
         priority: "must",
         open: true,
         content: `
-          <p>全平地 30 分鐘到機場</p>
-          <p class="text-xs text-slate-500">仙台車站前 → 仙台東道路 / 仙台南部道路 → 仙台機場 IC</p>
-          <div class="tip-block">✨ 全程平地高速，無山路封路風險，確保搭機時間</div>
-        `
-      },
-      {
-        time: "13:30 - 14:15",
-        id: "加滿油-Nippon-Rent-A-Car-還車",
-        title: "加滿油 ➔ Nippon Rent-A-Car 還車",
-        tag: { text: "⛽ 輕鬆還車", class: "tag-teal" },
-        navUrl: "",
-        priority: "must",
-        open: true,
-        content: `
-          <p>加滿油，還車手續很快</p>
-          <p class="text-xs text-slate-500">機場附近指定加油站（保留發票收據）</p>
+          <p>仙台站 → 仙台機場，25 分鐘</p>
+          <p class="text-xs text-slate-500">仙台機場アクセス線（仙台空港鉄道）</p>
           <div class="tip-block">
-            <strong>13:45 還車</strong>｜歸還便攜安全帶<br>
-            搭免費接駁車（3 分鐘）抵達航廈
+            <strong>🎫 票價與搭乘</strong><br>
+            • 成人 ¥660 / 兒童 ¥330<br>
+            • 每 15–20 分鐘一班<br>
+            • 終點站「仙台機場」下車
+          </div>
+          <div class="tip-block warn">
+            <strong>⏰ 13:30 前上車</strong>｜13:55 到機場，14:15 辦登機剛好
           </div>
         `
       },
