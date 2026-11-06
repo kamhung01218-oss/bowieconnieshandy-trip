@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v20.0（D3 げんキッズ；D4 藏王+銀山；天氣同步）
+ * app-itinerary.js — v21.0（榴岡神社版：相鐵→瀧之湯→Dormy Inn→Grand Bach）
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -25,32 +25,35 @@ const WEATHER_LOCATIONS = {
   ],
   2: [
     { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '08:30', climate: { max: 5, min: -1, rain: 30 } },
-    { id: 'zao_fox', name: '藏王狐狸村', shortName: '狐狸村', lat: 38.0407, lon: 140.5322, timeFrom: '08:30', timeTo: '12:30', climate: { max: 2, min: -3, rain: 35 } },
-    { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '12:30', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
+    { id: 'sagae', name: '寒河江', shortName: '寒河江', lat: 38.3806, lon: 140.2739, timeFrom: '08:30', timeTo: '13:00', climate: { max: 3, min: -3, rain: 40 } },
+    { id: 'ginzan', name: '銀山溫泉', shortName: '銀山', lat: 38.5747, lon: 140.5309, timeFrom: '13:00', timeTo: '18:00', climate: { max: 1, min: -4, rain: 45 } },
+    { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '18:00', timeTo: '23:59', climate: { max: 4, min: -2, rain: 35 } }
   ],
   3: [
-    { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '09:30', climate: { max: 5, min: -1, rain: 30 } },
-    { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '09:30', timeTo: '23:59', climate: { max: 4, min: -2, rain: 35 } }
+    { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '08:00', climate: { max: 4, min: -2, rain: 35 } },
+    { id: 'zao', name: '藏王', shortName: '藏王', lat: 38.1656, lon: 140.3986, timeFrom: '08:00', timeTo: '12:30', climate: { max: -2, min: -8, rain: 50 } },
+    { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '12:30', timeTo: '23:59', climate: { max: 4, min: -2, rain: 35 } }
   ],
   4: [
-    { id: 'zao', name: '藏王', shortName: '藏王', lat: 38.1656, lon: 140.3986, timeFrom: '00:00', timeTo: '13:00', climate: { max: -2, min: -8, rain: 50 } },
-    { id: 'yamagata', name: '山形', shortName: '山形', lat: 38.2554, lon: 140.3396, timeFrom: '13:00', timeTo: '15:30', climate: { max: 4, min: -2, rain: 35 } },
-    { id: 'ginzan', name: '銀山溫泉', shortName: '銀山', lat: 38.5747, lon: 140.5309, timeFrom: '15:30', timeTo: '23:59', climate: { max: 1, min: -4, rain: 45 } }
+    { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '09:30', climate: { max: 4, min: -2, rain: 35 } },
+    { id: 'zao_fox', name: '藏王狐狸村', shortName: '狐狸村', lat: 38.0407, lon: 140.5322, timeFrom: '09:30', timeTo: '12:00', climate: { max: 2, min: -3, rain: 35 } },
+    { id: 'shiroishi', name: '白石', shortName: '白石', lat: 38.0022, lon: 140.6197, timeFrom: '12:00', timeTo: '13:30', climate: { max: 4, min: -2, rain: 30 } },
+    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '13:30', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ],
   5: [
-    { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '09:30', climate: { max: 4, min: -2, rain: 35 } },
-    { id: 'akiu', name: '秋保溫泉', shortName: '秋保', lat: 38.2263, lon: 140.7242, timeFrom: '09:30', timeTo: '23:59', climate: { max: 3, min: -2, rain: 35 } }
+    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '00:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ],
   6: [
-    { id: 'akiu', name: '秋保溫泉', shortName: '秋保', lat: 38.2263, lon: 140.7242, timeFrom: '00:00', timeTo: '09:30', climate: { max: 3, min: -2, rain: 35 } },
+    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '00:00', timeTo: '09:30', climate: { max: 5, min: -1, rain: 30 } },
     { id: 'spring_valley', name: 'Spring Valley 泉高原', shortName: '滑雪場', lat: 38.3694, lon: 140.6908, timeFrom: '09:30', timeTo: '15:00', climate: { max: 0, min: -5, rain: 40 } },
     { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '15:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ],
   7: [
-    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '00:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ],
   8: [
-    { id: 'sendai_airport', name: '仙台機場', shortName: '機場', lat: 38.1397, lon: 140.9169, timeFrom: '00:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '13:00', climate: { max: 5, min: -1, rain: 30 } },
+    { id: 'sendai_airport', name: '仙台機場', shortName: '機場', lat: 38.1397, lon: 140.9169, timeFrom: '13:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ]
 };
 
@@ -238,14 +241,14 @@ function findShootTips(eventTitle, eventKey, eventId) {
 function renderTripOverview() {
   const container = document.getElementById('overview-timeline-content'); if (!container) return;
   const days = [
-    { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達仙台", desc: "機場 → 入住市區 → 伊達牛舌 → 購物" },
-    { day: "D2", color: "#f59e0b", emoji: "🍓", title: "草莓 + 狐狸村", desc: "客美多 → 採草莓 → 白石午餐 → 狐狸村 → HACHI" },
-    { day: "D3", color: "#6366f1", emoji: "🎠", title: "天童 げんキッズ", desc: "仙台 → 天童兒童館 → 瀧之湯 → 貸切風呂+懷石" },
-    { day: "D4", color: "#10b981", emoji: "❄️", title: "藏王 + 銀山", desc: "藏王樹冰 → 山形壽司 → 銀山溫泉夜景" },
-    { day: "D5", color: "#f43f5e", emoji: "🌊", title: "秋保瀑布", desc: "天童 → 秋保大瀑布 → 瑞鳳放鬆" },
-    { day: "D6", color: "#14b8a6", emoji: "⛷️", title: "Spring Valley", desc: "玩雪到 15:00 → 仔虎晚餐 → 入住 Grand Bach" },
-    { day: "D7", color: "#8b5cf6", emoji: "🐧", title: "水族館 + Outlet", desc: "水族館 → 三井 Outlet → 大血拚" },
-    { day: "D8", color: "#475569", emoji: "✈️", title: "返港", desc: "S-PAL 伴手禮 → 機場還車 → 起飛" }
+    { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達仙台", desc: "機場 → 相鐵 FRESA INN → 伊達牛舌 → 購物" },
+    { day: "D2", color: "#f59e0b", emoji: "🍓", title: "草莓 + 銀山", desc: "取車 → 寒河江採草莓 → 銀山夜景 → 瀧之湯" },
+    { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → げんキッズ → 瀧之湯懷石" },
+    { day: "D4", color: "#10b981", emoji: "🦊", title: "狐狸村", desc: "狐狸村 → 白石溫麵 → Dormy Inn → Outlet" },
+    { day: "D5", color: "#f43f5e", emoji: "🐧", title: "水族館 + Outlet", desc: "水族館 → Outlet → Dormy Inn 第2晚" },
+    { day: "D6", color: "#14b8a6", emoji: "⛷️", title: "Spring Valley", desc: "玩雪 → Grand Bach → 還車 → 仔虎" },
+    { day: "D7", color: "#8b5cf6", emoji: "⛩️", title: "榴岡神社", desc: "榴岡神社 → 仙台朝市 → 一番町採買" },
+    { day: "D8", color: "#475569", emoji: "✈️", title: "返港", desc: "S-PAL 伴手禮 → アクセス線 → 起飛" }
   ];
   container.innerHTML = `<div class="overview-timeline">${days.map(d => `<div class="overview-day"><div class="overview-day-marker" style="background:${d.color}">${d.day}</div><div class="overview-day-content"><div class="overview-day-title">${d.emoji} ${d.title}</div><div class="overview-day-desc">${d.desc}</div></div></div>`).join('')}</div>`;
 }
@@ -601,7 +604,7 @@ function setDriveTab(tab) { driveTabState = tab; haptic(6); document.querySelect
 function renderDriveContent() { const container = document.getElementById('drive-content'); if (!container) return; const data = { basic: [ { title: "全程使用 4WD + 雪胎", desc: "出發前確認車輛配置，並檢查雪胎深度（建議 ≥ 5mm）與胎壓", type: "success" }, { title: "保持 3 秒以上車距", desc: "雪地煞車距離約為乾地的 3-5 倍", type: "success" }, { title: "避免急煞、急加速、急轉彎", desc: "所有動作放慢 2 倍", type: "warn" }, { title: "下坡善用低速檔", desc: "用引擎煞車取代腳踩煞車", type: "success" }, { title: "轉彎前先減速", desc: "彎中不踩煞車", type: "warn" } ], road: [ { title: "Black Ice 最危險", desc: "看似乾燥的柏油路面其實結冰", type: "danger" }, { title: "橋樑與陰影處優先結冰", desc: "通過前先減速", type: "warn" }, { title: "山區連續彎道", desc: "減速至 20-30 km/h", type: "warn" }, { title: "除雪車後方保持距離", desc: "保持 50m 以上距離", type: "success" }, { title: "隧道兩端注意", desc: "進出時提前減速", type: "warn" } ], emergency: [ { title: "備用保暖衣物與毯子", desc: "保暖是第一優先", type: "success" }, { title: "行動電源 2 個 + 車充", desc: "手機沒電等於失去導航", type: "success" }, { title: "食物與飲水", desc: "餅乾、巧克力、保溫瓶裝熱水", type: "success" }, { title: "小鏟子 + 拖車繩 + 三角牌", desc: "車輪陷入雪中時可自救", type: "success" }, { title: "緊急聯絡資訊", desc: "日本道路緊急電話 #9910", type: "warn" } ] }; const items = data[driveTabState] || []; container.innerHTML = items.map((item, i) => `<div class="numbered-card ${item.type}" style="margin-bottom:8px"><div class="numbered-index">${i + 1}</div><div class="numbered-content"><div class="numbered-title">${item.title}</div><div class="numbered-desc">${item.desc}</div></div></div>`).join(''); }
 
 // ==================== 搶票攻略 ====================
-function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">12/1 開賣</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">12/1 日本 10:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票（1/24 搭乘）</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>12/1 08:55 香港時間設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 <strong>1/24 16:30–19:15</strong> 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/16 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2（1/24 搭乘）</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週日優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
+function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">12/1 開賣</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">12/1 日本 10:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票（1/22 搭乘）</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>12/1 08:55 香港時間設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 <strong>1/22 14:30–17:30</strong> 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/16 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2（1/23 搭乘）</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
 
 // ==================== 拍攝靈感 ====================
 function openShootTipsModal(day, eventIndex) {
