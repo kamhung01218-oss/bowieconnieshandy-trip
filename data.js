@@ -1,7 +1,7 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 5.4.0（D2 下午調整：白石後直殺銀山，加入預約連結）
+ *  版本: 5.5.0（D3 早鳥彈性 / D4 市區草莓採摘）
  * ============================================================
  */
 
@@ -448,7 +448,7 @@ const winterItineraries = [
           <p>18:40 抵達瀧之湯 Check-in，放行李休息一下</p>
           <div class="tip-block">
             <strong>🧳 入住流程</strong>｜18:40 Check-in<br>
-            <strong>♨️ 貸切風呂</strong>｜明天 1/23 16:30<br>
+            <strong>♨️ 貸切風呂</strong>｜明天 1/23 彈性安排<br>
             <strong>🍱 懷石晚餐</strong>｜明天 1/23 18:00
           </div>
         `
@@ -487,46 +487,44 @@ const winterItineraries = [
               <a href="https://maps.app.goo.gl/2FAqTdrbNJTeeQPu9?g_st=ac" target="_blank">📍 導航前往</a>
             </div>
           </details>
-          <div class="tip-block">💡 吃飽回飯店泡大浴場，明天 08:00 出發去藏王</div>
+          <div class="tip-block">💡 吃飽回飯店泡大浴場，明天 07:00 出發去藏王</div>
         `
       }
     ]
   },
 
   // ==========================================
-  // DAY 3 - 藏王樹冰 → げんキッズ → 瀧之湯懷石
+  // DAY 3 - 藏王樹冰（早鳥） → げんキッズ → 瀧之湯
   // ==========================================
   {
     day: 3,
     dateLabel: "DAY 3 · 2027年1月23日 (週六)",
-    id: "藏王樹冰-げんキッズ-瀧之湯懷石",
-    title: "藏王樹冰 ➔ げんキッズ ➔ 瀧之湯懷石",
+    id: "藏王樹冰-げんキッズ-瀧之湯",
+    title: "藏王樹冰 ➔ げんキッズ ➔ 瀧之湯",
     subtitle: "☃️ 樹冰與溫泉之日",
     emoji: "☃️",
     events: [
       {
-        time: "07:00 - 07:45",
-        id: "早餐-客美多或飯店早餐",
-        title: "早餐 ➔ 客美多咖啡 / 飯店早餐",
-        img: "https://www.fukushige1219.co.jp/wp-content/uploads/example2-3.jpg",
-        tag: { text: "☕ 悠閒晨活", class: "tag-amber" },
+        time: "06:45 - 07:00",
+        id: "便利店買早餐車上吃",
+        title: "便利店 / 麵包店買早餐（車上吃）",
+        tag: { text: "🥐 快速早餐", class: "tag-amber" },
         navUrl: "",
         priority: "must",
         open: true,
         content: `
-          <p>今天要趕 08:00 出發去藏王，早餐簡單吃</p>
+          <p>今天要趕首班纜車，早餐簡單買、車上吃</p>
           <div class="tip-block">
-            <strong>☕ 兩個選擇</strong><br>
-            • 飯店早餐｜瀧之湯 07:00 開，吃 30 分鐘<br>
-            • 客美多咖啡｜開車 5 分鐘，吃 30 分鐘
+            <strong>🏪 選擇</strong>｜天童市區 7-11 / Lawson / 麵包店（前晚可先買好）<br>
+            <strong>⏰ 07:00 準時出發</strong>｜瀧之湯 → 藏王纜車站，約 50 分鐘
           </div>
           <div class="tip-block warn">
-            <strong>⏰ 08:00 出發</strong>｜瀧之湯 → 藏王纜車站，約 50 分鐘
+            ⚠️ 藏王纜車冬季首班 08:15–08:30，07:50 到纜車站排隊最保險
           </div>
         `
       },
       {
-        time: "08:00 - 08:50",
+        time: "07:00 - 07:50",
         id: "開車前往藏王纜車站",
         title: "開車前往藏王纜車站",
         img: "https://cclalice.com/wp-content/uploads/2024/12/DSC09203-1170x780.jpg",
@@ -538,13 +536,26 @@ const winterItineraries = [
         content: `
           <p>天童溫泉 → 藏王溫泉，約 45–50 分鐘</p>
           <div class="tip-block warn">
-            <strong>⏰ 08:30 前抵達纜車停車場</strong>｜避開週六第一波團客<br>
+            <strong>⏰ 07:50 到纜車站</strong>｜等 08:15–08:30 首班纜車，避開團客<br>
             最後 15–20 分鐘為爬坡連續彎道，小心駕駛
           </div>
         `
       },
       {
-        time: "08:50 - 12:00",
+        time: "07:50 - 08:15",
+        id: "纜車站排隊等首班",
+        title: "纜車站排隊、等首班纜車",
+        tag: { text: "🚠 準備上山", class: "tag-sky" },
+        navUrl: "",
+        priority: "must",
+        open: true,
+        content: `
+          <p>提早到，排在前面，準備搶先上山</p>
+          <div class="tip-block">💡 上個廁所、穿好保暖裝備，準備衝第一班</div>
+        `
+      },
+      {
+        time: "08:15 - 12:00",
         id: "搭乘雙段纜車登頂-觀賞震撼藏王樹冰",
         title: "搭乘雙段纜車登頂 ➔ 觀賞震撼「藏王樹冰」",
         img: "https://hk.wamazing.com/media/wp-content/uploads/sites/5/2023/09/zaoujuhyou_pixta_73308950_M.jpg.webp",
@@ -624,151 +635,139 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>16:00 前返回瀧之湯，準備貸切風呂</p>
+          <p>16:00 前返回瀧之湯，準備泡湯</p>
           <div class="tip-block">
-            <strong>♨️ 貸切風呂</strong>｜16:30 私人包廂湯<br>
+            <strong>♨️ 貸切風呂</strong>｜16:30 彈性安排<br>
             <strong>🍱 懷石晚餐</strong>｜18:00 開始
           </div>
         `
       },
       {
         time: "16:30 - 20:00",
-        id: "獨享貸切風呂與懷石晚餐",
-        title: "獨享「貸切風呂」與懷石晚餐",
+        id: "貸切風呂彈性與懷石晚餐",
+        title: "貸切風呂（彈性）＋ 懷石晚餐",
         img: "https://www.nipponsensor.net/wp-content/uploads/2025/08/%E5%BE%AE%E7%AC%91%E4%B9%8B%E5%AE%BF%E7%80%A7%E4%B9%8B%E6%B9%AF-04.jpg",
-        tag: { text: "♨️ 私人包廂", class: "tag-indigo" },
+        tag: { text: "♨️ 彈性泡湯", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
         navName: "微笑の宿 瀧之湯",
         priority: "must",
         highlight: true,
         open: true,
         content: `
-          <p>私人包廂湯，全家一起泡</p>
-          <p class="text-xs text-slate-500">16:30 貸切風呂 → 18:00 懷石晚餐</p>
+          <p>貸切風呂改為彈性安排，不強求</p>
           <div class="tip-block">
-            <strong>♨️ 貸切風呂</strong>｜私人包廂湯，免擔心小孩吵鬧<br>
-            <strong>🍱 懷石晚餐</strong>｜山形在地精緻食材
+            <strong>♨️ 貸切風呂</strong>｜16:30 如有空位就泡，沒有就改泡大浴場<br>
+            <strong>🍱 懷石晚餐</strong>｜18:00 開始（固定）
           </div>
+          <div class="tip-block">💡 小孩若累，可直接泡大浴場，早點休息</div>
         `
       }
     ]
   },
 
   // ==========================================
-  // DAY 4 - 狐狸村 → 白石 → Dormy Inn（純休息）
+  // DAY 4 - 退房 → 市區草莓 → 仙台港 Dormy Inn
   // ==========================================
   {
     day: 4,
     dateLabel: "DAY 4 · 2027年1月24日 (週日)",
-    id: "狐狸村-白石溫麵-Dormy-Inn-純休息",
-    title: "狐狸村 ➔ 白石溫麵 ➔ Dormy Inn 仙台海邊",
-    subtitle: "🦊 萌寵與海邊休息之日",
-    emoji: "🦊",
+    id: "市區草莓-Dormy-Inn",
+    title: "市區草莓採摘 ➔ 入住 Dormy Inn 仙台海邊",
+    subtitle: "🍓 草莓與海邊休息之日",
+    emoji: "🍓",
     events: [
       {
-        time: "09:30 - 10:30",
-        id: "退房出發前往宮城藏王狐狸村",
-        title: "瀧之湯退房，前往宮城藏王狐狸村",
-        tag: { text: "🚗 跨縣自駕", class: "tag-teal" },
+        time: "09:30 - 10:00",
+        id: "瀧之湯退房",
+        title: "瀧之湯退房",
+        tag: { text: "🏡 退房", class: "tag-indigo" },
         navUrl: "",
         priority: "must",
         open: true,
         content: `
-          <p>天童 → 狐狸村，跨越山形與宮城邊界，約 50–60 分鐘</p>
+          <p>退房後直接去草莓園，今天不跑山區</p>
+          <div class="tip-block">💡 行李上車，10:00 準時出發</div>
+        `
+      },
+      {
+        time: "10:00 - 10:30",
+        id: "前往市區草莓園",
+        title: "前往市區草莓園（三選一）",
+        tag: { text: "🚗 10-30分鐘", class: "tag-teal" },
+        navUrl: "",
+        priority: "must",
+        open: true,
+        content: `
+          <p>三個選項，出發前確認預約</p>
+          <div class="tip-block">
+            <strong>A. 天童市內</strong>｜最近，車程 10–15 分<br>
+            <strong>B. 山形市內</strong>｜順路往仙台，車程 25–35 分<br>
+            <strong>C. 河北町/寒河江</strong>｜稍微繞路，車程 30–40 分
+          </div>
           <div class="tip-block warn">
-            <strong>🚗 山路結冰</strong>｜最後 15 分鐘為山路<br>
-            必用 4WD + 雪胎，下坡善用低速檔
+            ⚠️ 1 月草莓旺季，多為完全預約制，出發前 1–2 週預約
           </div>
         `
       },
       {
         time: "10:30 - 12:00",
-        id: "宮城藏王狐狸村",
-        title: "【宮城藏王狐狸村】雪地互動",
-        img: "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-0946-3472.jpg",
-        images: [
-          "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-0946-3472.jpg",
-          "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1004-3540.jpg",
-          "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1011-3570.jpg",
-          "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1031-3635.jpg"
-        ],
-        tag: { text: "🦊 萌寵互動", class: "tag-sky" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=Miyagi+Zao+Fox+Village",
-        navName: "狐狸村",
+        id: "仙台市區溫室採草莓三選一",
+        title: "仙台市區溫室採草莓（三選一）",
+        tag: { text: "🍓 冬季草莓", class: "tag-rose" },
+        navUrl: "",
         priority: "must",
         highlight: true,
         open: true,
         content: `
-          <p>上百隻狐狸自由走動，超震撼</p>
-          <p class="text-xs text-slate-500">家長<strong>全程緊牽小孩</strong>，禁觸摸放養區狐狸</p>
-          <div class="tip-block danger">
-            <strong>⚠️ 軍訓級要求</strong>｜員工對幼童安全把關極嚴<br>
-            只要有一絲掙脫、奔跑、哭鬧 → 會嚴厲制止甚至請離場
-          </div>
+          <p>1 月山形草莓正甜，小孩放電好活動</p>
           <details>
-            <summary>🚨 4 歲幼兒互動守則</summary>
+            <summary>🍓 仙台市區溫室採草莓（三選一）</summary>
             <div>
-              <p>互動禁忌｜禁奔跑、蹲下、伸手摸狐狸</p>
-              <p>穿著禁忌｜禁飄逸長裙、吊繩、流蘇、黑色塑膠袋</p>
-              <p>餵食規定｜只能在指定高台區拋擲專用飼料</p>
+              <p><strong>1. 一苺一笑 松森農場（免預約）</strong></p>
+              <img src="https://www.ichigo-issho.jp/wp-content/uploads/2022/12/IMG_4522.jpg" alt="一苺一笑 松森農場" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
+              <p><strong>⭐️ 4.4 分</strong><br><span class="text-slate-500 text-xs">40 分鐘吃到飽・北海道煉乳無限續加</span></p>
+              <p><span class="text-slate-500 text-xs">優勢：現場排隊制，行程最彈性（建議早上到，大草莓還沒被採光）</span></p>
+              <a href="https://maps.app.goo.gl/Q91PEDo22zahngNy5?g_st=ac" target="_blank">📍 導航前往</a>
+              <hr class="my-3 border-slate-200">
+              <p><strong>2. JR 水果公園仙台荒濱（官網預約）</strong></p>
+              <img src="https://jr-fruitpark-sendai.jp/wp-content/uploads/2022/01/strawberry.jpg" alt="JR水果公園仙台荒濱" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
+              <p><strong>⭐️ 4.0 分</strong><br><span class="text-slate-500 text-xs">園區大且極乾淨・附設農產市集與大飯店主廚監製餐廳</span></p>
+              <p><span class="text-slate-500 text-xs">優勢：有繁中/英文網路介面，適合出發前搞定名額（30 分鐘限制）</span></p>
+              <a href="https://maps.app.goo.gl/H3EDkLGrVGBg3Sth9?g_st=ac" target="_blank">📍 導航前往</a>
+              <hr class="my-3 border-slate-200">
+              <p><strong>3. Berry Planet（燦燦園）</strong></p>
+              <img src="https://berryplanet.jp/wp-content/uploads/2021/12/strawberry-farm.jpg" alt="Berry Planet" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
+              <p><strong>⭐️ 4.3 分</strong><br><span class="text-slate-500 text-xs">老字號農家・完熟甜度極高・附設網美咖啡廳</span></p>
+              <p><span class="text-slate-500 text-xs">優勢：假日必須提早預約，但品質有保障</span></p>
+              <a href="https://maps.app.goo.gl/yHuF1t7Vk9s3iPGc8?g_st=ac" target="_blank">📍 導航前往</a>
             </div>
           </details>
-          <details>
-            <summary>📸 體驗與實用提醒</summary>
-            <div>
-              <p>抱狐狸體驗｜國中以上限定（約 ¥700/次），4 歲無法參加</p>
-              <p>推車｜園區多雪地坡道階梯，完全推不動</p>
-              <p>停留時間｜1.5–2 小時非常充裕</p>
-            </div>
-          </details>
+          <div class="tip-block">💡 草莓園都在仙台市區周邊，採完可直接在附近吃午餐，然後開車 40-50 分鐘前往仙台港 Dormy Inn。</div>
         `
       },
       {
-        time: "12:15 - 13:30",
-        id: "白石午餐-傳統名物白石溫麵",
-        title: "白石午餐 ➔ 傳統名物「白石溫麵」",
-        tag: { text: "🍜 在地名物", class: "tag-amber" },
+        time: "12:00 - 13:00",
+        id: "午餐-草莓園附近或路上",
+        title: "午餐 ➔ 草莓園附近 / 路上簡單吃",
+        tag: { text: "🍽️ 彈性午餐", class: "tag-amber" },
         navUrl: "",
-        priority: "must",
+        priority: "optional",
         open: true,
-        content: `
-          <p>白石名物，溫麵三選一</p>
-          <details>
-            <summary>🌟 手延白石溫麵 光庵（推薦）</summary>
-            <div>
-              <img src="https://oniwa.garden/wp-content/img/04_miyagi/2604_shiroishi_tsurigane/02.jpeg" alt="手延白石溫麵 光庵" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-              <p><strong>招牌冷麵：三種醬汁溫麵</strong>｜經典鰹魚醬油・濃郁胡麻・當地核桃醬</p>
-              <p><strong>招牌熱麵</strong>｜特製雞湯溫麵・葛粉勾芡蔬菜溫麵</p>
-              <a href="https://maps.app.goo.gl/wwgroAhTgSeapcXXA?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <details>
-            <summary>🥢 白石うーめん やまぶき亭</summary>
-            <div>
-              <img src="https://shiroishi-navi.jp/wp-content/uploads/2018/03/shzZkbG4791p6nR3sNXf8tnzqz1kl0.jpg" alt="白石うーめん やまぶき亭" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
-              <p><strong>溫麵三昧</strong>｜芝麻・核桃・醬油三種沾醬</p>
-              <p><strong>必吃</strong>｜天ぷらうーめん（天婦羅溫麵）</p>
-              <a href="https://maps.app.goo.gl/VudKdyUMEgfc5CKJ8?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <div class="tip-block">💡 吃完 13:30 出發，14:30 到仙台港</div>
-        `
+        content: `<p>草莓園附近食堂，或往仙台港路上休息站吃。</p>`
       },
       {
-        time: "13:30 - 14:30",
+        time: "13:00 - 14:00",
         id: "開車前往仙台港",
-        title: "開車前往仙台港區域",
+        title: "開車前往仙台港",
         tag: { text: "🚗 40-50分鐘", class: "tag-teal" },
-        navUrl: "",
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Dormy+Inn+EXPRESS+仙台海辺",
+        navName: "Dormy Inn EXPRESS 仙台海邊",
         priority: "must",
         open: true,
-        content: `
-          <p>白石 → 仙台港，走東北道約 40–50 分鐘</p>
-          <div class="tip-block">💡 車上午睡，14:30 到飯店</div>
-        `
+        content: `<p>草莓園 → 仙台港，約 40–50 分鐘，車上午睡。</p>`
       },
       {
-        time: "14:30 - 15:00",
+        time: "14:00 - 14:30",
         id: "入住Dormy-Inn-EXPRESS-仙台海邊-第1晚",
         title: "入住 Dormy Inn EXPRESS 仙台海邊（第1晚）",
         img: "https://i.meee.com.tw/NAO5z3M.jpg",
@@ -778,17 +777,17 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>仙台港旁，連住 2 晚（D4–D5）</p>
+          <p>14:00 提早 Check-in，小孩可好好午睡</p>
           <div class="tip-block">
             <strong>♨️ 天然大浴場</strong>｜晚上可泡湯<br>
-            <strong>🍜 21:30 免費夜鳴拉麵</strong>｜宵夜不用另外買<br>
+            <strong>🍜 21:30 免費夜鳴拉麵</strong><br>
             <strong>🅿️ 停車</strong>｜飯店附設停車場
           </div>
         `
       },
       {
-        time: "15:00 - 18:00",
-        id: "飯店休息與周邊散步",
+        time: "14:30 - 18:00",
+        id: "飯店休息與海邊散步",
         title: "飯店休息 ➔ 海邊散步 / 大浴場",
         tag: { text: "♨️ 悠閒時光", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Dormy+Inn+EXPRESS+仙台海辺",
