@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v21.2（榴岡神社版 + 純 CSS 縮圖，解決破圖問題）
+ * app-itinerary.js — v21.3（加入 links 渲染支援）
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -325,7 +325,7 @@ function extractLeadingEmoji(str) {
   return '';
 }
 
-// ⭐ v21.2：無真圖時直接用 HTML+CSS 渲染漸變縮圖（100% 兼容，解決裂圖）
+// ⭐ v21.2：無真圖時直接用 HTML+CSS 渲染漸變縮圖
 function buildEventThumb(event) {
   const imgUrl = (Array.isArray(event.images) && event.images[0]) || event.img;
 
@@ -350,6 +350,23 @@ function buildEventThumb(event) {
       </div>
     </div>
   </div>`;
+}
+
+// ⭐ v21.3：支援額外參考連結
+function buildEventLinksHtml(links) {
+  if (!Array.isArray(links) || links.length === 0) return '';
+  var html = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;">';
+  links.forEach(function(link) {
+    if (!link.url) return;
+    html += '<a href="' + escAttr(link.url) + '" target="_blank" rel="noopener" '
+         + 'class="event-ref-link" style="display:inline-flex;align-items:center;gap:4px;'
+         + 'padding:7px 12px;border-radius:9px;background:#f0f9ff;border:1px solid #bae6fd;'
+         + 'color:#0369a1;font-size:12px;font-weight:700;text-decoration:none;">'
+         + (link.icon || '🔗') + ' ' + escapeHtml(link.label)
+         + '</a>';
+  });
+  html += '</div>';
+  return html;
 }
 
 function buildEventImage(imgUrl, eventTitle, images) {
@@ -522,6 +539,7 @@ function buildSingleEventHtml(dayData, event, index) {
   var inlineDataBadge = buildInlineDataBadge(attDayKey, event.title, dataCount);
   var actionsHtml = buildEventActionsHtml(dayData.day, index, event.title, shoppingItems.length, attDayKey);
   var imageHtml = buildEventImage(event.img, event.title, event.images);
+  var linksHtml = buildEventLinksHtml(event.links);
   var navBtnHtml = buildEventNavBtn(event.navUrl, event.title, event.navName);
   var priorityBadge = '';
   if (event.highlight === true) priorityBadge = '<span class="event-priority-badge highlight">⭐ 重點</span>';
@@ -543,7 +561,7 @@ function buildSingleEventHtml(dayData, event, index) {
   html += '<div class="event-expand-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg></div>';
   html += '</div></summary>';
   html += '<div class="event-content-wrapper p-3 pt-0 pb-4 border-t border-slate-50/80 bg-slate-50/30">';
-  html += imageHtml + navBtnHtml;
+  html += imageHtml + linksHtml + navBtnHtml;
   html += '<div class="event-collapsible" id="collapsible-' + dayData.day + '-' + index + '">' + event.content + '</div>';
   html += '<button type="button" class="expand-btn hidden" data-expand-btn="' + dayData.day + '-' + index + '" onclick="toggleContent(' + dayData.day + ', ' + index + ')"><span>展開完整攻略</span><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>';
   html += '<div class="event-attachments" data-event-key="' + escAttr(attDayKey) + '" style="display:none"></div>';

@@ -1,7 +1,7 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 5.0.0（榴岡神社版：相鐵→瀧之湯→Dormy Inn→Grand Bach）
+ *  版本: 5.4.0（D2 下午調整：白石後直殺銀山，加入預約連結）
  * ============================================================
  */
 
@@ -77,7 +77,7 @@ const winterItineraries = [
         time: "16:10 - 16:30",
         id: "步行到相鐵FRESA-INN-仙台",
         title: "步行到 相鐵 FRESA INN 仙台",
-        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Sotetsu_Fresa_Inn_Sendai.jpg/640px-Sotetsu_Fresa_Inn_Sendai.jpg",
+        img: "https://i.meee.com.tw/hmG2rTw.webp",
         tag: { text: "🚶 步行5分鐘", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=相鉄フレッサイン仙台",
         navName: "相鐵 FRESA INN 仙台",
@@ -92,7 +92,7 @@ const winterItineraries = [
         time: "16:30 - 17:00",
         id: "入住相鐵FRESA-INN-仙台",
         title: "入住 相鐵 FRESA INN 仙台",
-        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Sotetsu_Fresa_Inn_Sendai.jpg/640px-Sotetsu_Fresa_Inn_Sendai.jpg",
+        img: "https://i.meee.com.tw/MCb79k4.jpg",
         tag: { text: "🏨 第1晚", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=相鉄フレッサイン仙台",
         navName: "相鐵 FRESA INN 仙台",
@@ -173,20 +173,20 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 2 - 取車 → 草莓 → 銀山 → 瀧之湯
+  // DAY 2 - 取車 → 客美多 → 狐狸村 → 白石 → 銀山 → 天童
   // ==========================================
   {
     day: 2,
     dateLabel: "DAY 2 · 2027年1月22日 (週五)",
-    id: "取車-草莓-銀山溫泉-瀧之湯",
-    title: "取車 ➔ 採草莓 ➔ 銀山溫泉夜景 ➔ 瀧之湯",
-    subtitle: "🍓 草莓與銀山夜景之日",
-    emoji: "🍓",
+    id: "取車-狐狸村-白石午餐-銀山溫泉-天童",
+    title: "取車 ➔ 狐狸村 ➔ 白石午餐 ➔ 銀山溫泉 ➔ 天童 Check-in",
+    subtitle: "🦊 狐狸、溫麵與銀山夜景之日",
+    emoji: "🦊",
     events: [
       {
-        time: "08:00 - 08:30",
-        id: "仙台站前店取車",
-        title: "仙台站前店取車 ➔ Nippon Rent-A-Car",
+        time: "08:00 - 08:45",
+        id: "司機取車與泊車",
+        title: "司機取車，泊回酒店附近",
         img: "https://rimage.gnst.jp/livejapan.com/public/img/spot/lj/01/45/lj0145539/lj0145539_6a39f0b20dd93_main.jpg",
         tag: { text: "🚗 取車", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Nippon+Rent-A-Car+仙台駅前店",
@@ -194,7 +194,7 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>步行 5 分鐘到仙台站前店取車</p>
+          <p>司機步行去仙台站前店取車，再開回酒店附近停泊</p>
           <div class="tip-block warn">
             <strong>✅ 取車必檢</strong><br>
             • 4WD + 雪胎（胎紋 ≥ 5mm）<br>
@@ -202,118 +202,227 @@ const winterItineraries = [
             • 4 大箱 + 推車塞得下<br>
             • ETC 卡已裝好、加滿油
           </div>
+          <div class="tip-block">💡 09:00 準時從酒店出發，全家上車</div>
         `
       },
       {
-        time: "08:30 - 10:00",
-        id: "開車前往寒河江草莓園",
-        title: "開車前往寒河江／山形市草莓園",
-        tag: { text: "🚗 雪地自駕", class: "tag-teal" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=寒河江+いちご狩り",
-        navName: "寒河江草莓園",
+        time: "09:00 - 09:45",
+        id: "早餐-客美多咖啡",
+        title: "早餐 ➔ 客美多咖啡 仙台富澤店",
+        img: "https://www.fukushige1219.co.jp/wp-content/uploads/example2-3.jpg",
+        tag: { text: "☕ 悠閒晨活", class: "tag-amber" },
+        navUrl: "https://maps.app.goo.gl/SYGcfygAcH7gamz2A",
+        navName: "客美多咖啡 仙台富澤店",
         priority: "must",
         open: true,
         content: `
-          <p>仙台站前店 → 寒河江，約 1 小時（山形道）</p>
+          <p>名古屋來的早餐名店，開車 15 分鐘</p>
           <div class="tip-block warn">
-            <strong>🚗 山形道彎道多</strong>｜下雪時時速降至 30–40<br>
-            後方有車緊跟 → 找避車道打左燈讓過
+            <strong>⏰ 09:45 出發</strong>｜客美多 → 狐狸村，約 1 小時 15 分鐘
           </div>
-          <div class="tip-block">💡 車上午睡時間，10:00 到草莓園剛好</div>
         `
       },
       {
-        time: "10:00 - 11:30",
-        id: "溫室採草莓-🍓",
-        title: "溫室採草莓 🍓",
-        tag: { text: "🍓 溫室採果", class: "tag-sky" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=寒河江+いちご狩り",
-        navName: "寒河江草莓園",
+        time: "09:45 - 11:00",
+        id: "開車前往宮城藏王狐狸村",
+        title: "開車前往【宮城藏王狐狸村】",
+        tag: { text: "🚗 雪地自駕", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Miyagi+Zao+Fox+Village",
+        navName: "宮城藏王狐狸村",
+        priority: "must",
+        open: true,
+        content: `
+          <p>客美多 → 狐狸村，車程約 1 小時 15 分鐘</p>
+          <div class="tip-block warn">
+            <strong>🚗 山路結冰</strong>｜最後 15 分鐘為山路<br>
+            必用 4WD + 雪胎，下坡善用低速檔
+          </div>
+          <div class="tip-block">💡 11:00 前抵達狐狸村，避開中午團客</div>
+        `
+      },
+      {
+        time: "11:00 - 13:00",
+        id: "宮城藏王狐狸村",
+        title: "【宮城藏王狐狸村】雪地互動",
+        img: "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-0946-3472.jpg",
+        images: [
+          "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-0946-3472.jpg",
+          "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1004-3540.jpg",
+          "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1011-3570.jpg",
+          "https://lovetogo.tw/202001-tohoku/foxvillage/photo/20200128-1031-3635.jpg"
+        ],
+        tag: { text: "🦊 萌寵互動", class: "tag-sky" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Miyagi+Zao+Fox+Village",
+        navName: "狐狸村",
         priority: "must",
         highlight: true,
         open: true,
         content: `
-          <p>溫室裡，紅透的草莓垂手可得</p>
-          <p class="text-xs text-slate-500">10:00 開始採，玩到 11:30</p>
-          <div class="tip-block">
-            <strong>🍓 寒河江／山形市周邊草莓園</strong><br>
-            • 寒河江観光果樹園｜40 分鐘吃到飽<br>
-            • 山形市周邊農園｜現場排隊制<br>
-            • 建議出發前先打電話確認營業
+          <p>上百隻狐狸自由走動，超震撼</p>
+          <p class="text-xs text-slate-500">家長<strong>全程緊牽小孩</strong>，禁觸摸放養區狐狸</p>
+          <div class="tip-block danger">
+            <strong>⚠️ 軍訓級要求</strong>｜員工對幼童安全把關極嚴<br>
+            只要有一絲掙脫、奔跑、哭鬧 → 會嚴厲制止甚至請離場
           </div>
-          <div class="tip-block warn">
-            <strong>⏰ 11:30 出發</strong>｜草莓園 → 山形市午餐，約 30 分鐘
-          </div>
+          <details>
+            <summary>🚨 4 歲幼兒互動守則</summary>
+            <div>
+              <p>互動禁忌｜禁奔跑、蹲下、伸手摸狐狸</p>
+              <p>穿著禁忌｜禁飄逸長裙、吊繩、流蘇、黑色塑膠袋</p>
+              <p>餵食規定｜只能在指定高台區拋擲專用飼料</p>
+            </div>
+          </details>
+          <details>
+            <summary>📸 體驗與實用提醒</summary>
+            <div>
+              <p>抱狐狸體驗｜國中以上限定（約 ¥700/次），4 歲無法參加</p>
+              <p>推車｜園區多雪地坡道階梯，完全推不動</p>
+              <p>停留時間｜1.5–2 小時非常充裕</p>
+            </div>
+          </details>
         `
       },
       {
-        time: "11:45 - 13:00",
-        id: "山形午餐-板蕎麥麵或拉麵",
-        title: "山形午餐 ➔ 板蕎麥麵 / 拉麵",
-        tag: { text: "🍜 在地美食", class: "tag-amber" },
+        time: "13:00 - 13:40",
+        id: "開車前往白石",
+        title: "開車前往白石市區",
+        tag: { text: "🚗 40分鐘", class: "tag-teal" },
         navUrl: "",
         priority: "must",
         open: true,
         content: `
-          <p>山形在地美食，簡單吃</p>
-          <div class="tip-block">
-            <strong>🍜 山形名物</strong><br>
-            • <strong>板蕎麥麵</strong>｜山形傳統，長木板盛蕎麥<br>
-            • <strong>山形拉麵</strong>｜清爽醬油湯頭<br>
-            • <strong>芋煮</strong>｜山形鄉土料理（冬季限定）
-          </div>
-          <div class="tip-block warn">
-            <strong>⏰ 13:00 出發去銀山</strong>｜山形市 → 大正浪漫館，約 1.5 小時
-          </div>
+          <p>狐狸村 → 白石市區，約 30–40 分鐘</p>
+          <div class="tip-block">💡 13:40 前到餐廳，避開午餐最後點餐時間</div>
         `
       },
       {
-        time: "13:00 - 14:30",
-        id: "開車前往銀山溫泉",
-        title: "開車前往銀山溫泉",
-        tag: { text: "🚗 雪地山路", class: "tag-teal" },
-        navUrl: "https://maps.app.goo.gl/R5FCE8fhY6jMzqjr7?g_st=ac",
-        navName: "銀山溫泉 大正浪漫館",
+        time: "13:40 - 14:30",
+        id: "白石午餐-傳統名物白石溫麵",
+        title: "白石午餐 ➔ 傳統名物「白石溫麵」",
+        tag: { text: "🍜 在地名物", class: "tag-amber" },
+        navUrl: "",
         priority: "must",
         open: true,
         content: `
-          <p>山形市 → 大正浪漫館，約 1.5 小時</p>
+          <p>白石名物，溫麵三選一</p>
           <div class="tip-block warn">
-            <strong>🚗 山路結冰</strong>｜最後 20 分鐘為山路<br>
-            車停大正浪漫館停車場，轉乘接駁車進入溫泉街
+            <strong>⏰ 時間提醒</strong>｜光庵最後點餐 14:15，14:30 前離開白石
           </div>
-          <div class="tip-block danger">
-            <strong>⚠️ 銀山 Fast Pass</strong><br>
-            1/22 當天搭乘，記得 12/1 上網搶票<br>
-            沒搶到 → 現場排隊或改 Twilight 專車
+          <details>
+            <summary>🌟 手延白石溫麵 光庵（推薦）</summary>
+            <div>
+              <img src="https://oniwa.garden/wp-content/img/04_miyagi/2604_shiroishi_tsurigane/02.jpeg" alt="手延白石溫麵 光庵" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
+              <p><strong>招牌冷麵：三種醬汁溫麵</strong>｜經典鰹魚醬油・濃郁胡麻・當地核桃醬</p>
+              <p><strong>招牌熱麵</strong>｜特製雞湯溫麵・葛粉勾芡蔬菜溫麵</p>
+              <a href="https://maps.app.goo.gl/wwgroAhTgSeapcXXA?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <details>
+            <summary>🥢 白石うーめん やまぶき亭</summary>
+            <div>
+              <img src="https://shiroishi-navi.jp/wp-content/uploads/2018/03/shzZkbG4791p6nR3sNXf8tnzqz1kl0.jpg" alt="白石うーめん やまぶき亭" class="lazy-fade w-full h-32 object-cover rounded-lg mb-2" loading="lazy" decoding="async">
+              <p><strong>溫麵三昧</strong>｜芝麻・核桃・醬油三種沾醬</p>
+              <p><strong>必吃</strong>｜天ぷらうーめん（天婦羅溫麵）</p>
+              <a href="https://maps.app.goo.gl/VudKdyUMEgfc5CKJ8?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <div class="tip-block">💡 時間鬆動可慢慢吃，但記得 14:30 要離開白石</div>
+        `
+      },
+      {
+        time: "14:30 - 15:30",
+        id: "開車前往大正浪漫館",
+        title: "開車前往大正浪漫館（銀山溫泉）",
+        tag: { text: "🚗 1小時", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=大正浪漫館+銀山溫泉",
+        navName: "大正浪漫館",
+        priority: "must",
+        open: true,
+        content: `
+          <p>白石 → 大正浪漫館，約 1 小時</p>
+          <div class="tip-block warn">
+            <strong>🅿️ 停車</strong>｜必須將車停在大正浪漫館停車場或保安指定停車場<br>
+            <strong>🚫 不要直接開進溫泉街</strong>｜冬季全面交通管制
           </div>
         `
       },
       {
-        time: "14:30 - 17:30",
+        time: "15:30 - 15:50",
+        id: "大正浪漫館停車取票",
+        title: "大正浪漫館停車、取票、等候",
+        tag: { text: "🅿️ 準備接駁", class: "tag-teal" },
+        navUrl: "",
+        priority: "must",
+        open: true,
+        content: `
+          <p>停好車，上個廁所，準備搭接駁車</p>
+          <div class="tip-block warn">
+            <strong>⏰ 15:50 前完成</strong>｜請在預約時間前抵達巴士站，並於指定時間乘坐接駁巴士
+          </div>
+        `
+      },
+      {
+        time: "16:00 - 17:20",
         id: "極重要銀山溫泉夢幻夜景",
         title: "【極重要】銀山溫泉夢幻夜景",
         img: "https://mimigo.tw/wp-content/uploads/20230105083619_51.jpg",
         tag: { text: "🏮 大正浪漫", class: "tag-sky" },
         navUrl: "https://maps.app.goo.gl/R5FCE8fhY6jMzqjr7?g_st=ac",
         navName: "銀山溫泉",
+        links: [
+          {
+            label: "🚌 接駁車預約（官方）",
+            icon: "🎫",
+            url: "https://www.ginzanonsen.jp/blog/archives/524"
+          },
+          {
+            label: "📖 交通管制攻略（參考）",
+            icon: "📌",
+            url: "https://nicklee.tw/3241/ginzan-onsen-control/#%E6%8E%A5%E9%A7%81%E8%BB%8A%E8%A1%8C%E9%A7%9B%E6%97%A5%E6%9C%9F%E8%88%87%E9%A0%90%E7%B4%84%E6%97%A5%E6%9C%9F"
+          }
+        ],
         priority: "must",
         highlight: true,
         open: true,
         content: `
           <p>傍晚的銀山，像走進大正時代</p>
+          <p class="text-xs text-slate-500">16:00 搭接駁車 → 銀山散步 → 17:20 指定回程</p>
           <div class="tip-block warn">
-            <strong>⏰ 接駁車</strong>｜大正浪漫館 → 溫泉街，約 15 分鐘<br>
-            15:00 前搭上車，16:00–17:00 天色漸暗燈光亮起最靚
+            <strong>🚌 預約規則</strong>｜全預約制，回程為指定班次（去程後 1.5 小時）<br>
+            乘車日 13 天前開放預約，建議設鬧鐘搶票<br>
+            票價 ¥1,500/人（暫定），現場不賣票，錯過只能排隊候補
           </div>
           <div class="tip-block danger">
             <strong>❄️ 極寒準備</strong>｜入夜零下，貼暖暖包<br>
-            ⚠️ 木棧道與橋面易結冰，穿防滑雪靴、緊牽小孩
+            ⚠️ 木棧道與橋面易結冰，穿防滑雪靴、緊牽小孩<br>
+            <strong>🚫 絕對不要步行往返</strong>｜冬季人行道無法通行，危險
           </div>
+          <details>
+            <summary>📋 接駁車流程與規則</summary>
+            <div>
+              <p><strong>1. 停車</strong>｜車停大正浪漫館停車場或保安指定停車場</p>
+              <p><strong>2. 預約</strong>｜提前在網上預約接駁巴士（乘車日 13 天前開放）</p>
+              <p><strong>3. 去程</strong>｜在預約時間前抵達巴士站，搭乘指定班次（車程約 10 分鐘）</p>
+              <p><strong>4. 回程</strong>｜原則上為去程後 1 小時 20 分至 1.5 小時，指定班次優先上車</p>
+              <p><strong>5. 錯過回程</strong>｜只能現場排隊等候補位，有空位才能上車</p>
+            </div>
+          </details>
         `
       },
       {
-        time: "17:30 - 18:15",
+        time: "17:20 - 18:00",
+        id: "返回大正浪漫館",
+        title: "搭指定班次回程 ➔ 大正浪漫館",
+        tag: { text: "🚌 回程", class: "tag-teal" },
+        navUrl: "",
+        priority: "must",
+        open: true,
+        content: `
+          <p>17:20 搭接駁車回大正浪漫館，準備開車去天童</p>
+        `
+      },
+      {
+        time: "18:00 - 18:40",
         id: "開車前往天童瀧之湯",
         title: "開車前往天童瀧之湯",
         tag: { text: "🚗 40分鐘", class: "tag-teal" },
@@ -323,11 +432,10 @@ const winterItineraries = [
         open: true,
         content: `
           <p>大正浪漫館 → 天童瀧之湯，約 40 分鐘</p>
-          <div class="tip-block">💡 18:15 前到飯店，先寄放行李</div>
         `
       },
       {
-        time: "18:15 - 19:00",
+        time: "18:40 - 19:30",
         id: "入住天童瀧之湯-第1晚",
         title: "入住 微笑の宿 瀧之湯（第1晚）",
         img: "https://sendai-kouiki-mice.com/wp-content/uploads/2024/12/pic-hohoeminoyado-02.jpg",
@@ -337,9 +445,9 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>抵達瀧之湯，木造溫泉旅館</p>
+          <p>18:40 抵達瀧之湯 Check-in，放行李休息一下</p>
           <div class="tip-block">
-            <strong>🧳 入住流程</strong>｜18:15 寄放行李 → Check-in<br>
+            <strong>🧳 入住流程</strong>｜18:40 Check-in<br>
             <strong>♨️ 貸切風呂</strong>｜明天 1/23 16:30<br>
             <strong>🍱 懷石晚餐</strong>｜明天 1/23 18:00
           </div>
@@ -474,7 +582,10 @@ const winterItineraries = [
         time: "12:30 - 15:30",
         id: "子育て未来館-げんキッズ",
         title: "子育て未来館 げんキッズ（含午餐）",
-        img: "https://www.tendo-kanko.jp/wp-content/uploads/2021/03/genkids.jpg",
+        images: [
+          "https://i.meee.com.tw/4gyr7IX.jpg",
+          "https://i.meee.com.tw/95bdFQ5.jpg"
+        ],
         tag: { text: "🎠 室內遊戲館", class: "tag-sky" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=子育て未来館+げんキッズ",
         navName: "子育て未来館 げんキッズ",
@@ -544,14 +655,14 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 4 - 狐狸村 → 白石 → Dormy Inn 仙台海邊
+  // DAY 4 - 狐狸村 → 白石 → Dormy Inn（純休息）
   // ==========================================
   {
     day: 4,
     dateLabel: "DAY 4 · 2027年1月24日 (週日)",
-    id: "狐狸村-白石溫麵-Dormy-Inn-Outlet",
-    title: "狐狸村 ➔ 白石溫麵 ➔ Dormy Inn 仙台海邊 ➔ Outlet",
-    subtitle: "🦊 萌寵與海邊之日",
+    id: "狐狸村-白石溫麵-Dormy-Inn-純休息",
+    title: "狐狸村 ➔ 白石溫麵 ➔ Dormy Inn 仙台海邊",
+    subtitle: "🦊 萌寵與海邊休息之日",
     emoji: "🦊",
     events: [
       {
@@ -660,7 +771,7 @@ const winterItineraries = [
         time: "14:30 - 15:00",
         id: "入住Dormy-Inn-EXPRESS-仙台海邊-第1晚",
         title: "入住 Dormy Inn EXPRESS 仙台海邊（第1晚）",
-        img: "https://dormy-hotels.com/images/hotel/express/sendaiseaside/main.jpg",
+        img: "https://i.meee.com.tw/NAO5z3M.jpg",
         tag: { text: "🏨 海邊飯店", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Dormy+Inn+EXPRESS+仙台海辺",
         navName: "Dormy Inn EXPRESS 仙台海邊",
@@ -677,36 +788,38 @@ const winterItineraries = [
       },
       {
         time: "15:00 - 18:00",
-        id: "三井Outlet-Park-仙台港",
-        title: "【Mitsui Outlet Park 仙台港】購物",
-        img: "https://resources.matcha-jp.com/resize/720x2000/2025/08/24-242139.webp",
-        tag: { text: "🛍️ 狂買免提", class: "tag-rose" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=Mitsui+Outlet+Park+Sendai+Port",
-        navName: "三井Outlet 仙台港",
-        priority: "must",
+        id: "飯店休息與周邊散步",
+        title: "飯店休息 ➔ 海邊散步 / 大浴場",
+        tag: { text: "♨️ 悠閒時光", class: "tag-indigo" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Dormy+Inn+EXPRESS+仙台海辺",
+        navName: "Dormy Inn EXPRESS 仙台海邊",
+        priority: "optional",
         open: true,
         content: `
-          <p>開車 3 分鐘到 Outlet，主攻童裝與戶外品牌</p>
-          <div class="tip-block warn">
-            🎟️ 開逛前先憑護照至 1F 服務台領外國遊客 Coupon
+          <p>今天不趕行程，入住後好好休息</p>
+          <div class="tip-block">
+            <strong>🌊 海邊散步</strong>｜飯店周邊走走，吹吹海風<br>
+            <strong>♨️ 大浴場</strong>｜避開人潮，下午先泡一次湯<br>
+            <strong>🛏️ 小孩補眠</strong>｜連續幾天早起，讓小孩好好睡個午覺
           </div>
+          <div class="tip-block">💡 明天一次過逛 Outlet，今天不用急</div>
         `
       },
       {
         time: "18:00 - 21:30",
-        id: "Dormy-Inn大浴場與夜鳴拉麵",
-        title: "回 Dormy Inn ➔ 大浴場 + 夜鳴拉麵",
-        tag: { text: "♨️ 泡湯宵夜", class: "tag-indigo" },
+        id: "Dormy-Inn晚餐與夜鳴拉麵",
+        title: "晚餐 ➔ 飯店周邊 / 大浴場 + 夜鳴拉麵",
+        tag: { text: "🍜 泡湯宵夜", class: "tag-amber" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Dormy+Inn+EXPRESS+仙台海辺",
         navName: "Dormy Inn EXPRESS 仙台海邊",
         priority: "must",
         open: true,
         content: `
-          <p>回飯店泡大浴場，21:30 吃免費夜鳴拉麵</p>
+          <p>晚餐在飯店周邊簡單吃，或到 AEON 超市買熟食</p>
           <div class="tip-block">
-            <strong>♨️ 天然大浴場</strong>｜泡湯放鬆<br>
-            <strong>🍜 夜鳴拉麵</strong>｜21:30 開始，免費<br>
-            <strong>💡 晚餐</strong>｜Outlet 美食街或飯店周邊簡單吃
+            <strong>🍱 周邊選擇</strong>｜AEON 仙台港店熟食區、中野榮站周邊餐廳<br>
+            <strong>♨️ 大浴場</strong>｜吃飽泡湯放鬆<br>
+            <strong>🍜 夜鳴拉麵</strong>｜21:30 開始，免費
           </div>
         `
       }
@@ -765,24 +878,29 @@ const winterItineraries = [
         content: `<p>在水族館附近吃，或直接殺去 Outlet 美食街吃。</p>`
       },
       {
-        time: "14:00 - 18:00",
-        id: "續逛Outlet或免稅超市補貨",
-        title: "續逛 Outlet / 免稅超市補貨",
-        tag: { text: "🛍️ 彈性購物", class: "tag-rose" },
+        time: "14:00 - 18:30",
+        id: "Mitsui-Outlet-Park-仙台港購物",
+        title: "【Mitsui Outlet Park 仙台港】購物（水族館後）",
+        img: "https://resources.matcha-jp.com/resize/720x2000/2025/08/24-242139.webp",
+        tag: { text: "🛍️ 狂買免提", class: "tag-rose" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Mitsui+Outlet+Park+Sendai+Port",
         navName: "三井Outlet 仙台港",
-        priority: "optional",
+        priority: "must",
+        highlight: true,
         open: true,
         content: `
-          <p>續逛 Outlet，或去周邊免稅超市補貨</p>
+          <p>今天一次過逛 Outlet 和周邊免稅超市</p>
+          <div class="tip-block warn">
+            🎟️ 開逛前先憑護照至 1F 服務台領外國遊客 Coupon
+          </div>
           <div class="tip-block">
             <strong>🛒 免稅超市</strong>｜AEON 仙台港店、業務超市<br>
-            <strong>🛍️ Outlet</strong>｜昨天沒逛完的繼續
+            <strong>🛍️ Outlet</strong>｜主攻童裝與戶外品牌
           </div>
         `
       },
       {
-        time: "18:00 - 21:30",
+        time: "18:30 - 21:30",
         id: "返回Dormy-Inn-第2晚",
         title: "返回 Dormy Inn（第2晚）",
         tag: { text: "♨️ 泡湯宵夜", class: "tag-indigo" },
