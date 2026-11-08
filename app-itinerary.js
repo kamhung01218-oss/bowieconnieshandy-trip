@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v21.0（榴岡神社版：相鐵→瀧之湯→Dormy Inn→Grand Bach）
+ * app-itinerary.js — v21.2（榴岡神社版 + 純 CSS 縮圖，解決破圖問題）
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -15,6 +15,16 @@ const EVENT_ICONS = {
   shopping: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
   attach: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`,
   nav: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`
+};
+
+// ==================== CSS 漸變色 ====================
+const THUMB_GRADIENTS = {
+  'tag-teal':   'linear-gradient(135deg, #0f766e, #14b8a6, #5eead4)',
+  'tag-amber':  'linear-gradient(135deg, #b45309, #f59e0b, #fde68a)',
+  'tag-indigo': 'linear-gradient(135deg, #3730a3, #6366f1, #c7d2fe)',
+  'tag-sky':    'linear-gradient(135deg, #0369a1, #0ea5e9, #bae6fd)',
+  'tag-rose':   'linear-gradient(135deg, #9f1239, #f43f5e, #fecdd3)',
+  'default':    'linear-gradient(135deg, #334155, #64748b, #cbd5e1)'
 };
 
 // ==================== 天氣 ====================
@@ -315,14 +325,31 @@ function extractLeadingEmoji(str) {
   return '';
 }
 
+// ⭐ v21.2：無真圖時直接用 HTML+CSS 渲染漸變縮圖（100% 兼容，解決裂圖）
 function buildEventThumb(event) {
   const imgUrl = (Array.isArray(event.images) && event.images[0]) || event.img;
+
   if (imgUrl) {
-    return `<div class="event-thumb-wrap"><div class="event-thumb has-image" aria-hidden="true"><img src="${escAttr(imgUrl)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"></div></div>`;
+    return `<div class="event-thumb-wrap">
+      <div class="event-thumb has-image" aria-hidden="true">
+        <img src="${escAttr(imgUrl)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+      </div>
+    </div>`;
   }
-  const emoji = extractLeadingEmoji(event.tag?.text) || TAG_EMOJI_FALLBACK[event.tag?.class] || '📍';
-  const colorClass = event.tag?.class ? ` ${event.tag.class}` : '';
-  return `<div class="event-thumb-wrap"><div class="event-thumb is-icon${colorClass}" aria-hidden="true"><span>${emoji}</span></div></div>`;
+
+  // 無真圖 → CSS 漸變 + Emoji
+  const emoji = extractLeadingEmoji(event.tag?.text)
+             || TAG_EMOJI_FALLBACK[event.tag?.class]
+             || '📍';
+  const bg = THUMB_GRADIENTS[event.tag?.class] || THUMB_GRADIENTS['default'];
+  
+  return `<div class="event-thumb-wrap">
+    <div class="event-thumb is-icon" style="background: ${bg}; display: flex; align-items: center; justify-content: center; position: relative;" aria-hidden="true">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+        <span style="font-size: 26px; line-height: 1; margin-top: 2px;">${emoji}</span>
+      </div>
+    </div>
+  </div>`;
 }
 
 function buildEventImage(imgUrl, eventTitle, images) {
