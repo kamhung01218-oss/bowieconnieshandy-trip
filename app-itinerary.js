@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v21.3（加入 links 渲染支援）
+ * app-itinerary.js — v21.5（D4 水族館 / D5 市區草莓）
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -9,7 +9,6 @@ function _svgIcon(name, size) {
   return '';
 }
 
-// ==================== SVG 圖示 ====================
 const EVENT_ICONS = {
   shoot: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
   shopping: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
@@ -17,7 +16,6 @@ const EVENT_ICONS = {
   nav: `<svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`
 };
 
-// ==================== CSS 漸變色 ====================
 const THUMB_GRADIENTS = {
   'tag-teal':   'linear-gradient(135deg, #0f766e, #14b8a6, #5eead4)',
   'tag-amber':  'linear-gradient(135deg, #b45309, #f59e0b, #fde68a)',
@@ -27,16 +25,16 @@ const THUMB_GRADIENTS = {
   'default':    'linear-gradient(135deg, #334155, #64748b, #cbd5e1)'
 };
 
-// ==================== 天氣 ====================
 const WEATHER_LOCATIONS = {
   1: [
     { id: 'sendai_airport', name: '仙台機場', shortName: '機場', lat: 38.1397, lon: 140.9169, timeFrom: '00:00', timeTo: '15:30', climate: { max: 5, min: -1, rain: 30 } },
     { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '15:30', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ],
   2: [
-    { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '08:30', climate: { max: 5, min: -1, rain: 30 } },
-    { id: 'sagae', name: '寒河江', shortName: '寒河江', lat: 38.3806, lon: 140.2739, timeFrom: '08:30', timeTo: '13:00', climate: { max: 3, min: -3, rain: 40 } },
-    { id: 'ginzan', name: '銀山溫泉', shortName: '銀山', lat: 38.5747, lon: 140.5309, timeFrom: '13:00', timeTo: '18:00', climate: { max: 1, min: -4, rain: 45 } },
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '09:45', climate: { max: 5, min: -1, rain: 30 } },
+    { id: 'zao_fox', name: '藏王狐狸村', shortName: '狐狸村', lat: 38.0407, lon: 140.5322, timeFrom: '09:45', timeTo: '13:00', climate: { max: 2, min: -3, rain: 35 } },
+    { id: 'shiroishi', name: '白石', shortName: '白石', lat: 38.0022, lon: 140.6197, timeFrom: '13:00', timeTo: '14:30', climate: { max: 4, min: -2, rain: 30 } },
+    { id: 'ginzan', name: '銀山溫泉', shortName: '銀山', lat: 38.5747, lon: 140.5309, timeFrom: '14:30', timeTo: '18:00', climate: { max: 1, min: -4, rain: 45 } },
     { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '18:00', timeTo: '23:59', climate: { max: 4, min: -2, rain: 35 } }
   ],
   3: [
@@ -45,13 +43,13 @@ const WEATHER_LOCATIONS = {
     { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '12:30', timeTo: '23:59', climate: { max: 4, min: -2, rain: 35 } }
   ],
   4: [
-    { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '09:30', climate: { max: 4, min: -2, rain: 35 } },
-    { id: 'zao_fox', name: '藏王狐狸村', shortName: '狐狸村', lat: 38.0407, lon: 140.5322, timeFrom: '09:30', timeTo: '12:00', climate: { max: 2, min: -3, rain: 35 } },
-    { id: 'shiroishi', name: '白石', shortName: '白石', lat: 38.0022, lon: 140.6197, timeFrom: '12:00', timeTo: '13:30', climate: { max: 4, min: -2, rain: 30 } },
-    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '13:30', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
+    { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '10:00', climate: { max: 4, min: -2, rain: 35 } },
+    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '10:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ],
   5: [
-    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '00:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
+    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '00:00', timeTo: '09:30', climate: { max: 5, min: -1, rain: 30 } },
+    { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '09:30', timeTo: '12:30', climate: { max: 5, min: -1, rain: 30 } },
+    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '12:30', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ],
   6: [
     { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '00:00', timeTo: '09:30', climate: { max: 5, min: -1, rain: 30 } },
@@ -222,7 +220,6 @@ function renderWeatherDetail() {
   `;
 }
 
-// ==================== findShootTips ====================
 function findShootTips(eventTitle, eventKey, eventId) {
   if (typeof shootTips === 'undefined') return null;
   if (eventId && shootTips[eventId]) return shootTips[eventId];
@@ -247,16 +244,15 @@ function findShootTips(eventTitle, eventKey, eventId) {
   return null;
 }
 
-// ==================== 行程速覽 ====================
 function renderTripOverview() {
   const container = document.getElementById('overview-timeline-content'); if (!container) return;
   const days = [
     { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達仙台", desc: "機場 → 相鐵 FRESA INN → 伊達牛舌 → 購物" },
-    { day: "D2", color: "#f59e0b", emoji: "🍓", title: "草莓 + 銀山", desc: "取車 → 寒河江採草莓 → 銀山夜景 → 瀧之湯" },
+    { day: "D2", color: "#f59e0b", emoji: "🦊", title: "狐狸村 + 銀山", desc: "取車 → 客美多 → 狐狸村 → 白石溫麵 → 銀山夜景 → 瀧之湯" },
     { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → げんキッズ → 瀧之湯懷石" },
-    { day: "D4", color: "#10b981", emoji: "🦊", title: "狐狸村", desc: "狐狸村 → 白石溫麵 → Dormy Inn → Outlet" },
-    { day: "D5", color: "#f43f5e", emoji: "🐧", title: "水族館 + Outlet", desc: "水族館 → Outlet → Dormy Inn 第2晚" },
-    { day: "D6", color: "#14b8a6", emoji: "⛷️", title: "Spring Valley", desc: "玩雪 → Grand Bach → 還車 → 仔虎" },
+    { day: "D4", color: "#14b8a6", emoji: "🐧", title: "水族館", desc: "瀧之湯退房 → 水族館 → Dormy Inn 第1晚" },
+    { day: "D5", color: "#f43f5e", emoji: "🍓", title: "市區草莓", desc: "市區草莓 → Outlet → Dormy Inn 第2晚" },
+    { day: "D6", color: "#10b981", emoji: "⛷️", title: "Spring Valley", desc: "玩雪 → Grand Bach → 還車 → 仔虎" },
     { day: "D7", color: "#8b5cf6", emoji: "⛩️", title: "榴岡神社", desc: "榴岡神社 → 仙台朝市 → 一番町採買" },
     { day: "D8", color: "#475569", emoji: "✈️", title: "返港", desc: "S-PAL 伴手禮 → アクセス線 → 起飛" }
   ];
@@ -276,7 +272,6 @@ function toggleContent(day, index) {
   }
 }
 
-// ==================== 行程渲染 ====================
 function buildTimePill(startTime, endTime) {
   var timeText = escapeHtml(startTime);
   var endText = (endTime && endTime !== '-') ? escapeHtml(endTime) : '';
@@ -300,10 +295,8 @@ function buildEventActionsHtml(day, index, eventTitle, shoppingCount, dayKey) {
       + EVENT_ICONS.attach + ' 資料' + dataBadge + '</button>';
   }
   html += '<div class="event-action-buttons">';
-  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShootTipsModal(' + day + ',' + index + ')">'
-    + EVENT_ICONS.shoot + ' 拍攝</button>';
-  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShoppingModal(this.dataset.eventTitle)" data-event-title="' + safeTitle + '">'
-    + EVENT_ICONS.shopping + ' 購物' + shoppingBadge + '</button>';
+  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShootTipsModal(' + day + ',' + index + ')">' + EVENT_ICONS.shoot + ' 拍攝</button>';
+  html += '<button type="button" class="event-action-btn" onclick="event.preventDefault();event.stopPropagation();openShoppingModal(this.dataset.eventTitle)" data-event-title="' + safeTitle + '">' + EVENT_ICONS.shopping + ' 購物' + shoppingBadge + '</button>';
   html += '</div>';
   return html;
 }
@@ -325,45 +318,22 @@ function extractLeadingEmoji(str) {
   return '';
 }
 
-// ⭐ v21.2：無真圖時直接用 HTML+CSS 渲染漸變縮圖
 function buildEventThumb(event) {
   const imgUrl = (Array.isArray(event.images) && event.images[0]) || event.img;
-
   if (imgUrl) {
-    return `<div class="event-thumb-wrap">
-      <div class="event-thumb has-image" aria-hidden="true">
-        <img src="${escAttr(imgUrl)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
-      </div>
-    </div>`;
+    return `<div class="event-thumb-wrap"><div class="event-thumb has-image" aria-hidden="true"><img src="${escAttr(imgUrl)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"></div></div>`;
   }
-
-  // 無真圖 → CSS 漸變 + Emoji
-  const emoji = extractLeadingEmoji(event.tag?.text)
-             || TAG_EMOJI_FALLBACK[event.tag?.class]
-             || '📍';
+  const emoji = extractLeadingEmoji(event.tag?.text) || TAG_EMOJI_FALLBACK[event.tag?.class] || '📍';
   const bg = THUMB_GRADIENTS[event.tag?.class] || THUMB_GRADIENTS['default'];
-  
-  return `<div class="event-thumb-wrap">
-    <div class="event-thumb is-icon" style="background: ${bg}; display: flex; align-items: center; justify-content: center; position: relative;" aria-hidden="true">
-      <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
-        <span style="font-size: 26px; line-height: 1; margin-top: 2px;">${emoji}</span>
-      </div>
-    </div>
-  </div>`;
+  return `<div class="event-thumb-wrap"><div class="event-thumb is-icon" style="background: ${bg}; display: flex; align-items: center; justify-content: center; position: relative;" aria-hidden="true"><div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);"><span style="font-size: 26px; line-height: 1; margin-top: 2px;">${emoji}</span></div></div></div>`;
 }
 
-// ⭐ v21.3：支援額外參考連結
 function buildEventLinksHtml(links) {
   if (!Array.isArray(links) || links.length === 0) return '';
   var html = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;">';
   links.forEach(function(link) {
     if (!link.url) return;
-    html += '<a href="' + escAttr(link.url) + '" target="_blank" rel="noopener" '
-         + 'class="event-ref-link" style="display:inline-flex;align-items:center;gap:4px;'
-         + 'padding:7px 12px;border-radius:9px;background:#f0f9ff;border:1px solid #bae6fd;'
-         + 'color:#0369a1;font-size:12px;font-weight:700;text-decoration:none;">'
-         + (link.icon || '🔗') + ' ' + escapeHtml(link.label)
-         + '</a>';
+    html += '<a href="' + escAttr(link.url) + '" target="_blank" rel="noopener" class="event-ref-link" style="display:inline-flex;align-items:center;gap:4px;padding:7px 12px;border-radius:9px;background:#f0f9ff;border:1px solid #bae6fd;color:#0369a1;font-size:12px;font-weight:700;text-decoration:none;">' + (link.icon || '🔗') + ' ' + escapeHtml(link.label) + '</a>';
   });
   html += '</div>';
   return html;
@@ -398,11 +368,7 @@ function buildImageCarousel(images, eventTitle) {
 function openLightboxCarousel(imgEl) {
   var grid = imgEl.closest('.event-image-grid');
   if (grid) {
-    try {
-      var urls = JSON.parse(grid.dataset.urls ? grid.querySelector('.event-image-grid-item').dataset.urls : '[]');
-      var idx = parseInt(imgEl.parentElement.dataset.index) || 0;
-      openLightbox(urls, idx);
-    } catch (e) {}
+    try { var urls = JSON.parse(grid.dataset.urls ? grid.querySelector('.event-image-grid-item').dataset.urls : '[]'); var idx = parseInt(imgEl.parentElement.dataset.index) || 0; openLightbox(urls, idx); } catch (e) {}
     return;
   }
   var carousel = imgEl.closest('.event-image-carousel');
@@ -643,15 +609,12 @@ function collapseAllItineraries() {
 }
 window.collapseAllItineraries = collapseAllItineraries;
 
-// ==================== 雪地攻略 ====================
 let driveTabState = 'basic';
 function setDriveTab(tab) { driveTabState = tab; haptic(6); document.querySelectorAll('[data-drive-tab]').forEach(btn => { btn.classList.toggle('active', btn.dataset.driveTab === tab); }); renderDriveContent(); }
 function renderDriveContent() { const container = document.getElementById('drive-content'); if (!container) return; const data = { basic: [ { title: "全程使用 4WD + 雪胎", desc: "出發前確認車輛配置，並檢查雪胎深度（建議 ≥ 5mm）與胎壓", type: "success" }, { title: "保持 3 秒以上車距", desc: "雪地煞車距離約為乾地的 3-5 倍", type: "success" }, { title: "避免急煞、急加速、急轉彎", desc: "所有動作放慢 2 倍", type: "warn" }, { title: "下坡善用低速檔", desc: "用引擎煞車取代腳踩煞車", type: "success" }, { title: "轉彎前先減速", desc: "彎中不踩煞車", type: "warn" } ], road: [ { title: "Black Ice 最危險", desc: "看似乾燥的柏油路面其實結冰", type: "danger" }, { title: "橋樑與陰影處優先結冰", desc: "通過前先減速", type: "warn" }, { title: "山區連續彎道", desc: "減速至 20-30 km/h", type: "warn" }, { title: "除雪車後方保持距離", desc: "保持 50m 以上距離", type: "success" }, { title: "隧道兩端注意", desc: "進出時提前減速", type: "warn" } ], emergency: [ { title: "備用保暖衣物與毯子", desc: "保暖是第一優先", type: "success" }, { title: "行動電源 2 個 + 車充", desc: "手機沒電等於失去導航", type: "success" }, { title: "食物與飲水", desc: "餅乾、巧克力、保溫瓶裝熱水", type: "success" }, { title: "小鏟子 + 拖車繩 + 三角牌", desc: "車輪陷入雪中時可自救", type: "success" }, { title: "緊急聯絡資訊", desc: "日本道路緊急電話 #9910", type: "warn" } ] }; const items = data[driveTabState] || []; container.innerHTML = items.map((item, i) => `<div class="numbered-card ${item.type}" style="margin-bottom:8px"><div class="numbered-index">${i + 1}</div><div class="numbered-content"><div class="numbered-title">${item.title}</div><div class="numbered-desc">${item.desc}</div></div></div>`).join(''); }
 
-// ==================== 搶票攻略 ====================
 function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">12/1 開賣</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">12/1 日本 10:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票（1/22 搭乘）</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>12/1 08:55 香港時間設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 <strong>1/22 14:30–17:30</strong> 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/16 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2（1/23 搭乘）</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
 
-// ==================== 拍攝靈感 ====================
 function openShootTipsModal(day, eventIndex) {
   const dayData = winterItineraries.find(d => d.day === day); if (!dayData) return;
   const event = dayData.events[eventIndex]; if (!event) return;
@@ -710,7 +673,6 @@ function bindShootPhotoIndicator(container) {
 
 function closeShootTipsModal() { hideModal('shoot-tips-modal'); setTimeout(() => document.getElementById('shoot-tips-modal').classList.add('hidden'), 300); }
 
-// ==================== 通用拍攝技巧 ====================
 function openCommonTipsModal() {
   const m = document.getElementById('common-tips-modal'); if (!m) return;
   m.style.display = 'flex'; m.classList.add('active'); document.body.classList.add('modal-open');
@@ -735,7 +697,6 @@ function openCommonTipsModal() {
 }
 function closeCommonTipsModal() { const m = document.getElementById('common-tips-modal'); if (m) { m.classList.remove('active'); setTimeout(() => m.style.display = 'none', 300); const a = document.querySelector('.modal-overlay.active'); if (!a) document.body.classList.remove('modal-open'); } }
 
-// ==================== Vlog 構思 ====================
 function openVlogPlanModal(day) {
   const plan = vlogPlan["D" + day]; const content = document.getElementById("vlog-plan-content"); let html = "";
   if (plan) {
@@ -747,10 +708,8 @@ function openVlogPlanModal(day) {
 }
 function closeVlogPlanModal() { hideModal('vlog-plan-modal'); setTimeout(() => document.getElementById('vlog-plan-modal').classList.add('hidden'), 300); }
 
-// ==================== 快速記帳 ====================
 function openLedgerAdd() { const lc = document.getElementById('ledger-frame-container'); const iframe = document.getElementById('ledger-iframe'); if (lc && iframe) { haptic(12); lc.classList.remove('hidden-view'); lc.style.cssText = 'position: fixed; inset: 0; z-index: 9990; background: #f0f9ff; overflow: auto;'; iframe.style.height = '100dvh'; document.body.classList.add('modal-open'); let attempts = 0; const tryOpen = () => { if (iframe.contentWindow && iframe.contentWindow.openExpenseModal) iframe.contentWindow.openExpenseModal(); else if (attempts < 10) { attempts++; setTimeout(tryOpen, 200); } else showToast('記帳本載入失敗', '⚠️'); }; tryOpen(); } }
 
-// ==================== 行程切換 ====================
 function switchDay(day) {
   const prevDay = window._lastActiveDay; window._lastActiveDay = day;
   try { localStorage.setItem('tohoku_last_day', String(day)); } catch(e) {}
