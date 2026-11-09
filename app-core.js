@@ -1,5 +1,5 @@
 /* ============================================================
- * app-core.js — v16.0 (新8天行程版：銀山 12/1 開賣、藏王 1/16 23:00)
+ * app-core.js — v16.1 (銀山改 1/9、藏王 1/15 23:00)
  * ============================================================ */
 
 // ==================== escapeHtml ====================
@@ -65,9 +65,9 @@ const USER_COLORS = {
 const tripDates = ["2027-01-21", "2027-01-22", "2027-01-23", "2027-01-24", "2027-01-25", "2027-01-26", "2027-01-27", "2027-01-28"];
 const TRIP_START = new Date("2027-01-21T10:00:00+08:00").getTime();
 const TRIP_END = new Date("2027-01-28T23:59:59+08:00").getTime();
-// ⭐ v16.0：銀山改 12/1 日本 10:00（= 香港 09:00）；藏王 D4 1/24 搭乘，提前 7 天日本 00:00 = 1/16 香港 23:00
-const GINZAN_TARGET = new Date("2026-12-01T10:00:00+09:00").getTime();
-const ZAO_TARGET = new Date("2027-01-16T23:00:00+08:00").getTime();
+// ⭐ v16.1：銀山改 1/9 日本 10:00（= 香港 09:00）；藏王 D4 1/24 搭乘，提前 7 天日本 00:00 = 1/15 香港 23:00
+const GINZAN_TARGET = new Date("2027-01-09T10:00:00+09:00").getTime();
+const ZAO_TARGET = new Date("2027-01-15T23:00:00+08:00").getTime();
 const ADMIN_PASSWORD = "tohoku2027admin";
 
 let snowmanProgress = JSON.parse(localStorage.getItem("snowman_progress")) || 0;

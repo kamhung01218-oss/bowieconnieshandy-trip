@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v21.5（D4 水族館 / D5 市區草莓）
+ * app-itinerary.js — v21.6（銀山接駁車 1/9 開放）
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -613,7 +613,53 @@ let driveTabState = 'basic';
 function setDriveTab(tab) { driveTabState = tab; haptic(6); document.querySelectorAll('[data-drive-tab]').forEach(btn => { btn.classList.toggle('active', btn.dataset.driveTab === tab); }); renderDriveContent(); }
 function renderDriveContent() { const container = document.getElementById('drive-content'); if (!container) return; const data = { basic: [ { title: "全程使用 4WD + 雪胎", desc: "出發前確認車輛配置，並檢查雪胎深度（建議 ≥ 5mm）與胎壓", type: "success" }, { title: "保持 3 秒以上車距", desc: "雪地煞車距離約為乾地的 3-5 倍", type: "success" }, { title: "避免急煞、急加速、急轉彎", desc: "所有動作放慢 2 倍", type: "warn" }, { title: "下坡善用低速檔", desc: "用引擎煞車取代腳踩煞車", type: "success" }, { title: "轉彎前先減速", desc: "彎中不踩煞車", type: "warn" } ], road: [ { title: "Black Ice 最危險", desc: "看似乾燥的柏油路面其實結冰", type: "danger" }, { title: "橋樑與陰影處優先結冰", desc: "通過前先減速", type: "warn" }, { title: "山區連續彎道", desc: "減速至 20-30 km/h", type: "warn" }, { title: "除雪車後方保持距離", desc: "保持 50m 以上距離", type: "success" }, { title: "隧道兩端注意", desc: "進出時提前減速", type: "warn" } ], emergency: [ { title: "備用保暖衣物與毯子", desc: "保暖是第一優先", type: "success" }, { title: "行動電源 2 個 + 車充", desc: "手機沒電等於失去導航", type: "success" }, { title: "食物與飲水", desc: "餅乾、巧克力、保溫瓶裝熱水", type: "success" }, { title: "小鏟子 + 拖車繩 + 三角牌", desc: "車輪陷入雪中時可自救", type: "success" }, { title: "緊急聯絡資訊", desc: "日本道路緊急電話 #9910", type: "warn" } ] }; const items = data[driveTabState] || []; container.innerHTML = items.map((item, i) => `<div class="numbered-card ${item.type}" style="margin-bottom:8px"><div class="numbered-index">${i + 1}</div><div class="numbered-content"><div class="numbered-title">${item.title}</div><div class="numbered-desc">${item.desc}</div></div></div>`).join(''); }
 
-function renderTicketContent() { const container = document.getElementById('ticket-content'); if (!container) return; const now = Date.now(); const ginzanDiff = GINZAN_TARGET - now; const zaoDiff = ZAO_TARGET - now; function formatCountdown(ms) { if (ms <= 0) return '🎉 已開賣'; const days = Math.floor(ms / 86400000); const hours = Math.floor((ms % 86400000) / 3600000); const minutes = Math.floor((ms % 3600000) / 60000); if (days > 0) return `${days}天 ${hours}時 ${minutes}分`; if (hours > 0) return `${hours}時 ${minutes}分`; return `${minutes}分`; } container.innerHTML = `<div class="ticket-card"><div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉 Fast Pass</div><span class="ticket-badge">12/1 開賣</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">12/1 日本 10:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">4 張成人票（1/22 搭乘）</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥1,500 / 人</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview!</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>12/1 08:55 香港時間設定鬧鐘，提前 5 分鐘登入</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 <strong>1/22 14:30–17:30</strong> 時段</span></div></div></div><div class="ticket-card zao"><div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div><div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div><div class="ticket-meta"><div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/16 香港 23:00</div></div><div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2（1/23 搭乘）</div></div><div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div><div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div></div><div class="ticket-steps"><div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div><div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div><div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div></div></div>`; }
+function renderTicketContent() {
+  const container = document.getElementById('ticket-content');
+  if (!container) return;
+  const now = Date.now();
+  const ginzanDiff = GINZAN_TARGET - now;
+  const zaoDiff = ZAO_TARGET - now;
+  function formatCountdown(ms) {
+    if (ms <= 0) return '🎉 已開賣';
+    const days = Math.floor(ms / 86400000);
+    const hours = Math.floor((ms % 86400000) / 3600000);
+    const minutes = Math.floor((ms % 3600000) / 60000);
+    if (days > 0) return `${days}天 ${hours}時 ${minutes}分`;
+    if (hours > 0) return `${hours}時 ${minutes}分`;
+    return `${minutes}分`;
+  }
+  container.innerHTML = `
+    <div class="ticket-card">
+      <div class="ticket-header"><div class="ticket-title"><span>🎟️</span> 銀山溫泉接駁車</div><span class="ticket-badge">1/9 開放</span></div>
+      <div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div>
+      <div class="ticket-meta">
+        <div class="ticket-meta-item"><div class="label">開放時間</div><div class="value">1/9 日本 10:00</div></div>
+        <div class="ticket-meta-item"><div class="label">目標</div><div class="value">1/22 16:00 去程 / 17:20 回程</div></div>
+        <div class="ticket-meta-item"><div class="label">價格</div><div class="value">依官方公告</div></div>
+        <div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官方</div></div>
+      </div>
+      <div class="ticket-steps">
+        <div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div>
+        <div class="ticket-step"><div class="ticket-step-dot">2</div><span>1/9 08:55 香港時間設定鬧鐘，提前 5 分鐘登入</span></div>
+        <div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 <strong>1/22 16:00 去程 / 17:20 回程</strong></span></div>
+      </div>
+    </div>
+    <div class="ticket-card zao">
+      <div class="ticket-header"><div class="ticket-title"><span>🚠</span> 藏王纜車優先票</div><span class="ticket-badge">必搶</span></div>
+      <div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(zaoDiff)}</span></div>
+      <div class="ticket-meta">
+        <div class="ticket-meta-item"><div class="label">開賣時間</div><div class="value">1/15 香港 23:00</div></div>
+        <div class="ticket-meta-item"><div class="label">目標</div><div class="value">成人 2 + 兒童 2（1/23 搭乘）</div></div>
+        <div class="ticket-meta-item"><div class="label">價格</div><div class="value">¥5,500 / ¥3,500</div></div>
+        <div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官網</div></div>
+      </div>
+      <div class="ticket-steps">
+        <div class="ticket-step"><div class="ticket-step-dot">1</div><span>系統於搭乘日前 7 天日本時間 00:00 釋出</span></div>
+        <div class="ticket-step"><div class="ticket-step-dot">2</div><span>開賣後鎖定 <strong>08:30 或 09:00</strong> 最早時段</span></div>
+        <div class="ticket-step"><div class="ticket-step-dot">3</div><span>週六優先票通常 <strong>5 分鐘內秒殺</strong></span></div>
+      </div>
+    </div>`;
+}
 
 function openShootTipsModal(day, eventIndex) {
   const dayData = winterItineraries.find(d => d.day === day); if (!dayData) return;
