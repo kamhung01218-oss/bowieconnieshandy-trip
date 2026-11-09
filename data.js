@@ -1,7 +1,7 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 5.9.0（D1 機場攻略 / D2 取車檢查 / D3 酒店早餐+纜車 / D4 水族館 / D5 市區草莓）
+ *  版本: 5.10.0（D4 Spring Valley 滑雪 / D5 市區草莓 / D6 水族館）
  * ============================================================
  */
 
@@ -654,7 +654,7 @@ const winterItineraries = [
           <p>兩段纜車，直上 -20℃ 的樹冰王國</p>
           <div class="tip-block warn">
             <strong>🎟️ 優先票搶票</strong>｜搭乘日前 7 天日本時間 00:00 釋出<br>
-            你的搭乘日 1/23 → 開賣時間 香港 1/16 23:00
+            你的搭乘日 1/23 → 開賣時間 香港 1/15 23:00
           </div>
           <div class="tip-block danger">
             <strong>⚠️ 山頂安全（-20℃）</strong><br>
@@ -746,15 +746,15 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 4 - 酒店早餐 → 退房 → 水族館 → Dormy Inn 第1晚
+  // DAY 4 - 酒店早餐 → 退房 → Spring Valley 玩雪 → Dormy Inn 第1晚
   // ==========================================
   {
     day: 4,
     dateLabel: "DAY 4 · 2027年1月24日 (週日)",
-    id: "水族館-Dormy-Inn第1晚",
-    title: "水族館 ➔ 入住 Dormy Inn 仙台海邊",
-    subtitle: "🐧 海洋與海邊休息之日",
-    emoji: "🐧",
+    id: "Spring-Valley-Dormy-Inn第1晚",
+    title: "Spring Valley 玩雪 ➔ 入住 Dormy Inn 仙台海邊",
+    subtitle: "⛷️ 玩雪放電之日",
+    emoji: "⛷️",
     events: [
       {
         time: "07:30 - 09:30",
@@ -783,54 +783,83 @@ const winterItineraries = [
             <strong>🧳 退房流程</strong>｜09:00 回房收行李 → 09:15 下樓辦退房 → 09:30 上車出發<br>
             ⚠️ 行李前一晚先整理好，早上只需收牙刷、睡衣
           </div>
-          <div class="tip-block">💡 小孩吃飽、上完廁所再上車，往仙台港車程 50–60 分鐘</div>
+          <div class="tip-block">💡 小孩吃飽、上完廁所再上車，往 Spring Valley 車程 1 小時 15 分鐘</div>
         `
       },
       {
-        time: "09:30 - 10:30",
-        id: "開車前往仙台海洋森林水族館",
-        title: "開車前往仙台海洋森林水族館",
-        tag: { text: "🚗 50-60分鐘", class: "tag-teal" },
-        navUrl: "https://maps.app.goo.gl/BxaETtqtFLNmQoJf8?g_st=ac",
-        navName: "仙台海洋森林水族館",
+        time: "09:30 - 10:45",
+        id: "退房出發前往Spring-Valley",
+        title: "開車前往 Spring Valley 泉高原",
+        img: "https://lovetogo.tw/201802-tohoku/spring-valley/photo/20180204-1124-0289.jpg",
+        tag: { text: "🚗 雪地自駕", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Spring+Valley+Izumi+Kogen",
+        navName: "Spring Valley 仙台泉",
         priority: "must",
         open: true,
         content: `
-          <p>天童瀧之湯 → 仙台港，約 50-60 分鐘</p>
-          <div class="tip-block">💡 小孩可在車上補眠，抵達後精神好</div>
-        `
-      },
-      {
-        time: "10:30 - 12:30",
-        id: "仙台海洋森林水族館",
-        title: "仙台海洋森林水族館 🐧",
-        img: "https://i.meee.com.tw/erT0EXg.jpg",
-        tag: { text: "🐬 海洋奇觀", class: "tag-sky" },
-        navUrl: "https://maps.app.goo.gl/BxaETtqtFLNmQoJf8?g_st=ac",
-        navName: "仙台海洋森林水族館",
-        priority: "must",
-        highlight: true,
-        open: true,
-        content: `
-          <p>冬季限定的企鵝雪地散步，室內海豚秀不怕冷</p>
-          <div class="tip-block">
-            <strong>🐬 必看亮點</strong>｜閃耀生命之海（數萬尾沙丁魚群）<br>
-            門票：成人 ¥2,400 · 幼兒 ¥800
+          <p>09:30 退房後直接出發</p>
+          <p class="text-xs text-slate-500">天童 → Spring Valley，車程約 1 小時 15 分鐘</p>
+          <div class="tip-block warn">
+            <strong>🚗 週日走高速</strong>｜東北自動車道 → 泉 PA 智能 IC<br>
+            除雪層級最高、彎道平緩
           </div>
         `
       },
       {
-        time: "12:30 - 13:30",
-        id: "水族館周邊或Outlet午餐",
-        title: "午餐：水族館周邊 / Outlet 美食街",
-        tag: { text: "🍽️ 彈性午餐", class: "tag-amber" },
+        time: "10:45 - 15:00",
+        id: "雪之冒險王國玩雪放電與滑雪場午餐",
+        title: "【雪之冒險王國】玩雪放電與滑雪場午餐",
+        img: "https://lovetogo.tw/201802-tohoku/spring-valley/photo/20180204-1310-0344.jpg",
+        tag: { text: "☃️ 玩雪放電", class: "tag-sky" },
         navUrl: "",
-        priority: "optional",
+        priority: "must",
+        highlight: true,
         open: true,
-        content: `<p>在水族館附近吃，或直接殺去 Outlet 美食街吃。</p>`
+        content: `
+          <p>雪之冒險王國，4 歲小孩的放電場</p>
+          <p class="text-xs text-slate-500">10:45 進場，玩到 15:00（含午餐）</p>
+          <div class="tip-block warn">
+            <strong>🎟️ 票價與營業</strong><br>
+            假日｜4 歲 + 陪同家長皆 ¥2,000（網購 ¥1,500）<br>
+            平日｜玩雪專區不開放，全場免門票，單租雪盆 ¥300
+          </div>
+          <div class="tip-block">
+            <strong>🍜 場內午餐</strong>｜12:00–12:45 在滑雪場餐廳吃拉麵 / 咖哩
+          </div>
+          <details>
+            <summary>🎯 3 大必玩</summary>
+            <div>
+              <p>旋轉雪盆｜像雪地旋轉木馬，最安全</p>
+              <p>魔毯滑雪盆｜電動傳送帶上坡，省小孩體力</p>
+              <p>雪地夾鴨子｜帶「雪球夾」模具，放電又好玩</p>
+            </div>
+          </details>
+          <details>
+            <summary>⚠️ 3 大避坑重點</summary>
+            <div>
+              <p>別帶推車｜雪地推不動，改讓小孩坐雪盆裡拉著走</p>
+              <p>備兩雙手套｜玩雪手套極易濕透</p>
+              <p>預防上廁所｜連身雪衣極難脫</p>
+            </div>
+          </details>
+        `
       },
       {
-        time: "13:30 - 14:00",
+        time: "15:00 - 15:45",
+        id: "開車前往Dormy-Inn-仙台海邊",
+        title: "開車前往 Dormy Inn EXPRESS 仙台海邊",
+        tag: { text: "🚗 45分鐘", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Dormy+Inn+EXPRESS+仙台海辺",
+        navName: "Dormy Inn EXPRESS 仙台海邊",
+        priority: "must",
+        open: true,
+        content: `
+          <p>Spring Valley → 仙台港，約 45 分鐘</p>
+          <div class="tip-block">💡 小孩可在車上補眠，抵達後精神好</div>
+        `
+      },
+      {
+        time: "15:45 - 16:15",
         id: "入住Dormy-Inn-EXPRESS-仙台海邊-第1晚",
         title: "入住 Dormy Inn EXPRESS 仙台海邊（第1晚）",
         img: "https://i.meee.com.tw/NAO5z3M.jpg",
@@ -840,7 +869,7 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>提早 Check-in，小孩可好好午睡</p>
+          <p>Check-in，小孩可好好午睡</p>
           <div class="tip-block">
             <strong>♨️ 天然大浴場</strong>｜晚上可泡湯<br>
             <strong>🍜 21:30 免費夜鳴拉麵</strong><br>
@@ -849,7 +878,7 @@ const winterItineraries = [
         `
       },
       {
-        time: "14:00 - 18:00",
+        time: "16:15 - 18:00",
         id: "飯店休息與海邊散步",
         title: "飯店休息 ➔ 海邊散步 / 大浴場",
         tag: { text: "♨️ 悠閒時光", class: "tag-indigo" },
@@ -1008,7 +1037,7 @@ const winterItineraries = [
           <div class="tip-block">
             <strong>♨️ 大浴場</strong>｜泡湯放鬆<br>
             <strong>🍜 夜鳴拉麵</strong>｜21:30 免費<br>
-            <strong>💡 明天</strong>｜退房去 Spring Valley 玩雪
+            <strong>💡 明天</strong>｜退房去水族館
           </div>
         `
       }
@@ -1016,78 +1045,63 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 6 - Spring Valley → Grand Bach → 還車 → 仔虎
+  // DAY 6 - 水族館 → Grand Bach → 還車 → 仔虎
   // ==========================================
   {
     day: 6,
     dateLabel: "DAY 6 · 2027年1月26日 (週二)",
-    id: "Spring-Valley-GrandBach-還車-仔虎",
-    title: "Spring Valley 玩雪 ➔ Grand Bach ➔ 還車 ➔ 仔虎",
-    subtitle: "⛷️ 玩雪與和牛之日",
-    emoji: "⛷️",
+    id: "水族館-GrandBach-還車-仔虎",
+    title: "水族館 ➔ Grand Bach ➔ 還車 ➔ 仔虎",
+    subtitle: "🐧 海洋與和牛之日",
+    emoji: "🐧",
     events: [
       {
-        time: "09:30 - 10:15",
-        id: "退房出發前往Spring-Valley",
-        title: "退房出發，前往 Spring Valley 泉高原",
-        img: "https://lovetogo.tw/201802-tohoku/spring-valley/photo/20180204-1124-0289.jpg",
-        tag: { text: "🚗 雪地自駕", class: "tag-teal" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=Spring+Valley+Izumi+Kogen",
-        navName: "Spring Valley 仙台泉",
+        time: "09:30 - 10:00",
+        id: "退房出發前往水族館",
+        title: "Dormy Inn 退房，前往仙台海洋森林水族館",
+        tag: { text: "🚗 5分鐘", class: "tag-teal" },
+        navUrl: "https://maps.app.goo.gl/BxaETtqtFLNmQoJf8?g_st=ac",
+        navName: "仙台海洋森林水族館",
         priority: "must",
         open: true,
         content: `
-          <p>今天不用早起，09:30 輕鬆退房出發</p>
-          <p class="text-xs text-slate-500">仙台港 → Spring Valley，車程約 45 分鐘</p>
-          <div class="tip-block warn">
-            <strong>🚗 週二走高速</strong>｜東北自動車道 → 泉 PA 智能 IC<br>
-            除雪層級最高、彎道平緩
-          </div>
+          <p>Dormy Inn 退房，開車 5 分鐘到水族館</p>
+          <div class="tip-block">💡 行李先放車上，逛完水族館再回 Grand Bach</div>
         `
       },
       {
-        time: "10:15 - 15:00",
-        id: "雪之冒險王國玩雪放電與滑雪場午餐",
-        title: "【雪之冒險王國】玩雪放電與滑雪場午餐",
-        img: "https://lovetogo.tw/201802-tohoku/spring-valley/photo/20180204-1310-0344.jpg",
-        tag: { text: "☃️ 玩雪放電", class: "tag-sky" },
-        navUrl: "",
+        time: "10:00 - 12:30",
+        id: "仙台海洋森林水族館",
+        title: "仙台海洋森林水族館 🐧",
+        img: "https://i.meee.com.tw/erT0EXg.jpg",
+        tag: { text: "🐬 海洋奇觀", class: "tag-sky" },
+        navUrl: "https://maps.app.goo.gl/BxaETtqtFLNmQoJf8?g_st=ac",
+        navName: "仙台海洋森林水族館",
         priority: "must",
         highlight: true,
         open: true,
         content: `
-          <p>雪之冒險王國，4 歲小孩的放電場</p>
-          <p class="text-xs text-slate-500">10:15 進場，玩到 15:00（含午餐）</p>
-          <div class="tip-block warn">
-            <strong>🎟️ 票價與營業</strong><br>
-            假日｜4 歲 + 陪同家長皆 ¥2,000（網購 ¥1,500）<br>
-            平日｜玩雪專區不開放，全場免門票，單租雪盆 ¥300
-          </div>
+          <p>冬季限定的企鵝雪地散步，室內海豚秀不怕冷</p>
           <div class="tip-block">
-            <strong>🍜 場內午餐</strong>｜12:00–12:45 在滑雪場餐廳吃拉麵 / 咖哩
+            <strong>🐬 必看亮點</strong>｜閃耀生命之海（數萬尾沙丁魚群）<br>
+            門票：成人 ¥2,400 · 幼兒 ¥800
           </div>
-          <details>
-            <summary>🎯 3 大必玩</summary>
-            <div>
-              <p>旋轉雪盆｜像雪地旋轉木馬，最安全</p>
-              <p>魔毯滑雪盆｜電動傳送帶上坡，省小孩體力</p>
-              <p>雪地夾鴨子｜帶「雪球夾」模具，放電又好玩</p>
-            </div>
-          </details>
-          <details>
-            <summary>⚠️ 3 大避坑重點</summary>
-            <div>
-              <p>別帶推車｜雪地推不動，改讓小孩坐雪盆裡拉著走</p>
-              <p>備兩雙手套｜玩雪手套極易濕透</p>
-              <p>預防上廁所｜連身雪衣極難脫</p>
-            </div>
-          </details>
         `
       },
       {
-        time: "15:45 - 16:15",
-        id: "驅車下山-入住Hotel-Grand-Bach-第1晚",
-        title: "驅車下山 ➔ 入住 Hotel Grand Bach（第1晚）",
+        time: "12:30 - 13:30",
+        id: "水族館周邊或Outlet午餐",
+        title: "午餐：水族館周邊 / Outlet 美食街",
+        tag: { text: "🍽️ 彈性午餐", class: "tag-amber" },
+        navUrl: "",
+        priority: "optional",
+        open: true,
+        content: `<p>在水族館附近吃，或直接殺去 Outlet 美食街吃。</p>`
+      },
+      {
+        time: "13:30 - 14:30",
+        id: "驅車前往入住Hotel-Grand-Bach-第1晚",
+        title: "驅車前往 ➔ 入住 Hotel Grand Bach（第1晚）",
         img: "https://cdn.jalan.jp/jalan/images/pict2L/Y5/Y318775/Y318775163.jpg",
         tag: { text: "🏨 舒適連住", class: "tag-indigo" },
         navUrl: "https://maps.app.goo.gl/tumoctSbhRFgQkx89?g_st=ac",
@@ -1095,7 +1109,7 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>15:00 離開雪場，15:45 抵達飯店</p>
+          <p>水族館 → Grand Bach，開車 10 分鐘</p>
           <p class="text-xs text-slate-500">入住仙台站旁，連住 2 晚（D6–D7）</p>
           <div class="tip-block warn">
             <strong>🧳 卸貨動線</strong>｜先臨停飯店門口<br>
@@ -1108,7 +1122,7 @@ const winterItineraries = [
         `
       },
       {
-        time: "16:15 - 17:00",
+        time: "14:30 - 16:15",
         id: "仙台站前店還車",
         title: "仙台站前店還車 ➔ Nippon Rent-A-Car",
         img: "https://rimage.gnst.jp/livejapan.com/public/img/spot/lj/01/45/lj0145539/lj0145539_6a39f0b20dd93_main.jpg",
@@ -1147,7 +1161,7 @@ const winterItineraries = [
           <p class="text-xs text-slate-500">還車後步行 3 分鐘就到</p>
           <div class="tip-block warn">
             <strong>⏰ 17:00 入座</strong>｜還車後直接過來，唔使搭的士<br>
-            ⚠️ 米澤牛人氣店，建議提早訂位
+            ⚠️ 米澤牛人氣店，建議提早訂位（出發前 1 個月）
           </div>
           <details>
             <summary>🍱 推薦餐點</summary>

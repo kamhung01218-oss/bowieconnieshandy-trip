@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v21.6（銀山接駁車 1/9 開放）
+ * app-itinerary.js — v21.7（D4 滑雪 / D6 水族館）
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -43,8 +43,9 @@ const WEATHER_LOCATIONS = {
     { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '12:30', timeTo: '23:59', climate: { max: 4, min: -2, rain: 35 } }
   ],
   4: [
-    { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '10:00', climate: { max: 4, min: -2, rain: 35 } },
-    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '10:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
+    { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '09:30', climate: { max: 4, min: -2, rain: 35 } },
+    { id: 'spring_valley', name: 'Spring Valley 泉高原', shortName: '滑雪場', lat: 38.3694, lon: 140.6908, timeFrom: '09:30', timeTo: '15:00', climate: { max: 0, min: -5, rain: 40 } },
+    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '15:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ],
   5: [
     { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '00:00', timeTo: '09:30', climate: { max: 5, min: -1, rain: 30 } },
@@ -52,8 +53,7 @@ const WEATHER_LOCATIONS = {
     { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '12:30', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ],
   6: [
-    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '00:00', timeTo: '09:30', climate: { max: 5, min: -1, rain: 30 } },
-    { id: 'spring_valley', name: 'Spring Valley 泉高原', shortName: '滑雪場', lat: 38.3694, lon: 140.6908, timeFrom: '09:30', timeTo: '15:00', climate: { max: 0, min: -5, rain: 40 } },
+    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '00:00', timeTo: '15:00', climate: { max: 5, min: -1, rain: 30 } },
     { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '15:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ],
   7: [
@@ -250,9 +250,9 @@ function renderTripOverview() {
     { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達仙台", desc: "機場 → 相鐵 FRESA INN → 伊達牛舌 → 購物" },
     { day: "D2", color: "#f59e0b", emoji: "🦊", title: "狐狸村 + 銀山", desc: "取車 → 客美多 → 狐狸村 → 白石溫麵 → 銀山夜景 → 瀧之湯" },
     { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → げんキッズ → 瀧之湯懷石" },
-    { day: "D4", color: "#14b8a6", emoji: "🐧", title: "水族館", desc: "瀧之湯退房 → 水族館 → Dormy Inn 第1晚" },
+    { day: "D4", color: "#14b8a6", emoji: "⛷️", title: "Spring Valley", desc: "瀧之湯退房 → 玩雪 → Dormy Inn 第1晚" },
     { day: "D5", color: "#f43f5e", emoji: "🍓", title: "市區草莓", desc: "市區草莓 → Outlet → Dormy Inn 第2晚" },
-    { day: "D6", color: "#10b981", emoji: "⛷️", title: "Spring Valley", desc: "玩雪 → Grand Bach → 還車 → 仔虎" },
+    { day: "D6", color: "#10b981", emoji: "🐧", title: "水族館", desc: "水族館 → Grand Bach → 還車 → 仔虎" },
     { day: "D7", color: "#8b5cf6", emoji: "⛩️", title: "榴岡神社", desc: "榴岡神社 → 仙台朝市 → 一番町採買" },
     { day: "D8", color: "#475569", emoji: "✈️", title: "返港", desc: "S-PAL 伴手禮 → アクセス線 → 起飛" }
   ];
