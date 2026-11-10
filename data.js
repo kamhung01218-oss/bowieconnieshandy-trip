@@ -1,7 +1,7 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 5.14.0（D6 水族館 4 小時 / 17:00 還車）
+ *  版本: 5.16.0（D2 けむすけ燒肉首選 / D3 水車生そば午餐 / D4 塩釜壽司 / D5 Girafe）
  * ============================================================
  */
 
@@ -460,23 +460,16 @@ const winterItineraries = [
       {
         time: "19:30 - 21:00",
         id: "天童市區晚餐",
-        title: "晚餐 ➔ 天童市區美食（水車生そば / 燒肉 / 壽司）",
-        tag: { text: "🍜 在地晚餐", class: "tag-amber" },
-        navUrl: "",
+        title: "晚餐 ➔ 大衆焼肉けむすけ 天童店（首選）",
+        tag: { text: "🥩 在地燒肉", class: "tag-amber" },
+        navUrl: "https://maps.app.goo.gl/P3JM6zwqwNaGTmgTA?g_st=ac",
+        navName: "大衆焼肉けむすけ 天童店",
         priority: "must",
         open: true,
         content: `
-          <p>今晚瀧之湯不含晚餐，去天童市區吃</p>
+          <p>今晚瀧之湯不含晚餐，去天童市區吃燒肉</p>
           <details>
-            <summary>🍜 手打 水車生そば</summary>
-            <div>
-              <p><strong>鳥中華</strong>｜鰹魚醬油湯 + 拉麵 + 雞肉 + 天婦羅碎屑</p>
-              <p><strong>手打蕎麥</strong>｜石臼研磨，粗麵條、超有咬口</p>
-              <a href="https://maps.app.goo.gl/XvHHsWwn3RNpx67m6?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <details>
-            <summary>🥩 大衆焼肉けむすけ</summary>
+            <summary>🥩 大衆焼肉けむすけ 天童店（首選）</summary>
             <div>
               <p><strong>三大招牌</strong>｜名物アカ（哈拉米）・名物シロ（豬大腸）・炙り牛寿司</p>
               <p><strong>隱藏靈魂</strong>｜桌上檸檬沙瓦水龍頭（1 小時無限暢飲）</p>
@@ -484,7 +477,7 @@ const winterItineraries = [
             </div>
           </details>
           <details>
-            <summary>🍣 いろは寿司</summary>
+            <summary>🍣 いろは寿司（備選）</summary>
             <div>
               <p><strong>頂級壽司</strong>｜職人現捏「特上握壽司」（約 ¥2,000 起）</p>
               <p><strong>招牌熟食</strong>｜鰻魚飯「鰻重」（約 ¥2,500）</p>
@@ -498,14 +491,14 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 3 - 酒店早餐 → 藏王樹冰（早鳥） → げんキッズ → 瀧之湯
+  // DAY 3 - 藏王樹冰 → 水車生そば → げんキッズ → 瀧之湯
   // ==========================================
   {
     day: 3,
     dateLabel: "DAY 3 · 2027年1月23日 (週六)",
-    id: "藏王樹冰-げんキッズ-瀧之湯",
-    title: "藏王樹冰 ➔ げんキッズ ➔ 瀧之湯",
-    subtitle: "☃️ 樹冰與溫泉之日",
+    id: "藏王樹冰-水車生そば-げんキッズ-瀧之湯",
+    title: "藏王樹冰 ➔ 水車生そば ➔ げんキッズ ➔ 瀧之湯",
+    subtitle: "☃️ 樹冰、蕎麥與溫泉之日",
     emoji: "☃️",
     events: [
       {
@@ -628,12 +621,31 @@ const winterItineraries = [
             <strong>📸 拍照亮點</strong>｜纜車靠窗位 · 地藏菩薩像 · 山頂餐廳落地窗前<br>
             <strong>帶現金</strong>｜山上小攤只收現金
           </div>
+          <div class="tip-block">💡 12:00 下山，12:30 到天童市區吃水車生そば</div>
         `
       },
       {
-        time: "12:30 - 15:30",
+        time: "12:30 - 14:00",
+        id: "午餐-手打水車生そば",
+        title: "午餐 ➔ 手打 水車生そば",
+        tag: { text: "🍜 在地名物", class: "tag-amber" },
+        navUrl: "https://maps.app.goo.gl/XvHHsWwn3RNpx67m6?g_st=ac",
+        navName: "手打 水車生そば",
+        priority: "must",
+        open: true,
+        content: `
+          <p>藏王下山後直接到天童市區，12:30 入座避開人潮</p>
+          <div class="tip-block">
+            <strong>🍜 必吃</strong>｜鳥中華（鰹魚醬油湯 + 拉麵 + 雞肉 + 天婦羅碎屑）<br>
+            <strong>🍜 手打蕎麥</strong>｜石臼研磨，粗麵條、超有咬口
+          </div>
+          <div class="tip-block">💡 14:00 吃完，開車 5–10 分鐘去 げんキッズ</div>
+        `
+      },
+      {
+        time: "14:00 - 16:00",
         id: "子育て未来館-げんキッズ",
-        title: "子育て未来館 げんキッズ（含午餐）",
+        title: "子育て未来館 げんキッズ（玩樂）",
         images: [
           "https://i.meee.com.tw/4gyr7IX.jpg",
           "https://i.meee.com.tw/95bdFQ5.jpg"
@@ -646,17 +658,16 @@ const winterItineraries = [
         open: true,
         content: `
           <p>天童市區的室內兒童館，4 歲小孩放電好地方</p>
-          <p class="text-xs text-slate-500">12:30 進場，玩到 15:30（含午餐）</p>
+          <div class="tip-block warn">
+            <strong>🕐 玩樂時間</strong>｜14:00 進場，玩到 16:00（約 2 小時）<br>
+            午餐已在水車生そば吃飽，這裡專心放電
+          </div>
           <div class="tip-block">
             <strong>🎠 館內設施</strong><br>
             • 大型攀爬架、溜滑梯、彈跳床<br>
             • 積木區、繪本區、扮家家酒<br>
             • 幼兒專區（0–3 歲軟墊區）<br>
             • 室內溫暖，不用吹冷風
-          </div>
-          <div class="tip-block warn">
-            <strong>🍜 午餐</strong>｜館內有軽食區，或步行 5 分鐘到天童市區吃<br>
-            建議 12:30–13:15 先吃，吃完繼續玩到 15:30
           </div>
           <div class="tip-block">
             <strong>💰 費用</strong>｜免費入場（部分設施可能收費）<br>
@@ -708,14 +719,14 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 4 - 酒店早餐 → 退房 → Spring Valley 玩雪 → Dormy Inn 第1晚
+  // DAY 4 - 瀧之湯 → Spring Valley → 塩釜壽司 → Dormy Inn → 炸豬扒
   // ==========================================
   {
     day: 4,
     dateLabel: "DAY 4 · 2027年1月24日 (週日)",
-    id: "Spring-Valley-Dormy-Inn第1晚",
-    title: "Spring Valley 玩雪 ➔ 入住 Dormy Inn 仙台海邊",
-    subtitle: "⛷️ 玩雪放電之日",
+    id: "Spring-Valley-塩釜壽司-Dormy-Inn第1晚",
+    title: "Spring Valley 玩雪 ➔ 塩釜壽司 ➔ 入住 Dormy Inn 仙台海邊",
+    subtitle: "⛷️ 玩雪、壽司與炸豬扒之日",
     emoji: "⛷️",
     events: [
       {
@@ -768,9 +779,9 @@ const winterItineraries = [
         `
       },
       {
-        time: "10:45 - 15:00",
+        time: "10:45 - 13:30",
         id: "雪之冒險王國玩雪放電與滑雪場午餐",
-        title: "【雪之冒險王國】玩雪放電與滑雪場午餐",
+        title: "【雪之冒險王國】玩雪放電",
         img: "https://lovetogo.tw/201802-tohoku/spring-valley/photo/20180204-1310-0344.jpg",
         tag: { text: "☃️ 玩雪放電", class: "tag-sky" },
         navUrl: "",
@@ -779,14 +790,15 @@ const winterItineraries = [
         open: true,
         content: `
           <p>雪之冒險王國，4 歲小孩的放電場</p>
-          <p class="text-xs text-slate-500">10:45 進場，玩到 15:00（含午餐）</p>
+          <p class="text-xs text-slate-500">10:45 進場，玩到 13:30（約 2.75 小時）</p>
           <div class="tip-block warn">
             <strong>🎟️ 票價與營業</strong><br>
             假日｜4 歲 + 陪同家長皆 ¥2,000（網購 ¥1,500）<br>
             平日｜玩雪專區不開放，全場免門票，單租雪盆 ¥300
           </div>
           <div class="tip-block">
-            <strong>🍜 場內午餐</strong>｜12:00–12:45 在滑雪場餐廳吃拉麵 / 咖哩
+            <strong>🍜 場內輕食</strong>｜12:00 左右簡單吃拉麵 / 咖哩，不要吃太飽<br>
+            14:15 後去塩釜港吃迴鮮寿司
           </div>
           <details>
             <summary>🎯 3 大必玩</summary>
@@ -807,21 +819,53 @@ const winterItineraries = [
         `
       },
       {
-        time: "15:00 - 15:45",
+        time: "14:15 - 15:30",
+        id: "午餐-廻鮮寿司塩釜港",
+        title: "午餐 ➔ 廻鮮寿司塩釜港（或 Sushi Tetsu）",
+        tag: { text: "🍣 迴轉壽司", class: "tag-amber" },
+        navUrl: "https://maps.app.goo.gl/uRJzxcNPM6hTx3vW9",
+        navName: "廻鮮寿司塩釜港 塩釜店",
+        priority: "must",
+        highlight: true,
+        open: true,
+        content: `
+          <p>滑雪場 → 塩釜港，約 40 分鐘</p>
+          <div class="tip-block warn">
+            <strong>⏰ 14:00 後錯開人潮</strong>｜迴鮮寿司塩釜港人氣高，避開午餐高峰
+          </div>
+          <details>
+            <summary>🍣 廻鮮寿司塩釜港（首選）</summary>
+            <div>
+              <p><strong>地址</strong>｜塩釜港周邊</p>
+              <a href="https://maps.app.goo.gl/uRJzxcNPM6hTx3vW9" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <details>
+            <summary>🍣 塩竈すし哲 本店（人少，如早到）</summary>
+            <div>
+              <p><strong>優勢</strong>｜排隊較少，適合早到</p>
+              <a href="https://maps.app.goo.gl/2Gf5Qsfc26vSLUYN8?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <div class="tip-block">💡 15:30 吃完回 Dormy Inn check in</div>
+        `
+      },
+      {
+        time: "15:30 - 15:45",
         id: "開車前往Dormy-Inn-仙台海邊",
-        title: "開車前往 Dormy Inn EXPRESS 仙台海邊",
-        tag: { text: "🚗 45分鐘", class: "tag-teal" },
+        title: "開車回 Dormy Inn（塩釜港 → 仙台港）",
+        tag: { text: "🚗 15分鐘", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Dormy+Inn+EXPRESS+仙台海辺",
         navName: "Dormy Inn EXPRESS 仙台海邊",
         priority: "must",
         open: true,
         content: `
-          <p>Spring Valley → 仙台港，約 45 分鐘</p>
-          <div class="tip-block">💡 小孩可在車上補眠，抵達後精神好</div>
+          <p>塩釜港 → Dormy Inn 仙台海邊，約 15 分鐘</p>
+          <div class="tip-block">💡 15:45 抵達，快速 check in</div>
         `
       },
       {
-        time: "15:45 - 16:15",
+        time: "15:45 - 16:00",
         id: "入住Dormy-Inn-EXPRESS-仙台海邊-第1晚",
         title: "入住 Dormy Inn EXPRESS 仙台海邊（第1晚）",
         img: "https://i.meee.com.tw/NAO5z3M.jpg",
@@ -831,7 +875,7 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>Check-in，小孩可好好午睡</p>
+          <p>15:45 抵達 Dormy Inn，快速 check in 放行李</p>
           <div class="tip-block">
             <strong>♨️ 天然大浴場</strong>｜晚上可泡湯<br>
             <strong>🍜 21:30 免費夜鳴拉麵</strong><br>
@@ -840,39 +884,73 @@ const winterItineraries = [
         `
       },
       {
-        time: "16:15 - 18:00",
+        time: "16:00 - 18:00",
         id: "飯店休息與海邊散步",
-        title: "飯店休息 ➔ 海邊散步 / 大浴場",
+        title: "休息 / 大浴場 / Outlet（彈性）",
         tag: { text: "♨️ 悠閒時光", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Dormy+Inn+EXPRESS+仙台海辺",
         navName: "Dormy Inn EXPRESS 仙台海邊",
         priority: "optional",
         open: true,
         content: `
-          <p>今天不趕行程，入住後好好休息</p>
+          <p>check in 後有體力就行 Outlet，沒體力就休息泡湯</p>
           <div class="tip-block">
-            <strong>🌊 海邊散步</strong>｜飯店周邊走走，吹吹海風<br>
+            <strong>🛍️ Mitsui Outlet Park 仙台港</strong>｜開到 20:00，明天 D5 都會再行<br>
             <strong>♨️ 大浴場</strong>｜避開人潮，下午先泡一次湯<br>
             <strong>🛏️ 小孩補眠</strong>｜連續幾天早起，讓小孩好好睡個午覺
           </div>
-          <div class="tip-block">💡 明天一次過採草莓 + Outlet，今天不用急</div>
+          <div class="tip-block">💡 18:00 出發吃炸豬扒晚餐</div>
         `
       },
       {
-        time: "18:00 - 21:30",
+        time: "18:00 - 19:30",
         id: "Dormy-Inn晚餐與夜鳴拉麵",
-        title: "晚餐 ➔ 飯店周邊 / 大浴場 + 夜鳴拉麵",
-        tag: { text: "🍜 泡湯宵夜", class: "tag-amber" },
+        title: "晚餐 ➔ 炸豬扒（三選一）",
+        tag: { text: "🍱 炸豬扒", class: "tag-amber" },
+        navUrl: "",
+        priority: "must",
+        open: true,
+        content: `
+          <p>仙台港周邊炸豬扒名店，三選一</p>
+          <details>
+            <summary>🍱 かつ庄 多賀城店（Katsusho Tagajo）</summary>
+            <div>
+              <p><strong>招牌</strong>｜厚切炸豬扒、味噌豬扒</p>
+              <a href="https://maps.app.goo.gl/wYEG22U6w7f9UC849" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <details>
+            <summary>🍱 とんかつ一代</summary>
+            <div>
+              <p><strong>招牌</strong>｜現炸豬扒、定食</p>
+              <a href="https://maps.app.goo.gl/HrnA3SR3516cygKm7?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <details>
+            <summary>🍱 とんちん館（Tonchin-kan）</summary>
+            <div>
+              <p><strong>招牌</strong>｜炸豬扒、炸蝦</p>
+              <a href="https://maps.app.goo.gl/RQBUWUjpHrnDMAds6?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <div class="tip-block">💡 19:30 回 Dormy Inn，21:30 夜鳴拉麵</div>
+        `
+      },
+      {
+        time: "19:30 - 21:30",
+        id: "Dormy-Inn大浴場與夜鳴拉麵",
+        title: "回 Dormy Inn ➔ 大浴場 + 夜鳴拉麵",
+        tag: { text: "♨️ 泡湯宵夜", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Dormy+Inn+EXPRESS+仙台海辺",
         navName: "Dormy Inn EXPRESS 仙台海邊",
         priority: "must",
         open: true,
         content: `
-          <p>晚餐在飯店周邊簡單吃，或到 AEON 超市買熟食</p>
+          <p>吃飽回 Dormy Inn，泡大浴場放鬆</p>
           <div class="tip-block">
-            <strong>🍱 周邊選擇</strong>｜AEON 仙台港店熟食區、中野榮站周邊餐廳<br>
-            <strong>♨️ 大浴場</strong>｜吃飽泡湯放鬆<br>
-            <strong>🍜 夜鳴拉麵</strong>｜21:30 開始，免費
+            <strong>♨️ 大浴場</strong>｜泡湯放鬆<br>
+            <strong>🍜 夜鳴拉麵</strong>｜21:30 開始，免費<br>
+            <strong>💡 明天</strong>｜早餐 Girafe，採草莓 + Outlet
           </div>
         `
       }
@@ -880,16 +958,34 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 5 - 市區草莓 → Outlet → Dormy Inn 第2晚
+  // DAY 5 - Girafe 早餐 → 草莓 → Outlet 內食午餐 → Outlet → Dormy Inn 第2晚
   // ==========================================
   {
     day: 5,
     dateLabel: "DAY 5 · 2027年1月25日 (週一)",
     id: "市區草莓-Outlet-Dormy-Inn第2晚",
-    title: "市區草莓採摘 ➔ 仙台港血拚 ➔ Dormy Inn 第2晚",
-    subtitle: "🍓 草莓與購物之日",
+    title: "Girafe 早餐 ➔ 市區草莓 ➔ Outlet ➔ Dormy Inn 第2晚",
+    subtitle: "🍓 麵包、草莓與購物之日",
     emoji: "🍓",
     events: [
+      {
+        time: "08:30 - 09:15",
+        id: "早餐-Boulangerie-Girafe",
+        title: "早餐 ➔ Boulangerie Girafe（首選）",
+        tag: { text: "🥐 麵包店", class: "tag-amber" },
+        navUrl: "https://maps.app.goo.gl/NgULaDJhTcaTRMTWA?g_st=ac",
+        navName: "ブーランジェリー・ジラフ",
+        priority: "must",
+        open: true,
+        content: `
+          <p>仙台港周邊人氣麵包店，買完車上吃或店內吃</p>
+          <div class="tip-block">
+            <strong>🥐 必買</strong>｜可頌、丹麥麵包、季節限定<br>
+            <strong>☕ 咖啡</strong>｜店內有座位，也可外帶
+          </div>
+          <div class="tip-block">💡 09:15 吃完上車，09:30 出發去草莓園</div>
+        `
+      },
       {
         time: "09:30 - 10:00",
         id: "開車前往市區草莓園",
@@ -943,25 +1039,31 @@ const winterItineraries = [
         `
       },
       {
-        time: "11:30 - 12:30",
-        id: "午餐-草莓園附近",
-        title: "午餐 ➔ 草莓園附近簡單吃",
-        tag: { text: "🍽️ 彈性午餐", class: "tag-amber" },
-        navUrl: "",
-        priority: "optional",
-        open: true,
-        content: `<p>草莓園附近食堂，或往仙台港路上休息站吃。</p>`
-      },
-      {
-        time: "12:30 - 13:00",
+        time: "11:30 - 11:45",
         id: "開車前往Mitsui-Outlet-Park-仙台港",
         title: "開車前往 Mitsui Outlet Park 仙台港",
-        tag: { text: "🚗 30-40分鐘", class: "tag-teal" },
+        tag: { text: "🚗 15分鐘", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Mitsui+Outlet+Park+Sendai+Port",
         navName: "三井Outlet 仙台港",
         priority: "must",
         open: true,
-        content: `<p>市區 → 仙台港，約 30-40 分鐘。</p>`
+        content: `<p>草莓園 → 仙台港 Outlet，約 15 分鐘。</p>`
+      },
+      {
+        time: "11:45 - 13:00",
+        id: "午餐-草莓園附近",
+        title: "午餐 ➔ Outlet 內食（肚餓就食）",
+        tag: { text: "🍽️ 彈性午餐", class: "tag-amber" },
+        navUrl: "",
+        priority: "optional",
+        open: true,
+        content: `
+          <p>採完草莓直接去 Outlet，肚餓就在 Outlet 美食街吃</p>
+          <div class="tip-block">
+            <strong>🍽️ Outlet 美食街</strong>｜拉麵、海鮮丼、定食、兒童餐<br>
+            <strong>💡 彈性</strong>｜不趕時間，邊逛邊吃
+          </div>
+        `
       },
       {
         time: "13:00 - 18:00",
@@ -999,7 +1101,7 @@ const winterItineraries = [
           <div class="tip-block">
             <strong>♨️ 大浴場</strong>｜泡湯放鬆<br>
             <strong>🍜 夜鳴拉麵</strong>｜21:30 免費<br>
-            <strong>💡 明天</strong>｜退房去水族館
+            <strong>💡 明天</strong>｜退房去水族館（4 小時）
           </div>
         `
       }
