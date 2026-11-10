@@ -1,7 +1,7 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 5.13.0（D7 仔虎午餐四圖輪播 / D7 榴岡神社完整攻略）
+ *  版本: 5.14.0（D6 水族館 4 小時 / 17:00 還車）
  * ============================================================
  */
 
@@ -1007,7 +1007,7 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 6 - 水族館 → Grand Bach → 還車 → 站周邊晚餐
+  // DAY 6 - 水族館 4 小時 → Grand Bach → 17:00 還車 → 站周邊晚餐
   // ==========================================
   {
     day: 6,
@@ -1032,7 +1032,7 @@ const winterItineraries = [
         `
       },
       {
-        time: "10:00 - 12:30",
+        time: "10:00 - 14:00",
         id: "仙台海洋森林水族館",
         title: "仙台海洋森林水族館 🐧",
         img: "https://i.meee.com.tw/erT0EXg.jpg",
@@ -1044,14 +1044,16 @@ const winterItineraries = [
         open: true,
         content: `
           <p>冬季限定的企鵝雪地散步，室內海豚秀不怕冷</p>
+          <p class="text-xs text-slate-500">10:00 進場，玩到 14:00（4 小時），時間充裕不用趕</p>
           <div class="tip-block">
             <strong>🐬 必看亮點</strong>｜閃耀生命之海（數萬尾沙丁魚群）<br>
             門票：成人 ¥2,400 · 幼兒 ¥800
           </div>
+          <div class="tip-block">💡 4 歲小孩難得可以慢慢看，不用趕場</div>
         `
       },
       {
-        time: "12:30 - 13:30",
+        time: "14:00 - 15:00",
         id: "水族館周邊或Outlet午餐",
         title: "午餐：水族館周邊 / Outlet 美食街",
         tag: { text: "🍽️ 彈性午餐", class: "tag-amber" },
@@ -1061,7 +1063,7 @@ const winterItineraries = [
         content: `<p>在水族館附近吃，或直接殺去 Outlet 美食街吃。</p>`
       },
       {
-        time: "13:30 - 14:30",
+        time: "15:00 - 16:30",
         id: "驅車前往入住Hotel-Grand-Bach-第1晚",
         title: "驅車前往 ➔ 入住 Hotel Grand Bach（第1晚）",
         img: "https://cdn.jalan.jp/jalan/images/pict2L/Y5/Y318775/Y318775163.jpg",
@@ -1071,11 +1073,11 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>水族館 → Grand Bach，開車 10 分鐘</p>
+          <p>15:00 離開水族館，15:20 抵達 Grand Bach</p>
           <p class="text-xs text-slate-500">入住仙台站旁，連住 2 晚（D6–D7）</p>
           <div class="tip-block warn">
             <strong>🧳 卸貨動線</strong>｜先臨停飯店門口<br>
-            一位家長帶小孩 + 大行李下車 → 駕駛獨自去停車
+            一位家長帶小孩 + 大行李下車 → 駕駛獨自去還車
           </div>
           <div class="tip-block">
             <strong>♨️ 大浴場</strong>｜16F 頂樓<br>
@@ -1084,7 +1086,7 @@ const winterItineraries = [
         `
       },
       {
-        time: "14:30 - 16:15",
+        time: "16:30 - 17:00",
         id: "仙台站前店還車",
         title: "仙台站前店還車 ➔ Nippon Rent-A-Car",
         img: "https://rimage.gnst.jp/livejapan.com/public/img/spot/lj/01/45/lj0145539/lj0145539_6a39f0b20dd93_main.jpg",
@@ -1096,7 +1098,7 @@ const winterItineraries = [
         content: `
           <p>Grand Bach → 仙台站前店，開車 10 分鐘</p>
           <div class="tip-block warn">
-            <strong>✅ 還車必檢</strong><br>
+            <strong>✅ 還車必檢（17:00 完成）</strong><br>
             • 加滿油（保留發票）<br>
             • 歸還 2 套便攜式兒童安全帶<br>
             • 歸還 ETC 卡<br>
