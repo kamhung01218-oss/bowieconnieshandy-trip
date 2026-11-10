@@ -1,7 +1,7 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 5.10.0（D4 Spring Valley 滑雪 / D5 市區草莓 / D6 水族館）
+ *  版本: 5.13.0（D7 仔虎午餐四圖輪播 / D7 榴岡神社完整攻略）
  * ============================================================
  */
 
@@ -26,13 +26,7 @@ const winterItineraries = [
         tag: { text: "🛬 抵達雪國", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Airport",
         navName: "仙台機場",
-        links: [
-          {
-            label: "仙台機場攻略",
-            icon: "📖",
-            url: "https://tohoku.letsgojp.com/archives/739243/"
-          }
-        ],
+        links: [{ label: "仙台機場攻略", icon: "📖", url: "https://tohoku.letsgojp.com/archives/739243/" }],
         priority: "must",
         open: true,
         content: `
@@ -72,13 +66,7 @@ const winterItineraries = [
         tag: { text: "🚃 機場電車", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Airport+Station",
         navName: "仙台機場站",
-        links: [
-          {
-            label: "機場電車路線攻略",
-            icon: "📌",
-            url: "https://nicklee.tw/2331/sendai-airport-access/"
-          }
-        ],
+        links: [{ label: "機場電車路線攻略", icon: "📌", url: "https://nicklee.tw/2331/sendai-airport-access/" }],
         priority: "must",
         open: true,
         content: `
@@ -397,16 +385,8 @@ const winterItineraries = [
         navUrl: "https://maps.app.goo.gl/R5FCE8fhY6jMzqjr7?g_st=ac",
         navName: "銀山溫泉",
         links: [
-          {
-            label: "🚌 接駁車預約（官方）",
-            icon: "🎫",
-            url: "https://www.ginzanonsen.jp/blog/archives/524"
-          },
-          {
-            label: "📖 交通管制攻略（參考）",
-            icon: "📌",
-            url: "https://nicklee.tw/3241/ginzan-onsen-control/#%E6%8E%A5%E9%A7%81%E8%BB%8A%E8%A1%8C%E9%A7%9B%E6%97%A5%E6%9C%9F%E8%88%87%E9%A0%90%E7%B4%84%E6%97%A5%E6%9C%9F"
-          }
+          { label: "🚌 接駁車預約（官方）", icon: "🎫", url: "https://www.ginzanonsen.jp/blog/archives/524" },
+          { label: "📖 交通管制攻略（參考）", icon: "📌", url: "https://nicklee.tw/3241/ginzan-onsen-control/#%E6%8E%A5%E9%A7%81%E8%BB%8A%E8%A1%8C%E9%A7%9B%E6%97%A5%E6%9C%9F%E8%88%87%E9%A0%90%E7%B4%84%E6%97%A5%E6%9C%9F" }
         ],
         priority: "must",
         highlight: true,
@@ -444,9 +424,7 @@ const winterItineraries = [
         navUrl: "",
         priority: "must",
         open: true,
-        content: `
-          <p>17:20 搭接駁車回大正浪漫館，準備開車去天童</p>
-        `
+        content: `<p>17:20 搭接駁車回大正浪漫館，準備開車去天童</p>`
       },
       {
         time: "18:00 - 18:40",
@@ -457,9 +435,7 @@ const winterItineraries = [
         navName: "微笑の宿 瀧之湯",
         priority: "must",
         open: true,
-        content: `
-          <p>大正浪漫館 → 天童瀧之湯，約 40 分鐘</p>
-        `
+        content: `<p>大正浪漫館 → 天童瀧之湯，約 40 分鐘</p>`
       },
       {
         time: "18:40 - 19:30",
@@ -576,13 +552,7 @@ const winterItineraries = [
         tag: { text: "🚗 雪地山路", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Zao+Ropeway",
         navName: "藏王索道",
-        links: [
-          {
-            label: "藏王纜車優先票訂票",
-            icon: "🎫",
-            url: "https://zaoropeway.co.jp/winter/ticket_cn.php#juhyo"
-          }
-        ],
+        links: [{ label: "藏王纜車優先票訂票", icon: "🎫", url: "https://zaoropeway.co.jp/winter/ticket_cn.php#juhyo" }],
         priority: "must",
         open: true,
         content: `
@@ -604,13 +574,7 @@ const winterItineraries = [
         tag: { text: "🚠 準備上山", class: "tag-sky" },
         navUrl: "https://zaoropeway.co.jp/winter/ticket_cn.php#juhyo",
         navName: "藏王纜車優先票",
-        links: [
-          {
-            label: "藏王纜車優先票訂票",
-            icon: "🎫",
-            url: "https://zaoropeway.co.jp/winter/ticket_cn.php#juhyo"
-          }
-        ],
+        links: [{ label: "藏王纜車優先票訂票", icon: "🎫", url: "https://zaoropeway.co.jp/winter/ticket_cn.php#juhyo" }],
         priority: "must",
         open: true,
         content: `
@@ -628,9 +592,7 @@ const winterItineraries = [
             → 08:00 前到纜車站排當日券一般隊伍<br>
             旺季一般隊伍可能等待 60–90 分鐘以上
           </div>
-          <div class="tip-block">
-            💡 上個廁所、穿好保暖裝備，準備衝第一班
-          </div>
+          <div class="tip-block">💡 上個廁所、穿好保暖裝備，準備衝第一班</div>
         `
       },
       {
@@ -1045,14 +1007,14 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 6 - 水族館 → Grand Bach → 還車 → 仔虎
+  // DAY 6 - 水族館 → Grand Bach → 還車 → 站周邊晚餐
   // ==========================================
   {
     day: 6,
     dateLabel: "DAY 6 · 2027年1月26日 (週二)",
     id: "水族館-GrandBach-還車-仔虎",
-    title: "水族館 ➔ Grand Bach ➔ 還車 ➔ 仔虎",
-    subtitle: "🐧 海洋與和牛之日",
+    title: "水族館 ➔ Grand Bach ➔ 還車 ➔ 仙台站周邊晚餐",
+    subtitle: "🐧 海洋與車站美食之日",
     emoji: "🐧",
     events: [
       {
@@ -1141,37 +1103,28 @@ const winterItineraries = [
             • 車內垃圾清空
           </div>
           <div class="tip-block">
-            <strong>💡 還車後</strong>｜步行 3 分鐘到 Herb SENDAI 8F 仔虎
+            <strong>💡 還車後</strong>｜步行 3 分鐘回 Grand Bach 放東西，17:30 站周邊晚餐
           </div>
         `
       },
       {
-        time: "17:00 - 19:00",
+        time: "17:30 - 19:00",
         id: "仔虎-仙台駅前店",
-        title: "仔虎 仙台駅前店（Herb SENDAI 8F）",
-        img: "https://matipura.com/CORE/wp-content/uploads/2021/03/DSC00724.jpg",
-        tag: { text: "🥩 頂級米澤牛", class: "tag-amber" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=仔虎+仙台駅前店",
-        navName: "仔虎 仙台駅前店",
+        title: "晚餐 ➔ 仙台站周邊（牛舌通 / 壽司通 / 居酒屋）",
+        tag: { text: "🍽️ 車站晚餐", class: "tag-amber" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Station",
+        navName: "仙台站",
         priority: "must",
-        highlight: true,
         open: true,
         content: `
-          <p>頂級米澤牛燒肉，仙台站前 Herb SENDAI 8F</p>
-          <p class="text-xs text-slate-500">還車後步行 3 分鐘就到</p>
-          <div class="tip-block warn">
-            <strong>⏰ 17:00 入座</strong>｜還車後直接過來，唔使搭的士<br>
-            ⚠️ 米澤牛人氣店，建議提早訂位（出發前 1 個月）
+          <p>還車後步行回 Grand Bach 放東西，17:30 出門吃晚餐</p>
+          <div class="tip-block">
+            <strong>🍽️ 仙台站周邊選擇</strong><br>
+            • 牛舌通（3F）｜善治郎、喜助、伊達の牛たん<br>
+            • 壽司通（3F）｜迴轉壽司、海鮮丼<br>
+            • 居酒屋｜駅前周邊多間，適合家庭
           </div>
-          <details>
-            <summary>🍱 推薦餐點</summary>
-            <div>
-              <p>上燒肉套餐｜油花均勻、肉質細嫩</p>
-              <p>仔虎牛丼 / 和牛牛筋咖哩（約 ¥1,188）</p>
-              <p>冷麵 + 迷你丼組合（約 ¥1,408）</p>
-              <p>兒童專用菜單｜兒童石鍋拌飯（少鹽易入口）</p>
-            </div>
-          </details>
+          <div class="tip-block">💡 19:00 前回 Grand Bach，19:30 大浴場 + 茶漬飯</div>
         `
       },
       {
@@ -1184,7 +1137,7 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>仔虎食完行返 Grand Bach，泡大浴場</p>
+          <p>晚餐後回 Grand Bach，泡大浴場</p>
           <div class="tip-block">
             <strong>♨️ 大浴場</strong>｜16F 頂樓，可看仙台夜景<br>
             <strong>🍙 免費茶漬飯</strong>｜夜間限定宵夜<br>
@@ -1196,14 +1149,14 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 7 - 榴岡神社 → 仙台朝市 → 一番町採買
+  // DAY 7 - 榴岡神社 → 仙台朝市 → 仔虎午餐 → 一番町採買
   // ==========================================
   {
     day: 7,
     dateLabel: "DAY 7 · 2027年1月27日 (週三)",
     id: "榴岡神社-仙台朝市-一番町-GrandBach第2晚",
-    title: "榴岡神社 ➔ 仙台朝市 ➔ 一番町採買",
-    subtitle: "⛩️ 悠閒採買之日",
+    title: "榴岡神社 ➔ 仙台朝市 ➔ 仔虎午餐 ➔ 一番町採買",
+    subtitle: "⛩️ 神社、和牛與採買之日",
     emoji: "⛩️",
     events: [
       {
@@ -1221,13 +1174,21 @@ const winterItineraries = [
             <strong>🚶 步行</strong>｜Grand Bach → 榴岡神社，約 10–15 分鐘<br>
             <strong>🚃 JR</strong>｜仙台站 → 榴岡站，1 分鐘，再步行 3 分鐘
           </div>
+          <div class="tip-block warn">
+            <strong>❄️ 1 月路面提醒</strong>｜氣溫約 -2°C 至 5°C，經常下雪或結冰<br>
+            步行時請穿防滑鞋、放慢腳步，碎石路與階梯特別滑
+          </div>
         `
       },
       {
         time: "10:00 - 11:00",
         id: "榴岡神社參拜祈福",
         title: "榴岡神社參拜祈福",
-        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Tsutsujigaoka_Shrine.jpg/640px-Tsutsujigaoka_Shrine.jpg",
+        images: [
+          "https://i.meee.com.tw/IZq2ClL.jpg",
+          "https://i.meee.com.tw/Y575PZC.jpg",
+          "https://i.meee.com.tw/6ilJ7dH.jpg"
+        ],
         tag: { text: "⛩️ 祈福", class: "tag-indigo" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=榴岡神社",
         navName: "榴岡神社",
@@ -1236,9 +1197,37 @@ const winterItineraries = [
         open: true,
         content: `
           <p>仙台站附近嘅神社，保佑全家平安</p>
+
+          <div class="tip-block warn">
+            <strong>❄️ 1 月天氣與穿著</strong><br>
+            氣溫約 <strong>-2°C 至 5°C</strong>，經常下雪或路面結冰<br>
+            🧥 發熱衣 + 厚毛衣 + 防風防水羽絨大衣 + 圍巾 + 手套<br>
+            👢 神社境內碎石路和階梯積雪結冰時非常滑，務必穿<strong>防滑、鞋底紋路深的雪靴或運動鞋</strong>
+          </div>
+
           <div class="tip-block">
             <strong>⛩️ 參拜流程</strong>｜手水舍洗手 → 鳥居前行禮 → 參拜 → 抽御籤<br>
             <strong>🎋 御守</strong>｜可買交通安全、健康御守
+          </div>
+
+          <details>
+            <summary>🐱 新年求籤與特色御守（必買）</summary>
+            <div>
+              <p><strong>🐱 貓咪 / 狗勾神籤</strong>｜1 月求新年運勢最佳時機，造型可愛</p>
+              <p><strong>🐟 金黃鯛魚神籤</strong>｜象徵開運招福</p>
+              <p><strong>🔮 透明貓咪御守</strong>｜陽光下晶瑩剔透，非常受歡迎</p>
+              <p><strong>📖 御朱印帳</strong>｜「桜遊猫御朱印帳」及季節限定手寫 / 木製御朱印</p>
+              <p><strong>🐦 黃綠色木製鷽鳥</strong>｜開運招福吉祥物</p>
+            </div>
+          </details>
+
+          <div class="tip-block">
+            <strong>🎋 抽到「凶」怎麼辦？</strong>｜綁在神社指定繩架上消災解厄<br>
+            <strong>🎋 抽到「吉」</strong>｜帶回家當護身符
+          </div>
+
+          <div class="tip-block">
+            💡 御朱印、御守、神籤都建議<strong>帶現金</strong>，神社不一定收信用卡
           </div>
         `
       },
@@ -1260,20 +1249,41 @@ const winterItineraries = [
         `
       },
       {
-        time: "12:00 - 13:00",
+        time: "12:00 - 14:00",
         id: "午餐-朝市周邊",
-        title: "午餐 ➔ 朝市周邊海鮮丼 / 定食",
-        tag: { text: "🍣 海鮮午餐", class: "tag-amber" },
-        navUrl: "",
-        priority: "optional",
+        title: "午餐 ➔ 仔虎 仙台駅前店（Herb SENDAI 8F）",
+        images: [
+          "https://i.meee.com.tw/kMjv0CJ.jpg",
+          "https://i.meee.com.tw/GN56Dts.jpg",
+          "https://i.meee.com.tw/w3Ids9V.jpg",
+          "https://i.meee.com.tw/8GQG53e.jpg"
+        ],
+        tag: { text: "🥩 頂級米澤牛", class: "tag-amber" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=仔虎+仙台駅前店",
+        navName: "仔虎 仙台駅前店",
+        priority: "must",
+        highlight: true,
         open: true,
         content: `
-          <p>朝市周邊有幾間海鮮丼、定食店</p>
-          <div class="tip-block">💡 可選朝市內嘅食堂，食完再去一番町</div>
+          <p>朝市步行 5–8 分鐘到 Herb SENDAI 8F，午間套餐性價比高</p>
+          <div class="tip-block warn">
+            <strong>⏰ 12:00 入座</strong>｜午間時段比晚餐便宜，建議提前訂位<br>
+            ⚠️ 米澤牛人氣店，出發前 1 個月官網預約
+          </div>
+          <details>
+            <summary>🍱 午間推薦</summary>
+            <div>
+              <p>上燒肉套餐｜油花均勻、肉質細嫩</p>
+              <p>仔虎牛丼 / 和牛牛筋咖哩（約 ¥1,188）</p>
+              <p>冷麵 + 迷你丼組合（約 ¥1,408）</p>
+              <p>兒童專用菜單｜兒童石鍋拌飯（少鹽易入口）</p>
+            </div>
+          </details>
+          <div class="tip-block">💡 14:00 前吃完，步行去一番町購物</div>
         `
       },
       {
-        time: "13:00 - 18:00",
+        time: "14:00 - 18:00",
         id: "一番町商圈採買",
         title: "一番町商圈 ➔ PARCO / S-PAL 採買",
         tag: { text: "🛍️ 悠閒購物", class: "tag-rose" },

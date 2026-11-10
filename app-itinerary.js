@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v21.7（D4 滑雪 / D6 水族館）
+ * app-itinerary.js — v21.8（D6 站周邊晚餐 / D7 仔虎午餐）
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -252,8 +252,8 @@ function renderTripOverview() {
     { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → げんキッズ → 瀧之湯懷石" },
     { day: "D4", color: "#14b8a6", emoji: "⛷️", title: "Spring Valley", desc: "瀧之湯退房 → 玩雪 → Dormy Inn 第1晚" },
     { day: "D5", color: "#f43f5e", emoji: "🍓", title: "市區草莓", desc: "市區草莓 → Outlet → Dormy Inn 第2晚" },
-    { day: "D6", color: "#10b981", emoji: "🐧", title: "水族館", desc: "水族館 → Grand Bach → 還車 → 仔虎" },
-    { day: "D7", color: "#8b5cf6", emoji: "⛩️", title: "榴岡神社", desc: "榴岡神社 → 仙台朝市 → 一番町採買" },
+    { day: "D6", color: "#10b981", emoji: "🐧", title: "水族館", desc: "水族館 → Grand Bach → 還車 → 站周邊晚餐" },
+    { day: "D7", color: "#8b5cf6", emoji: "⛩️", title: "榴岡神社", desc: "榴岡神社 → 朝市 → 仔虎午餐 → 一番町" },
     { day: "D8", color: "#475569", emoji: "✈️", title: "返港", desc: "S-PAL 伴手禮 → アクセス線 → 起飛" }
   ];
   container.innerHTML = `<div class="overview-timeline">${days.map(d => `<div class="overview-day"><div class="overview-day-marker" style="background:${d.color}">${d.day}</div><div class="overview-day-content"><div class="overview-day-title">${d.emoji} ${d.title}</div><div class="overview-day-desc">${d.desc}</div></div></div>`).join('')}</div>`;
