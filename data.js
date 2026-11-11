@@ -1,7 +1,7 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 5.16.0（D2 けむすけ燒肉首選 / D3 水車生そば午餐 / D4 塩釜壽司 / D5 Girafe）
+ *  版本: 5.17.0（D4 滑雪到 15:00 / 壽司改晚餐 / D5 炸豬扒）
  * ============================================================
  */
 
@@ -719,14 +719,14 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 4 - 瀧之湯 → Spring Valley → 塩釜壽司 → Dormy Inn → 炸豬扒
+  // DAY 4 - 瀧之湯 → Spring Valley → Dormy Inn → 迴鮮寿司
   // ==========================================
   {
     day: 4,
     dateLabel: "DAY 4 · 2027年1月24日 (週日)",
     id: "Spring-Valley-塩釜壽司-Dormy-Inn第1晚",
-    title: "Spring Valley 玩雪 ➔ 塩釜壽司 ➔ 入住 Dormy Inn 仙台海邊",
-    subtitle: "⛷️ 玩雪、壽司與炸豬扒之日",
+    title: "Spring Valley 玩雪 ➔ Dormy Inn ➔ 廻鮮寿司",
+    subtitle: "⛷️ 玩雪與壽司之日",
     emoji: "⛷️",
     events: [
       {
@@ -779,9 +779,9 @@ const winterItineraries = [
         `
       },
       {
-        time: "10:45 - 13:30",
+        time: "10:45 - 15:00",
         id: "雪之冒險王國玩雪放電與滑雪場午餐",
-        title: "【雪之冒險王國】玩雪放電",
+        title: "【雪之冒險王國】玩雪放電與滑雪場午餐",
         img: "https://lovetogo.tw/201802-tohoku/spring-valley/photo/20180204-1310-0344.jpg",
         tag: { text: "☃️ 玩雪放電", class: "tag-sky" },
         navUrl: "",
@@ -790,15 +790,14 @@ const winterItineraries = [
         open: true,
         content: `
           <p>雪之冒險王國，4 歲小孩的放電場</p>
-          <p class="text-xs text-slate-500">10:45 進場，玩到 13:30（約 2.75 小時）</p>
+          <p class="text-xs text-slate-500">10:45 進場，12:00 雪場午餐，吃完繼續玩到 15:00（玩夠才走）</p>
           <div class="tip-block warn">
             <strong>🎟️ 票價與營業</strong><br>
             假日｜4 歲 + 陪同家長皆 ¥2,000（網購 ¥1,500）<br>
             平日｜玩雪專區不開放，全場免門票，單租雪盆 ¥300
           </div>
           <div class="tip-block">
-            <strong>🍜 場內輕食</strong>｜12:00 左右簡單吃拉麵 / 咖哩，不要吃太飽<br>
-            14:15 後去塩釜港吃迴鮮寿司
+            <strong>🍜 場內午餐</strong>｜12:00–12:45 在滑雪場餐廳吃拉麵 / 咖哩，吃飽繼續玩
           </div>
           <details>
             <summary>🎯 3 大必玩</summary>
@@ -819,53 +818,21 @@ const winterItineraries = [
         `
       },
       {
-        time: "14:15 - 15:30",
-        id: "午餐-廻鮮寿司塩釜港",
-        title: "午餐 ➔ 廻鮮寿司塩釜港（或 Sushi Tetsu）",
-        tag: { text: "🍣 迴轉壽司", class: "tag-amber" },
-        navUrl: "https://maps.app.goo.gl/uRJzxcNPM6hTx3vW9",
-        navName: "廻鮮寿司塩釜港 塩釜店",
-        priority: "must",
-        highlight: true,
-        open: true,
-        content: `
-          <p>滑雪場 → 塩釜港，約 40 分鐘</p>
-          <div class="tip-block warn">
-            <strong>⏰ 14:00 後錯開人潮</strong>｜迴鮮寿司塩釜港人氣高，避開午餐高峰
-          </div>
-          <details>
-            <summary>🍣 廻鮮寿司塩釜港（首選）</summary>
-            <div>
-              <p><strong>地址</strong>｜塩釜港周邊</p>
-              <a href="https://maps.app.goo.gl/uRJzxcNPM6hTx3vW9" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <details>
-            <summary>🍣 塩竈すし哲 本店（人少，如早到）</summary>
-            <div>
-              <p><strong>優勢</strong>｜排隊較少，適合早到</p>
-              <a href="https://maps.app.goo.gl/2Gf5Qsfc26vSLUYN8?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <div class="tip-block">💡 15:30 吃完回 Dormy Inn check in</div>
-        `
-      },
-      {
-        time: "15:30 - 15:45",
+        time: "15:00 - 15:45",
         id: "開車前往Dormy-Inn-仙台海邊",
-        title: "開車回 Dormy Inn（塩釜港 → 仙台港）",
-        tag: { text: "🚗 15分鐘", class: "tag-teal" },
+        title: "開車回 Dormy Inn（Spring Valley → 仙台港）",
+        tag: { text: "🚗 45分鐘", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Dormy+Inn+EXPRESS+仙台海辺",
         navName: "Dormy Inn EXPRESS 仙台海邊",
         priority: "must",
         open: true,
         content: `
-          <p>塩釜港 → Dormy Inn 仙台海邊，約 15 分鐘</p>
-          <div class="tip-block">💡 15:45 抵達，快速 check in</div>
+          <p>15:00 離開雪場，Spring Valley → 仙台港，約 45 分鐘</p>
+          <div class="tip-block">💡 小孩可在車上補眠，15:45 抵達 Dormy Inn</div>
         `
       },
       {
-        time: "15:45 - 16:00",
+        time: "15:45 - 16:15",
         id: "入住Dormy-Inn-EXPRESS-仙台海邊-第1晚",
         title: "入住 Dormy Inn EXPRESS 仙台海邊（第1晚）",
         img: "https://i.meee.com.tw/NAO5z3M.jpg",
@@ -884,7 +851,7 @@ const winterItineraries = [
         `
       },
       {
-        time: "16:00 - 18:00",
+        time: "16:15 - 18:00",
         id: "飯店休息與海邊散步",
         title: "休息 / 大浴場 / Outlet（彈性）",
         tag: { text: "♨️ 悠閒時光", class: "tag-indigo" },
@@ -899,45 +866,43 @@ const winterItineraries = [
             <strong>♨️ 大浴場</strong>｜避開人潮，下午先泡一次湯<br>
             <strong>🛏️ 小孩補眠</strong>｜連續幾天早起，讓小孩好好睡個午覺
           </div>
-          <div class="tip-block">💡 18:00 出發吃炸豬扒晚餐</div>
+          <div class="tip-block">💡 18:00 出發吃迴鮮寿司</div>
         `
       },
       {
         time: "18:00 - 19:30",
-        id: "Dormy-Inn晚餐與夜鳴拉麵",
-        title: "晚餐 ➔ 炸豬扒（三選一）",
-        tag: { text: "🍱 炸豬扒", class: "tag-amber" },
-        navUrl: "",
+        id: "午餐-廻鮮寿司塩釜港",
+        title: "晚餐 ➔ 廻鮮寿司塩釜港（或 Sushi Tetsu）",
+        tag: { text: "🍣 迴轉壽司", class: "tag-amber" },
+        navUrl: "https://maps.app.goo.gl/uRJzxcNPM6hTx3vW9",
+        navName: "廻鮮寿司塩釜港 塩釜店",
         priority: "must",
+        highlight: true,
         open: true,
         content: `
-          <p>仙台港周邊炸豬扒名店，三選一</p>
+          <p>仙台港 → 塩釜港，約 15–20 分鐘</p>
+          <div class="tip-block warn">
+            <strong>⏰ 18:00 入座</strong>｜避開午餐人潮，晚上反而輕鬆
+          </div>
           <details>
-            <summary>🍱 かつ庄 多賀城店（Katsusho Tagajo）</summary>
+            <summary>🍣 廻鮮寿司塩釜港（首選）</summary>
             <div>
-              <p><strong>招牌</strong>｜厚切炸豬扒、味噌豬扒</p>
-              <a href="https://maps.app.goo.gl/wYEG22U6w7f9UC849" target="_blank">📍 導航前往</a>
+              <p><strong>地址</strong>｜塩釜港周邊</p>
+              <a href="https://maps.app.goo.gl/uRJzxcNPM6hTx3vW9" target="_blank">📍 導航前往</a>
             </div>
           </details>
           <details>
-            <summary>🍱 とんかつ一代</summary>
+            <summary>🍣 塩竈すし哲 本店（人少，如早到）</summary>
             <div>
-              <p><strong>招牌</strong>｜現炸豬扒、定食</p>
-              <a href="https://maps.app.goo.gl/HrnA3SR3516cygKm7?g_st=ac" target="_blank">📍 導航前往</a>
-            </div>
-          </details>
-          <details>
-            <summary>🍱 とんちん館（Tonchin-kan）</summary>
-            <div>
-              <p><strong>招牌</strong>｜炸豬扒、炸蝦</p>
-              <a href="https://maps.app.goo.gl/RQBUWUjpHrnDMAds6?g_st=ac" target="_blank">📍 導航前往</a>
+              <p><strong>優勢</strong>｜排隊較少，適合早到</p>
+              <a href="https://maps.app.goo.gl/2Gf5Qsfc26vSLUYN8?g_st=ac" target="_blank">📍 導航前往</a>
             </div>
           </details>
           <div class="tip-block">💡 19:30 回 Dormy Inn，21:30 夜鳴拉麵</div>
         `
       },
       {
-        time: "19:30 - 21:30",
+        time: "19:30 - 21:00",
         id: "Dormy-Inn大浴場與夜鳴拉麵",
         title: "回 Dormy Inn ➔ 大浴場 + 夜鳴拉麵",
         tag: { text: "♨️ 泡湯宵夜", class: "tag-indigo" },
@@ -950,7 +915,7 @@ const winterItineraries = [
           <div class="tip-block">
             <strong>♨️ 大浴場</strong>｜泡湯放鬆<br>
             <strong>🍜 夜鳴拉麵</strong>｜21:30 開始，免費<br>
-            <strong>💡 明天</strong>｜早餐 Girafe，採草莓 + Outlet
+            <strong>💡 明天</strong>｜早餐 Girafe，採草莓 + Outlet + 炸豬扒
           </div>
         `
       }
@@ -958,13 +923,13 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 5 - Girafe 早餐 → 草莓 → Outlet 內食午餐 → Outlet → Dormy Inn 第2晚
+  // DAY 5 - Girafe 早餐 → 草莓 → Outlet 內食午餐 → Outlet → 炸豬扒 → Dormy Inn 第2晚
   // ==========================================
   {
     day: 5,
     dateLabel: "DAY 5 · 2027年1月25日 (週一)",
     id: "市區草莓-Outlet-Dormy-Inn第2晚",
-    title: "Girafe 早餐 ➔ 市區草莓 ➔ Outlet ➔ Dormy Inn 第2晚",
+    title: "Girafe 早餐 ➔ 市區草莓 ➔ Outlet ➔ 炸豬扒 ➔ Dormy Inn 第2晚",
     subtitle: "🍓 麵包、草莓與購物之日",
     emoji: "🍓",
     events: [
@@ -1088,7 +1053,42 @@ const winterItineraries = [
         `
       },
       {
-        time: "18:00 - 21:30",
+        time: "18:00 - 19:30",
+        id: "Dormy-Inn晚餐與夜鳴拉麵",
+        title: "晚餐 ➔ 炸豬扒（三選一）",
+        tag: { text: "🍱 炸豬扒", class: "tag-amber" },
+        navUrl: "https://maps.app.goo.gl/wYEG22U6w7f9UC849",
+        navName: "かつ庄 多賀城店",
+        priority: "must",
+        open: true,
+        content: `
+          <p>Outlet 逛完，仙台港周邊炸豬扒名店三選一</p>
+          <details>
+            <summary>🍱 かつ庄 多賀城店（Katsusho Tagajo）</summary>
+            <div>
+              <p><strong>招牌</strong>｜厚切炸豬扒、味噌豬扒</p>
+              <a href="https://maps.app.goo.gl/wYEG22U6w7f9UC849" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <details>
+            <summary>🍱 とんかつ一代</summary>
+            <div>
+              <p><strong>招牌</strong>｜現炸豬扒、定食</p>
+              <a href="https://maps.app.goo.gl/HrnA3SR3516cygKm7?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <details>
+            <summary>🍱 とんちん館（Tonchin-kan）</summary>
+            <div>
+              <p><strong>招牌</strong>｜炸豬扒、炸蝦</p>
+              <a href="https://maps.app.goo.gl/RQBUWUjpHrnDMAds6?g_st=ac" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+          <div class="tip-block">💡 19:30 回 Dormy Inn，大浴場 + 21:30 夜鳴拉麵</div>
+        `
+      },
+      {
+        time: "19:30 - 21:30",
         id: "返回Dormy-Inn-第2晚",
         title: "返回 Dormy Inn（第2晚）",
         tag: { text: "♨️ 泡湯宵夜", class: "tag-indigo" },

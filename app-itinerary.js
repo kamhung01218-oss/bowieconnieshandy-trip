@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v22.0（D2 けむすけ燒肉）
+ * app-itinerary.js — v22.1（D4 滑雪到 15:00 / D5 炸豬扒）
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -44,9 +44,8 @@ const WEATHER_LOCATIONS = {
   ],
   4: [
     { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '00:00', timeTo: '09:30', climate: { max: 4, min: -2, rain: 35 } },
-    { id: 'spring_valley', name: 'Spring Valley 泉高原', shortName: '滑雪場', lat: 38.3694, lon: 140.6908, timeFrom: '09:30', timeTo: '13:30', climate: { max: 0, min: -5, rain: 40 } },
-    { id: 'shiogama', name: '塩釜港', shortName: '塩釜', lat: 38.3156, lon: 141.0233, timeFrom: '13:30', timeTo: '15:30', climate: { max: 5, min: -1, rain: 30 } },
-    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '15:30', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
+    { id: 'spring_valley', name: 'Spring Valley 泉高原', shortName: '滑雪場', lat: 38.3694, lon: 140.6908, timeFrom: '09:30', timeTo: '15:00', climate: { max: 0, min: -5, rain: 40 } },
+    { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '15:00', timeTo: '23:59', climate: { max: 5, min: -1, rain: 30 } }
   ],
   5: [
     { id: 'sendai_port', name: '仙台港', shortName: '仙台港', lat: 38.2766, lon: 141.0086, timeFrom: '00:00', timeTo: '09:30', climate: { max: 5, min: -1, rain: 30 } },
@@ -251,8 +250,8 @@ function renderTripOverview() {
     { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達仙台", desc: "機場 → 相鐵 FRESA INN → 伊達牛舌 → 購物" },
     { day: "D2", color: "#f59e0b", emoji: "🦊", title: "狐狸村 + 銀山", desc: "取車 → 客美多 → 狐狸村 → 白石溫麵 → 銀山夜景 → 瀧之湯 → けむすけ燒肉" },
     { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → 水車生そば → げんキッズ → 瀧之湯懷石" },
-    { day: "D4", color: "#14b8a6", emoji: "⛷️", title: "Spring Valley", desc: "瀧之湯退房 → 玩雪 → 塩釜壽司 → Dormy Inn → 炸豬扒" },
-    { day: "D5", color: "#f43f5e", emoji: "🍓", title: "市區草莓", desc: "Girafe 早餐 → 市區草莓 → Outlet 午餐 → Outlet → Dormy Inn" },
+    { day: "D4", color: "#14b8a6", emoji: "⛷️", title: "Spring Valley", desc: "瀧之湯退房 → 玩雪 → Dormy Inn → 廻鮮寿司" },
+    { day: "D5", color: "#f43f5e", emoji: "🍓", title: "市區草莓", desc: "草莓 → Outlet → 炸豬扒 → Dormy Inn 第2晚" },
     { day: "D6", color: "#10b981", emoji: "🐧", title: "水族館", desc: "水族館 → Grand Bach → 還車 → 站周邊晚餐" },
     { day: "D7", color: "#8b5cf6", emoji: "⛩️", title: "榴岡神社", desc: "榴岡神社 → 朝市 → 仔虎午餐 → 一番町" },
     { day: "D8", color: "#475569", emoji: "✈️", title: "返港", desc: "S-PAL 伴手禮 → アクセス線 → 起飛" }
