@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v22.2（D2 先 Check-in 放行李）
+ * app-itinerary.js — v22.5（D6 自由晚餐 / D7 上午彈性 + 自由晚餐）
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -250,11 +250,11 @@ function renderTripOverview() {
   const days = [
     { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達仙台", desc: "機場 → 相鐵 FRESA INN → 伊達牛舌 → 購物" },
     { day: "D2", color: "#f59e0b", emoji: "🦊", title: "狐狸村 + 銀山", desc: "取車 → 狐狸村 → 白石溫麵 → 瀧之湯 Check-in → 銀山夜景 → けむすけ燒肉" },
-    { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → 水車生そば → げんキッズ → 瀧之湯懷石" },
+    { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → 水車生そば → ゲンキッズ/休息 → 瀧之湯懷石" },
     { day: "D4", color: "#14b8a6", emoji: "⛷️", title: "Spring Valley", desc: "瀧之湯退房 → 玩雪 → Dormy Inn → 廻鮮寿司" },
     { day: "D5", color: "#f43f5e", emoji: "🍓", title: "市區草莓", desc: "草莓 → Outlet → 炸豬扒 → Dormy Inn 第2晚" },
-    { day: "D6", color: "#10b981", emoji: "🐧", title: "水族館", desc: "水族館 → Grand Bach → 還車 → 站周邊晚餐" },
-    { day: "D7", color: "#8b5cf6", emoji: "⛩️", title: "榴岡神社", desc: "榴岡神社 → 朝市 → 仔虎午餐 → 一番町" },
+    { day: "D6", color: "#10b981", emoji: "🐧", title: "水族館", desc: "水族館 → Grand Bach → 還車 → 自由晚餐 → 定禪寺通點燈" },
+    { day: "D7", color: "#8b5cf6", emoji: "⛩️", title: "榴岡神社", desc: "榴岡神社 → 朝市/購物 → 仔虎午餐 → 自由晚餐" },
     { day: "D8", color: "#475569", emoji: "✈️", title: "返港", desc: "S-PAL 伴手禮 → アクセス線 → 起飛" }
   ];
   container.innerHTML = `<div class="overview-timeline">${days.map(d => `<div class="overview-day"><div class="overview-day-marker" style="background:${d.color}">${d.day}</div><div class="overview-day-content"><div class="overview-day-title">${d.emoji} ${d.title}</div><div class="overview-day-desc">${d.desc}</div></div></div>`).join('')}</div>`;

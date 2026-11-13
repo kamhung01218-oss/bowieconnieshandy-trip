@@ -1,7 +1,7 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 5.20.0（D2 先 Check-in 放行李 / 銀山後直接晚餐）
+ *  版本: 5.23.0（D6 自由晚餐 + 湯麵宵夜 / D7 彈性上午 + 自由晚餐）
  * ============================================================
  */
 
@@ -549,13 +549,13 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 3 - 藏王樹冰 → 水車生そば → げんキッズ → 瀧之湯
+  // DAY 3 - 藏王樹冰 → 水車生そば → げんキッズ 彈性 A/B → 瀧之湯
   // ==========================================
   {
     day: 3,
     dateLabel: "DAY 3 · 2027年1月23日 (週六)",
     id: "藏王樹冰-水車生そば-げんキッズ-瀧之湯",
-    title: "藏王樹冰 ➔ 水車生そば ➔ げんキッズ ➔ 瀧之湯",
+    title: "藏王樹冰 ➔ 水車生そば ➔ げんキッズ 彈性 A/B ➔ 瀧之湯",
     subtitle: "☃️ 樹冰、蕎麥與溫泉之日",
     emoji: "☃️",
     events: [
@@ -697,45 +697,49 @@ const winterItineraries = [
             <strong>🍜 必吃</strong>｜鳥中華（鰹魚醬油湯 + 拉麵 + 雞肉 + 天婦羅碎屑）<br>
             <strong>🍜 手打蕎麥</strong>｜石臼研磨，粗麵條、超有咬口
           </div>
-          <div class="tip-block">💡 14:00 吃完，開車 5–10 分鐘去 げんキッズ</div>
+          <div class="tip-block">💡 14:00 吃完，上車前問小孩：「還想玩還是想回飯店睡覺？」</div>
         `
       },
       {
         time: "14:00 - 16:00",
         id: "子育て未来館-げんキッズ",
-        title: "子育て未来館 げんキッズ（玩樂）",
+        title: "彈性行程：げんキッズ 放電 或 回旅館休息",
         images: [
           "https://i.meee.com.tw/4gyr7IX.jpg",
           "https://i.meee.com.tw/95bdFQ5.jpg"
         ],
-        tag: { text: "🎠 室內遊戲館", class: "tag-sky" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=子育て未来館+げんキッズ",
-        navName: "子育て未来館 げんキッズ",
+        tag: { text: "🎠 彈性 A/B", class: "tag-sky" },
+        navUrl: "",
         priority: "must",
         highlight: true,
         open: true,
         content: `
-          <p>天童市區的室內兒童館，4 歲小孩放電好地方</p>
+          <p>藏王樹冰極度消耗體力，吃完午餐後看小孩狀態決定：</p>
+
+          <details>
+            <summary>🎠 選項 A：去 げんキッズ 玩樂（小孩還有電）</summary>
+            <div>
+              <p>14:00 進場，玩到 16:00。館內溫暖，有大型攀爬架、溜滑梯、積木區，大人可以在旁邊喝咖啡休息。</p>
+              <p><strong>費用</strong>：免費入場（部分設施可能收費）</p>
+              <a href="https://www.google.com/maps/search/?api=1&query=子育て未来館+げんキッズ" target="_blank">📍 導航前往</a>
+            </div>
+          </details>
+
+          <details>
+            <summary>♨️ 選項 B：直接回瀧之湯休息（大人小孩都累了）</summary>
+            <div>
+              <p>14:00 吃完午餐直接開車回瀧之湯（約 15 分鐘）。提早進房睡午覺、泡大浴場，為晚上的懷石晚餐養足精神。</p>
+              <p class="text-xs text-slate-500">💡 如果選 B，原本 16:30 的貸切風呂可以提早或彈性安排。</p>
+            </div>
+          </details>
+
           <div class="tip-block warn">
-            <strong>🕐 玩樂時間</strong>｜14:00 進場，玩到 16:00（約 2 小時）<br>
-            午餐已在水車生そば吃飽，這裡專心放電
-          </div>
-          <div class="tip-block">
-            <strong>🎠 館內設施</strong><br>
-            • 大型攀爬架、溜滑梯、彈跳床<br>
-            • 積木區、繪本區、扮家家酒<br>
-            • 幼兒專區（0–3 歲軟墊區）<br>
-            • 室內溫暖，不用吹冷風
-          </div>
-          <div class="tip-block">
-            <strong>💰 費用</strong>｜免費入場（部分設施可能收費）<br>
-            <strong>🕐 營業</strong>｜09:00–19:00（週六有開）<br>
-            <strong>🅿️ 停車</strong>｜免費停車場
+            <strong>💡 決策點</strong>｜午餐（水車生そば）吃完大約 13:50，上車前問一下小孩：「還想玩還是想回飯店睡覺？」
           </div>
         `
       },
       {
-        time: "16:00 - 16:30",
+        time: "15:30 - 16:30",
         id: "返回瀧之湯-第2晚",
         title: "返回 瀧之湯（第2晚）",
         img: "https://sendai-kouiki-mice.com/wp-content/uploads/2024/12/pic-hohoeminoyado-02.jpg",
@@ -745,11 +749,11 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>16:00 前返回瀧之湯，準備泡湯</p>
+          <p>無論是從ゲンキッズ還是直接從餐廳回來，抵達瀧之湯後準備休息。</p>
           <div class="tip-block">
-            <strong>♨️ 貸切風呂</strong>｜16:30 彈性安排<br>
-            <strong>🍱 懷石晚餐</strong>｜18:00 開始<br>
-            <strong>🍳 自助早餐</strong>｜明天 1/24 07:00–09:00
+            <strong>♨️ 貸切風呂</strong>｜16:30 彈性安排（若提早回來可提早泡）<br>
+            <strong>🍱 懷石晚餐</strong>｜18:00 開始（固定）<br>
+            <strong>🛏️ 補眠</strong>｜早起去藏王，強烈建議讓小孩睡個午覺
           </div>
         `
       },
@@ -1167,14 +1171,14 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 6 - 水族館 4 小時 → Grand Bach → 17:00 還車 → 站周邊晚餐
+  // DAY 6 - 水族館 4 小時 → Grand Bach → 17:00 還車 → 站周邊自由晚餐 → 定禪寺通點燈
   // ==========================================
   {
     day: 6,
     dateLabel: "DAY 6 · 2027年1月26日 (週二)",
     id: "水族館-GrandBach-還車-仔虎",
-    title: "水族館 ➔ Grand Bach ➔ 還車 ➔ 仙台站周邊晚餐",
-    subtitle: "🐧 海洋與車站美食之日",
+    title: "水族館 ➔ Grand Bach ➔ 還車 ➔ 自由晚餐 ➔ 定禪寺通點燈",
+    subtitle: "🐧 海洋、自由晚餐與點燈之日",
     emoji: "🐧",
     events: [
       {
@@ -1241,7 +1245,7 @@ const winterItineraries = [
           </div>
           <div class="tip-block">
             <strong>♨️ 大浴場</strong>｜16F 頂樓<br>
-            <strong>🍙 免費夜間茶漬飯</strong>｜宵夜
+            <strong>🍜 免費湯麵宵夜</strong>｜21:30–23:00，7F 可外帶
           </div>
         `
       },
@@ -1270,10 +1274,10 @@ const winterItineraries = [
         `
       },
       {
-        time: "17:30 - 19:00",
+        time: "17:30 - 18:45",
         id: "仔虎-仙台駅前店",
-        title: "晚餐 ➔ 仙台站周邊（牛舌通 / 壽司通 / 居酒屋）",
-        tag: { text: "🍽️ 車站晚餐", class: "tag-amber" },
+        title: "晚餐 ➔ 仙台站周邊（自由決定）",
+        tag: { text: "🍽️ 自由晚餐", class: "tag-amber" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Station",
         navName: "仙台站",
         priority: "must",
@@ -1281,29 +1285,51 @@ const winterItineraries = [
         content: `
           <p>還車後步行回 Grand Bach 放東西，17:30 出門吃晚餐</p>
           <div class="tip-block">
-            <strong>🍽️ 仙台站周邊選擇</strong><br>
+            <strong>🍽️ 自由決定</strong>｜經過一週，可以吃這幾天最想再吃一次的，或是還沒吃到的口袋名單。<br>
             • 牛舌通（3F）｜善治郎、喜助、伊達の牛たん<br>
             • 壽司通（3F）｜迴轉壽司、海鮮丼<br>
-            • 居酒屋｜駅前周邊多間，適合家庭
+            • 駅前居酒屋｜適合家庭聚餐
           </div>
-          <div class="tip-block">💡 19:00 前回 Grand Bach，19:30 大浴場 + 茶漬飯</div>
+          <div class="tip-block">💡 18:45 前吃完，步行 15 分鐘去定禪寺通看點燈</div>
         `
       },
       {
-        time: "19:30 - 21:00",
+        time: "19:00 - 20:00",
+        id: "定禅寺通點燈-SENDAI-Bright-Nights-STORY",
+        title: "定禪寺通點燈 ✨ SENDAI Bright-Nights STORY",
+        tag: { text: "✨ 冬季點燈", class: "tag-sky" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=定禅寺通",
+        navName: "定禪寺通",
+        priority: "must",
+        highlight: true,
+        open: true,
+        content: `
+          <p>仙台站步行 15 分鐘，定禪寺通的櫸樹林蔭道整條點亮。</p>
+          <div class="tip-block warn">
+            <strong>⏰ 點燈時間（平日）</strong>｜18:00–21:00<br>
+            <strong>❄️ 體感極冷</strong>｜晚上零度以下，暖暖包、毛帽、手套必備
+          </div>
+          <div class="tip-block">
+            <strong>📸 拍照重點</strong>｜仙台三越前到 media tate 之間，600 公尺光之隧道，平日人潮較少，適合拍全家合照
+          </div>
+          <div class="tip-block">💡 逛 30–40 分鐘即可，20:00 前回 Grand Bach，21:30 湯麵宵夜</div>
+        `
+      },
+      {
+        time: "20:00 - 21:30",
         id: "Grand-Bach大浴場與茶漬飯",
-        title: "回 Grand Bach ➔ 大浴場 + 免費茶漬飯",
+        title: "回 Grand Bach ➔ 大浴場 + 免費湯麵宵夜",
         tag: { text: "♨️ 泡湯宵夜", class: "tag-indigo" },
         navUrl: "https://maps.app.goo.gl/tumoctSbhRFgQkx89?g_st=ac",
         navName: "Hotel Grand Bach 仙台",
         priority: "must",
         open: true,
         content: `
-          <p>晚餐後回 Grand Bach，泡大浴場</p>
+          <p>看完點燈回飯店，泡 16F 大浴場，準備吃宵夜</p>
           <div class="tip-block">
             <strong>♨️ 大浴場</strong>｜16F 頂樓，可看仙台夜景<br>
-            <strong>🍙 免費茶漬飯</strong>｜夜間限定宵夜<br>
-            <strong>⚠️ 今晚起沒車</strong>｜D7、D8 都搭 JR / 電車
+            <strong>🍜 免費宵夜</strong>｜21:30–23:00 於 7F 大廳酒廊，提供宮城特色湯麵（白石溫麵/蕎麥麵）與免費飲品<br>
+            <strong>🥡 貼心服務</strong>｜可以將湯麵和飲料打包回房間享用
           </div>
         `
       }
@@ -1311,14 +1337,14 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 7 - 榴岡神社 → 仙台朝市 → 仔虎午餐 → 一番町採買
+  // DAY 7 - 榴岡神社 → 上午彈性 → 仔虎午餐 → 一番町 → 自由晚餐
   // ==========================================
   {
     day: 7,
     dateLabel: "DAY 7 · 2027年1月27日 (週三)",
     id: "榴岡神社-仙台朝市-一番町-GrandBach第2晚",
-    title: "榴岡神社 ➔ 仙台朝市 ➔ 仔虎午餐 ➔ 一番町採買",
-    subtitle: "⛩️ 神社、和牛與採買之日",
+    title: "榴岡神社 ➔ 上午彈性 ➔ 仔虎午餐 ➔ 一番町 ➔ 自由晚餐",
+    subtitle: "⛩️ 神社、和牛與自由覓食之日",
     emoji: "⛩️",
     events: [
       {
@@ -1396,17 +1422,17 @@ const winterItineraries = [
       {
         time: "11:00 - 12:00",
         id: "仙台朝市",
-        title: "仙台朝市",
-        tag: { text: "🐟 在地市場", class: "tag-amber" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=仙台朝市",
-        navName: "仙台朝市",
-        priority: "must",
+        title: "上午彈性：仙台朝市 或 一番町購物（二選一）",
+        tag: { text: "🔄 彈性", class: "tag-amber" },
+        navUrl: "",
+        priority: "optional",
         open: true,
         content: `
-          <p>仙台站西口步行 5 分鐘，約 60 間店舖</p>
+          <p>昨晚看點燈比較晚，今天早上看大家體力決定：</p>
           <div class="tip-block">
-            <strong>🐟 必逛</strong>｜海鮮、仙台名產、現烤魚<br>
-            <strong>🍓 水果</strong>｜當季水果，可買返酒店食
+            <strong>選項 A：仙台朝市</strong>｜仙台站西口步行 5 分鐘，約 60 間店舖，可吃現烤海鮮、買當季水果。<br>
+            <strong>選項 B：一番町 / PARCO</strong>｜直接去逛街，把還沒買齊的藥妝、服飾一次補齊。<br>
+            <strong>選項 C：睡到自然醒</strong>｜在飯店悠閒吃早餐，11:30 直接去仔虎排隊。
           </div>
         `
       },
@@ -1445,7 +1471,7 @@ const winterItineraries = [
         `
       },
       {
-        time: "14:00 - 18:00",
+        time: "14:00 - 17:30",
         id: "一番町商圈採買",
         title: "一番町商圈 ➔ PARCO / S-PAL 採買",
         tag: { text: "🛍️ 悠閒購物", class: "tag-rose" },
@@ -1465,7 +1491,27 @@ const winterItineraries = [
         `
       },
       {
-        time: "18:00 - 21:00",
+        time: "17:30 - 19:00",
+        id: "D7晚餐-仙台站周邊自由決定",
+        title: "晚餐 ➔ 仙台站周邊（自由決定）",
+        tag: { text: "🍽️ 自由覓食", class: "tag-amber" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=Sendai+Station",
+        navName: "仙台站",
+        priority: "must",
+        open: true,
+        content: `
+          <p>旅程最後一晚，把想吃的、想補的都在這裡解決</p>
+          <div class="tip-block">
+            <strong>🍽️ 彈性選擇</strong>｜如果前幾天有遺珠之憾，今晚是最後的機會！<br>
+            • 若 D1 沒吃到伊達牛舌，今晚可以補吃<br>
+            • 或是去吃第一天沒逛到的站前居酒屋<br>
+            • 也可以直接在 S-PAL / PARCO 地下街買熟食回飯店配宵夜
+          </div>
+          <div class="tip-block">💡 19:30 前回 Grand Bach 泡湯、吃 21:30 的湯麵</div>
+        `
+      },
+      {
+        time: "19:30 - 22:30",
         id: "返回GrandBach第2晚",
         title: "返回 Hotel Grand Bach（第2晚）",
         tag: { text: "♨️ 泡湯宵夜", class: "tag-indigo" },
@@ -1474,10 +1520,10 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>返 Grand Bach，泡大浴場、食茶漬飯</p>
+          <p>吃完晚餐回 Grand Bach，把握最後一晚泡湯吃宵夜</p>
           <div class="tip-block">
             <strong>♨️ 大浴場</strong>｜16F 頂樓<br>
-            <strong>🍙 免費茶漬飯</strong>｜夜間限定<br>
+            <strong>🍜 免費宵夜</strong>｜21:30–23:00 於 7F，湯麵與飲料可外帶回房<br>
             <strong>🧳 行李整理</strong>｜明早退房前可先整理戰利品
           </div>
         `

@@ -1,5 +1,5 @@
 /* ============================================================
- * emergency.js — v3.0（榴岡神社版：相鐵→瀧之湯→Dormy Inn→Grand Bach）
+ * emergency.js — v3.3（D6 湯麵宵夜 / D7 自由晚餐）
  * ============================================================ */
 
 const EMERGENCY_DATA = {
@@ -15,11 +15,11 @@ const EMERGENCY_DATA = {
     { day: "D1",    date: "1/21",    name: "相鐵 FRESA INN 仙台", tel: "022-295-2031", note: "仙台站西口步行 5 分鐘" },
     { day: "D2-3",  date: "1/22-23", name: "微笑之宿 瀧之湯", tel: "023-654-2211", note: "貸切風呂 1/23 16:30 預約" },
     { day: "D4-5",  date: "1/24-25", name: "Dormy Inn EXPRESS 仙台海邊", tel: "022-355-7580", note: "大浴場 + 21:30 免費夜鳴拉麵" },
-    { day: "D6-7",  date: "1/26-27", name: "Hotel Grand Bach 仙台", tel: "022-296-7333", note: "16F 大浴場 + 免費茶漬飯" }
+    { day: "D6-7",  date: "1/26-27", name: "Hotel Grand Bach 仙台", tel: "022-296-7333", note: "16F 大浴場 + 21:30 免費湯麵宵夜 (7F 可外帶)" }
   ],
   transport: [
     { icon: "🚗", label: "Nippon Rent-A-Car 仙台站前店", tel: "022-263-5511", desc: "D2 08:00 取車 / D6 17:00 還車" },
-    { icon: "🥩", label: "仔虎 仙台駅前店（Herb SENDAI 8F）", tel: "022-796-7029", desc: "米澤牛燒肉，還車後步行 3 分鐘" },
+    { icon: "🥩", label: "仔虎 仙台駅前店（Herb SENDAI 8F）", tel: "022-796-7029", desc: "米澤牛燒肉，D7 午餐，仙台站步行 3 分鐘" },
     { icon: "🏥", label: "仙台市立病院", tel: "022-254-2211", desc: "急救對應" },
     { icon: "🏥", label: "東北大学病院", tel: "022-717-7000", desc: "高度急救中心" },
     { icon: "🚃", label: "仙台機場アクセス線", tel: "", desc: "機場 ↔ 仙台站，25 分鐘 ¥660/人" },
@@ -191,4 +191,4 @@ function closeEmergencyModal() {
 window.openEmergencyModal = openEmergencyModal;
 window.closeEmergencyModal = closeEmergencyModal;
 
-console.log('[Emergency] v3.0 載入完成（榴岡神社版）');
+console.log('[Emergency] v3.3 載入完成（D6 湯麵宵夜 / D7 自由晚餐）');
