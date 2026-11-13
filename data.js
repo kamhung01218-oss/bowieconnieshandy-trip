@@ -1,7 +1,7 @@
 /**
  * ============================================================
  *  2027 東北冬季親子溫泉自駕之旅 - 行程數據
- *  版本: 5.17.0（D4 滑雪到 15:00 / 壽司改晚餐 / D5 炸豬扒）
+ *  版本: 5.20.0（D2 先 Check-in 放行李 / 銀山後直接晚餐）
  * ============================================================
  */
 
@@ -174,13 +174,13 @@ const winterItineraries = [
   },
 
   // ==========================================
-  // DAY 2 - 取車 → 客美多 → 狐狸村 → 白石 → 銀山 → 天童
+  // DAY 2 - 取車 → 客美多 → 狐狸村 → 白石 → 瀧之湯 Check-in → 銀山 → 天童晚餐
   // ==========================================
   {
     day: 2,
     dateLabel: "DAY 2 · 2027年1月22日 (週五)",
     id: "取車-狐狸村-白石午餐-銀山溫泉-天童",
-    title: "取車 ➔ 狐狸村 ➔ 白石午餐 ➔ 銀山溫泉 ➔ 天童 Check-in",
+    title: "取車 ➔ 狐狸村 ➔ 白石午餐 ➔ 瀧之湯 Check-in ➔ 銀山溫泉 ➔ 天童晚餐",
     subtitle: "🦊 狐狸、溫麵與銀山夜景之日",
     emoji: "🦊",
     events: [
@@ -347,22 +347,68 @@ const winterItineraries = [
       {
         time: "14:30 - 15:30",
         id: "開車前往大正浪漫館",
-        title: "開車前往大正浪漫館（銀山溫泉）",
+        title: "開車前往天童瀧之湯（先 Check-in 放行李）",
         tag: { text: "🚗 1小時", class: "tag-teal" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
+        navName: "微笑の宿 瀧之湯",
+        priority: "must",
+        highlight: true,
+        open: true,
+        content: `
+          <p>白石 → 天童瀧之湯，約 1 小時</p>
+          <div class="tip-block warn">
+            <strong>🧳 今晚不必在寒風中搬行李</strong>｜先到瀧之湯辦 Check-in，把大行李放房間，只帶輕便隨身包去銀山。
+          </div>
+          <div class="tip-block">
+            <strong>🅿️ 停車</strong>｜瀧之湯停車場免費<br>
+            <strong>🏨 Check-in</strong>｜15:30 抵達，快速辦手續
+          </div>
+        `
+      },
+      {
+        time: "15:30 - 15:45",
+        id: "入住天童瀧之湯-第1晚",
+        title: "瀧之湯快速 Check-in 放行李",
+        img: "https://sendai-kouiki-mice.com/wp-content/uploads/2024/12/pic-hohoeminoyado-02.jpg",
+        tag: { text: "🏨 放行李", class: "tag-indigo" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
+        navName: "微笑の宿 瀧之湯",
+        priority: "must",
+        open: true,
+        content: `
+          <p>15:30 抵達，快速 Check-in 放行李</p>
+          <div class="tip-block">
+            <strong>⏰ 15 分鐘完成</strong>｜前台辦手續 → 行李推進房間 → 上廁所<br>
+            大行李全部留在房間，只帶輕便隨身包、暖暖包、相機去銀山。
+          </div>
+          <div class="tip-block warn">
+            <strong>🔑 跟櫃檯說</strong>｜「晚上 21:00 左右回來，先去銀山看夜景」，確認晚餐不需當場辦。
+          </div>
+          <div class="tip-block">💡 15:45 出發去大正浪漫館，車程約 25 分鐘</div>
+        `
+      },
+      {
+        time: "15:45 - 16:10",
+        id: "開車前往大正浪漫館-從瀧之湯",
+        title: "開車前往大正浪漫館（從瀧之湯）",
+        tag: { text: "🚗 25分鐘", class: "tag-teal" },
         navUrl: "https://www.google.com/maps/search/?api=1&query=大正浪漫館+銀山溫泉",
         navName: "大正浪漫館",
         priority: "must",
         open: true,
         content: `
-          <p>白石 → 大正浪漫館，約 1 小時</p>
+          <p>瀧之湯 → 大正浪漫館，約 25 分鐘</p>
           <div class="tip-block warn">
-            <strong>🅿️ 停車</strong>｜必須將車停在大正浪漫館停車場或保安指定停車場<br>
+            <strong>🅿️ 停車</strong>｜車停大正浪漫館停車場或保安指定停車場<br>
             <strong>🚫 不要直接開進溫泉街</strong>｜冬季全面交通管制
+          </div>
+          <div class="tip-block danger">
+            <strong>⚠️ 終極死線</strong>｜<strong>16:10 必須抵達大正浪漫館巴士站</strong>，準備搭 16:20 接駁車。
           </div>
         `
       },
       {
-        time: "15:30 - 15:50",
+        time: "16:10 - 16:20",
         id: "大正浪漫館停車取票",
         title: "大正浪漫館停車、取票、等候",
         tag: { text: "🅿️ 準備接駁", class: "tag-teal" },
@@ -370,14 +416,17 @@ const winterItineraries = [
         priority: "must",
         open: true,
         content: `
-          <p>停好車，上個廁所，準備搭接駁車</p>
+          <p>停好車，上個廁所，準備搭 16:20 接駁車</p>
           <div class="tip-block warn">
-            <strong>⏰ 15:50 前完成</strong>｜請在預約時間前抵達巴士站，並於指定時間乘坐接駁巴士
+            <strong>⏰ 16:20 發車</strong>｜請在 16:10 前抵達巴士站排隊。
+          </div>
+          <div class="tip-block">
+            💡 大正浪漫館營業至 17:30，如果現在不買，等 17:50 回來還可以買「紅豆內餡炸麵包」。
           </div>
         `
       },
       {
-        time: "16:00 - 17:20",
+        time: "16:20 - 17:50",
         id: "極重要銀山溫泉夢幻夜景",
         title: "【極重要】銀山溫泉夢幻夜景",
         img: "https://mimigo.tw/wp-content/uploads/20230105083619_51.jpg",
@@ -392,73 +441,64 @@ const winterItineraries = [
         highlight: true,
         open: true,
         content: `
-          <p>傍晚的銀山，像走進大正時代</p>
-          <p class="text-xs text-slate-500">16:00 搭接駁車 → 銀山散步 → 17:20 指定回程</p>
+          <p>搭 16:20 接駁車進銀山，散步看點燈，17:50 搭車回大正浪漫館</p>
           <div class="tip-block warn">
             <strong>🚌 預約規則</strong>｜全預約制，回程為指定班次（去程後 1.5 小時）<br>
-            乘車日 13 天前開放預約，建議設鬧鐘搶票<br>
-            票價 ¥1,500/人（暫定），現場不賣票，錯過只能排隊候補
+            <strong>❄️ 極寒準備</strong>｜入夜零下，貼暖暖包。木棧道與橋面易結冰，緊牽小孩，絕對不要步行往返。
           </div>
-          <div class="tip-block danger">
-            <strong>❄️ 極寒準備</strong>｜入夜零下，貼暖暖包<br>
-            ⚠️ 木棧道與橋面易結冰，穿防滑雪靴、緊牽小孩<br>
-            <strong>🚫 絕對不要步行往返</strong>｜冬季人行道無法通行，危險
-          </div>
+
           <details>
-            <summary>📋 接駁車流程與規則</summary>
+            <summary>🍡 銀山溫泉必吃小食與營業時間（按路線攻略）</summary>
             <div>
-              <p><strong>1. 停車</strong>｜車停大正浪漫館停車場或保安指定停車場</p>
-              <p><strong>2. 預約</strong>｜提前在網上預約接駁巴士（乘車日 13 天前開放）</p>
-              <p><strong>3. 去程</strong>｜在預約時間前抵達巴士站，搭乘指定班次（車程約 10 分鐘）</p>
-              <p><strong>4. 回程</strong>｜原則上為去程後 1 小時 20 分至 1.5 小時，指定班次優先上車</p>
-              <p><strong>5. 錯過回程</strong>｜只能現場排隊等候補位，有空位才能上車</p>
+              <p><strong>1. 西塚菓子舖（めいゆう庵）</strong>｜<span class="text-red-500">08:00–17:00（必買！）</span><br>
+              一到站先去買「蒸銀山溫泉饅頭」或「起司咖哩麵包」，超過 17:00 就關了。</p>
+              <p><strong>2. 野川豆腐屋</strong>｜09:30–18:00<br>
+              人氣「立食熱豆腐、炸豆腐」，通常賣完即止，有看到就趕快吃。</p>
+              <p><strong>3. Edoya（えどや）</strong>｜09:00–18:00<br>
+              吃點熱食或休息的好地方。</p>
+              <p><strong>4. 酒茶房クリエ</strong>｜10:00–18:00（週一、二公休）<br>
+              買「手工布丁」或「棉花糖可可」暖手。</p>
+              <p><strong>5. 伊豆之華</strong>｜11:00–18:00（週三、四公休）<br>
+              蕎麥麵與甜點（最後點餐 17:30）。</p>
             </div>
           </details>
+
+          <div class="tip-block danger">
+            <strong>📸 拍照重點</strong>｜能見度極佳，拍「能登屋」階梯與「銀山橋」夜景。
+          </div>
         `
       },
       {
-        time: "17:20 - 18:00",
+        time: "17:50 - 18:00",
         id: "返回大正浪漫館",
         title: "搭指定班次回程 ➔ 大正浪漫館",
         tag: { text: "🚌 回程", class: "tag-teal" },
         navUrl: "",
         priority: "must",
         open: true,
-        content: `<p>17:20 搭接駁車回大正浪漫館，準備開車去天童</p>`
-      },
-      {
-        time: "18:00 - 18:40",
-        id: "開車前往天童瀧之湯",
-        title: "開車前往天童瀧之湯",
-        tag: { text: "🚗 40分鐘", class: "tag-teal" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
-        navName: "微笑の宿 瀧之湯",
-        priority: "must",
-        open: true,
-        content: `<p>大正浪漫館 → 天童瀧之湯，約 40 分鐘</p>`
-      },
-      {
-        time: "18:40 - 19:30",
-        id: "入住天童瀧之湯-第1晚",
-        title: "入住 微笑の宿 瀧之湯（第1晚）",
-        img: "https://sendai-kouiki-mice.com/wp-content/uploads/2024/12/pic-hohoeminoyado-02.jpg",
-        tag: { text: "🏨 溫泉名宿", class: "tag-indigo" },
-        navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
-        navName: "微笑の宿 瀧之湯",
-        priority: "must",
-        open: true,
         content: `
-          <p>18:40 抵達瀧之湯 Check-in，放行李休息一下</p>
+          <p>搭 17:50 接駁車回大正浪漫館，取車直接去天童晚餐</p>
           <div class="tip-block">
-            <strong>🧳 入住流程</strong>｜18:40 Check-in<br>
-            <strong>♨️ 貸切風呂</strong>｜明天 1/23 彈性安排<br>
-            <strong>🍱 懷石晚餐</strong>｜明天 1/23 18:00<br>
-            <strong>🍳 自助早餐</strong>｜明天 1/23 07:00–09:00
+            <strong>🥯 大正浪漫館覓食</strong>｜營業至 17:30，如果有提早回來，可以在這買「紅豆內餡炸麵包」在車上吃。
           </div>
         `
       },
       {
-        time: "19:30 - 21:00",
+        time: "18:00 - 18:40",
+        id: "開車前往天童晚餐",
+        title: "開車前往天童市區晚餐",
+        tag: { text: "🚗 40分鐘", class: "tag-teal" },
+        navUrl: "https://maps.app.goo.gl/P3JM6zwqwNaGTmgTA?g_st=ac",
+        navName: "大衆焼肉けむすけ 天童店",
+        priority: "must",
+        open: true,
+        content: `
+          <p>大正浪漫館 → 天童市區，約 40 分鐘</p>
+          <div class="tip-block">💡 18:40 抵達けむすけ，直接吃晚餐</div>
+        `
+      },
+      {
+        time: "18:40 - 21:00",
         id: "天童市區晚餐",
         title: "晚餐 ➔ 大衆焼肉けむすけ 天童店（首選）",
         tag: { text: "🥩 在地燒肉", class: "tag-amber" },
@@ -484,7 +524,25 @@ const winterItineraries = [
               <a href="https://maps.app.goo.gl/2FAqTdrbNJTeeQPu9?g_st=ac" target="_blank">📍 導航前往</a>
             </div>
           </details>
-          <div class="tip-block">💡 吃飽回飯店泡大浴場，明天 07:00 早餐、07:30 出發去藏王</div>
+          <div class="tip-block">💡 21:00 回瀧之湯，泡大浴場休息</div>
+        `
+      },
+      {
+        time: "21:00 - 21:30",
+        id: "返回瀧之湯休息",
+        title: "返回 瀧之湯 ➔ 泡大浴場休息",
+        tag: { text: "♨️ 泡湯休息", class: "tag-indigo" },
+        navUrl: "https://www.google.com/maps/search/?api=1&query=微笑の宿+滝の湯",
+        navName: "微笑の宿 瀧之湯",
+        priority: "must",
+        open: true,
+        content: `
+          <p>21:00 回瀧之湯，行李早已在房間</p>
+          <div class="tip-block">
+            <strong>♨️ 大浴場</strong>｜泡湯放鬆<br>
+            <strong>🛏️ 早點休息</strong>｜明天 07:00 早餐、07:30 出發去藏王<br>
+            <strong>🍳 自助早餐</strong>｜明天 1/23 07:00–09:00
+          </div>
         `
       }
     ]

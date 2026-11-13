@@ -1,5 +1,5 @@
 /* ============================================================
- * app-itinerary.js — v22.1（D4 滑雪到 15:00 / D5 炸豬扒）
+ * app-itinerary.js — v22.2（D2 先 Check-in 放行李）
  * ============================================================ */
 
 const CARD_FORCE_COLLAPSED = true;
@@ -34,7 +34,8 @@ const WEATHER_LOCATIONS = {
     { id: 'sendai', name: '宮城仙台', shortName: '仙台', lat: 38.2682, lon: 140.8694, timeFrom: '00:00', timeTo: '09:45', climate: { max: 5, min: -1, rain: 30 } },
     { id: 'zao_fox', name: '藏王狐狸村', shortName: '狐狸村', lat: 38.0407, lon: 140.5322, timeFrom: '09:45', timeTo: '13:00', climate: { max: 2, min: -3, rain: 35 } },
     { id: 'shiroishi', name: '白石', shortName: '白石', lat: 38.0022, lon: 140.6197, timeFrom: '13:00', timeTo: '14:30', climate: { max: 4, min: -2, rain: 30 } },
-    { id: 'ginzan', name: '銀山溫泉', shortName: '銀山', lat: 38.5747, lon: 140.5309, timeFrom: '14:30', timeTo: '18:00', climate: { max: 1, min: -4, rain: 45 } },
+    { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '14:30', timeTo: '15:45', climate: { max: 4, min: -2, rain: 35 } },
+    { id: 'ginzan', name: '銀山溫泉', shortName: '銀山', lat: 38.5747, lon: 140.5309, timeFrom: '15:45', timeTo: '18:00', climate: { max: 1, min: -4, rain: 45 } },
     { id: 'tendo', name: '山形天童', shortName: '天童', lat: 38.3625, lon: 140.3694, timeFrom: '18:00', timeTo: '23:59', climate: { max: 4, min: -2, rain: 35 } }
   ],
   3: [
@@ -248,7 +249,7 @@ function renderTripOverview() {
   const container = document.getElementById('overview-timeline-content'); if (!container) return;
   const days = [
     { day: "D1", color: "#0ea5e9", emoji: "✈️", title: "抵達仙台", desc: "機場 → 相鐵 FRESA INN → 伊達牛舌 → 購物" },
-    { day: "D2", color: "#f59e0b", emoji: "🦊", title: "狐狸村 + 銀山", desc: "取車 → 客美多 → 狐狸村 → 白石溫麵 → 銀山夜景 → 瀧之湯 → けむすけ燒肉" },
+    { day: "D2", color: "#f59e0b", emoji: "🦊", title: "狐狸村 + 銀山", desc: "取車 → 狐狸村 → 白石溫麵 → 瀧之湯 Check-in → 銀山夜景 → けむすけ燒肉" },
     { day: "D3", color: "#6366f1", emoji: "☃️", title: "藏王樹冰", desc: "藏王纜車 → 水車生そば → げんキッズ → 瀧之湯懷石" },
     { day: "D4", color: "#14b8a6", emoji: "⛷️", title: "Spring Valley", desc: "瀧之湯退房 → 玩雪 → Dormy Inn → 廻鮮寿司" },
     { day: "D5", color: "#f43f5e", emoji: "🍓", title: "市區草莓", desc: "草莓 → Outlet → 炸豬扒 → Dormy Inn 第2晚" },
@@ -634,14 +635,14 @@ function renderTicketContent() {
       <div class="ticket-countdown-row"><span class="ticket-countdown-label">倒數</span><span class="ticket-countdown">${formatCountdown(ginzanDiff)}</span></div>
       <div class="ticket-meta">
         <div class="ticket-meta-item"><div class="label">開放時間</div><div class="value">1/9 日本 10:00</div></div>
-        <div class="ticket-meta-item"><div class="label">目標</div><div class="value">1/22 16:00 去程 / 17:20 回程</div></div>
+        <div class="ticket-meta-item"><div class="label">目標</div><div class="value">1/22 16:20 去程 / 17:50 回程</div></div>
         <div class="ticket-meta-item"><div class="label">價格</div><div class="value">依官方公告</div></div>
         <div class="ticket-meta-item"><div class="label">平台</div><div class="value">Asoview! / 官方</div></div>
       </div>
       <div class="ticket-steps">
         <div class="ticket-step"><div class="ticket-step-dot">1</div><span>提前註冊 Asoview! 帳號並綁定信用卡</span></div>
         <div class="ticket-step"><div class="ticket-step-dot">2</div><span>1/9 08:55 香港時間設定鬧鐘，提前 5 分鐘登入</span></div>
-        <div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 <strong>1/22 16:00 去程 / 17:20 回程</strong></span></div>
+        <div class="ticket-step"><div class="ticket-step-dot">3</div><span>開賣後直接鎖定 <strong>1/22 16:20 去程 / 17:50 回程</strong></span></div>
       </div>
     </div>
     <div class="ticket-card zao">

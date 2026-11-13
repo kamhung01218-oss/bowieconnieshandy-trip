@@ -1,15 +1,12 @@
 /* ============================================================
- * app-lists.js — v10.0（榴岡神社版：相鐵→瀧之湯→Dormy Inn→Grand Bach）
- * 清單：行前預訂清單、裝備清單、購物清單、購物總覽
+ * app-lists.js — v10.5（銀山門票 16:20 / 17:50）
  * ============================================================ */
 
-// ⭐ v7.6：SVG helper
 function _svgIcon(name, size) {
   if (typeof window.ICON === 'function') return window.ICON(name, size || 16);
   return '';
 }
 
-// ==================== Modal 狀態 ====================
 const modalUIState = {
   'booking-modal': { activeTab: 'all', expanded: {} },
   'equip-modal': { activeTab: 'all', expanded: {} }
@@ -41,7 +38,7 @@ const bookingList = [
   { id: "hotel-tendo", category: "住宿", label: "1/22-23 微笑之宿 瀧之湯", icon: "🏨" },
   { id: "hotel-dormy", category: "住宿", label: "1/24-25 Dormy Inn EXPRESS 仙台海邊", icon: "🏨" },
   { id: "hotel-grandbach", category: "住宿", label: "1/26-27 Hotel Grand Bach 仙台", icon: "🏨" },
-  { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 7-8人座雪地車 (D2 取 / D6 還)", icon: "🚗" },
+  { id: "car-nippon", category: "租車", label: "Nippon Rent-A-Car 8人座 4WD 雪胎車 (建議 Alphard / Vellfire / Delica D:5，D2 取 / D6 還)", icon: "🚗" },
   { id: "car-safetybelt", category: "租車", label: "便攜式兒童安全帶 x2", icon: "🪑" },
   { id: "car-pickup", category: "租車", label: "1/22 08:00 仙台站前店取車", icon: "⏰" },
   { id: "car-dropoff", category: "租車", label: "1/26 17:00 仙台站前店還車", icon: "⏰" },
@@ -49,14 +46,16 @@ const bookingList = [
   { id: "insurance-medical", category: "保險", label: "海外突發疾病醫療險", icon: "🏥" },
   { id: "insurance-trip", category: "保險", label: "旅程不便險（班機/行李延誤）", icon: "🧳" },
   { id: "insurance-car", category: "保險", label: "租車免責補償 NOC / CDW", icon: "🚙" },
-  { id: "ticket-ginzan", category: "門票", label: "銀山溫泉 Fast Pass (12/1 開賣，1/22 搭乘)", icon: "🎟️" },
-  { id: "ticket-zao", category: "門票", label: "藏王纜車優先票 (1/16 23:00 搶，1/23 搭乘)", icon: "🎟️" },
-  { id: "ticket-springvalley", category: "門票", label: "Spring Valley 雪之冒險王國 (1/26)", icon: "⛷️" },
+  { id: "ticket-ginzan", category: "門票", label: "銀山溫泉接駁車預約 (1/9 開放，1/22 16:20 去程 / 17:50 回程)", icon: "🎟️" },
+  { id: "ticket-zao", category: "門票", label: "藏王纜車優先票 (1/15 23:00 搶，1/23 搭乘)", icon: "🎟️" },
+  { id: "ticket-springvalley", category: "門票", label: "Spring Valley 雪之冒險王國 (1/24 週日，玩雪專區開放)", icon: "⛷️" },
   { id: "ticket-foxvillage", category: "門票", label: "狐狸村入場 (現場購票)", icon: "🦊" },
+  { id: "ticket-strawberry", category: "門票", label: "市區採草莓預約 (1 月中旬官網預約)", icon: "🍓" },
   { id: "sim-esim", category: "通訊", label: "日本 eSIM / 上網卡", icon: "📶" },
   { id: "wifi-router", category: "通訊", label: "WiFi 分享器 (若需要)", icon: "📡" },
   { id: "other-private-bath", category: "其他", label: "瀧之湯貸切風呂 (1/23 16:30)", icon: "♨️" },
-  { id: "restaurant-koitora", category: "其他", label: "仔虎 仙台駅前店 (1/26 17:00 訂位)", icon: "🥩" },
+  { id: "restaurant-koitora", category: "其他", label: "仔虎 仙台駅前店 (1/27 12:00 午餐訂位，出發前 1 個月預約)", icon: "🥩" },
+  { id: "restaurant-girafe", category: "其他", label: "Boulangerie Girafe 早餐 (D5 08:30，首選)", icon: "🥐" },
   { id: "other-passport", category: "其他", label: "護照效期檢查 (需剩餘 6 個月以上)", icon: "🪪" },
   { id: "other-visit-japan-web", category: "其他", label: "Visit Japan Web 登錄 + QR Code", icon: "📱" },
   { id: "other-credit-card", category: "其他", label: "信用卡通知銀行 / 開通海外交易", icon: "💳" },
@@ -158,11 +157,9 @@ function refreshCurrentDay() {
   const day = window._lastActiveDay;
   const section = document.getElementById('day-section-' + day);
   if (!section) return;
-
   if (window.Uploads && typeof window.Uploads.renderAllAttachments === 'function') {
     window.Uploads.renderAllAttachments(section);
   }
-
   if (typeof window.updateShoppingBadges === 'function') {
     window.updateShoppingBadges(day);
   }
@@ -179,12 +176,10 @@ function renderShoppingList(eventTitle) {
     items.forEach((item, index) => { const checked = item.planned ? 'checked' : ''; html += `<div class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg"><input type="checkbox" ${checked} onchange="toggleShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" data-index="${index}" class="w-4 h-4 shrink-0"><div class="flex-1 min-w-0"><strong class="text-sm text-slate-800">${escapeHtml(item.name)}</strong>${item.category ? `<span class="text-[10px] text-slate-500 ml-2">${escapeHtml(item.category)}</span>` : ''}${item.note ? `<p class="text-[10px] text-slate-400 mt-0.5 truncate">📝 ${escapeHtml(item.note)}</p>` : ''}</div><button onclick="deleteShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" data-index="${index}" class="text-red-400 hover:text-red-600 p-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`; });
     html += `</div>`;
   }
-
   let optionsHtml = `<option value="">— 選擇類別 —</option>`;
   SHOPPING_CATEGORIES.forEach(cat => {
     optionsHtml += `<option value="${escAttr(cat.value)}">${cat.label}</option>`;
   });
-
   html += `<div class="mt-4 border-t border-slate-200 pt-4"><h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center gap-1.5">${_svgIcon('plus', 15)} 新增購物項目</h4>`;
   html += `<div class="flex flex-col gap-2">`;
   html += `<input id="new-shopping-name" type="text" placeholder="物品名稱 *" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs">`;
@@ -194,7 +189,6 @@ function renderShoppingList(eventTitle) {
   html += `</div>`;
   html += `<button onclick="addShoppingItem(this)" data-event-title="${escAttr(eventTitle)}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shrink-0 w-full flex items-center justify-center gap-1">${_svgIcon('plus', 13)} 新增</button>`;
   html += `</div></div>`;
-
   return html;
 }
 
@@ -210,11 +204,9 @@ function deleteShoppingItemFromOverview(btn) {
   const snapshot = { ...items[index] };
   items.splice(index, 1);
   saveShoppingItems(eventTitle, items);
-
   renderAllShoppingContent();
   if (window.AppHeader) window.AppHeader.render();
   haptic(10);
-
   showUndoToast(`已刪除「${snapshot.name}」`, "🗑", () => {
     const cur = loadShoppingItems(eventTitle);
     cur.splice(Math.min(index, cur.length), 0, snapshot);
@@ -234,33 +226,15 @@ function getAllShoppingItems() {
   if (!currentUser || currentUser === "訪客") return [];
   const userData = getUserData();
   const groups = [];
-
   const tempItems = userData.shopping[TEMP_PURCHASE_TITLE] || [];
   if (tempItems.length > 0) {
-    groups.push({
-      day: 0,
-      dateLabel: "🛒 臨時購買",
-      eventTitle: TEMP_PURCHASE_TITLE,
-      eventTime: "",
-      eventIndex: -1,
-      items: tempItems,
-      isTemp: true
-    });
+    groups.push({ day: 0, dateLabel: "🛒 臨時購買", eventTitle: TEMP_PURCHASE_TITLE, eventTime: "", eventIndex: -1, items: tempItems, isTemp: true });
   }
-
   winterItineraries.forEach(day => {
     day.events.forEach(event => {
       const items = userData.shopping[event.title] || [];
       if (items.length > 0) {
-        groups.push({
-          day: day.day,
-          dateLabel: day.dateLabel,
-          eventTitle: event.title,
-          eventTime: event.time,
-          eventIndex: day.events.indexOf(event),
-          items: items,
-          isTemp: false
-        });
+        groups.push({ day: day.day, dateLabel: day.dateLabel, eventTitle: event.title, eventTime: event.time, eventIndex: day.events.indexOf(event), items: items, isTemp: false });
       }
     });
   });
@@ -294,26 +268,20 @@ function submitNewShoppingItem() {
   const eventEl = document.getElementById('add-shopping-event');
   const noteEl = document.getElementById('add-shopping-note');
   if (!nameEl || !eventEl) return;
-
   const name = nameEl.value.trim();
   const category = catEl.value;
   const eventTitle = eventEl.value;
   const note = noteEl.value.trim();
-
   if (!name) { showToast("請輸入物品名稱", "⚠️"); haptic(50); nameEl.focus(); return; }
   if (!eventTitle) { showToast("請選擇要歸到哪一天", "⚠️"); haptic(50); eventEl.focus(); return; }
-
   const items = loadShoppingItems(eventTitle);
   items.push({ name, category, note, planned: false });
   saveShoppingItems(eventTitle, items);
-
   nameEl.value = '';
   noteEl.value = '';
   nameEl.focus();
-
   showToast("✅ 已新增購物項目");
   haptic(10);
-
   renderAllShoppingContent();
   if (window.AppHeader) window.AppHeader.render();
 }
@@ -337,10 +305,8 @@ function renderAllShoppingContent() {
   const container = document.getElementById('all-shopping-content'); if (!container) return;
   if (!currentUser) { container.innerHTML = '<div class="text-center py-8 text-slate-500">請先登入</div>'; return; }
   if (currentUser === "訪客") { container.innerHTML = `<div class="text-center py-12"><div class="text-5xl mb-3">🔒</div><p class="text-sm font-bold text-slate-700 mb-1">訪客無法使用購物清單</p><p class="text-xs text-slate-500">請切換為家庭成員身份</p></div>`; return; }
-
   const groups = getAllShoppingItems();
   const userBanner = `<div class="mb-3 flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl p-3"><div class="w-10 h-10 rounded-full text-white flex items-center justify-center font-black shrink-0" style="background:${USER_COLORS[currentUser]}">${currentUser[0].toUpperCase()}</div><div class="text-xs font-black text-sky-800">${escapeHtml(currentUser)} 的購物清單總覽</div></div>`;
-
   const addFormHtml = `
     <button onclick="toggleAddShoppingForm()" class="w-full mb-3 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-black text-sm py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
       <span style="display:inline-flex;align-items:center">${_svgIcon(addShoppingFormOpen ? 'x' : 'plus', 16)}</span>
@@ -364,7 +330,6 @@ function renderAllShoppingContent() {
       <p class="text-[10px] text-emerald-600 leading-relaxed flex items-center gap-1">${_svgIcon('info', 11)} 選「🛒 臨時購買」可將物品加入不分景點的清單</p>
     </div>
   `;
-
   if (groups.length === 0) {
     container.innerHTML = userBanner + addFormHtml + `
       <div class="text-center py-10 px-4">
@@ -374,29 +339,22 @@ function renderAllShoppingContent() {
       </div>`;
     return;
   }
-
   let totalItems = 0; let checkedItems = 0;
   groups.forEach(g => { g.items.forEach(item => { totalItems++; if (item.planned) checkedItems++; }); });
   const percent = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
-
   let html = userBanner;
   html += `<div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 mb-4"><div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-emerald-800">${percent === 100 ? '🎉 全部買齊！' : '📊 購物進度'}</span><span class="text-sm font-black text-emerald-700">${checkedItems} / ${totalItems}</span></div><div class="h-2 bg-white/70 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500" style="width:${percent}%"></div></div></div>`;
-
   html += addFormHtml;
-
   html += `<div class="flex items-center gap-2 mb-3 bg-slate-100 border border-slate-200 rounded-xl p-1">`;
   html += `<button onclick="setShoppingViewMode('byEvent')" class="${shoppingViewMode === 'byEvent' ? 'bg-white shadow-sm text-sky-800' : 'text-slate-500'} flex-1 py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5"><span style="display:inline-flex">${_svgIcon('calendar', 13)}</span> 按景點</button>`;
   html += `<button onclick="setShoppingViewMode('byCategory')" class="${shoppingViewMode === 'byCategory' ? 'bg-white shadow-sm text-sky-800' : 'text-slate-500'} flex-1 py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5"><span style="display:inline-flex">${_svgIcon('list', 13)}</span> 按類別</button>`;
   html += `</div>`;
-
   if (shoppingViewMode === 'byEvent') {
     html += renderShoppingByEvent(groups);
   } else {
     html += renderShoppingByCategory(groups);
   }
-
   container.innerHTML = html;
-
   if (addShoppingFormOpen) {
     const nameEl = document.getElementById('add-shopping-name');
     if (nameEl) {
@@ -414,10 +372,8 @@ function renderShoppingByEvent(groups) {
     const groupTotal = group.items.length;
     const allDone = groupChecked === groupTotal;
     const safeTitle = escAttr(group.eventTitle);
-
     const badgeText = group.isTemp ? '🛒' : `D${group.day}`;
     const badgeClass = group.isTemp ? 'bg-amber-100 text-amber-700' : (allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700');
-
     html += `<details class="mb-3 bg-white border ${allDone ? 'border-emerald-200' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden group" ${gIdx === 0 ? 'open' : ''}>`;
     html += `<summary class="cursor-pointer px-4 py-3 hover:bg-slate-50 transition-colors list-none flex items-center gap-3">`;
     html += `<div class="shrink-0 w-10 h-10 rounded-full ${badgeClass} flex items-center justify-center text-xs font-black border-2 border-white shadow-sm">${badgeText}</div>`;
@@ -425,14 +381,12 @@ function renderShoppingByEvent(groups) {
     html += `<div class="shrink-0 flex items-center gap-1.5"><span class="text-[10px] font-black ${allDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">${groupChecked}/${groupTotal}</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div>`;
     html += `</summary>`;
     html += `<div class="border-t border-slate-100 bg-slate-50/50 p-3 space-y-3">`;
-
     const byCat = {};
     group.items.forEach((item, idx) => {
       const cat = (item.category || '').trim() || '未分類';
       if (!byCat[cat]) byCat[cat] = [];
       byCat[cat].push({ item, idx });
     });
-
     const catKeys = Object.keys(byCat);
     if (catKeys.length === 1 && catKeys[0] === '未分類') {
       group.items.forEach((item, idx) => { html += renderShoppingItemRow(item, safeTitle, idx); });
@@ -451,7 +405,6 @@ function renderShoppingByEvent(groups) {
         html += `</div></div>`;
       });
     }
-
     if (!group.isTemp) {
       html += `<button onclick="jumpToEvent(${group.day}, ${group.eventIndex})" class="mt-2 w-full text-[10px] font-bold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 py-2 rounded-lg transition active:scale-95 flex items-center justify-center gap-1">${_svgIcon('location', 11)} 前往行程查看</button>`;
     }
@@ -469,20 +422,17 @@ function renderShoppingByCategory(groups) {
       byCategory[cat].push({ item, idx, group });
     });
   });
-
   const catKeys = Object.keys(byCategory).sort((a, b) => {
     if (a === '未分類') return 1;
     if (b === '未分類') return -1;
     return a.localeCompare(b, 'zh-HK');
   });
-
   let html = '';
   catKeys.forEach((cat, cIdx) => {
     const catItems = byCategory[cat];
     const catChecked = catItems.filter(x => x.item.planned).length;
     const catTotal = catItems.length;
     const catAllDone = catChecked === catTotal;
-
     html += `<details class="mb-3 bg-white border ${catAllDone ? 'border-emerald-200' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden group" ${cIdx === 0 ? 'open' : ''}>`;
     html += `<summary class="cursor-pointer px-4 py-3 hover:bg-slate-50 transition-colors list-none flex items-center gap-3">`;
     html += `<div class="shrink-0 w-10 h-10 rounded-full ${catAllDone ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'} flex items-center justify-center border-2 border-white shadow-sm">${_svgIcon('list', 16)}</div>`;
@@ -490,7 +440,6 @@ function renderShoppingByCategory(groups) {
     html += `<div class="shrink-0 flex items-center gap-1.5"><span class="text-[10px] font-black ${catAllDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">${catChecked}/${catTotal}</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div>`;
     html += `</summary>`;
     html += `<div class="border-t border-slate-100 bg-slate-50/50 p-3 space-y-1.5">`;
-
     catItems.forEach(({ item, idx, group }) => {
       const safeTitle = escAttr(group.eventTitle);
       const planned = item.planned;
@@ -511,7 +460,6 @@ function renderShoppingByCategory(groups) {
       html += `</button>`;
       html += `</div>`;
     });
-
     html += `</div></details>`;
   });
   return html;
@@ -620,4 +568,4 @@ function updateShoppingBadges(day) {
 }
 window.updateShoppingBadges = updateShoppingBadges;
 
-console.log('[Lists] v10.0（榴岡神社版）載入完成');
+console.log('[Lists] v10.5（銀山門票 16:20 / 17:50）載入完成');
